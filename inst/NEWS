@@ -1,0 +1,67 @@
+Changelog for 'lsmeans' package
+
+1.05-01 - December 5, 2012
+    Fixed a bug that occurs when model contains expressions like (a + b + c)^2
+        or other expressions that expand to interaction terms
+
+1.05-00 - November 2, 2012
+    Added an 'lf' boolean argument to return the matrices of linear functions
+        without evaluating them
+    Added a function 'lsm' and corresponding method for 'glht'; thus, now we
+        can use lsm() much like mcp()
+    Changed examples with glht to integer df -- due to a recent change in mvtnorm
+        glhargs$df is coerced to an integer before passing, but in lsm() it is
+        up to the user to pass appropriate arguments to glht
+
+
+1.00-00 - October 19, 2012
+    Added support for factors in 'at' argument (can use it to restrict results)
+    Added columns with factor levels to lsmeans table - for possible use in plots
+    Extended trt.vs.ctrl.lsmc to accommodate more than one reference level
+        (Thanks to Florent Duyme, ARVALIS - Institut du v?g?tal, for suggesting this)
+    Refinements to print methods, including new class 'data.frame.lsm' to display 
+        results the way I want them
+    If 'glhargs' is used, those elements are now of class 'summary.glht'. 
+        We can still use those results in the same ways as before
+    Added support for adjustment methods in 'p.adjust' (stats)
+    Included a couple of sample datasets
+    Various small bug fixes (e.g. subsets bug)
+
+
+0.99-80 - September 19, 2012
+    Now finds degrees of freedom when appropriate for all but lme objects
+        (For mer objects, get df only if 'pbkrtest' installed)
+    lsmeans tables now show confidence intervals instead of t tests
+        and contrast output shows p values (both assuming df are available)
+    Added a 'conf' argument for confidence level in lsmean intervals
+    Added a 'glhargs' argument; if provided, lsmeans passes its contrasts 
+        to the 'glht' function in the 'multcomp' package
+    Added an 'adjust' argument for popular single-step multiplicity corrections
+        (uncorrected, Tukey, Bonferroni, and Sidak)
+    Contrast-generating functions now produce an 'adjust' attribute which 
+        provides a default multiplicity-adjustment method
+    The 'check.cells' argument is now deprecated. Instead, we do an actual 
+        check of estimability in rank-deficient cases (currently can happen 
+        only with 'lm' objects). This check is not optional
+    Renamed the vignette to avoid confusion with the regular documentation
+    Returned object is now assigned class "lsm" which has its own print method.
+
+
+0.99 - August 27, 2012
+    Now can handle predictors coerced to 'factor' or 'ordered'
+    Now can handle predictors deleted due to rank deficiency
+    Now can handle models with matrices among the predictors
+        (uses 'cov.reduce' on each column; 'at' not supported for matrix covariate)
+    Added support for gls objects (and documented that it works also for glm and glmer)
+    Added a check for empty cells in the design (relative to the model). This (by default)
+        forces a NA to be outputted for any lsmeans that are corrupted by rank deficiencies
+    Generates a warning if specified factor(s) interact with other predictors
+    Better and more comprehensive vignette
+    Added a whole lot of comments to the code (you won't see these, but be glad,
+        as it greatly aids maintainability)
+    Added error messages for anticipatable user errors
+    Numerous bug fixes and corrections to documentation
+    Still no d.f. or P values. Those could take awhile.
+    
+0.90 - August 14, 2012
+    First release, still needs some refinements and bullet-proofing

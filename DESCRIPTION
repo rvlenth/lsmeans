@@ -1,0 +1,14 @@
+Package: lsmeans
+Type: Package
+Title: Least-squares means
+Version: 1.05-01
+Date: 2012-12-05
+Encoding: latin1
+Author: Russell V. Lenth
+Maintainer: Russ Lenth <russell-lenth@uiowa.edu>
+Suggests: nlme, lme4, pbkrtest, multcomp
+Enhances: multcomp
+Imports: Matrix, multcomp
+LazyData: yes
+Description: This package provides the function 'lsmeans' for outputting so-called least-squares means for factor combinations in an 'lm', 'lme', or 'lmer' object. It can also compute contrasts or linear combinations of these least-squares means, and several standard contrast families are provided.
+License: GPL-2
