@@ -1,5 +1,9 @@
 Changelog for 'lsmeans' package
 
+1.06-00 - January 11, 2013
+    Added a 'covariate' argument for estimating and contrasting fitted slopes
+        rather than lsmeans
+
 1.05-01 - December 5, 2012
     Fixed a bug that occurs when model contains expressions like (a + b + c)^2
         or other expressions that expand to interaction terms
