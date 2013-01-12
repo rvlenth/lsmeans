@@ -12,7 +12,7 @@ and optionally comparisons or contrasts among them.
 }
 \usage{
 lsmeans(object, specs, adjust = c("auto","tukey","sidak", p.adjust.methods),
-  conf = .95, at, contr = list(), 
+  conf = .95, at, covariate, contr = list(), 
   cov.reduce = function(x, name) mean(x), 
   fac.reduce = function(coefs, lev) apply(coefs, 2, mean), 
   glhargs = NULL, lf = FALSE, ...)
@@ -48,6 +48,11 @@ Desired confidence level for intervals. For robustness, you may specify either a
 }
   \item{at}{
 An optional named list or named vector of covariate values at which predictions are computed (give only one value for each covariate). If no value is found in \code{at} for a particular covariate, then \code{cov.reduce} is called.
+}
+  \item{covariate}{
+If non-missing and \code{covariate} is the name of a numeric predictor in \code{object}'s model,
+then the trends (regression coefficients) for this predictor are estimated and compared instead of the least-squares means. This is useful in models where the covariate interacts with the factors in the right-hand side of \code{specs}. In multi-factor cases, sets of 
+regression coefficients are averaged using \code{fac.reduce}, just as with least-squares means.
 }
   \item{contr}{
 An optional named \code{list}. Each entry is itself a \code{list} or a \code{data.frame} specifying contrast coefficients. If the left-hand side of a formula in \code{specs} matches a name in \code{contr}, then those contrasts are estimated with the specified least-squares means. An error will result if the length or one or more contrast vectors mismatches the number of levels of the factor or factor combination. Actually, it is not necessary that they be contrasts; one may use this argument to estimate arbitrary linear combinations of the least-squares means.

@@ -1,5 +1,5 @@
 lsmeans = function(object, specs, adjust=c("auto","tukey","sidak",p.adjust.methods), conf = .95, 
-                   at, contr=list(), 
+                   at, covariate, contr=list(), 
                    cov.reduce = function(x, name) mean(x), 
                    fac.reduce = function(coefs, lev) apply(coefs, 2, mean), 
                    glhargs=NULL, lf = FALSE,
@@ -28,6 +28,8 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak",p.adjust.metho
         warning("Unknown or non-unique `adjust' method -- automatic method will be used")
     }
     autoadj = (adj == 1)
+    
+    cov.flag = !missing(covariate)
     
 # Get RHS of model formula
     if (inherits(object, "gls"))
@@ -159,8 +161,27 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak",p.adjust.metho
             }
         }
     }
+    
+    # If covariate present, we'll set up a difference quotient based on 
+    # a fraction of the range of the variable
+    if (cov.flag) {
+        # parse the arg: either "x" or "term | x"
+        cov.names = gsub("^ | $", "", strsplit(covariate, "\\|")[[1]])
+        cov.xnm = rep(cov.names, 2)[2] # 1st if length one, else 2nd
+        cov.x = X[[cov.xnm]]
+        if (is.null(cov.x)) 
+            stop("'covariate' argument does not refer to a variable in the dataset")
+        if (!is.numeric(cov.x))
+            stop("'covariate' must refer to a numeric predictor")
+        beta.h = diff(range(cov.x))*.001
+        baselevs[[cov.xnm]] = baselevs[[cov.xnm]][1] + c(-1,1) * beta.h / 2
+        
+        # rearrange ordering so covariate variable is first - makes bookkeeping easier
+        sidx = match(cov.xnm, names(baselevs))
+        baselevs = c(baselevs[sidx], baselevs[-sidx])
+    }
     # OK. Now make a grid of the factor levels of interest, along w/ covariate "at" values
-    grid = do.call("expand.grid", baselevs)
+    grid = do.call(expand.grid, baselevs)
     # add any matrices
     for (nm in names(matdat))
         grid[[nm]] = matrix(rep(matdat[[nm]], each=nrow(grid)), nrow=nrow(grid))
@@ -177,8 +198,22 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak",p.adjust.metho
     # WARNING -- This will overwrite X, so get anything you need from X BEFORE we get here
     m = model.frame(Terms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(Terms, m, contrasts.arg = contrasts)
-    # use only the columns with non-missing regr coefs
-    #--- OMITTED--we'll handle this later X = X[ , used]
+
+    # Compute the difference quotients when 'covariate' is provided
+    if(cov.flag) {
+        evens = 2 * (1:(nrow(X)/2))
+        if (length(cov.names) > 1) {
+            col = match(cov.names[1], dimnames(X)[[2]])
+            if (is.na(col))
+                stop("specified 'covariate' term is not in the model")
+            cov.x = X[, col]            
+            beta.h = cov.x[evens] - cov.x[evens - 1]
+            X = diag(1 / beta.h) %*% (X[evens, ] - X[evens-1, ])
+        }
+        else
+            X = (X[evens, ] - X[evens-1, ]) / beta.h
+        grid = grid[evens, , drop=FALSE]
+    }
     
     # If necessary revise grid with corced numeric factors replaced with factor levels
     if (length(coerced) > 0) grid = do.call("expand.grid", baselevs)
@@ -194,6 +229,9 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak",p.adjust.metho
     
 ##### routine returns TRUE iff all elements of facs are contained in a model term with another predictor
     some.term.contains = function(facs) {
+        # When checking covariate, add that variable to the mix
+        if(cov.flag) 
+            facs = union(facs, cov.xnm)
         for (trm in mod.terms) {
             flag = all(sapply(facs, function(f) length(grep(f,trm))>0))
             if (flag) 
@@ -280,31 +318,40 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak",p.adjust.metho
         }
         
         # LS means
+        if (!cov.flag) {
+            effname = "lsmean"
+            lsmentry = paste(facs.lbl, "lsmeans")
+        }
+        else {
+            effname = paste(cov.names[1], "trend", sep=".")
+            lsmentry = paste(effname, "by", facs.lbl)
+        }
+
         if (lf) {
-            results[[paste(facs.lbl, "lsmeans")]] = t(K)
+            results[[lsmentry]] = t(K)
         }
         else {
             lsms = as.data.frame(t(apply(K,2,do.est)))
             # fix-up names and get CIs
-            names(lsms)[1] = "lsmean"
+            names(lsms)[1] = effname
             # include factor levels
             lsms = cbind(combs, lsms)
             if (conf > 1) conf = conf/100 # pct --> frac
             if ((conf < 1) && (conf > .01)) {
                 if (is.null(ddfm)) {
                     me = qnorm((1-conf)/2, lower.tail=FALSE) * lsms$SE
-                    lsms$asymp.LCL = lsms$lsmean - me
-                    lsms$asymp.UCL = lsms$lsmean + me
+                    lsms$asymp.LCL = lsms[[effname]] - me
+                    lsms$asymp.UCL = lsms[[effname]] + me
                 }
                 else {
                     me = qt((1-conf)/2, lsms$df, lower.tail=FALSE) * lsms$SE
-                    lsms$lower.CL = lsms$lsmean - me
-                    lsms$upper.CL = lsms$lsmean + me
+                    lsms$lower.CL = lsms[[effname]] - me
+                    lsms$upper.CL = lsms[[effname]] + me
                 }
             }
             attr(lsms, "print.row.names") = FALSE
             class(lsms) = c("data.frame.lsm", "data.frame")
-            results[[paste(facs.lbl, "lsmeans")]] = lsms
+            results[[lsmentry]] = lsms
         }        
         
         # Do requested contrasts
