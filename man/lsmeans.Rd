@@ -12,7 +12,7 @@ and optionally comparisons or contrasts among them.
 }
 \usage{
 lsmeans(object, specs, adjust = c("auto","tukey","sidak", p.adjust.methods),
-  conf = .95, at, covariate, contr = list(), 
+  conf = .95, at, trend, contr = list(), 
   cov.reduce = function(x, name) mean(x), 
   fac.reduce = function(coefs, lev) apply(coefs, 2, mean), 
   glhargs = NULL, lf = FALSE, ...)
@@ -49,9 +49,9 @@ Desired confidence level for intervals. For robustness, you may specify either a
   \item{at}{
 An optional named list or named vector of covariate values at which predictions are computed (give only one value for each covariate). If no value is found in \code{at} for a particular covariate, then \code{cov.reduce} is called.
 }
-  \item{covariate}{
-If non-missing and \code{covariate} is the name of a numeric predictor in \code{object}'s model,
-then the trends (regression coefficients) for this predictor are estimated and compared instead of the least-squares means. This is useful in models where the covariate interacts with the factors in the right-hand side of \code{specs}. In multi-factor cases, sets of 
+  \item{trend}{
+If non-missing and \code{trend} is the name of a numeric predictor or a term in \code{object}'s model,
+then the linear trends for this predictor are estimated and compared instead of the least-squares means. This is useful in models where the specified variable or term interacts with one or more of the factors in the right-hand side of \code{specs}. In multi-factor cases, sets of 
 regression coefficients are averaged using \code{fac.reduce}, just as with least-squares means.
 }
   \item{contr}{
@@ -95,6 +95,8 @@ Now consider the model \code{response ~ A + B + A:B}, where \code{A} and \code{B
 One other note concerning covariates: One must be careful with covariates that depend on one another. For example, if a model contains covariates \code{x} and \code{xsq} where \code{xsq = x^2}, the default behavior will make predictions at \code{x = mean(x)} and \code{xsq = mean(xsq)}, which probably isn't a valid combination (we need \code{x = mean(x)} and \code{xsq = mean(x)^2}). The inconsistency is avoided if the model specifis \code{poly(x,2)} (or even \code{x + I(x^2)}) instead of \code{x + xsq}, because then only \code{x} is averaged, and everything remains consistent.
 
 The built-in contrast methods that can be used in \code{specs} formulas are \code{pairwise}, \code{revpairwise}, \code{poly}, \code{trt.vs.ctrl}, \code{trt.vs.ctrl1}, and \code{trt.vs.ctrlk}. They are implemented as functions having the same names with \code{.lsmc} added (e.g., \code{\link{pairwise.lsmc}}). Users may write additional \code{.lsmc} functions that generate custom families of contrasts. See the documentation for \code{\link{pairwise.lsmc}} for an example.
+
+When \code{trend} is specified and it names a predictor variable in the model, the trend is estimated using a difference quotient over 1/1000 the range of the predictor (centered at the predictor's \code{at} value or its \code{cov.reduce} result). If \code{trend} instead names a model term, then the trend is determined symbolically. It could be informative to run with \code{lf=TRUE}. See the examples.
 
 Degrees of freedom are currently not provided for \code{lme} or \code{glme} objects, or for \code{mer} objects arising from generalized linear models; in those cases, asymptotic results are printed, and this fact is emphasized by displaying \code{NA} for the defrees of freedom. For linear \code{mer} objects, degrees of freedom are computed using the Kenward and Roger (1997) method, provided the \code{pbkrtest} package is installed (the package is loaded if needed). Moreover, in that case, the adjusted covariance matrix from the \code{vcovAdj()} function in the \code{pbkrtest} package is used to calculate standard errors. See Halekoh and H?jsgaard (2012) and the documentation for \code{\link[pbkrtest]{KRmodcomp}} for more details. Degrees of freedom are not known to \code{\link[multcomp]{glht}} except in the case of \code{lm} objects. Note that \code{glht} requires the degrees of freedom to be an integer; accordingly, if \code{df} is included in \code{glhargs}, it is coerced to an integer value of \code{max(1, as.integer(df + .2))}. That is, it is forced to be at least 1, and it is taken up to the next higher integer if its fractional part is at least .8.
 
@@ -185,7 +187,26 @@ if (require(multcomp)) {
 # Custom contrasts
 lsmeans(Oats.lmer, my.own ~ Variety, 
   contr = list(my.own = list(G.vs.M = c(1,-1,0), GM.vs.V = c(.5,.5,-1))))
+  
+#### Examples with trends...
+# Model with interaction
+fiber.lm2 = lm(strength ~ diameter * machine, data = fiber)
+# Compare the linear trends for diameter
+lsmeans(fiber.lm2, pairwise ~ machine, trend = "diameter")
 
+# Model with log(diameter) as the covariate
+fiber.lm3 = lm(strength ~ log(diameter) * machine, data = fiber)
+# Compare the fitted linear trends for log(diameter)
+lsmeans(fiber.lm3, pairwise ~ machine, trend = "log(diameter)")
+
+# Compare the fitted linear trends for diameter itself 
+# - this is done via a diff quotient - compare with fiber.lm2 results
+lsmeans(fiber.lm3, pairwise ~ machine, trend = "diameter")
+
+# Examine the linear functions generated for these examples
+lsmeans(fiber.lm2, ~ machine, trend = "diameter", lf = TRUE)
+lsmeans(fiber.lm3, ~ machine, trend = "log(diameter)", lf = TRUE)
+lsmeans(fiber.lm3, ~ machine, trend = "diameter", lf = TRUE)
 }
 \keyword{ models }
 \keyword{ regression }

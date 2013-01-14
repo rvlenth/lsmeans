@@ -1,7 +1,7 @@
 Changelog for 'lsmeans' package
 
-1.06-00 - January 11, 2013
-    Added a 'covariate' argument for estimating and contrasting fitted slopes
+1.06-00 - January 14, 2013
+    Added a 'trend' argument for estimating and contrasting fitted trends
         rather than lsmeans
 
 1.05-01 - December 5, 2012
