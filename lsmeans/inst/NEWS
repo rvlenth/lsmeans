@@ -1,5 +1,8 @@
 Changelog for 'lsmeans' package
 
+1.06-05 - February 13, 2013
+    Fixed a bug whereby unused levels of factors can create havoc.
+
 1.06-00 - January 14, 2013
     Added a 'trend' argument for estimating and contrasting fitted trends
         rather than lsmeans
