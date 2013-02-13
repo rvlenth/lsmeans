@@ -35,7 +35,11 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak",p.adjust.metho
     if (inherits(object, "gls"))
         Terms = getCovariateFormula(object)
     else
-        Terms = delete.response(terms(object))
+        Terms = terms(object)
+### was    Terms = delete.response(terms(object))
+### but we need to keep track of complete cases, including y values
+### (Correction 2-13-13, version 1.06-05)    
+    
     # get the pure formula w/o extra stuff
     formrhs = formula(Terms)
     
@@ -122,7 +126,11 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak",p.adjust.metho
     form = as.formula(paste("~", paste(nm, collapse = "+")))
     envir = attr(Terms, ".Environment")
     X = model.frame(form, eval(thecall$data, envir=envir), 
-                    subset = eval(thecall$subset, enclos=envir))
+                    subset = eval(thecall$subset, enclos=envir),
+                    na.action = na.omit, drop.unused.levels = TRUE)
+### Correction 2-13-13, version 1.06-05 -- 
+### added drop.unused terms and na.omit to above
+    
     # Now X contains the data used to fit the model, w/o any expansions (e.g. poly() calls)
 
 # Start accumulating info for the vars. 
@@ -215,7 +223,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak",p.adjust.metho
             trend = gsub(" ", "", trend)
             trend.idx = match(trend, term.nm)
             if (is.na(trend.idx))
-                stop("'trend' is neither a variable nor a model term")
+                stop(paste("trend value '", trend, "' is neither a variable nor a model term", sep=""))
             prev.X = X
 # Symbolic differentiation... Replace columns of X with:
 #  1 if it is col for trend
