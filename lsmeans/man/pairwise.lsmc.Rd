@@ -5,6 +5,8 @@
 \alias{trt.vs.ctrl.lsmc}
 \alias{trt.vs.ctrl1.lsmc}
 \alias{trt.vs.ctrlk.lsmc}
+\alias{effects.lsmc}
+\alias{del.effects.lsmc}
 
 \title{
 Contrast families
@@ -23,6 +25,9 @@ poly.lsmc(levs, max.degree = min(6, k - 1))
 trt.vs.ctrl.lsmc(levs, ref = 1)
 trt.vs.ctrl1.lsmc(levs, ...)
 trt.vs.ctrlk.lsmc(levs, ...)
+
+effects.lsmc(levs, ...)
+del.effects.lsmc(levs, ...)
 }
 
 \arguments{
@@ -38,6 +43,8 @@ trt.vs.ctrlk.lsmc(levs, ...)
 \code{poly.lsmc} generates orthogonal polynomial contrasts, assuming equally-spaced factor levels. These are derived from the \code{\link{poly}} function, but an ad hoc algorithm is used to scale them to integer coefficients that are (usually) the same as in published tables of orthogonal polynomial contrasts.
 
 \code{trt.vs.ctrl.lsmc} and its relatives generate contrasts for comparing one level (or the average over specified levels) with each of the other levels. The argument \code{ref} should be the \emph{index}(es) (not the labels) of the reference level(s). \code{trt.vs.ctrl1.lsmc} is the same as \code{trt.vs.ctrl , ref=1)}, and \code{trt.vs.ctrlk.lsmc} is the same as \code{trt.vs.ctrl , ref=length(levs))}
+
+\code{effects.lsmc} and \code{del.effects.lsmc} generate contrasts that compare each level with the average over all levels (in \code{effects.lsmc}) or over all other levels (in \code{del.effects.lsmc}). These differ only in how they are scaled. For a set of k lsmeans, \code{del.effects.lsmc} gives weight 1 to one lsmean and weight -1/(k-1) to the others, while \code{effects.lsmc} gives weights (k-1)/k and -1/k respectively, as in subtracting the overall lsmean from each lsmean.
 }
 \value{
 A \code{data.frame}, each column containing contrast coefficients for \code{levs}.

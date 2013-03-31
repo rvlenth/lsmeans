@@ -11,7 +11,7 @@ Compute least-squares means for specified factors or factor combinations in a li
 and optionally comparisons or contrasts among them.
 }
 \usage{
-lsmeans(object, specs, adjust = c("auto","tukey","sidak", p.adjust.methods),
+lsmeans(object, specs, adjust = c("auto","tukey","sidak","scheffe", p.adjust.methods),
   conf = .95, at, trend, contr = list(), 
   cov.reduce = function(x, name) mean(x), 
   fac.reduce = function(coefs, lev) apply(coefs, 2, mean), 
@@ -38,6 +38,7 @@ Adjustment method for the p values of tests of contrasts.
 \code{"auto"} uses the method returned in the \code{"adjust"} attribute of the contrast function;
 \code{"tukey"} computes p values using the Studentized range distribution with the number of means in the family;
 \code{"sidak"} replaces each p value by \code{1 - (1 - p)^c}, where c is the number of contrasts;
+\code{"scheffe"} computes p values from the F distribution, according to the Scheffe criterion;
 \code{"none"} makes no adjustments to the p values.
 In addition, the Bonferroni-inequality-based adjustment methods in \code{\link{p.adjust}} are available; many of those involve step-down testing with a stopping rule, whereas \code{"tukey"}, \code{"sidak"}, \code{"bonferroni"}, and \code{"none"} anticipate that all contrasts will be tested.
 In many cases, these adjustments are only approximate, especially when the degrees of freedom vary

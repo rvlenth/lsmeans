@@ -1,4 +1,4 @@
-lsmeans = function(object, specs, adjust=c("auto","tukey","sidak",p.adjust.methods), conf = .95, 
+lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.adjust.methods), conf = .95, 
                    at, trend, contr=list(), 
                    cov.reduce = function(x, name) mean(x), 
                    fac.reduce = function(coefs, lev) apply(coefs, 2, mean), 
@@ -20,7 +20,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak",p.adjust.metho
     }
     
     # for later use
-    adjtbl = c("auto","tukey","sidak",p.adjust.methods)
+    adjtbl = c("auto","tukey","sidak","scheffe",p.adjust.methods)
     no.adj = pmatch("none", adjtbl)
     adj = pmatch(adjust, adjtbl)[1]
     if (is.na(adj)) {
@@ -135,7 +135,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak",p.adjust.metho
 
 # Start accumulating info for the vars. 
 # baselevs has the levels of all factors, or the "at" values for all covariates
-# xlev has the factor levels only, for use in model.frame and check.cells calls
+# xlev has the factor levels only, for use in model.frame calls
     baselevs = xlev = matdat = list()
     # allow a vector of character strings
     if (is.character(specs)) specs = as.list(specs)
@@ -342,11 +342,12 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak",p.adjust.metho
     ##### Compute adjusted p value
         adj.p.value = function(t, df, meth, fam.size, n.contr) {
             abst = abs(t)
-            if (meth <= 3)
+            if (meth <= 4)
                 switch(meth,
-                       NA,                                                   # should not happen
-                       ptukey(sqrt(2)*abst, fam.size, df, lower.tail=FALSE), # tukey
-                       1 - (1 - 2*pt(abst, df, lower.tail=FALSE))^n.contr,   # sidak
+                       NA,                                                     # should not happen
+                       ptukey(sqrt(2)*abst, fam.size, df, lower.tail=FALSE),   # tukey
+                       1 - (1 - 2*pt(abst, df, lower.tail=FALSE))^n.contr,     # sidak
+                       pf(t^2/(fam.size-1), fam.size-1, df, lower.tail=FALSE)  # scheffe
                 )
             else
                 p.adjust(2*pt(abst, df, lower.tail=FALSE), adjtbl[meth], n=n.contr)
