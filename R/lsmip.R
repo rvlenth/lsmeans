@@ -19,9 +19,14 @@ lsmip = function(object, formula, se.bars = TRUE, ...) {
     plotform = lsmean ~ xvar
     if (length(rhs) > 1) {
         byvars = all.vars(as.formula(paste("~", rhs[[2]])))
-        lsms$byvar = factor(do.call(paste, lsms[byvars]))
-        plotform = as.formula("lsmean ~ xvar | byvar")
+        plotform = as.formula(paste("lsmean ~ xvar |", paste(byvars, collapse="*")))
     }
-    print(xyplot(plotform, groups=~ tvar, type="o", data=lsms))
+    grobj = xyplot(plotform, groups=~ tvar, type="o", data=lsms,
+        xlab = paste("Levels of", paste(xvars, collapse=", ")),
+                   ylab = "Least-squares mean",
+        auto.key = list(space="right", 
+            title = paste(tvars,collapse=", "), cex.title=1)
+    )
+    print(grobj)
     invisible(lsms)
 }
