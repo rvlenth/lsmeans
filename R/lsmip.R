@@ -33,20 +33,23 @@ lsmip = function(object, formula, se.bars = TRUE, ...) {
     my.strip = function(...)
         strip.default(..., strip.names = c(TRUE,TRUE), sep = " = ")
     # My panel function
-    my.panel = function(x, y, subscripts, ucl, lwd, cex, ...) {
+    my.panel = function(x, y, subscripts, ucl, lwd, cex, ngrp, group.number, ...) {
         ucl = ucl[subscripts]
         lcl = 2 * y - ucl  # = y - (ucl - y)
         col.line = list(...)$col.line
+        offset = .02*(group.number - (ngrp+1)/2)
         panel.xyplot(x, y, subscripts=subscripts, lwd=2, cex=1.5, ...)
-        panel.arrows(x0=x,y0=lcl, x1=x,y1=ucl, angle=90, 
+        panel.arrows(x+offset, lcl, x+offset, ucl, angle=90, 
                      subscripts=subscripts, code=3, col=col.line)
     }
-    my.main.panel = function(...) 
-        panel.superpose(..., panel.groups=my.panel, type="o")
+    my.main.panel = function(..., groups)
+        panel.superpose(..., panel.groups=my.panel, groups=groups,
+                        type="o", ngrp = length(unique(groups)))
     my.prepanel = function(x, y, ucl, subscripts, ...) {        
         xlim = range(as.numeric(x))
         del = diff(xlim)/20
-        list(xlim = xlim + c(-del,del), ylim = range(c(ucl[subscripts], 2*y[subscripts]-ucl[subscripts]), finite=TRUE))
+        list(xlim = xlim + c(-del,del), 
+             ylim = range(c(ucl[subscripts], 2*y-ucl[subscripts]), finite=TRUE))
     }
     grobj = xyplot(plotform, groups= tvar, data=lsms, ucl = lsms$upper.CL,
 #        xlim = xlim,
