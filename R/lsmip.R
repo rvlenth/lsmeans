@@ -21,10 +21,6 @@ lsmip = function(object, formula, se.bars = TRUE, ...) {
         byvars = all.vars(as.formula(paste("~", rhs[[2]])))
         plotform = as.formula(paste("lsmean ~ xvar |", paste(byvars, collapse="*")))
     }
-#    xspace = (length(levels(lsms$xvar)) - 1) / 10;
-#    xlim = c(1 - xspace, length(levels(lsms$xvar)) + xspace)
-# commented out xlim stuff bec1ause it causes numeric rather than factor scale labels
-    # the key the way I want it
     my.key = function(tvars) 
         list(space="right", 
              title = paste(tvars, collapse=" * "), 
@@ -37,10 +33,10 @@ lsmip = function(object, formula, se.bars = TRUE, ...) {
         ucl = ucl[subscripts]
         lcl = 2 * y - ucl  # = y - (ucl - y)
         col.line = list(...)$col.line
-        offset = .02*(group.number - (ngrp+1)/2)
+        offset = .00*(group.number - (ngrp+1)/2)
         panel.xyplot(x, y, subscripts=subscripts, lwd=2, cex=1.5, ...)
         panel.arrows(x+offset, lcl, x+offset, ucl, angle=90, 
-                     subscripts=subscripts, code=3, col=col.line)
+                     subscripts=subscripts, code=3, col=col.line, alpha=.10, lwd=10)
     }
     my.main.panel = function(..., groups)
         panel.superpose(..., panel.groups=my.panel, groups=groups,
@@ -48,11 +44,9 @@ lsmip = function(object, formula, se.bars = TRUE, ...) {
     my.prepanel = function(x, y, ucl, subscripts, ...) {        
         xlim = range(as.numeric(x))
         del = diff(xlim)/20
-        list(xlim = xlim + c(-del,del), 
-             ylim = range(c(ucl[subscripts], 2*y-ucl[subscripts]), finite=TRUE))
+        list(ylim = range(c(ucl[subscripts], 2*y-ucl[subscripts]), finite=TRUE))
     }
     grobj = xyplot(plotform, groups= tvar, data=lsms, ucl = lsms$upper.CL,
-#        xlim = xlim,
         xlab = paste("Levels of", paste(xvars, collapse=" * ")),
                    ylab = paste("Least-squares mean of", formula(object)[[2]]),
         strip = my.strip,
