@@ -21,11 +21,40 @@ lsmip = function(object, formula, se.bars = TRUE, ...) {
         byvars = all.vars(as.formula(paste("~", rhs[[2]])))
         plotform = as.formula(paste("lsmean ~ xvar |", paste(byvars, collapse="*")))
     }
-    grobj = xyplot(plotform, groups=~ tvar, type="o", data=lsms,
+#    xspace = (length(levels(lsms$xvar)) - 1) / 10;
+#    xlim = c(1 - xspace, length(levels(lsms$xvar)) + xspace)
+# commented out xlim stuff bec1ause it causes numeric rather than factor scale labels
+    # the key the way I want it
+    my.key = function(tvars) 
+        list(space="right", 
+             title = paste(tvars, collapse=" * "), 
+             cex.title=1)
+    # The strips the way I want them
+    my.strip = function(...)
+        strip.default(..., strip.names = c(TRUE,TRUE), sep = " = ")
+    # My panel function
+    my.panel = function(x, y, subscripts, ucl, lwd, cex, ...) {
+        ucl = ucl[subscripts]
+        lcl = 2 * y - ucl  # = y - (ucl - y)
+        col.line = list(...)$col.line
+        panel.xyplot(x, y, subscripts=subscripts, lwd=2, cex=1.5, ...)
+        panel.arrows(x0=x,y0=lcl, x1=x,y1=ucl, angle=90, 
+                     subscripts=subscripts, code=3, col=col.line)
+    }
+    my.main.panel = function(...) 
+        panel.superpose(..., panel.groups=my.panel, type="o")
+    my.prepanel = function(x, y, ucl, subscripts, ...) {        
+        xlim = range(as.numeric(x))
+        del = diff(xlim)/20
+        list(xlim = xlim + c(-del,del), ylim = range(c(ucl[subscripts], 2*y[subscripts]-ucl[subscripts]), finite=TRUE))
+    }
+    grobj = xyplot(plotform, groups= tvar, data=lsms, ucl = lsms$upper.CL,
+#        xlim = xlim,
         xlab = paste("Levels of", paste(xvars, collapse=" * ")),
                    ylab = paste("Least-squares mean of", formula(object)[[2]]),
-        auto.key = list(space="right", 
-            title = paste(tvars,collapse=" * "), cex.title=1)
+        strip = my.strip,
+        auto.key = my.key(tvars),
+        panel = my.main.panel, prepanel = my.prepanel
     )
     print(grobj)
     invisible(lsms)
