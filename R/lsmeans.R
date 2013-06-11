@@ -1,3 +1,8 @@
+# NOTE: installing gitHub version of lme4
+# install.packages("devtools")
+# library("devtools")
+# install_github("lme4", user = "lme4")
+
 lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.adjust.methods), conf = .95, 
                    at, trend, contr=list(), 
                    cov.reduce = function(x, name) mean(x), 
@@ -63,6 +68,16 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
             }
             else warning("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
         }
+    }
+    else if (inherits(object, "lmerMod")) {
+        thecall = slot(object, "call")
+        bhat = fixef(object)
+        contrasts = attr(model.matrix(object), "contrasts")
+        if (require("pbkrtest")) {
+            adjV = vcovAdj(object, 0)
+            ddfm = function(k, se) .KRdf.mer (adjV, V, k, se*se)
+        }
+        else warning("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
     }
     else if (inherits(object, "lme")) {
         thecall = object$call

@@ -34,9 +34,9 @@ lsmip = function(object, formula, se.bars = TRUE, ...) {
         lcl = 2 * y - ucl  # = y - (ucl - y)
         col.line = list(...)$col.line
         offset = .00*(group.number - (ngrp+1)/2)
-        panel.xyplot(x, y, subscripts=subscripts, lwd=2, cex=1.5, ...)
         panel.arrows(x+offset, lcl, x+offset, ucl, angle=90, 
                      subscripts=subscripts, code=3, col=col.line, alpha=.10, lwd=10)
+        panel.xyplot(x, y, subscripts=subscripts, lwd=2, cex=1.5, ...)
     }
     my.main.panel = function(..., groups)
         panel.superpose(..., panel.groups=my.panel, groups=groups,
