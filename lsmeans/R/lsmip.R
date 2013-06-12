@@ -2,7 +2,7 @@
 
 # object - a model object supported by lsmeans
 # formula - a formula of the form  x.factors ~ trace.factors | panel.factors
-lsmip = function(object, formula, pch=c(1,2,5,6,7,9,10,15:20), lty=1, ...) {
+lsmip = function(object, formula, pch=c(1,2,6,7,9,10,15:20), lty=1, col=NULL, ...) {
     if (!require("lattice"))
         stop("This function requires the 'lattice' package be installed.")
     if (length(formula) < 3)
@@ -24,7 +24,8 @@ lsmip = function(object, formula, pch=c(1,2,5,6,7,9,10,15:20), lty=1, ...) {
     my.key = function(tvars) 
         list(space="right", 
              title = paste(tvars, collapse=" * "), 
-             points = TRUE, lines=TRUE,
+             points = TRUE, 
+             lines=length(lty) > 1,
              cex.title=1)
     # The strips the way I want them
     my.strip = function(...)
@@ -32,6 +33,7 @@ lsmip = function(object, formula, pch=c(1,2,5,6,7,9,10,15:20), lty=1, ...) {
     TP = TP.orig = trellis.par.get()
     TP$superpose.symbol$pch = pch
     TP$superpose.line$lty = lty
+    if (!is.null(col)) TP$superpose.symbol$col = TP$superpose.line$col = col
     trellis.par.set(TP)
     grobj = xyplot(plotform, groups= tvar, data=lsms, 
         xlab = paste("Levels of", paste(xvars, collapse=" * ")),
