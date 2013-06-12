@@ -2,7 +2,7 @@
 
 # object - a model object supported by lsmeans
 # formula - a formula of the form  x.factors ~ trace.factors | panel.factors
-lsmip = function(object, formula, se.bars = TRUE, ...) {
+lsmip = function(object, formula, pch=c(1,2,5,6,7,9,10,15:20), lty=1, ...) {
     if (!require("lattice"))
         stop("This function requires the 'lattice' package be installed.")
     if (length(formula) < 3)
@@ -24,35 +24,21 @@ lsmip = function(object, formula, se.bars = TRUE, ...) {
     my.key = function(tvars) 
         list(space="right", 
              title = paste(tvars, collapse=" * "), 
+             points = TRUE, lines=TRUE,
              cex.title=1)
     # The strips the way I want them
     my.strip = function(...)
         strip.default(..., strip.names = c(TRUE,TRUE), sep = " = ")
-    # My panel function
-    my.panel = function(x, y, subscripts, ucl, lwd, cex, ngrp, group.number, ...) {
-        ucl = ucl[subscripts]
-        lcl = 2 * y - ucl  # = y - (ucl - y)
-        col.line = list(...)$col.line
-        offset = .00*(group.number - (ngrp+1)/2)
-        panel.arrows(x+offset, lcl, x+offset, ucl, angle=90, 
-                     subscripts=subscripts, code=3, col=col.line, alpha=.10, lwd=10)
-        panel.xyplot(x, y, subscripts=subscripts, lwd=2, cex=1.5, ...)
-    }
-    my.main.panel = function(..., groups)
-        panel.superpose(..., panel.groups=my.panel, groups=groups,
-                        type="o", ngrp = length(unique(groups)))
-    my.prepanel = function(x, y, ucl, subscripts, ...) {        
-        xlim = range(as.numeric(x))
-        del = diff(xlim)/20
-        list(ylim = range(c(ucl[subscripts], 2*y-ucl[subscripts]), finite=TRUE))
-    }
-    grobj = xyplot(plotform, groups= tvar, data=lsms, ucl = lsms$upper.CL,
+    TP = TP.orig = trellis.par.get()
+    TP$superpose.symbol$pch = pch
+    TP$superpose.line$lty = lty
+    trellis.par.set(TP)
+    grobj = xyplot(plotform, groups= tvar, data=lsms, 
         xlab = paste("Levels of", paste(xvars, collapse=" * ")),
                    ylab = paste("Least-squares mean of", formula(object)[[2]]),
         strip = my.strip,
-        auto.key = my.key(tvars),
-        panel = my.main.panel, prepanel = my.prepanel
-    )
+        auto.key = my.key(tvars), type=c("p","l"), ... )
     print(grobj)
+    trellis.par.set(TP.orig)
     invisible(lsms)
 }
