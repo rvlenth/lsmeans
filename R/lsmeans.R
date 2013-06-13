@@ -52,24 +52,9 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     ddfm = adjV = NULL
     
 # Figure out thecall (fixed effects part of model), bhat (=coefs), contrasts attr
-    if (inherits(object, "mer")) {
-        if(dim(object@V)[1] > 0) ### gradient matrix is nontrivial only for nonlinear models
-            stop("Can't handle an 'nlmer' model")
-        thecall = slot(object, "call")
-        bhat = fixef(object)
-        contrasts = attr(model.matrix(object), "contrasts")
-        if (length(object@muEta) == 0) { # no glm's allowed...
-    ### Would really rather use below instead, but pbkrtest won't cooperate w/ any glm right now
-    ###   fam = object@call$family
-    ###   if (!is.null(fam) && !(fam %in% c("binomial", "poisson")))
-            if (require("pbkrtest")) {
-                adjV = vcovAdj(object, 0)
-                ddfm = function(k, se) .KRdf.mer (adjV, V, k, se*se)
-            }
-            else warning("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
-        }
-    }
-    else if (inherits(object, "lmerMod")) {
+    if (inherits(object, "mer") || inherits(object, "merMod")) {
+        if(!isLMM(object)) 
+            stop("Can't handle a nonlinear mixed model")
         thecall = slot(object, "call")
         bhat = fixef(object)
         contrasts = attr(model.matrix(object), "contrasts")
@@ -355,12 +340,13 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
         }
     
     ##### Compute adjusted p value
+    # I added zapsmall in ptukey call, seems to help with its flaky behavior
         adj.p.value = function(t, df, meth, fam.size, n.contr) {
             abst = abs(t)
             if (meth <= 4)
                 switch(meth,
                        NA,                                                     # should not happen
-                       ptukey(sqrt(2)*abst, fam.size, df, lower.tail=FALSE),   # tukey
+                       ptukey(sqrt(2)*abst, fam.size, zapsmall(df), lower.tail=FALSE),   # tukey
                        1 - (1 - 2*pt(abst, df, lower.tail=FALSE))^n.contr,     # sidak
                        pf(t^2/(fam.size-1), fam.size-1, df, lower.tail=FALSE)  # scheffe
                 )
