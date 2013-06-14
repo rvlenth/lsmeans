@@ -1,13 +1,15 @@
 Changelog for 'lsmeans' package
 
-1.07-00 
+1.10-00 
     Added contrast families for effects and "deleted effects"
     Added "scheffe" option for 'adjust' argument
-    Added support for lmerMod objects (gitHub version of lme4)
     Added lsmip function (interaction plots)
     Fixed Tukey-adjusted P values for d.f. near 2. 
         (Note: ptukey does not work when there are less than 2 d.f.)
   YET TODO: Support lsmeans for non-factors
+
+1.06-06 - June 13, 2013
+    Added support for lmerMod objects (gitHub version of lme4)
 
 1.06-05 - February 13, 2013
     Fixed a bug whereby unused levels of factors can create havoc.
