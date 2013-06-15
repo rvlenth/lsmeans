@@ -29,7 +29,7 @@ The colors to use for each group, recycled as needed. If not specified,
 the default trellis colors are used.
 }
   \item{\dots}{
-Additional parameters passed to \code{\ref[lattice]{xyplot}}.
+Additional parameters passed to \code{\link[lattice]{xyplot}}.
 }
 }
 \details{
@@ -42,7 +42,7 @@ If \code{object} is a fitted model, \code{\link{lsmeans}} is called with an appr
 Russell V. Lenth, The University of Iowa
 }
 \note{
-This function uses the \code{\ref[lattice]{xyplot}} function in the \code{lattice} package (an error is returned if \code{lattice} is not installed). Conceptually, it is equivalent to \code{\ref{interaction.plot}} where the summarization function is the least-squares means.
+This function uses the \code{\link[lattice]{xyplot}} function in the \code{lattice} package (an error is returned if \code{lattice} is not installed). Conceptually, it is equivalent to \code{\link{interaction.plot}} where the summarization function is the least-squares means.
 }
 
 \seealso{
@@ -79,5 +79,5 @@ options(op)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ models }
+\keyword{ regression }
