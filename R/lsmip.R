@@ -8,14 +8,33 @@ lsmip = function(object, formula, pch=c(1,2,6,7,9,10,15:20), lty=1, col=NULL, ..
     if (length(formula) < 3)
         stop("'formula' must be two-sided, e.g. trace.factor ~ x.factor")
     ylab = "Least-squares mean"
+    
+# Glean the parts of ... to use in lsmeans call
+    # arguments allowed to be passed
+    lsa.allowed = c("at","trend","cov.reduce","fac.reduce")
+    xargs = list(...)
+    lsmopts = list()
+    for (arg in names(xargs)) {
+        idx = pmatch(arg, lsa.allowed)
+        if (!is.na(idx)) {
+            lsmopts[[lsa.allowed[idx]]] = xargs[[arg]]
+        }
+    }
+    
+# Get the lsmeans - either from an existing lsm object...    
     if (inherits(object,"lsm"))
         lsms = object[[1]]
+    
+# ... or from a model        
     else {
         allvars = all.vars(formula)
-        form = as.formula(paste("~", paste(allvars, collapse = "+")))
-        lsms = lsmeans(object, form)[[1]]
+        lsmopts$object = object
+        lsmopts$specs = as.formula(paste("~", paste(allvars, collapse = "+")))
+        lsms = do.call("lsmeans", lsmopts) [[1]]
         ylab = paste(ylab, "of", formula(object)[[2]])
     }
+    
+    
     tvars = all.vars(formula[[2]])
     lsms$tvar = factor(do.call(paste, lsms[tvars]))
     rhs = strsplit(as.character(formula[3]), "\\|")[[1]]

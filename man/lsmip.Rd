@@ -29,11 +29,12 @@ The colors to use for each group, recycled as needed. If not specified,
 the default trellis colors are used.
 }
   \item{\dots}{
-Additional parameters passed to \code{\link[lattice]{xyplot}}.
+Additional arguments passed to \code{\link{lsmeans}} or to \code{\link[lattice]{xyplot}}. 
 }
 }
 \details{
-If \code{object} is a fitted model, \code{\link{lsmeans}} is called with an appropriate specification to obtain least-squares means for each combination of the factors present in \code{formula}. Otherwise, if \code{object} is an \code{lsm} object, its first element is used, and it must contain one \code{lsmean} value for each combination of the factors present in \code{formula}.
+If \code{object} is a fitted model, \code{\link{lsmeans}} is called with an appropriate specification to obtain least-squares means for each combination of the factors present in \code{formula} (in addition, any arguments in \code{\dots} that match \code{at}, \code{trend}, \code{cov.reduce}, or \code{fac.reduce} are passed to \code{lsmeans}).
+Otherwise, if \code{object} is an \code{lsm} object, its first element is used, and it must contain one \code{lsmean} value for each combination of the factors present in \code{formula}.
 }
 \value{
 (Invisibly), the table of least-squares means that were plotted.
