@@ -1,8 +1,4 @@
 # NOTE: installing gitHub version of lme4
-# install.packages("devtools")
-# library("devtools")
-# install_github("lme4", user = "lme4")
-
 lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.adjust.methods), conf = .95, 
                    at, trend, contr=list(), 
                    cov.reduce = function(x, name) mean(x), 
@@ -22,6 +18,12 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
         else {
             if (!is.null(glhargs$df)) glhargs$df = as.integer(max(1, .2 + glhargs$df))
         }
+    }
+    
+# added 6-18-2013 - allow cov.reduce to be logical
+    if (is.logical(cov.reduce)) {
+        if (cov.reduce) cov.reduce = function(x, name) mean(x)
+        else cov.reduce = function(x, name) unique(x)
     }
     
     # for later use
@@ -121,6 +123,9 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
 # Figure out if any are coerced to factor or ordered
     anm = all.names(formrhs)    
     coerced = anm[1 + grep("factor|ordered", anm)]
+    
+# Covariates specified with multiple 'at' values    
+    mult.covar = character(0)
    
 # Obtain a simplified formula -- needed to recover the data in the model    
     form = as.formula(paste("~", paste(nm, collapse = "+")))
@@ -166,6 +171,10 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
                     baselevs[[xname]] = at[[xname]]
                 else 
                     baselevs[[xname]] = cov.reduce(obj, xname)
+            # Keep track of covariates with more than one level
+                if (length(baselevs[[xname]]) > 1)
+                    mult.covar = c(mult.covar, xname)
+                
             }
         }
     }
@@ -254,7 +263,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     if (length(coerced) > 0) grid = do.call("expand.grid", baselevs)
     
     # All factors (excluding covariates)
-    allFacs = c(names(xlev), coerced)
+    allFacs = c(names(xlev), coerced, mult.covar)
     
     
     
@@ -309,13 +318,14 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
         levs = list()
         for (f in facs) levs[[f]] = baselevs[[f]]
         combs = do.call("expand.grid", levs)
-        
         # For each comb, find the needed lin. comb. of bhat to estimate
         # (These will end up being the COLUMNS of K)
         K = apply(combs, 1, function(lev) {
             matches = apply(grid, 1, function(row) {
-                #### DEL if (is.numeric(lev)) all(abs(as.numeric(row[facs]) - lev) < .001)  else 
-                all(row[facs] == lev)
+                if (is.numeric(lev)) 
+                    all(zapsmall(as.numeric(row[facs]) - lev) == 0) 
+                else
+                    all(row[facs] == lev)
             })
             nmat = sum(matches)
             if (nmat == 0) stop(paste("Can't predict at level", lev, "of", "facs.lbl"))

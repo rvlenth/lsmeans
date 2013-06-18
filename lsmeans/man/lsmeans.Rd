@@ -29,9 +29,11 @@ A \code{lm}, \code{aov} (with no \code{Error} component), \code{glm}, \code{lme}
 }
   \item{specs}{
 A formula, or a list of formulas, specifying the desired families of least-squares means.
-The right-hand side of each formula specifies the desired factor levels. The optional left-hand side specifies
+The right-hand side of each formula specifies the desired factors whose levels delineate the desired least-squares means. The optional left-hand side specifies
 what kind of comparisons or contrasts are desired. For example, \code{~ treatment} requests least-squares means for each level of \code{treatment}, and \code{pairwise ~ treatments} requests those results, plus pairwise comparisons among them.
 As another example, in a three-factor model, \code{trt.vs.ctrl1 ~ A | B:C} requests least-squares means for all combinations of factors \code{A}, \code{B}, and \code{C}, as well as treatment-minus-control comparisons of \code{A} for each combination of \code{B} and \code{C}, where the first level of \code{A} is considered the control level.
+
+Covariates (numeric predictors) may also be named in the right-hand side, but only if they are also included in \code{at} or if \code{cov.reduce} produces more than one value.
 }
   \item{adjust}{
 Adjustment method for the p values of tests of contrasts.
@@ -48,7 +50,7 @@ greatly within the family of comparisons. For more accurate adjustments, use \co
 Desired confidence level for intervals. For robustness, you may specify either a fraction or a percentage; i.e., \code{.975} and \code{97.5} yield the same results.
 }
   \item{at}{
-An optional named list or named vector of covariate values at which predictions are computed (give only one value for each covariate). If no value is found in \code{at} for a particular covariate, then \code{cov.reduce} is called.
+An optional named list or named vector of covariate values or factor levels at which predictions are computed (give only one value for each covariate). If no value is found in \code{at} for a particular covariate, then \code{cov.reduce} is called. 
 }
   \item{trend}{
 If non-missing and \code{trend} is the name of a numeric predictor or a term in \code{object}'s model,
@@ -59,7 +61,9 @@ regression coefficients are averaged using \code{fac.reduce}, just as with least
 An optional named \code{list}. Each entry is itself a \code{list} or a \code{data.frame} specifying contrast coefficients. If the left-hand side of a formula in \code{specs} matches a name in \code{contr}, then those contrasts are estimated with the specified least-squares means. An error will result if the length or one or more contrast vectors mismatches the number of levels of the factor or factor combination. Actually, it is not necessary that they be contrasts; one may use this argument to estimate arbitrary linear combinations of the least-squares means.
 }
   \item{cov.reduce}{
-A function with arguments \code{x} and \code{name} that should return the value to use in prediction for the covariate with name \code{name} and values \code{x}. By default, the mean is used. The \code{name} argument may help distinguish one covariate from another.
+A logical value, or a function with arguments \code{x} and \code{name} that should return the value to use in prediction for the covariate with name \code{name} and values \code{x}. By default, the mean is used. The \code{name} argument may help distinguish one covariate from another. 
+
+If \code{cov.reduce} is logical, a value of \code{TRUE} is the same as the default, and a value of \code{FALSE} calls \code{\link{unique}} for each covariate (be careful using this if covariates have more than a few levels).
 }
   \item{fac.reduce}{
 A function of \code{coefs} and \code{lev} where \code{lev} is the level of a factor or factor combination at which a least-squares mean is calculated.
@@ -92,6 +96,8 @@ over those factors and variables. For example, if the fitted model has formula \
 where \code{a1} and \code{x2} are numeric and \code{treat} is a factor, the least-squares means will be the predicted response for each treatment, at some specified values of \code{x1} and \code{x2}. By default, the means of the two covariates will be used, resulting in what ANOVA textbooks often call the adjusted means. We may use that \code{at} argument to instead make predictions at other values of \code{x1} and \code{x2}.
 
 Now consider the model \code{response ~ A + B + A:B}, where \code{A} and \code{B} are both factors. If we ask for least-squares means for \code{A}, then at each level of \code{A} we are faced with a different prediction for each level of \code{B}. Blind (and default) use of least-squares means would result in these predictions being averaged together with equal weight, and this may be inappropriate, especially when the interaction effect is strong. (A warning is generated in such potentially inappropriate cases.) Like most statistical calculations, it is possible to use least-squares means inappropriately. The \code{fac.reduce} argument at least expands one's options in producing meaningful results in multi-factor situations. 
+
+If you give multiple values for a covariate in \code{at} or as a result of \code{cov.reduce}, the covariate is treated just like a factor, in that predictions are made at each combination of its values with other factors and multi-valued covariates, and averaged as appropriate using \code{fac.reduce}. (This differs from what SAS does with non-unique \code{at} values.) If you want to see separate predictions for each value, include the covariate in \code{specs}.
 
 One other note concerning covariates: One must be careful with covariates that depend on one another. For example, if a model contains covariates \code{x} and \code{xsq} where \code{xsq = x^2}, the default behavior will make predictions at \code{x = mean(x)} and \code{xsq = mean(xsq)}, which probably isn't a valid combination (we need \code{x = mean(x)} and \code{xsq = mean(x)^2}). The inconsistency is avoided if the model specifis \code{poly(x,2)} (or even \code{x + I(x^2)}) instead of \code{x + xsq}, because then only \code{x} is averaged, and everything remains consistent.
 
@@ -168,11 +174,29 @@ Oats.lme <- lme(yield ~ factor(nitro) + Variety, random = ~1 | Block/Variety,
     subset = -c(1,2,3,5,8,13,21,34,55), data=Oats)
 lsmeans(Oats.lme, list(poly ~ nitro, pairwise ~ Variety))
 
-# Compare with lmer result (if pbkrtest installed, provides df, bias-adjusted SEs)
-if (require(pbkrtest)) {
-  require(lme4)
-  Oats.lmer <- lmer(yield ~ factor(nitro) + Variety + (1 | Block/Variety), 
+# Model with a quadratic trend for 'nitro'
+Oatsq.lme <- update(Oats.lme, . ~ nitro + I(nitro^2) + Variety)
+
+# Predictions at each unique 'nitro' value in the dataset
+lsmeans(Oatsq.lme, ~ nitro, cov.reduce = FALSE)
+
+# lsmeans for 'Variety' at the average 'nitro' value.
+lsmeans(Oatsq.lme, ~ Variety)
+# These differ quite a bit from those obtained from 'Oats.lme', because each
+# is a single prediction rather than the average of 4 predictions
+
+# lsmeans for 'Variety', using the four unique 'nitro' values
+lsmeans(Oatsq.lme, ~ Variety, cov.reduce = FALSE)
+# These are pretty close to those from 'Oats.lme' because both are based
+# on averaging predictions for the 12 
+
+
+# Compare with lmer result 
+require(lme4)
+Oats.lmer <- lmer(yield ~ factor(nitro) + Variety + (1 | Block/Variety), 
                    subset = -c(1,2,3,5,8,13,21,34,55), data=Oats)
+# If pbkrtest installed, provides df, bias-adjusted SEs
+if (require(pbkrtest)) {
   lsmeans(Oats.lmer, list(poly ~ nitro, pairwise ~ Variety))
 }
 
