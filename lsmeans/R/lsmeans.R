@@ -23,7 +23,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
 # added 6-18-2013 - allow cov.reduce to be logical
     if (is.logical(cov.reduce)) {
         if (cov.reduce) cov.reduce = function(x, name) mean(x)
-        else cov.reduce = function(x, name) unique(x)
+        else cov.reduce = function(x, name) sort(unique(x))
     }
     
     # for later use
@@ -55,16 +55,18 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     
 # Figure out thecall (fixed effects part of model), bhat (=coefs), contrasts attr
     if (inherits(object, "mer") || inherits(object, "merMod")) {
-        if(!isLMM(object)) 
+        if(!isLMM(object) && !isGLMM(object)) 
             stop("Can't handle a nonlinear mixed model")
         thecall = slot(object, "call")
         bhat = fixef(object)
         contrasts = attr(model.matrix(object), "contrasts")
-        if (require("pbkrtest")) {
-            adjV = vcovAdj(object, 0)
-            ddfm = function(k, se) .KRdf.mer (adjV, V, k, se*se)
+        if (isLMM(object)) {
+            if (require("pbkrtest")) {
+                adjV = vcovAdj(object, 0)
+                ddfm = function(k, se) .KRdf.mer (adjV, V, k, se*se)
+            }
+            else warning("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
         }
-        else warning("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
     }
     else if (inherits(object, "lme")) {
         thecall = object$call
@@ -125,7 +127,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     coerced = anm[1 + grep("factor|ordered", anm)]
     
 # Covariates specified with multiple 'at' values    
-    mult.covar = character(0)
+    # mult.covar = character(0)
    
 # Obtain a simplified formula -- needed to recover the data in the model    
     form = as.formula(paste("~", paste(nm, collapse = "+")))
@@ -146,8 +148,10 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     if (is.character(specs)) specs = as.list(specs)
     # allow a single formula
     if (!is.list(specs)) specs = list(specs)
+    
+    all.var.names = names(X)
  
-    for (xname in names(X)) {
+    for (xname in all.var.names) {
         obj = X[[xname]]
         if (is.factor(obj)) {            
             xlev[[xname]] = levels(obj)
@@ -172,8 +176,8 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
                 else 
                     baselevs[[xname]] = cov.reduce(obj, xname)
             # Keep track of covariates with more than one level
-                if (length(baselevs[[xname]]) > 1)
-                    mult.covar = c(mult.covar, xname)
+            #    if (length(baselevs[[xname]]) > 1)
+            #        mult.covar = c(mult.covar, xname)
                 
             }
         }
@@ -263,7 +267,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     if (length(coerced) > 0) grid = do.call("expand.grid", baselevs)
     
     # All factors (excluding covariates)
-    allFacs = c(names(xlev), coerced, mult.covar)
+    allFacs = all.var.names ###c(names(xlev), coerced, mult.covar)
     
     
     
