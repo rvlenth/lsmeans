@@ -6,7 +6,9 @@ Changelog for 'lsmeans' package
     Added lsmip function (interaction plots)
     Fixed Tukey-adjusted P values for d.f. near 2. 
         (Note: ptukey does not work when there are less than 2 d.f.)
-    Allow covariates in 'specs' formula (when also having more than 1 value)
+    Allow covariates in 'specs' formula (also allows covariates to
+        have multiple levels and be part of the reference grid that
+        is averaged over in determining LS means)
     Allow cov.reduce to be logical - mostly to implement a 'unique' option
     No d.f. or adjusted covariance matrix for GLMMs (questionable validity, 
         plus pbkrtest won't play along)
