@@ -98,6 +98,13 @@ lsmeans(badpen.lm, list(~ treat, ~ blend))
 \end{Rcode}
 
 \subsection{Default reference levels}
+The default in the "lsmeans" function (as well as the behavior of SAS) is to set the reference levels as follows:
+\begin{description}
+\item[Factors] For predictors of class "factor" or "ordered", the default reference levels are the levels of the factor.
+\item[Covariates] For numeric predictors, the default is to use a single reference level at the mean value of the predictor.
+\end{description}
+
+
 
 
 \section{Analysis-of-covariance example}
