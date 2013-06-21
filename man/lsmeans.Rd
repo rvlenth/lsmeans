@@ -29,11 +29,9 @@ A \code{lm}, \code{aov} (with no \code{Error} component), \code{glm}, \code{lme}
 }
   \item{specs}{
 A formula, or a list of formulas, specifying the desired families of least-squares means.
-The right-hand side of each formula specifies the desired factors whose levels delineate the desired least-squares means. The optional left-hand side specifies
+The right-hand side of each formula specifies the desired predictors for which we want least-squares means. The optional left-hand side specifies
 what kind of comparisons or contrasts are desired. For example, \code{~ treatment} requests least-squares means for each level of \code{treatment}, and \code{pairwise ~ treatments} requests those results, plus pairwise comparisons among them.
 As another example, in a three-factor model, \code{trt.vs.ctrl1 ~ A | B:C} requests least-squares means for all combinations of factors \code{A}, \code{B}, and \code{C}, as well as treatment-minus-control comparisons of \code{A} for each combination of \code{B} and \code{C}, where the first level of \code{A} is considered the control level.
-
-Covariates (numeric predictors) may also be named in the right-hand side, but only if they are also included in \code{at} or if \code{cov.reduce} produces more than one value.
 }
   \item{adjust}{
 Adjustment method for the p values of tests of contrasts.
@@ -50,7 +48,7 @@ greatly within the family of comparisons. For more accurate adjustments, use \co
 Desired confidence level for intervals. For robustness, you may specify either a fraction or a percentage; i.e., \code{.975} and \code{97.5} yield the same results.
 }
   \item{at}{
-An optional named list or named vector of covariate values or factor levels at which predictions are computed (give only one value for each covariate). If no value is found in \code{at} for a particular covariate, then \code{cov.reduce} is called. 
+An optional named list or named vector of predictor values for the reference grid. If no value is found in \code{at} for a particular predictor, then if it is a factor, all its levels are used, and if a covariate, we use the results of \code{cov.reduce}.  
 }
   \item{trend}{
 If non-missing and \code{trend} is the name of a numeric predictor or a term in \code{object}'s model,
@@ -97,7 +95,7 @@ where \code{a1} and \code{x2} are numeric and \code{treat} is a factor, the leas
 
 Now consider the model \code{response ~ A + B + A:B}, where \code{A} and \code{B} are both factors. If we ask for least-squares means for \code{A}, then at each level of \code{A} we are faced with a different prediction for each level of \code{B}. Blind (and default) use of least-squares means would result in these predictions being averaged together with equal weight, and this may be inappropriate, especially when the interaction effect is strong. (A warning is generated in such potentially inappropriate cases.) Like most statistical calculations, it is possible to use least-squares means inappropriately. The \code{fac.reduce} argument at least expands one's options in producing meaningful results in multi-factor situations. 
 
-If you give multiple values for a covariate in \code{at} or as a result of \code{cov.reduce}, the covariate is treated just like a factor, in that predictions are made at each combination of its values with other factors and multi-valued covariates, and averaged as appropriate using \code{fac.reduce}. (This differs from what SAS does with non-unique \code{at} values.) If you want to see separate predictions for each value, include the covariate in \code{specs}.
+If you give multiple values for a covariate in \code{at} or as a result of \code{cov.reduce}, the covariate is treated just like a factor, in that predictions are made at each combination of its values with other factors and multi-valued covariates, and averaged as appropriate using \code{fac.reduce}. If you want to see separate predictions for each value, include the covariate in \code{specs}. (This differs from what SAS does with non-unique \code{at} values.) 
 
 One other note concerning covariates: One must be careful with covariates that depend on one another. For example, if a model contains covariates \code{x} and \code{xsq} where \code{xsq = x^2}, the default behavior will make predictions at \code{x = mean(x)} and \code{xsq = mean(xsq)}, which probably isn't a valid combination (we need \code{x = mean(x)} and \code{xsq = mean(x)^2}). The inconsistency is avoided if the model specifis \code{poly(x,2)} (or even \code{x + I(x^2)}) instead of \code{x + xsq}, because then only \code{x} is averaged, and everything remains consistent.
 

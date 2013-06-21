@@ -1,4 +1,3 @@
-# NOTE: installing gitHub version of lme4
 lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.adjust.methods), conf = .95, 
                    at, trend, contr=list(), 
                    cov.reduce = function(x, name) mean(x), 
@@ -126,9 +125,6 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     anm = all.names(formrhs)    
     coerced = anm[1 + grep("factor|ordered", anm)]
     
-# Covariates specified with multiple 'at' values    
-    # mult.covar = character(0)
-   
 # Obtain a simplified formula -- needed to recover the data in the model    
     form = as.formula(paste("~", paste(nm, collapse = "+")))
     envir = attr(Terms, ".Environment")
@@ -218,10 +214,11 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     # It turns out that numerics coerced to factors are a real pain in the butt when it comes
     # to matching levels. Life will be simpler if we turn them into factors in the X matrix 
     # and update the base levels accordingly with the same labels
-    for (var in coerced) {
-        X[[var]] = factor(X[[var]])
-        baselevs[[var]] = levels(X[[var]])
-    }
+    # Version 1.10 - I don't think I need this anymore with new matching routine
+#     for (var in coerced) {
+#         X[[var]] = factor(X[[var]])
+#         baselevs[[var]] = levels(X[[var]])
+#     }
 
     # Now make a new dataset with just the factor combs and covariate values we want for prediction
     # WARNING -- This will overwrite X, so get anything you need from X BEFORE we get here
@@ -267,7 +264,8 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     if (length(coerced) > 0) grid = do.call("expand.grid", baselevs)
     
     # All factors (excluding covariates)
-    allFacs = all.var.names ###c(names(xlev), coerced, mult.covar)
+    # version 1.10 - no longer excluding covariates
+    allFacs = all.var.names
     
     
     
@@ -318,23 +316,33 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
         b = strsplit(as.character(form[2]), "\\|")[[1]]
         if (length(b) > 1) byfacs = all.vars(as.formula(paste("~",b[2])))
         
+        
         # create the grid of factor combinations
         levs = list()
         for (f in facs) levs[[f]] = baselevs[[f]]
         combs = do.call("expand.grid", levs)
-        # For each comb, find the needed lin. comb. of bhat to estimate
-        # (These will end up being the COLUMNS of K)
-        K = apply(combs, 1, function(lev) {
-            matches = apply(grid, 1, function(row) {
-                if (is.numeric(lev)) 
-                    all(zapsmall(as.numeric(row[facs]) - lev) == 0) 
-                else
-                    all(row[facs] == lev)
-            })
-            nmat = sum(matches)
-            if (nmat == 0) stop(paste("Can't predict at level", lev, "of", "facs.lbl"))
-            else fac.reduce(X[matches, , drop=FALSE], lev)
+        
+### Version 1.10 New more elegant way of matching...
+        subgrid = do.call(paste, grid[, facs, drop=FALSE])
+        grid.idx = as.numeric(factor(subgrid), levels=unique(subgrid))
+        K = sapply(unique(grid.idx), function(idx) {
+            matches = which(grid.idx == idx)
+            fac.reduce(X[matches, , drop=FALSE], subgrid[matches[1]])
         })
+#--- replaces code below...
+#         # For each comb, find the needed lin. comb. of bhat to estimate
+#         # (These will end up being the COLUMNS of K)
+#         K = apply(combs, 1, function(lev) {
+#             matches = apply(grid, 1, function(row) {
+#                 if (is.numeric(lev)) 
+#                     all(zapsmall(as.numeric(row[facs]) - lev) == 0) 
+#                 else
+#                     all(row[facs] == lev)
+#             })
+#             nmat = sum(matches)
+#             if (nmat == 0) stop(paste("Can't predict at level", lev, "of", "facs.lbl"))
+#             else fac.reduce(X[matches, , drop=FALSE], lev)
+#         })
         rnames = dimnames(K)[[2]] = apply(combs, 1, paste, collapse=", ")
         
     #### Here is the fcn I'll call to table an estimate of k'beta
