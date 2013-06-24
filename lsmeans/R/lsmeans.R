@@ -1,3 +1,7 @@
+# TO DO: 
+#  1. Check dims of contrasts - DONE
+#  2. Check interactions w/ covariates
+
 lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.adjust.methods), conf = .95, 
                    at, trend, contr=list(), 
                    cov.reduce = function(x, name) mean(x), 
@@ -214,7 +218,8 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     # It turns out that numerics coerced to factors are a real pain in the butt when it comes
     # to matching levels. Life will be simpler if we turn them into factors in the X matrix 
     # and update the base levels accordingly with the same labels
-    # Version 1.10 - I don't think I need this anymore with new matching routine
+    #
+    #--- Version 1.10 - I don't think I need this anymore with new matching routine
 #     for (var in coerced) {
 #         X[[var]] = factor(X[[var]])
 #         baselevs[[var]] = levels(X[[var]])
@@ -440,7 +445,8 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
             
             # list to hold results
             Clist = list()
-            zer = rep(0, ncol(K)) #### replaced nrow(lsms)) when lf arg added 
+            numcols = ncol(K)
+            zer = rep(0, numcols) #### replaced nrow(lsms)) when lf arg added 
             
             # OK, let's go thru the bylist
             nby = length(bylist)
@@ -450,7 +456,11 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
                     else confcn(rnames[rows] , ...)
                 if (is.null(cl)) stop(paste("Unknown contrast family:", method))
                 clx = lapply(cl, function(cc) {
-                    ccc = zer; ccc[rows]=cc; ccc
+                    if(length(cc) != numcols)
+                        stop(paste("Wrong number of contrast coefficients in '", method, "'", sep=""))
+                    ccc = zer; 
+                    ccc[rows]=cc; 
+                    ccc
                 })
                 if (nby > 1) names(clx) = paste(names(clx), "|", bylabs[i])
                 
@@ -491,8 +501,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
                 adjattr = attr(cl, "adjust")
                 if (autoadj) adj = ifelse(is.null(adjattr), no.adj, pmatch(adjattr, adjtbl))
                 if (is.na(adj)) adj = no.adj
-                
-                ctbl = as.data.frame(t(sapply(Clist, function(con) {
+                ctbl = as.data.frame(t(sapply(Clist, function(con) {                    
                     nz = which(abs(con) > .0001)
                     k = K[ , nz] %*% con[nz]
                     do.est(k)
