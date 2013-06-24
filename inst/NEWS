@@ -12,6 +12,7 @@ Changelog for 'lsmeans' package
     Allow cov.reduce to be logical - mostly to implement a 'unique' option
     No d.f. or adjusted covariance matrix for GLMMs (questionable validity, 
         plus pbkrtest won't play along)
+    Now checks lengths of contrast coef's for conformity
 
 1.06-06 - June 13, 2013
     Added support for lmerMod objects (gitHub version of lme4)
