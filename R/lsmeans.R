@@ -1,7 +1,3 @@
-# TO DO: 
-#  1. Check dims of contrasts - DONE
-#  2. Check interactions w/ covariates
-
 lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.adjust.methods), conf = .95, 
                    at, trend, contr=list(), 
                    cov.reduce = function(x, name) mean(x), 
@@ -445,8 +441,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
             
             # list to hold results
             Clist = list()
-            numcols = ncol(K)
-            zer = rep(0, numcols) #### replaced nrow(lsms)) when lf arg added 
+            zer = rep(0, ncol(K)) #### replaced nrow(lsms)) when lf arg added 
             
             # OK, let's go thru the bylist
             nby = length(bylist)
@@ -456,8 +451,9 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
                     else confcn(rnames[rows] , ...)
                 if (is.null(cl)) stop(paste("Unknown contrast family:", method))
                 clx = lapply(cl, function(cc) {
-                    if(length(cc) != numcols)
-                        stop(paste("Wrong number of contrast coefficients in '", method, "'", sep=""))
+                    if(length(cc) != length(rows))
+                        stop(paste(length(cc), " contrast coefficients in '", method, 
+                                   "' when ", length(rows), " were expected", sep=""))
                     ccc = zer; 
                     ccc[rows]=cc; 
                     ccc
