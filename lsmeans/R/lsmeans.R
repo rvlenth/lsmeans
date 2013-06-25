@@ -109,6 +109,8 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     if (length(not.used) > 0) {
         # null space of X is same as null space of R in QR decomp
         tR = t(qr.R(object$qr))
+        if (ncol(tR) < nrow(tR)) # add columns if not square
+            tR = cbind(tR, matrix(0, nrow=nrow(tR), ncol=nrow(tR)-ncol(tR)))
         rank = object$qr$rank
         # last few rows are zero -- add a diagonal
         for (i in (rank+1):nrow(tR)) tR[i,i] = 1
@@ -318,18 +320,25 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
         if (length(b) > 1) byfacs = all.vars(as.formula(paste("~",b[2])))
         
         
-        # create the grid of factor combinations
-        levs = list()
-        for (f in facs) levs[[f]] = baselevs[[f]]
-        combs = do.call("expand.grid", levs)
+#         # create the grid of factor combinations
+#         levs = list()
+#         for (f in facs) levs[[f]] = baselevs[[f]]
+#         combs = do.call("expand.grid", levs)
         
 ### Version 1.10 New more elegant way of matching...
-        subgrid = do.call(paste, grid[, facs, drop=FALSE])
-        grid.idx = as.numeric(factor(subgrid), levels=unique(subgrid))
+        faclevs = grid[, facs, drop=FALSE]
+        subgrid = do.call(paste, faclevs)
+        grid.idx = as.numeric(factor(subgrid))
         K = sapply(unique(grid.idx), function(idx) {
             matches = which(grid.idx == idx)
             fac.reduce(X[matches, , drop=FALSE], subgrid[matches[1]])
         })
+        idx = sapply(unique(grid.idx), function(i) which(grid.idx == i)[1])
+        combs = faclevs[idx, , drop=FALSE]
+        ord = with(combs, do.call(order, as.list(as.name(rev(facs)))))
+        combs = combs[ord, , drop=FALSE]
+        K = K[, ord, drop=FALSE]
+        
 #--- replaces code below...
 #         # For each comb, find the needed lin. comb. of bhat to estimate
 #         # (These will end up being the COLUMNS of K)
