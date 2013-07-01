@@ -207,8 +207,17 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
             baselevs = c(baselevs[sidx], baselevs[-sidx])
         }
     }
+    
+    # Keep the response variable from enlarging the grid, no matter what
+    yidx = attr(Terms, "response")
+    if (yidx > 0) {
+        yname = as.character(attr(Terms, "variables")[[1 + yidx]])
+        baselevs[[yname]] = NA
+    }
+    
     # OK. Now make a grid of the factor levels of interest, along w/ covariate "at" values
     grid = do.call(expand.grid, baselevs)
+    
     # add any matrices
     for (nm in names(matdat))
         grid[[nm]] = matrix(rep(matdat[[nm]], each=nrow(grid)), nrow=nrow(grid))
@@ -270,6 +279,9 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     # version 1.10 - no longer excluding covariates
     allFacs = all.var.names
     
+    ### Array of indexes for rows of X, organized by dimensions
+    row.indexes = array(1:nrow(X), sapply(baselevs, length))
+    
     
     
     # Get a vector of terms in the model, for checking
@@ -320,26 +332,20 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
         if (length(b) > 1) byfacs = all.vars(as.formula(paste("~",b[2])))
         
         
-#         # create the grid of factor combinations
-#         levs = list()
-#         for (f in facs) levs[[f]] = baselevs[[f]]
-#         combs = do.call("expand.grid", levs)
-        
-### Version 1.10 New more elegant way of matching...
-        faclevs = grid[, facs, drop=FALSE]
-        subgrid = do.call(paste, faclevs)
-        grid.idx = as.numeric(factor(subgrid))
-        K = sapply(unique(grid.idx), function(idx) {
-            matches = which(grid.idx == idx)
-            fac.reduce(X[matches, , drop=FALSE], subgrid[matches[1]])
+        # create the grid of factor combinations
+        levs = list()
+        for (f in facs) levs[[f]] = baselevs[[f]]
+        combs = do.call("expand.grid", levs)
+
+### New (version 1.10) more efficient derivation of K matrix
+        RI = adply(row.indexes, match(facs, names(baselevs)), c)
+    # Each row of RI has the 'facs' level numbers, followed by row indexes of X
+    # for each desired combination
+        K = apply(RI[ , -(1:length(facs)), drop = FALSE], 1, function(idx) {
+            fac.reduce(X[idx, , drop=FALSE], "")
         })
-        idx = sapply(unique(grid.idx), function(i) which(grid.idx == i)[1])
-        combs = faclevs[idx, , drop=FALSE]
-        ord = with(combs, do.call(order, as.list(as.name(rev(facs)))))
-        combs = combs[ord, , drop=FALSE]
-        K = K[, ord, drop=FALSE]
-        
-#--- replaces code below...
+                
+#--- replaces pre-1.10 code below...
 #         # For each comb, find the needed lin. comb. of bhat to estimate
 #         # (These will end up being the COLUMNS of K)
 #         K = apply(combs, 1, function(lev) {

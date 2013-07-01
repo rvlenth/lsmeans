@@ -15,6 +15,7 @@ Changelog for 'lsmeans' package
     Now checks lengths of contrast coef's for conformity
     Fixed a bug in estimability checking (occurred when qr.R does not 
         return a square matrix)
+    Efficiency improvements (and, now requires the 'plyr' package)
 
 1.06-06 - June 13, 2013
     Added support for lmerMod objects (gitHub version of lme4)
