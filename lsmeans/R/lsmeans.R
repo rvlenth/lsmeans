@@ -338,14 +338,14 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
         combs = do.call("expand.grid", levs)
 
 ### New (version 1.10) more efficient derivation of K matrix
-        RI = adply(row.indexes, match(facs, names(baselevs)), c)
-    # Each row of RI has the 'facs' level numbers, followed by row indexes of X
-    # for each desired combination
-        K = apply(RI[ , -(1:length(facs)), drop = FALSE], 1, function(idx) {
+        RI = plyr:::splitter_a(row.indexes, match(facs, names(baselevs)))
+    # Each entry of RI has the row indexes of X
+    # for each combination of facs (in expand.grid order)
+        K = sapply(RI, function(idx) {
             fac.reduce(X[idx, , drop=FALSE], "")
         })
                 
-#--- replaces pre-1.10 code below...
+#--- above code replaces pre-1.10 code below...
 #         # For each comb, find the needed lin. comb. of bhat to estimate
 #         # (These will end up being the COLUMNS of K)
 #         K = apply(combs, 1, function(lev) {

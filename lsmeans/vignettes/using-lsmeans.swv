@@ -22,11 +22,12 @@
 \DefineVerbatimEnvironment{Winput}{Verbatim}{fontshape=sl}
 \DefineVerbatimEnvironment{Woutput}{Verbatim}{}
 \def\bottomfraction{.5}
-\def\botfigrule{\hrule}
-\def\topfigrule{\hrule}
+%\def\botfigrule{\hrule}
+%\def\topfigrule{\hrule}
 \def\code{\texttt}
 
 \begin{Rcode}{hide,!echo}
+library(lsmeans)
 library(multcomp)
 options(width=88, digits=5)
 \end{Rcode}
@@ -42,14 +43,17 @@ options(width=88, digits=5)
 \subsection{Introduction}
 Least-squares means (or LS means), are generalizations of covariate-adjusted means, and date back at least to 1976 when they were incorporated in the contributed SAS procedure named \code{HARVEY} (Harvey 1976). Later, they were incorporated via \code{LSMEANS} statements in the regular SAS releases. SAS's documentation describes them as ``predicted population margins---that is, they estimate the marginal means over a balanced population'' (SAS Institute 2012).
 
-People disagree on the appropriateness of LS~means. As in many statistical calculations, thet are appropriate only sometimes, and if one understands what is being calculated, one can judge its appropriateness. So the first task is to try to explain it more explicitly than SAS's documentation. To that end, I will say this:
+People disagree on the appropriateness of LS~means. As in many statistical calculations, there are times when they are, and times when they are not. However, if one understands what is being calculated, one can judge its appropriateness. So the first task is to try to explain it more explicitly than SAS's documentation. To that end, I will say this:
 \begin{quote}\it
-LS means are predictions from a model, or marginal averages thereof. 
+LS means are predictions from a model over a grid of predictor values; or marginal averages thereof. 
 \end{quote}
-Certainly there is nothing controversial about prediction, as long as there are no identifiability issues and one understands the independent variables' values at which the prediction is made. The marginal averaging, however, may not always be appropriate.
+More explicitly, define a set of \emph{reference levels}\footnote{I made up this term for convenience in explaining this stuff.} for each predictor, and create a grid consisting of all combinations of these. Make predictions on this grid, and (as needed), compute marginal means of those predictions, usually using equal weights.
 
-
-% So the trouble lies in the marginal averaging of predictions. To understand this thoroughly, I find it helpful to consider what I will term the \emph{reference levels} of the independent variables in a model. These consist of the value, or values, to consider for each independent variable. Let us form a grid consisting of all combinations of the reference levels, and use the model to predict the response at each grid value. Then the individual predictions are LS~means of the reference-level combinations. To obtain the LS~means for some subset of the predictors, simply compute the corresponding marginal averages of this table of predictions. Typically (as is the default in the "lsmeans" function as well as in SAS), grid values are given equal weight when averaging; but weighted averages are possible if deemed more appropriate.
+The default in the "lsmeans" function is to set the reference levels as follows:
+\begin{description}
+\item[Factors] For predictors of class "factor" or "ordered", the default reference levels are the levels of the factor.
+\item[Covariates] For numeric predictors, the default is to use a single reference level at the mean value of the predictor.
+\end{description}
 
 \subsection{Illustration}
 To illustrate, consider the randomized block experiment given as an example in Box \emph{et al.} (2005), Table~4.4, page~146. In this experiment on penicillin manufacturing, five blocks (blends of material) were each tested with four treatments (variants of the process), and the process yield is measured.
@@ -64,6 +68,7 @@ penicillin$yield = c (
 )
 penicillin.lm = lm(yield ~ treat + blend, data = penicillin)
 \end{Rcode}
+The reference levels are simply the factor levels.
 Here are the LS~means for the factor combinations (as specified by "~ treat * blend" in the call):
 \begin{Rcode}{saveout}
 library(lsmeans)
@@ -73,7 +78,7 @@ lsmeans(penicillin.lm, ~ treat * blend)
 \recallout{lastchunk}
 \end{multicols}
 
-One can verify that these are simply the predicted values from the model for all 12 factor combinations:
+One can verify that these are simply the predicted values from the model for all 12 factor combinations (including those where there are missing values):
 \begin{Rcode}
 predict(penicillin.lm, newdata = penicillin)
 \end{Rcode}
@@ -84,21 +89,11 @@ lsmeans(penicillin.lm, ~ treat)
 For treatments $B$ and~$D$, these LS~means are the same as the marginal means of the data; but for treatments $A$ and~$C$, where missing values occur, they are not the data means, but instead they are model-based predictions of those marginal means. This is an example where I believe most would think these LS~means are a reasonable way to summarize the model results.
 
 
-\subsection{Reference levels}
-Following the illustration, it is useful to think of LS~means in terms of a set of \emph{reference levels} of the predictors in a linear model. First, we make predictions at all combinations of the reference levels, then (as needed), compute marginal means of those predictions, using equal weights (though other weights can be specified).
-
-The default in the "lsmeans" function is to set the reference levels as follows:
-\begin{description}
-\item[Factors] For predictors of class "factor" or "ordered", the default reference levels are the levels of the factor.
-\item[Covariates] For numeric predictors, the default is to use a single reference level at the mean value of the predictor.
-\end{description}
-The following example illustrates the second rule.
-
 
 
 \section{Analysis-of-covariance example}
-Oehlert (2000), p.456 gives a dataset concerning repetitive-motion pain due to typing on three types of ergonomic keyboards. Twelve subjects having repetitive-motion disorders were randomized to the keyboard types, and reported the severity of their pain on a subjective scale of 0--100 after two weeks of using the keyboard. We also recorded the time spent typing, in hours. Here are the data, and a plot.
-\begin{Rcode}{fig, height=3.75, width=8, scale=.75, label=typing-scatter}
+Oehlert (2000), p.456 gives a dataset concerning repetitive-motion pain due to typing on three types of ergonomic keyboards. Twelve subjects having repetitive-motion disorders were randomized to the keyboard types, and reported the severity of their pain on a subjective scale of 0--100 after two weeks of using the keyboard. We also recorded the time spent typing, in hours. Here we enter the data, and obtain the plot shown in Figure~\ref{typing-fig}.
+\begin{Rcode}{fig, height=3.75, width=8, scale=.75, label=typing-scatter, savefig}
 typing = data.frame(
   type = rep(c("A","B","C"), each=4),
   hours = c(60,72,61,50, 54,68,66,59, 56,56,55,51),
@@ -106,6 +101,11 @@ typing = data.frame(
 library(lattice)
 xyplot(pain ~ hours | type, data = typing, layout = c(3,1))
 \end{Rcode}
+\begin{figure}
+\recallfig{typing-scatter}
+\caption{Display of the keyboard-pain data.}\label{typing-fig}
+\end{figure}
+
 
 It appears that "hours" and "pain" are linearly related (though it's hard to know for type~$C$ keyboards), and that the trend line for type~$A$ is higher than for the other two. To test this,  consider a simple covariate model that fits parallel lines to the three panels:
 \begin{Rcode}
@@ -113,19 +113,19 @@ typing.lm = lm(pain ~ hours + type, data = typing)
 \end{Rcode}
 As mentioned above, the reference levels for "type" are the three keyboard types, whereas the reference levels for "hours" is the mean value of "hours" over the whole dataset:
 \begin{Rcode}{saveout}
-lsmeans(typing.lm, list(~ type * hours, ~ type))
+lsmeans(typing.lm, list(~ type, ~ type * hours))
 \end{Rcode}
 \begin{multicols}{2}\small
 \recallout{lastchunk}
 \end{multicols}
-Since there is only one reference value for "hours", the LS~means for "type" are unchanged when we average over "hours". These results are the same as what are often called ``adjusted means'' in the analysis of covariance---predicted values for each keyboard type, when the covariate is set to its overall average value.
+The second table shows explicitly that only one reference value is used for the covariate, "hours", hence each table has the same LS~means. These results are the same as what are often called ``adjusted means'' in the analysis of covariance---predicted values for each keyboard type, when the covariate is set to its overall average value.
 
 We can use the "at" argument to override the default reference grid. For example, suppose we want to consider "hours" values of $(55,59,64)$:
 \begin{Rcode}
 lsmeans(typing.lm, list(~ type * hours, ~ type, ~ hours),
     at = list(hours = c(55,59,64)))
 \end{Rcode}
-The first set of LS~means are the same as before when "hours" equals 59. But the marginal LS~means for "type" are different from those before because we have averaged over the predictions for three different "hours" values. This is an example where the marginal LS~means for "type" probably \emph{don't} make a lot of sense, unless there is a really good reason for picking those three particular "hours" values. 
+The first set of LS~means are the same as before when "hours" equals 59. But the marginal LS~means for "type" are different from those before because we have averaged over the predictions for three different "hours" values. This is an example where the marginal LS~means for "type" probably \emph{don't} make a lot of sense, unless there is a really good reason for picking those three particular "hours" values. On the other hand, the LS~means for "hours" do make sense, as they represent the average of the predictions for all three keyboard types.
 
 
 \section{Contrasts and comparisons}
@@ -135,27 +135,27 @@ lsmeans(typing.lm, pairwise ~ type)
 \end{Rcode}
 Note that "lsmeans" produces two tables for ach two-sided formula---the first is the LS~means, and the second is the contrast output. 
 
-There are other choices besides "pairwise". The other built-in options are "revpairwise" (same as "pairwise" but the subtraction is done the other way; "trt.vs.ctrl" for comparing one factor level (say, a control) with each of the others, and the related "trt.vs.ctrl1", and "trt.vs.ctrlk" for convenience in specifying which group is the control group; "poly" for estimating orthogonal-polynomial contrasts, assuming equal spacing; and "effects" and "del.effects", which compare each mean with the average of all (or all others). It is possible to provide custom contrasts as well---see the documentation.
+There are other choices besides "pairwise". The other built-in options are "revpairwise" (same as "pairwise" but the subtraction is done the other way; "trt.vs.ctrl" for comparing one factor level (say, a control) with each of the others, and the related "trt.vs.ctrl1", and "trt.vs.ctrlk" for convenience in specifying which group is the control group; "poly" for estimating orthogonal-polynomial contrasts, assuming equal spacing; and "effects" and "del.effects", which compare each LS~mean with the average of all (or all others). It is possible to provide custom contrasts as well---see the documentation.
 
-As seen in the previous output, "lsmeans" provides for adjusting the $p$~values of contrasts to preserve a familywise error rate. The default for pairwise comparisons is the Tukey (HSD) method. But when the standard errors are unequal, that method is only approximate, even under normality and independence assumptions. 
-To get a more exact adjustment, we can pass the comparisons to the "glht" function in the "multcomp" package (and also pass additional arguments---in this example, none). Then the returned value for the contrasts is a "glht" object instead of a "data.frame":
+As seen in the previous output, "lsmeans" provides for adjusting the $p$~values of contrasts to preserve a familywise error rate. The default for pairwise comparisons is the Tukey (HSD) method. One must use these adjustments with caution. For example, when the standard errors are unequal, the Tukey method is only approximate, even under normality and independence assumptions. 
+To get a more exact adjustment, we can pass the comparisons to the "glht" function in the "multcomp" package (and also pass additional arguments---in the coming example, none). Then the returned value for the contrasts is a "glht" object instead of a "data.frame":
 \begin{Rcode}
 library(multcomp)
 typing.lsm = lsmeans(typing.lm, pairwise ~ type, glhargs=list())
 typing.lsm[[2]]
 \end{Rcode}
-The $p$~values are slightly different, as expected. We may of course use other methods available for "glht" objects:
+These $p$~values are exact (if the assumptions hold) and, as expected, slightly different from those in the previous "lsmeans" output. We may of course use other methods available for "glht" objects. The plot below displays the comparisons in the preceding tabls:
 \begin{Rcode}{fig, height=3in, scale=.6, label=typing-glht-plot}
 plot(typing.lsm[[2]])
 \end{Rcode}
 
-Besides being able to call "glht" from "lsmeans", we have also provided an "lsm" function and an associated "glht" method so that we can call "lsmeans" from withing "glht". We use "lsm" in much the same way as "mcp" in the "multcomp" package. Here we display simultaneous confidence intervals for the lsmeans:
+Besides being able to call "glht" from "lsmeans", we have also provided an "lsm" function and an associated "glht" method so that we can call "lsmeans" from within "glht". We use "lsm" in much the same way as "mcp" in the "multcomp" package. Here we display simultaneous confidence intervals for the LS~means:
 \begin{Rcode}{fig, height=3in, scale=.6, label=typing-confint-plot}
 typing.glht = glht(typing.lm, linfct = lsm(~ type))
 plot(typing.glht)
 \end{Rcode}
 \\
-Unlike "lsmeans" which returns a list, the design of "lsm" is to create just one set of linear functions to hand to "glht". In the illustration above, there is no left-hand side of the formula, so the linear functions of the lsmeans themselves are used. If we had instead specified "lsm(pairwise ~ type)", then the results would have been the same as shown earlier for the pairwise differences. 
+Unlike "lsmeans" which returns a list, the design of "lsm" is to create just one set of linear functions to hand to "glht". It returns contrast output if available, otherwise LS~means output; so In the illustration above, the linear functions of the lsmeans themselves are used. If we had instead specified "lsm(pairwise ~ type)", then the results would have been the same as shown earlier for the pairwise differences. 
 
 
 \section{Two-factor example}
@@ -168,18 +168,16 @@ Now consider the R-provided dataset "warpbreaks", relating to a weaving-process 
 \begin{Rcode}
 with(warpbreaks, table(wool, tension))
 \end{Rcode}
-An interaction plot clearly indicates that we shouldn't consider an additive model.
-\begin{Rcode}{fig, scale=.5, height=4.25in, label=warp-intplot}
-#\coderef{hidden}{par(mar=c(4,4,1,.1))}
-#with(warpbreaks, interaction.plot(tension, wool, breaks, type="b"))
-lsmip(lm(breaks ~ wool*tension, data=warpbreaks), wool ~ tension)
-\end{Rcode}
-\\
-So let us fit a model with interaction
+Let us fit a model that includes interaction
 \begin{Rcode}
 warp.lm = lm(breaks ~ wool * tension, data = warpbreaks)
 anova(warp.lm)
 \end{Rcode}
+The "lsmeans" package provides a function "lsmip" that provides an interaction plot based on the LS~means:
+\begin{Rcode}{fig, scale=.5, height=4.25in, label=warp-intplot}
+lsmip(warp.lm, wool ~ tension)
+\end{Rcode}
+\\
 Now we can obtain the least-squares means for the "wool"$\times$"tension" combinations. We could request pairwise comparisons as well by specifying "pairwise ~ wool:tension", but this will yield quite a few comparisons (15 to be exact). Often, people are satisfied with a smaller number of comparisons (or contrasts) obtained by restricting them to be at the same level of one of the factors. This can be done using the "|" symbol for conditioning. In the code below, we request comparisons of the wools at each tension, and polynomial contrasts for each wool.
 \begin{Rcode}
 print(lsmeans(warp.lm, list(pairwise ~ wool | tension,  poly ~ tension | wool)), omit=3)
@@ -192,7 +190,7 @@ It is also possible to abuse "lsmeans" with a call like this:
 \begin{Rcode}
 lsmeans(warp.lm, ~ wool)   ### NOT a good idea!
 \end{Rcode}
-Each lsmean is the average of the three "tension" lsmeans at the given "wool". As the warning indicates, the presence of the strong interaction indicates that these results are pretty meaningless. In another dataset wher an additive model would explain the data, these marginal averages, and comparisons or contrasts thereof, can nicely summarize the main effects in an interpretable way.
+Each lsmean is the average of the three "tension" lsmeans at the given "wool". As the warning indicates, the presence of the strong interaction indicates that these results are pretty meaningless. In another dataset where an additive model would explain the data, these marginal averages, and comparisons or contrasts thereof, can nicely summarize the main effects in an interpretable way.
 
 \section{Split-plot example}
 The "nlme" package includes a famous dataset "Oats" that was used in Yates~(1935) as an example of a split-plot experiment. Here is a summary of the dataset.
@@ -337,12 +335,12 @@ cbpp$obs = 1:nrow(cbpp)
 cbpp.glmer = glmer(cbind(incidence, size - incidence) 
    ~ period + (1 | herd) + (1 | obs),  family = binomial,  data = cbpp)
 \end{Rcode}
-\begin{Rcode}
-cbpp.lsm = lsmeans(cbpp.glmer, trt.vs.ctrl1 ~ period)
-cbpp.lsm[[1]]$pred.incidence = 1 - 1 / (1 + exp(cbpp.lsm[[1]]$lsmean))
-cbpp.lsm[[2]]$odds.ratio = exp(cbpp.lsm[[2]]$estimate)
-cbpp.lsm
-\end{Rcode}
+%\begin{Rcode}
+%cbpp.lsm = lsmeans(cbpp.glmer, trt.vs.ctrl1 ~ period)
+%cbpp.lsm[[1]]$pred.incidence = 1 - 1 / (1 + exp(cbpp.lsm[[1]]$lsmean))
+%cbpp.lsm[[2]]$odds.ratio = exp(cbpp.lsm[[2]]$estimate)
+%cbpp.lsm
+%\end{Rcode}
 When degrees of freedom are not available, as in this case, "lsmeans" emphasizes that fact by displaying "NA" for degrees of freedom and in the column headings.
 %In a way, the comparisons table is not needed because the results are the same as the regression coefficients under the default parameterization.
 
