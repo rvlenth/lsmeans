@@ -6,7 +6,6 @@ Date: 2013-06-14
 Encoding: latin1
 Author: Russell V. Lenth
 Maintainer: Russ Lenth <russell-lenth@uiowa.edu>
-Depends: plyr
 Suggests: nlme, lme4, pbkrtest, multcomp, lattice
 Enhances: multcomp
 Imports: Matrix, multcomp, lattice

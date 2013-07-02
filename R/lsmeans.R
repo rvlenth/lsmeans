@@ -546,6 +546,18 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
 }
 
 
+# My more efficient version of plyr:::splitter_a, but returns a matrix
+# On return, each column has the elements of .array for each combination of .margins
+# Order of columns is same as obtained using expand.grid with the same variables
+.mysplit = function(.array, .margins) {
+    dims = dim(.array)
+    len = length(dims)
+    if (any(.margins > len))
+        stop ("'.margins' exceeds dimensions of '.array'")
+    prm = c(setdiff(seq_len(len), .margins), .margins)
+    matrix(aperm(.array, prm), ncol = prod(dims[.margins]))
+}
+
 ### S3 print method for "lsm" class - only reason we need this now is to support the 'omit' arg
 print.lsm = function(x, omit=NULL, ...) {
     for (i in 1:length(x)) {
