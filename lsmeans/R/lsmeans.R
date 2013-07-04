@@ -113,8 +113,9 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
             tR = cbind(tR, matrix(0, nrow=nrow(tR), ncol=nrow(tR)-ncol(tR)))
         rank = object$qr$rank
         # last few rows are zero -- add a diagonal
-        for (i in (rank+1):nrow(tR)) tR[i,i] = 1
-        null.basis = qr.resid(qr(tR[, 1:rank]), tR[, -(1:rank)])
+        for (i in (rank+1):nrow(tR)) 
+            tR[i,i] = 1
+        null.basis = qr.resid(qr(tR[, seq_len(rank)]), tR[, -seq_len(rank)])
         if (!is.matrix(null.basis)) null.basis = matrix(null.basis, ncol=1)
         # permute the rows via pivot
         null.basis[object$qr$pivot, ] = null.basis
@@ -212,7 +213,8 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     yidx = attr(Terms, "response")
     if (yidx > 0) {
         yname = as.character(attr(Terms, "variables")[[1 + yidx]])
-        baselevs[[yname]] = NA
+        if (!is.na(match(yname, names(baselevs))[1])) 
+            baselevs[[yname]] = NA
     }
     
     # OK. Now make a grid of the factor levels of interest, along w/ covariate "at" values
@@ -251,7 +253,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
 #  1 if it is col for trend
 #  0 if it does not contain trend
 #  previous version of X[,j] where j is interaction of other predictors            
-            for (i in 1:ncol(X)) {
+            for (i in seq_len(ncol(X))) {
                 trm = term.nm[i]
                 trm.pieces = strsplit(trm, ":")[[1]]
                 trm.mat = match(trend, trm.pieces)
@@ -266,13 +268,15 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
             }
         }
         else { # 'trend' is a variable - do the diff quotient
-            evens = 2 * (1:(nrow(X)/2))
+            evens = 2 * (seq_len(nrow(X)/2))
             X = (X[evens, ] - X[evens-1, ]) / trend.h
+            # restore the base levels
+            baselevs[[trend]] = baselevs[[trend]][1] + trend.h/2
             grid = grid[evens, , drop=FALSE]
         }
     }
     
-    # If necessary revise grid with corced numeric factors replaced with factor levels
+    # If necessary revise grid with coerced numeric factors replaced with factor levels
     if (length(coerced) > 0) grid = do.call("expand.grid", baselevs)
     
     # All factors (excluding covariates)
@@ -280,7 +284,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     allFacs = all.var.names
     
     ### Array of indexes for rows of X, organized by dimensions
-    row.indexes = array(1:nrow(X), sapply(baselevs, length))
+    row.indexes = array(seq_len(nrow(X)), sapply(baselevs, length))
     
     
     
@@ -305,7 +309,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     
     # Initialize a list to hold the results to return
     results = list()
-    for (i in 1:length(specs)) {
+    for (i in seq_len(length(specs))) {
         form = specs[[i]]
         # convert a string to a formula
         if (is.character(form)) form = as.formula(paste("~",form))
@@ -437,12 +441,12 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
                 else NULL
             
             # bylist will be a list of subsets of the combs to be contrasted
-            if (is.null(byfacs)) bylist = list(1:nrow(combs)) # all in one set
+            if (is.null(byfacs)) bylist = list(seq_len(nrow(combs))) # all in one set
             else {
                 bg = list()
                 for (f in byfacs) bg[[f]] = baselevs[[f]]
                 bygrid = do.call("expand.grid", bg)
-                bylist = lapply(1:nrow(bygrid), function(row) {
+                bylist = lapply(seq_len(nrow(bygrid)), function(row) {
                     bylevs = bygrid[row,]
                     if (length(byfacs)>1) flags = apply(combs[ , byfacs], 1, function(r) all(r==bylevs))
                     else flags = combs[,byfacs] == bylevs
@@ -460,7 +464,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
             
             # OK, let's go thru the bylist
             nby = length(bylist)
-            for (i in 1:nby) {
+            for (i in seq_len(nby)) {
                 rows = bylist[[i]]
                 cl = if(is.null(confcn)) contr[[method]] 
                     else confcn(rnames[rows] , ...)
@@ -545,22 +549,22 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     results
 }
 
-
-# My more efficient version of plyr:::splitter_a, but returns a matrix
-# On return, each column has the elements of .array for each combination of .margins
-# Order of columns is same as obtained using expand.grid with the same variables
-.mysplit = function(.array, .margins) {
-    dims = dim(.array)
-    len = length(dims)
-    if (any(.margins > len))
-        stop ("'.margins' exceeds dimensions of '.array'")
-    prm = c(setdiff(seq_len(len), .margins), .margins)
-    matrix(aperm(.array, prm), ncol = prod(dims[.margins]))
-}
+#---removed - not really needed, & apparently not more efficient than splitter_a
+# # My version of plyr:::splitter_a, but returns a matrix
+# # On return, each column has the elements of .array for each combination of .margins
+# # Order of columns is same as obtained using expand.grid with the same variables
+# .mysplit = function(.array, .margins) {
+#     dims = dim(.array)
+#     len = length(dims)
+#     if (any(.margins > len))
+#         stop ("'.margins' exceeds dimensions of '.array'")
+#     prm = c(setdiff(seq_len(len), .margins), .margins)
+#     matrix(aperm.default(.array, prm, FALSE), ncol = prod(dims[.margins]))
+# }
 
 ### S3 print method for "lsm" class - only reason we need this now is to support the 'omit' arg
 print.lsm = function(x, omit=NULL, ...) {
-    for (i in 1:length(x)) {
+    for (i in seq_len(length(x))) {
         if (i %in% omit) next
         cat(paste("$`", names(x)[i], "`\n", sep="")) # mimic print method for lists
         print(x[[i]])
@@ -574,7 +578,7 @@ print.data.frame.lsm = function(x, ...) {
     print.data.frame(x, row.names=attr(x, "print.row.names"))
     msg = attr(x, "mesg")
     if (!is.null(msg)) 
-        for (j in 1:length(msg)) cat(paste("   ", msg[j], "\n"))
+        for (j in seq_len(length(msg))) cat(paste("   ", msg[j], "\n"))
     invisible(x)
 }
 

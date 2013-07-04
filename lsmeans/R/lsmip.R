@@ -60,7 +60,7 @@ lsmip = function(object, formula, pch=c(1,2,6,7,9,10,15:20), lty=1, col=NULL, ..
     TP$superpose.line$lty = lty
     if (!is.null(col)) TP$superpose.symbol$col = TP$superpose.line$col = col
     trellis.par.set(TP)
-    grobj = xyplot(plotform, groups= tvar, data=lsms, 
+    grobj = xyplot(plotform, groups=~tvar, data=lsms, 
                    xlab = paste("Levels of", paste(xvars, collapse=" * ")),
                    ylab = ylab,
                    strip = my.strip,

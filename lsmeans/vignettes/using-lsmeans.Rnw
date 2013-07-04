@@ -6,18 +6,24 @@
 \usepackage{mathpazo}
 \usepackage{fancyvrb}
 
+\def\lsmversion{1.10} %%% UPDATE THIS!
+
 \title{Using the \texttt{lsmeans} Package}
 \author{Russell V. Lenth\\The University of Iowa\\ 
 \texttt{\href{mailto:russell-lenth@uiowa.edu}{russell-lenth@uiowa.edu}}}
+\date{Updated with \code{lsmeans} Version~\lsmversion---\today}
 %\VignetteIndexEntry{Using the lsmeans package}
+%\VignetteDepends{lsmeans}
+%\VignetteKeywords{least-squares means}
+%\VignettePackage{lsmeans}
 
 
 \DefineShortVerb{\"}
 \DefineVerbatimEnvironment{Winput}{Verbatim}{fontshape=sl}
 \DefineVerbatimEnvironment{Woutput}{Verbatim}{}
 \def\bottomfraction{.5}
-\def\botfigrule{\hrule}
-\def\topfigrule{\hrule}
+%\def\botfigrule{\hrule}
+%\def\topfigrule{\hrule}
 \def\code{\texttt}
 
 
@@ -28,16 +34,88 @@
 \begin{document}
 \maketitle{}
 
-\section{Introduction}
-Least-squares means (or LS means), popularized by SAS, are predictions from a linear model at combinations
-of specified factors. SAS's documentation describes them as ``predicted population margins---that is, they estimate the marginal means over a balanced population'' (SAS Institute 2012).
-Unspecified factors and covariates are handled by summarizing the predictions
-over those factors and variables. This vignette gives some examples of LS means and the "lsmeans" package. Some of the finer points of LS means are explained in the context of these examples.
+\section{What are least-squares means?}
+\subsection{Introduction}
+Least-squares means (or LS means), are generalizations of covariate-adjusted means, and date back at least to 1976 when they were incorporated in the contributed SAS procedure named \code{HARVEY} (Harvey 1976). Later, they were incorporated via \code{LSMEANS} statements in the regular SAS releases. SAS's documentation describes them as ``predicted population margins---that is, they estimate the marginal means over a balanced population'' (SAS Institute 2012).
 
-Like most statistical calculations, it is possible to use least-squares means inappropriately; however, they are in fact simply predictions from the model.  When used with due care, they can provide useful summaries of a linear model that includes factors.
+People disagree on the appropriateness of LS~means. As in many statistical calculations, there are times when they are, and times when they are not. However, if one understands what is being calculated, one can judge its appropriateness. So the first task is to try to explain LS~means as clearly as possible. To that end, I offer this:
+\begin{quote}\it
+LS means are predictions from a model over a grid of predictor values; or marginal averages thereof. 
+\end{quote}
+More explicitly, define a set of \emph{reference levels}\footnote{I made up this term for convenience in explaining this stuff.} for each predictor, and create a grid consisting of all combinations of these. Make predictions on this grid, and (as needed), compute marginal means of those predictions, usually using equal weights.
+
+The default in the "lsmeans" function is to set the reference levels as follows:
+\begin{description}
+\item[Factors] For predictors of class "factor" or "ordered", the default reference levels are the levels of the factor.
+\item[Covariates] For numeric predictors, the default is to use a single reference level at the mean value of the predictor.
+\end{description}
+
+\subsection{Illustration}
+To illustrate, consider the randomized block experiment given as an example in Box \emph{et al.} (2005), Table~4.4, page~146. In this experiment on penicillin manufacturing, five blocks (blends of material) were each tested with four treatments (variants of the process), and the process yield is measured.
+
+To save space, I'll use just the data from the first three blends; and to make the example more interesting, suppose that a couple of the observations got lost. Let's enter the data and fit a model:
+\begin{Winput}
+R> penicillin = expand.grid(treat = LETTERS[1:4], blend = factor(1:3))
+R> penicillin$yield = c (
+R>     89, 88, 97, 94,
+R>     84, 77, NA, 79,
+R>     NA, 87, 87, 85
+R> )
+R> penicillin.lm = lm(yield ~ treat + blend, data = penicillin)
+\end{Winput}
+The reference levels are simply the factor levels.
+Here are the LS~means for the factor combinations (as specified by "~ treat * blend" in the call):
+\begin{Winput}
+R> library(lsmeans)
+R> lsmeans(penicillin.lm, ~ treat * blend)
+\end{Winput}
+\begin{multicols}{2}\small
+\begin{Woutput}
+$`treat:blend lsmeans`
+ treat blend lsmean     SE df lower.CL upper.CL
+     A     1 92.029 2.8970  4   83.985  100.072
+     B     1 89.571 2.5865  4   82.390   96.753
+     C     1 94.829 2.8970  4   86.785  102.872
+     D     1 91.571 2.5865  4   84.390   98.753
+     A     2 80.971 2.8970  4   72.928   89.015
+     B     2 78.514 2.7239  4   70.952   86.077
+     C     2 83.771 3.6744  4   73.570   93.973
+     D     2 80.514 2.7239  4   72.952   88.077
+     A     3 86.371 3.6744  4   76.170   96.573
+     B     3 83.914 2.7239  4   76.352   91.477
+     C     3 89.171 2.8970  4   81.128   97.215
+     D     3 85.914 2.7239  4   78.352   93.477
+\end{Woutput}
+
+\end{multicols}
+
+One can verify that these are simply the predicted values from the model for all 12 factor combinations (including those where there are missing values):
+\begin{Winput}
+R> predict(penicillin.lm, newdata = penicillin)
+\end{Winput}
+\begin{Woutput}
+     1      2      3      4      5      6      7      8      9     10     11     12
+92.029 89.571 94.829 91.571 80.971 78.514 83.771 80.514 86.371 83.914 89.171 85.914
+\end{Woutput}
+The LS~means for "treat" are simply the marginal averages of these values over the five blends:
+\begin{Winput}
+R> lsmeans(penicillin.lm, ~ treat)
+\end{Winput}
+\begin{Woutput}
+$`treat lsmeans`
+ treat lsmean     SE df lower.CL upper.CL
+     A 86.457 2.6789  4   79.019   93.895
+     B 84.000 2.0633  4   78.271   89.729
+     C 89.257 2.6789  4   81.819   96.695
+     D 86.000 2.0633  4   80.271   91.729
+\end{Woutput}
+For treatments $B$ and~$D$, these LS~means are the same as the marginal means of the data; but for treatments $A$ and~$C$, where missing values occur, they are not the data means, but instead they are model-based predictions of those marginal means. This is an example where I believe most would think these LS~means are a reasonable way to summarize the model results.
+
+
+
 
 \section{Analysis-of-covariance example}
-Oehlert (2000), p.456 gives a dataset concerning repetitive-motion pain due to typing on three types of ergonomic keyboards. Twelve subjects having repetitive-motion disorders were randomized to the keyboard types, and reported the severity of their pain on a subjective scale of 0--100 after two weeks of using the keyboard. We also recorded the time spent typing, in hours. Here are the data, and a plot.
+Oehlert (2000), p.456 gives a dataset concerning repetitive-motion pain due to typing on three types of ergonomic keyboards. Twelve subjects having repetitive-motion disorders were randomized to the keyboard types, and reported the severity of their pain on a subjective scale of 0--100 after two weeks of using the keyboard. We also recorded the time spent typing, in hours. Here we enter the data, and obtain the plot shown in Figure~\ref{typing-fig}.
 \begin{Winput}
 R> typing = data.frame(
 R>   type = rep(c("A","B","C"), each=4),
@@ -46,93 +124,130 @@ R>   pain =  c(85,95,69,58, 41,74,71,52, 41,34,50,40))
 R> library(lattice)
 R> xyplot(pain ~ hours | type, data = typing, layout = c(3,1))
 \end{Winput}
-\includegraphics[scale=.5]{using-lsmeans-typing-scatter-fig.pdf}
+\begin{figure}
+\includegraphics[scale=.75]{using-lsmeans-typing-scatter-fig.pdf}
+
+\caption{Display of the keyboard-pain data.}\label{typing-fig}
+\end{figure}
+
 
 It appears that "hours" and "pain" are linearly related (though it's hard to know for type~$C$ keyboards), and that the trend line for type~$A$ is higher than for the other two. To test this,  consider a simple covariate model that fits parallel lines to the three panels:
 \begin{Winput}
 R> typing.lm = lm(pain ~ hours + type, data = typing)
 \end{Winput}
-The least-squares means resulting from this model are easily obtained by calling "lsmeans" with the fitted model and a formula specifying the factor of interest:
+As mentioned above, the reference levels for "type" are the three keyboard types, whereas the reference levels for "hours" is the mean value of "hours" over the whole dataset:
 \begin{Winput}
-R> library(lsmeans)
-R> lsmeans(typing.lm, ~ type)
+R> lsmeans(typing.lm, list(~ type, ~ type * hours))
+\end{Winput}
+\begin{multicols}{2}\small
+\begin{Woutput}
+$`type lsmeans`
+ type lsmean     SE df lower.CL upper.CL
+    A 73.565 3.6406  8   65.170   81.960
+    B 54.495 3.7223  8   45.912   63.079
+    C 49.440 3.9434  8   40.346   58.533
+
+$`type:hours lsmeans`
+ type hours lsmean     SE df lower.CL upper.CL
+    A    59 73.565 3.6406  8   65.170   81.960
+    B    59 54.495 3.7223  8   45.912   63.079
+    C    59 49.440 3.9434  8   40.346   58.533
+\end{Woutput}
+
+\end{multicols}
+The second table shows explicitly that only one reference value is used for the covariate, "hours", hence each table has the same LS~means. These results are the same as what are often called ``adjusted means'' in the analysis of covariance---predicted values for each keyboard type, when the covariate is set to its overall average value.
+
+We can use the "at" argument to override the default reference grid. For example, suppose we want to consider "hours" values of $(55,59,64)$:
+\begin{Winput}
+R> lsmeans(typing.lm, list(~ type * hours, ~ type, ~ hours),
+R>     at = list(hours = c(55,59,64)))
+\end{Winput}
+\begin{Woutput}
+$`type:hours lsmeans`
+ type hours lsmean     SE df lower.CL upper.CL
+    A    55 66.286 4.1548  8   56.705   75.867
+    B    55 47.216 4.3512  8   37.182   57.250
+    C    55 42.160 3.5886  8   33.885   50.435
+    A    59 73.565 3.6406  8   65.170   81.960
+    B    59 54.495 3.7223  8   45.912   63.079
+    C    59 49.440 3.9434  8   40.346   58.533
+    A    64 82.665 3.7757  8   73.958   91.371
+    B    64 63.595 3.6771  8   55.115   72.074
+    C    64 58.539 4.9904  8   47.031   70.047
+
+$`type lsmeans`
+ type lsmean     SE df lower.CL upper.CL
+    A 74.172 3.6212  8   65.821   82.522
+    B 55.102 3.6912  8   46.590   63.614
+    C 50.046 3.9958  8   40.832   59.260
+
+$`hours lsmeans`
+ hours lsmean     SE df lower.CL upper.CL
+    55 51.887 2.5337  8   46.044   57.730
+    59 59.167 2.0692  8   54.395   63.938
+    64 68.266 2.7608  8   61.900   74.633
+\end{Woutput}
+The first set of LS~means are the same as before when "hours" equals 59. But the marginal LS~means for "type" are different from those before because we have averaged over the predictions for three different "hours" values. This is an example where the marginal LS~means for "type" probably \emph{don't} make a lot of sense, unless there is a really good reason for picking those three particular "hours" values. On the other hand, the LS~means for "hours" do make sense, as they represent the average of the predictions for all three keyboard types.
+
+
+\section{Contrasts and comparisons}
+Often, we want to perform multiple comparisons or contrasts among a set of LS~means. "lsmeans" provides for this by specifying something on the left-hand side of the formula. For example, in the keyboard-pain example, we can obtain pairwise comparisons among the adjusted means as follows:
+\begin{Winput}
+R> lsmeans(typing.lm, pairwise ~ type)
 \end{Winput}
 \begin{Woutput}
 $`type lsmeans`
- type   lsmean       SE df lower.CL upper.CL
-    A 73.56518 3.640583  8 65.16998 81.96038
-    B 54.49529 3.722251  8 45.91176 63.07881
-    C 49.43953 3.943413  8 40.34600 58.53306
-\end{Woutput}
-These results are the same as what are often called ``adjusted means'' in the analysis of covariance---predicted values for each keyboard type, when the covariate is set to its overall average value, as we now verify:
-\begin{Winput}
-R> predict(typing.lm, newdata = data.frame(type = c("A","B","C"), 
-R>     hours = mean(typing$hours)))
-\end{Winput}
-\begin{Woutput}
-       1        2        3
-73.56518 54.49529 49.43953
-\end{Woutput}
-The "lsmeans" function allows us to make predictions at other "hours" values. We may also obtain comparisons or contrasts among the means by specifying a keyword in the left-hand side of the formula. For example,
-\begin{Winput}
-R> lsmeans(typing.lm, pairwise ~ type, at = list(hours = 55))
-\end{Winput}
-\begin{Woutput}
-$`type lsmeans`
- type   lsmean       SE df lower.CL upper.CL
-    A 66.28560 4.154824  8 56.70456 75.86664
-    B 47.21570 4.351192  8 37.18184 57.24957
-    C 42.15995 3.588596  8 33.88463 50.43527
+ type lsmean     SE df lower.CL upper.CL
+    A 73.565 3.6406  8   65.170   81.960
+    B 54.495 3.7223  8   45.912   63.079
+    C 49.440 3.9434  8   40.346   58.533
 
 $`type pairwise differences`
-       estimate       SE df t.ratio p.value
-A - B 19.069896 5.081620  8 3.75272 0.01378
-A - C 24.125650 5.559580  8 4.33947 0.00621
-B - C  5.055754 5.719515  8 0.88395 0.66470
+      estimate     SE df t.ratio p.value
+A - B  19.0699 5.0816  8 3.75272 0.01378
+A - C  24.1257 5.5596  8 4.33947 0.00621
+B - C   5.0558 5.7195  8 0.88395 0.66470
     p values are adjusted using the tukey method for 3 means
 \end{Woutput}
-The resulting least-squares means are each about $7.3$ less than the previous results, but their standard errors don't all change the same way: the first two SEs increase but the third decreases because the prediction is closer to the data in that group.
+Note that "lsmeans" produces two tables for ach two-sided formula---the first is the LS~means, and the second is the contrast output. 
 
-The results for the pairwise differences are the same regardless of the "hours" value we specify, because the "hours" effect cancels out when we take the differences. We confirm that the mean pain with keyboard~$A$ is significantly greater than it is with either of the other keyboards.
+There are other choices besides "pairwise". The other built-in options are "revpairwise" (same as "pairwise" but the subtraction is done the other way; "trt.vs.ctrl" for comparing one factor level (say, a control) with each of the others, and the related "trt.vs.ctrl1", and "trt.vs.ctrlk" for convenience in specifying which group is the control group; "poly" for estimating orthogonal-polynomial contrasts, assuming equal spacing; and "effects" and "del.effects", which compare each LS~mean with the average of all (or all others). It is possible to provide custom contrasts as well---see the documentation.
 
-There are other choices besides "pairwise". The other built-in options are "revpairwise" (same as "pairwise" but the subraction is done the other way; "trt.vs.ctrl" for comparing one factor level (say, a control) with each of the others, and the related "trt.vs.ctrl1", and "trt.vs.ctrlk" for convenience in specifying which group is the control group; and "poly" for estimating orthogonal-polynomial contrasts, assuming equal spacing. It is possible to provide custom contrasts as well---see the documentation.
-
-As seen in the previous output, "lsmeans" provides for adjusting the $p$~values of contrasts to preserve a familywise error rate. The default for pairwise comparisons is the Tukey (HSD) method. But in covariance models, that method is only approximate. To get a more exact adjustment, we can pass the comparisons to the "glht" function in the "multcomp" package (and also pass additional arguments---in this example, none):
+As seen in the previous output, "lsmeans" provides for adjusting the $p$~values of contrasts to preserve a familywise error rate. The default for pairwise comparisons is the Tukey (HSD) method. One must use these adjustments with caution. For example, when the standard errors are unequal, the Tukey method is only approximate, even under normality and independence assumptions. 
+To get a more exact adjustment, we can pass the comparisons to the "glht" function in the "multcomp" package (and also pass additional arguments---in the coming example, none). Then the returned value for the contrasts is a "glht" object instead of a "data.frame":
 \begin{Winput}
+R> library(multcomp)
 R> typing.lsm = lsmeans(typing.lm, pairwise ~ type, glhargs=list())
-R> print(typing.lsm, omit=1)
+R> typing.lsm[[2]]
 \end{Winput}
 \begin{Woutput}
-$`type pairwise differences`
-
 	 Simultaneous Tests for General Linear Hypotheses
 
 Fit: lm(formula = pain ~ hours + type, data = typing)
 
 Linear Hypotheses:
            Estimate Std. Error t value Pr(>|t|)
-A - B == 0   19.070      5.082   3.753  0.01371 *
-A - C == 0   24.126      5.560   4.339  0.00615 **
-B - C == 0    5.056      5.720   0.884  0.66421
+A - B == 0    19.07       5.08    3.75   0.0138 *
+A - C == 0    24.13       5.56    4.34   0.0061 **
+B - C == 0     5.06       5.72    0.88   0.6642
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 (Adjusted p values reported -- single-step method)
 \end{Woutput}
-The $p$~values are slightly different, as expected. We may of course use other methods available for "glht" objects:
+These $p$~values are exact (if the assumptions hold) and, as expected, slightly different from those in the previous "lsmeans" output. We may of course use other methods available for "glht" objects. The plot below displays the comparisons in the preceding tabls:
 \begin{Winput}
 R> plot(typing.lsm[[2]])
 \end{Winput}
 \includegraphics[scale=.6]{using-lsmeans-typing-glht-plot-fig.pdf}
 
-Besides being able to call "glht" from "lsmeans", we have also provided an "lsm" function and an associated "glht" method so that we can call "lsmeans" from withing "glht". We use "lsm" in much the same way as "mcp" in the "multcomp" package. Here we display simultaneous confidence intervals for the lsmeans:
+Besides being able to call "glht" from "lsmeans", we have also provided an "lsm" function and an associated "glht" method so that we can call "lsmeans" from within "glht". We use "lsm" in much the same way as "mcp" in the "multcomp" package. Here we display simultaneous confidence intervals for the LS~means:
 \begin{Winput}
 R> typing.glht = glht(typing.lm, linfct = lsm(~ type))
 R> plot(typing.glht)
 \end{Winput}
 \includegraphics[scale=.6]{using-lsmeans-typing-confint-plot-fig.pdf}
 \\
-\clearpage %%% MANUAL FORMATTING %%%
-Unlike "lsmeans" which returns a list, the design of "lsm" is to create just one set of linear functions to hand to "glht". In the illustration above, there is no left-hand side of the formula, so the linear functions of the lsmeans themselves are used. If we had instead specified "lsm(pairwise ~ type)", then the results would have been the same as shown earlier for the pairwise differences. 
+Unlike "lsmeans" which returns a list, the design of "lsm" is to create just one set of linear functions to hand to "glht". It returns contrast output if available, otherwise LS~means output; so In the illustration above, the linear functions of the lsmeans themselves are used. If we had instead specified "lsm(pairwise ~ type)", then the results would have been the same as shown earlier for the pairwise differences. 
 
 
 \section{Two-factor example}
@@ -151,13 +266,7 @@ wool L M H
    A 9 9 9
    B 9 9 9
 \end{Woutput}
-An interaction plot clearly indicates that we shouldn't consider an additive model.
-\begin{Winput}
-R> with(warpbreaks, interaction.plot(tension, wool, breaks, type="b"))
-\end{Winput}
-\includegraphics[scale=.5]{using-lsmeans-warp-intplot-fig.pdf}
-\\
-So let us fit a model with interaction
+Let us fit a model that includes interaction
 \begin{Winput}
 R> warp.lm = lm(breaks ~ wool * tension, data = warpbreaks)
 R> anova(warp.lm)
@@ -166,41 +275,47 @@ R> anova(warp.lm)
 Analysis of Variance Table
 
 Response: breaks
-             Df Sum Sq Mean Sq F value    Pr(>F)
-wool          1  450.7  450.67  3.7653 0.0582130 .
-tension       2 2034.3 1017.13  8.4980 0.0006926 ***
-wool:tension  2 1002.8  501.39  4.1891 0.0210442 *
-Residuals    48 5745.1  119.69
+             Df Sum Sq Mean Sq F value  Pr(>F)
+wool          1    451     451    3.77 0.05821 .
+tension       2   2034    1017    8.50 0.00069 ***
+wool:tension  2   1003     501    4.19 0.02104 *
+Residuals    48   5745     120
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 \end{Woutput}
+The "lsmeans" package provides a function "lsmip" that provides an interaction plot based on the LS~means:
+\begin{Winput}
+R> lsmip(warp.lm, wool ~ tension)
+\end{Winput}
+\includegraphics[scale=.5]{using-lsmeans-warp-intplot-fig.pdf}
+\\
 Now we can obtain the least-squares means for the "wool"$\times$"tension" combinations. We could request pairwise comparisons as well by specifying "pairwise ~ wool:tension", but this will yield quite a few comparisons (15 to be exact). Often, people are satisfied with a smaller number of comparisons (or contrasts) obtained by restricting them to be at the same level of one of the factors. This can be done using the "|" symbol for conditioning. In the code below, we request comparisons of the wools at each tension, and polynomial contrasts for each wool.
 \begin{Winput}
 R> print(lsmeans(warp.lm, list(pairwise ~ wool | tension,  poly ~ tension | wool)), omit=3)
 \end{Winput}
 \begin{Woutput}
 $`wool:tension lsmeans`
- wool tension   lsmean       SE df lower.CL upper.CL
-    A       L 44.55556 3.646761 48 37.22325 51.88786
-    B       L 28.22222 3.646761 48 20.88992 35.55453
-    A       M 24.00000 3.646761 48 16.66769 31.33231
-    B       M 28.77778 3.646761 48 21.44547 36.11008
-    A       H 24.55556 3.646761 48 17.22325 31.88786
-    B       H 18.77778 3.646761 48 11.44547 26.11008
+ wool tension lsmean     SE df lower.CL upper.CL
+    A       L 44.556 3.6468 48   37.223   51.888
+    B       L 28.222 3.6468 48   20.890   35.555
+    A       M 24.000 3.6468 48   16.668   31.332
+    B       M 28.778 3.6468 48   21.445   36.110
+    A       H 24.556 3.6468 48   17.223   31.888
+    B       H 18.778 3.6468 48   11.445   26.110
 
 $`wool:tension pairwise differences`
-           estimate       SE df  t.ratio p.value
-A - B | L 16.333333 5.157299 48  3.16703 0.00268
-A - B | M -4.777778 5.157299 48 -0.92641 0.35887
-A - B | H  5.777778 5.157299 48  1.12031 0.26816
+          estimate     SE df  t.ratio p.value
+A - B | L  16.3333 5.1573 48  3.16703 0.00268
+A - B | M  -4.7778 5.1573 48 -0.92641 0.35887
+A - B | H   5.7778 5.1573 48  1.12031 0.26816
     p values are adjusted using the tukey method for 2 means
 
 $`tension:wool polynomial contrasts`
-                estimate       SE df  t.ratio p.value
-linear | A    -20.000000 5.157299 48 -3.87800 0.00032
-quadratic | A  21.111111 8.932705 48  2.36335 0.02221
-linear | B     -9.444444 5.157299 48 -1.83128 0.07327
-quadratic | B -10.555556 8.932705 48 -1.18168 0.24315
+              estimate     SE df t.ratio p.value
+linear | A    -20.0000 5.1573 48 -3.8780 0.00032
+quadratic | A  21.1111 8.9327 48  2.3634 0.02221
+linear | B     -9.4444 5.1573 48 -1.8313 0.07327
+quadratic | B -10.5556 8.9327 48 -1.1817 0.24315
     p values are not adjusted
 \end{Woutput}
 (We suppressed the third element of the results because it is the same as the first, with rows rearranged.)
@@ -213,226 +328,101 @@ R> lsmeans(warp.lm, ~ wool)   ### NOT a good idea!
 \end{Winput}
 \begin{Woutput}
 $`wool lsmeans`
- wool   lsmean       SE df lower.CL upper.CL
-    A 31.03704 2.105459 48 26.80373 35.27035
-    B 25.25926 2.105459 48 21.02595 29.49257
+ wool lsmean     SE df lower.CL upper.CL
+    A 31.037 2.1055 48   26.804   35.270
+    B 25.259 2.1055 48   21.026   29.493
 
 Warning message:
 In lsmeans(warp.lm, ~wool) :
   lsmeans of wool may be misleading due to interaction with other predictor(s)
 \end{Woutput}
-Each lsmean is the average of the three "tension" lsmeans at the given "wool". As the warning indicates, the presence of the strong interaction indicates that these results are pretty meaningless. In another dataset wher an additive model would explain the data, these marginal averages, and comparisons or contrasts thereof, can nicely summarize the main effects in an interpretable way.
+Each lsmean is the average of the three "tension" lsmeans at the given "wool". As the warning indicates, the presence of the strong interaction indicates that these results are pretty meaningless. In another dataset where an additive model would explain the data, these marginal averages, and comparisons or contrasts thereof, can nicely summarize the main effects in an interpretable way.
 
 \section{Split-plot example}
 The "nlme" package includes a famous dataset "Oats" that was used in Yates~(1935) as an example of a split-plot experiment. Here is a summary of the dataset.
 \begin{Winput}
-R> library(nlme)
+R> data(Oats, package="nlme")
 R> summary(Oats)
 \end{Winput}
 \begin{Woutput}
  Block           Variety       nitro          yield
- VI :12   Golden Rain:24   Min.   :0.00   Min.   : 53.0
- V  :12   Marvellous :24   1st Qu.:0.15   1st Qu.: 86.0
- III:12   Victory    :24   Median :0.30   Median :102.5
- IV :12                    Mean   :0.30   Mean   :104.0
- II :12                    3rd Qu.:0.45   3rd Qu.:121.2
- I  :12                    Max.   :0.60   Max.   :174.0
+ VI :12   Golden Rain:24   Min.   :0.00   Min.   : 53
+ V  :12   Marvellous :24   1st Qu.:0.15   1st Qu.: 86
+ III:12   Victory    :24   Median :0.30   Median :102
+ IV :12                    Mean   :0.30   Mean   :104
+ II :12                    3rd Qu.:0.45   3rd Qu.:121
+ I  :12                    Max.   :0.60   Max.   :174
 \end{Woutput}
-
-The experiment was conducted in six blocks, and each block was divided into three plots, which were randomly assigned to varieties of oats. With just "Variety" as a factor, it is a randomized complete-block experiment. However, each plot was subdivided into 4 subplots and the subplots were treated with different amounts of nitrogen. Thus, "Block" is a blocking factor, "Variety" is the whole-plot factor, and "nitro" is the split-plot factor. The response variable is "yield", the yield of each subplot in bushels per~acre. Below is an interaction plot of the data, and also an interaction pl;ot of the least-squares means, which will be described later.
+The experiment was conducted in six blocks, and each block was divided into three plots, which were randomly assigned to varieties of oats. With just "Variety" as a factor, it is a randomized complete-block experiment. However, each plot was subdivided into 4 subplots and the subplots were treated with different amounts of nitrogen. Thus, "Block" is a blocking factor, "Variety" is the whole-plot factor, and "nitro" is the split-plot factor. The response variable is "yield", the yield of each subplot in bushels per~acre. Below is an interaction plot of these data.
 \begin{Winput}
 R> with(Oats, interaction.plot(nitro, Variety, yield, type="b"))
 \end{Winput}
 \includegraphics[scale=.5]{using-lsmeans-oats-intplot-fig.pdf}
-\hfill
-\includegraphics[scale=.5]{using-lsmeans-oats-intplot2-fig.pdf}
+%\hfill
+%\begin{Rcode}{fig, !echo, hide, scale=.5, height=4, label=oats-intplot2}
+%par(mar=c(4,4,1,.1))
+%library(lme4)
+%Oats.lmer = lmer(yield ~ Variety + factor(nitro) + (1 | Block/Variety), data=Oats)
+%Oats.lsms = lsmeans(Oats.lmer, ~ nitro:Variety)
+%with(Oats.lsms[[1]], interaction.plot(nitro, Variety, lsmean, type="b", ylab="Least-Squares means"))
+%\end{Rcode}
 \\
-There is not much evidence of an interaction. In this dataset, we have random factors "Block" and "Block:Variety" (which identifies the plots). So we will fit a linear mixed-effects model that accounts for these. Another technicality is that "nitro" is a numeric variable, and initially we will model it as a factor. We will use "lmer" in the "lme4" package to fit a model.
+There is not much evidence of an interaction. In this dataset, we have random factors "Block" and "Block:Variety" (which identifies the plots). So we will fit a linear mixed-effects model that accounts for these. Another technicality is that "nitro" is a numeric variable, and initially we will model it as a factor. We will use "lmer" in the "lme4" package to fit a model, and display the marginal LS~means with appropriate contrasts.
 \enlargethispage{-36pt} %%% MANUAL FORMATTING %%%
 \begin{Winput}
-R> library(lme4, quietly = TRUE, warn.conflicts = FALSE)
+R> library(lme4)
 R> Oats.lmer = lmer(yield ~ Variety + factor(nitro) + (1 | Block/Variety), data=Oats)
-R> lsmeans(Oats.lmer, list(revpairwise ~ Variety,  poly ~ nitro,  ~ Variety:nitro))
+R> lsmeans(Oats.lmer, list(revpairwise ~ Variety,  poly ~ nitro))
 \end{Winput}
 \begin{Woutput}
+Loading required package: pbkrtest
+Loading required package: MASS
+Loading required package: parallel
 $`Variety lsmeans`
-     Variety   lsmean       SE       df lower.CL upper.CL
- Golden Rain 104.5000 7.797418 8.869823 86.82147 122.1785
-  Marvellous 109.7917 7.797418 8.869823 92.11314 127.4702
-     Victory  97.6250 7.797418 8.869823 79.94647 115.3035
+     Variety  lsmean     SE    df lower.CL upper.CL
+ Golden Rain 104.500 7.7975 8.869   86.821   122.18
+  Marvellous 109.792 7.7975 8.869   92.113   127.47
+     Victory  97.625 7.7975 8.869   79.946   115.30
 
 $`Variety pairwise differences`
-                           estimate       SE df  t.ratio p.value
-Marvellous - Golden Rain   5.291667 7.078899 10  0.74753 0.74187
-Victory - Golden Rain     -6.875000 7.078899 10 -0.97120 0.61035
-Victory - Marvellous     -12.166667 7.078899 10 -1.71872 0.24583
+                         estimate     SE df  t.ratio p.value
+Marvellous - Golden Rain   5.2917 7.0789 10  0.74753 0.74187
+Victory - Golden Rain     -6.8750 7.0789 10 -0.97120 0.61035
+Victory - Marvellous     -12.1667 7.0789 10 -1.71873 0.24583
     p values are adjusted using the tukey method for 3 means
 
 $`nitro lsmeans`
- nitro    lsmean       SE       df  lower.CL  upper.CL
-     0  79.38889 7.132279 6.639194  62.33614  96.44164
-   0.2  98.88889 7.132279 6.639194  81.83614 115.94164
-   0.4 114.22222 7.132279 6.639194  97.16947 131.27497
-   0.6 123.38889 7.132279 6.639194 106.33614 140.44164
+ nitro  lsmean     SE     df lower.CL upper.CL
+   0.0  79.389 7.1324 6.6386   62.336   96.442
+   0.2  98.889 7.1324 6.6386   81.836  115.942
+   0.4 114.222 7.1324 6.6386   97.169  131.276
+   0.6 123.389 7.1324 6.6386  106.336  140.442
 
 $`nitro polynomial contrasts`
-           estimate        SE df  t.ratio p.value
-linear    147.33333 13.439530 51 10.96268 0.00000
-quadratic -10.33333  6.010341 51 -1.71926 0.09163
-cubic      -2.00000 13.439530 51 -0.14881 0.88229
+          estimate      SE df  t.ratio p.value
+linear     147.333 13.4395 51 10.96268 0.00000
+quadratic  -10.333  6.0103 51 -1.71926 0.09163
+cubic       -2.000 13.4395 51 -0.14881 0.88229
     p values are not adjusted
-
-$`Variety:nitro lsmeans`
-     Variety nitro    lsmean       SE       df  lower.CL  upper.CL
- Golden Rain     0  79.91667 8.220281 10.93256  61.81032  98.02301
-  Marvellous     0  85.20833 8.220281 10.93256  67.10199 103.31468
-     Victory     0  73.04167 8.220281 10.93256  54.93532  91.14801
- Golden Rain   0.2  99.41667 8.220281 10.93256  81.31032 117.52301
-  Marvellous   0.2 104.70833 8.220281 10.93256  86.60199 122.81468
-     Victory   0.2  92.54167 8.220281 10.93256  74.43532 110.64801
- Golden Rain   0.4 114.75000 8.220281 10.93256  96.64366 132.85634
-  Marvellous   0.4 120.04167 8.220281 10.93256 101.93532 138.14801
-     Victory   0.4 107.87500 8.220281 10.93256  89.76866 125.98134
- Golden Rain   0.6 123.91667 8.220281 10.93256 105.81032 142.02301
-  Marvellous   0.6 129.20833 8.220281 10.93256 111.10199 147.31468
-     Victory   0.6 117.04167 8.220281 10.93256  98.93532 135.14801
 \end{Woutput}
-Unlike the warpbreaks example, the additive model makes it reasonable to look at the marginal lsmeans, which are equally-weighted marginal averages of the cell predictions in the fifth table of the output.\footnote{%
-Interestingly, SAS's implementation of least-squares means will refuse to output these cell predictions unless the interaction term is in the model.}
-The right-hand interaction plot above was obtained using the statement
-\begin{Winput}
-R> with(Oats.lsms[[5]], interaction.plot(nitro, Variety, lsmean, type="b", 
-R>                                       ylab="Least-Squares means"))
-\end{Winput}
-
-
-
-While the default for obtaining marginal lsmeans is to weight the predictions equally, we may override this via the "fac.reduce" argument. For example, suppose that we want the "Variety" predictions when "nitro" is 0.25. We can obtain these by interpolation as follows:
-\begin{Winput}
-R> lsmeans(Oats.lmer, ~ Variety, fac.reduce = function(X, lev) .75 * X[2, ] + .25 * X[3, ])
-\end{Winput}
-\begin{Woutput}
-$`Variety lsmeans`
-     Variety   lsmean      SE       df lower.CL upper.CL
- Golden Rain 103.2500 8.01164 9.880139 85.36956 121.1304
-  Marvellous 108.5417 8.01164 9.880139 90.66122 126.4221
-     Victory  96.3750 8.01164 9.880139 78.49456 114.2554
-\end{Woutput}
-(There is also a "cov.reduce" argument to change the default handling of covariates.)
 The polynomial contrasts for "nitro" suggest that we could substitute a quadratic trend for "nitro"; and if we do that, then there is another (probably better) way to make the above predictions:
 \begin{Winput}
 R> OatsPoly.lmer = lmer(yield ~ Variety + poly(nitro, 2) + (1 | Block/Variety), data=Oats)
-R> lsmeans(OatsPoly.lmer, ~ Variety, at = list(nitro = .25))
 \end{Winput}
-\begin{Woutput}
-$`Variety lsmeans`
-     Variety    lsmean       SE       df lower.CL upper.CL
- Golden Rain 103.88437 8.002143 9.834068 86.01363 121.7551
-  Marvellous 109.17604 8.002143 9.834068 91.30529 127.0468
-     Victory  97.00937 8.002143 9.834068 79.13863 114.8801
-\end{Woutput}
-These predictions are slightly higher than the interpolations mostly because they account for the downward concavity of the fitted quadratics.
-
-
-
-
-\ifx %******************* EXCISED IN FAVOR OF MESSY DATA SECTION ***************************
-\section{Rank deficiencies}
-In many fitted models, predictions may be made at any factor combination. However, some models have rank deficiencies due to collinearity among predictors or missing factor combinations, and this can mess-up predictions. Consider the following example using a simplified model on a subset of the Oats data.
+The graphs below show the LS~means from these two models.
+\begin{multicols}{2}
 \begin{Winput}
-R> just.some = c(1,5,9,11,12,14,15,18,19,20,26,27,29,31,32,33,36)
-R> wildOats.lm = lm(yield ~ Variety*factor(nitro), data=Oats, subset=just.some)
+R> lsmip(Oats.lmer, Variety ~ nitro)
 \end{Winput}
-Now consider predictions at various factor combination. Let's first do this manually, using two different parameterizations of the model. 
+\includegraphics[scale=.5]{using-lsmeans-oat-add-lsmip-fig.pdf}
 \begin{Winput}
-R> illus = data.frame(Variety=levels(Oats$Variety), nitro=0.6)
-R> illus$lsm1 = predict(wildOats.lm, newdata=illus)
-R> # Another parameterization...
-R> wildOats.lm2 = update(wildOats.lm, . ~ Variety*ordered(nitro))
-R> illus$lsm2 = predict(wildOats.lm2, newdata=illus)
-R> illus
+R> lsmip(OatsPoly.lmer, Variety ~ nitro, 
+R>     cov.reduce = FALSE)
 \end{Winput}
-\begin{Woutput}
-Warning message:
-In predict.lm(wildOats.lm, newdata = illus) :
-  prediction from a rank-deficient fit may be misleading
-Warning message:
-In predict.lm(wildOats.lm2, newdata = illus) :
-  prediction from a rank-deficient fit may be misleading
-      Variety nitro  lsm1  lsm2
-1 Golden Rain   0.6 122.5 122.5
-2  Marvellous   0.6 140.0 140.0
-3     Victory   0.6 145.0 227.5
-\end{Woutput}
-We received warnings that there is a rank deficiency. And the predictions obtained illustrate why: they are not the same. In particular, they differ considerably for "Victory" even though they match for the other two varieties.
-
-It happens that the first two predictions match because they are \emph{estimable}, while the third is not. "lsmeans" takes pains to check for estimability, rather than just warning that the predictions may be misleading. Here is the "lsmeans" output for all twelve factor combinations:
-\begin{Winput}
-R> lsmeans(wildOats.lm, ~ Variety*nitro)
-\end{Winput}
-\begin{Woutput}
-$`Variety:nitro lsmeans`
-     Variety nitro lsmean       SE df lower.CL upper.CL
- Golden Rain     0   88.5 18.57514  7 44.57678 132.4232
-  Marvellous     0   97.0 18.57514  7 53.07678 140.9232
-     Victory     0  111.0 26.26921  7 48.88319 173.1168
- Golden Rain   0.2  108.0 26.26921  7 45.88319 170.1168
-  Marvellous   0.2     NA       NA NA       NA       NA
-     Victory   0.2   77.5 18.57514  7 33.57678 121.4232
- Golden Rain   0.4  107.5 18.57514  7 63.57678 151.4232
-  Marvellous   0.4  118.0 26.26921  7 55.88319 180.1168
-     Victory   0.4  104.5 18.57514  7 60.57678 148.4232
- Golden Rain   0.6  122.5 18.57514  7 78.57678 166.4232
-  Marvellous   0.6  140.0 18.57514  7 96.07678 183.9232
-     Victory   0.6     NA       NA NA       NA       NA
-\end{Woutput}
-The results reflect the fact that two lsmeans are non-estimable due to empty cells.
-
-Here's a more subtle example. Suppose we add a covariate to the "typing" dataset used earlier, and fit a model with two covariates:
-\begin{Winput}
-R> typing$foo = c(63,99,66,33,45,87,81,60,51,51,48,36)
-R> typing.lmfoo = lm(pain ~ hours + foo + type, data=typing)
-R> lsmeans(typing.lmfoo, ~ type)
-\end{Winput}
-\begin{Woutput}
-$`type lsmeans`
- type   lsmean       SE df lower.CL upper.CL
-    A 73.56518 3.640583  8 65.16998 81.96038
-    B 54.49529 3.722251  8 45.91176 63.07881
-    C 49.43953 3.943413  8 40.34600 58.53306
-\end{Woutput}
-Everything looks fine, but now plug-in a different value for "hours":
-\begin{Winput}
-R> lsmeans(typing.lmfoo, pairwise ~ type, at = list(hours=65))
-\end{Winput}
-\begin{Woutput}
-$`type lsmeans`
- type lsmean SE df lower.CL upper.CL
-    A     NA NA NA       NA       NA
-    B     NA NA NA       NA       NA
-    C     NA NA NA       NA       NA
-
-$`type pairwise differences`
-       estimate       SE df t.ratio p.value
-A - B 19.069896 5.081620  8 3.75272 0.01378
-A - C 24.125650 5.559580  8 4.33947 0.00621
-B - C  5.055754 5.719515  8 0.88395 0.66470
-    p values are adjusted using the tukey method for 3 means
-\end{Woutput}
-None of the lsmeans are estimable now (though, interestingly, the pairwise differences still are). This is due to linear dependence between "hours" and "foo". If you know the linear dependence, you can make predictions:
-\begin{Winput}
-R> lsmeans(typing.lmfoo, ~ type, at = list(hours=65, foo=3*(65-39)))
-\end{Winput}
-\begin{Woutput}
-$`type lsmeans`
- type   lsmean       SE df lower.CL upper.CL
-    A 84.48456 3.906175  8 75.47690 93.49221
-    B 65.41466 3.775715  8 56.70785 74.12148
-    C 60.35891 5.251350  8 48.24927 72.46854
-\end{Woutput}
-At the time of this writing, only "lm" and its relatives can support rank deficiencies. 
-
-\fi %************** END OF EXCISED SECTION ************************************
+\includegraphics[scale=.5]{using-lsmeans-oat-poly-lsmip-fig.pdf}
+\end{multicols}
+\noindent
+These plots are nearly identical. The "lsmip" function works by calling "lsmeans" with a specification for the required factor combinations. In the second plot, we passed the extra argument "cov.reduce = FALSE" to "lsmeans", which causes it to use the unique values of "nitro" rather than predicting at the average of "nitro".
 
 
 
@@ -450,32 +440,40 @@ R> lsmeans(nutr.lm, ~ group*race)
 \end{Winput}
 \begin{Woutput}
 $`group:race lsmeans`
-      group     race    lsmean       SE df     lower.CL upper.CL
- FoodStamps    Black  4.708257 2.368117 92  0.004971359 9.411542
-      NoAid    Black -2.190399 2.490576 92 -7.136898097 2.756099
- FoodStamps Hispanic        NA       NA NA           NA       NA
-      NoAid Hispanic        NA       NA NA           NA       NA
- FoodStamps    White  3.607680 1.155619 92  1.312521470 5.902838
-      NoAid    White  2.256336 2.389273 92 -2.488966678 7.001638
+      group     race  lsmean     SE df   lower.CL upper.CL
+ FoodStamps    Black  4.7083 2.3681 92  0.0049714   9.4115
+      NoAid    Black -2.1904 2.4906 92 -7.1368981   2.7561
+ FoodStamps Hispanic      NA     NA NA         NA       NA
+      NoAid Hispanic      NA     NA NA         NA       NA
+ FoodStamps    White  3.6077 1.1556 92  1.3125215   5.9028
+      NoAid    White  2.2563 2.3893 92 -2.4889667   7.0016
 \end{Woutput}
 One thing that this illustrates is that \code{lsmeans} incorporates an estimability check, and returns a missing value when a prediction cannot be made uniquely. In this example, we have very few Hispanic mothers in the dataset, resulting in empty cells. This creates a rank deficiency in the fitted model and some predictors are thrown out.
 
-One capability of \code{lsmeans} is that if a factor is included in the \code{at} argument, computations of lsmeans are restricted to the specified level(s). So if we confine ourselves to age group~3, we don't have an estimability issue:
+The "lsmip" function can display a three-way interaction plot
+
+\begin{Winput}
+R> lsmip(nutr.lm, race ~ age | group)
+\end{Winput}
+\includegraphics[scale=.75]{using-lsmeans-nutr-intplot-fig.pdf}
+
+
+We can avoid non-estimable cases by using "at" to restrict the reference levels to a smaller set:
 \begin{Winput}
 R> lsmeans(nutr.lm, ~ group*race, at = list(age = "3"))
 \end{Winput}
 \begin{Woutput}
 $`group:race lsmeans`
-      group     race        lsmean       SE df   lower.CL   upper.CL
- FoodStamps    Black  7.500000e+00 2.672054 92   2.193071 12.8069292
-      NoAid    Black -3.666667e+00 2.181723 92  -7.999756  0.6664229
- FoodStamps Hispanic  2.131628e-14 5.344107 92 -10.613858 10.6138584
-      NoAid Hispanic  2.500000e+00 3.778855 92  -5.005131 10.0051312
- FoodStamps    White  5.419355e+00 0.959830 92   3.513050  7.3256601
-      NoAid    White -2.000000e-01 1.194979 92  -2.573331  2.1733309
+      group     race      lsmean      SE df lower.CL upper.CL
+ FoodStamps    Black  7.5000e+00 2.67205 92   2.1931 12.80693
+      NoAid    Black -3.6667e+00 2.18172 92  -7.9998  0.66642
+ FoodStamps Hispanic  2.1316e-14 5.34411 92 -10.6139 10.61386
+      NoAid Hispanic  2.5000e+00 3.77885 92  -5.0051 10.00513
+ FoodStamps    White  5.4194e+00 0.95983 92   3.5130  7.32566
+      NoAid    White -2.0000e-01 1.19498 92  -2.5733  2.17333
 \end{Woutput}
 Nonetheless, the standard errors for the Hispanic mothers are enormous due to very small counts.
-One useful summary of the results is to narrow the scope to two races and the two middle age groups, where most of the data lie. Here are the lsmeans and comparisons within rows and columns
+One useful summary of the results is to narrow the scoe of the reference levels to two races and the two middle age groups, where most of the data lie. Here are the lsmeans and comparisons within rows and columns
 \begin{Winput}
 R> nutr.lsm = lsmeans(nutr.lm, list(pairwise~group|race, pairwise~race|group),
 R>         at = list(age=c("2","3"), race=c("Black","White")))
@@ -483,33 +481,26 @@ R> nutr.lsm[-3]
 \end{Winput}
 \begin{Woutput}
 $`group:race lsmeans`
-      group  race    lsmean       SE df  lower.CL   upper.CL
- FoodStamps Black  8.916513 3.423757 92  2.116637 15.7163895
-      NoAid Black -2.190476 1.486593 92 -5.142979  0.7620266
- FoodStamps White  5.147177 1.059624 92  3.042673  7.2516814
-      NoAid White -0.412500 1.117800 92 -2.632548  1.8075478
+      group  race  lsmean     SE df lower.CL upper.CL
+ FoodStamps Black  8.9165 3.4238 92   2.1166 15.71639
+      NoAid Black -2.1905 1.4866 92  -5.1430  0.76203
+ FoodStamps White  5.1472 1.0596 92   3.0427  7.25168
+      NoAid White -0.4125 1.1178 92  -2.6325  1.80755
 
 $`group:race pairwise differences`
-                            estimate       SE df t.ratio p.value
-FoodStamps - NoAid | Black 11.106989 3.777839 92 2.94004 0.00415
-FoodStamps - NoAid | White  5.559677 1.540221 92 3.60966 0.00050
+                           estimate     SE df t.ratio p.value
+FoodStamps - NoAid | Black  11.1070 3.7778 92  2.9400 0.00415
+FoodStamps - NoAid | White   5.5597 1.5402 92  3.6097 0.00050
     p values are adjusted using the tukey method for 2 means
 
 $`race:group pairwise differences`
-                            estimate       SE df  t.ratio p.value
-Black - White | FoodStamps  3.769336 3.394198 92  1.11052 0.26967
-Black - White | NoAid      -1.777976 1.859956 92 -0.95592 0.34162
+                           estimate     SE df  t.ratio p.value
+Black - White | FoodStamps   3.7693 3.3942 92  1.11052 0.26967
+Black - White | NoAid       -1.7780 1.8600 92 -0.95592 0.34162
     p values are adjusted using the tukey method for 2 means
 \end{Woutput}
-An interaction plot of the results follows:
-\begin{Winput}
-R> with(nutr.lsm[[1]], interaction.plot(group, race, lsmean, type = "b",
-R>     ylab = "Least-squares mean"))
-\end{Winput}
-\includegraphics[scale=.5]{using-lsmeans-nutr-intplot-fig.pdf}
-\\
-The general conclusion from both is that the expected gains from the training are higher among families receiving food stamps
-Note that this analysis is somewhat different than the results we would obtain by subsetting the data, as we are borrowing information from the other observations in estimating and testing these lsmeans.
+The general conclusion from these analyses is that (except for age 4, where the data are very sparse), the expected gains from the training are higher among families receiving food stamps.
+Note that this analysis is somewhat different than the results we would obtain by subsetting the data, as we are borrowing information from the other observations in estimating and testing these LS~means.
 
 
 %\clearpage %-------- MANUAL FORMATTING ---------
@@ -517,16 +508,18 @@ Note that this analysis is somewhat different than the results we would obtain b
 The dataset "cbpp" in the "lme4" package, originally from Lesnoff \emph{et al.}~(1964), provides data on the incidence of contagious bovine pleuropneumonia in 15 herds of zebu cattle in Ethiopia, collected over four time periods. These data are used as the primary example for the "glmer" function, and it is found that a model that accounts for overdisperion is advantageous; hence the addition of the "(1|obs)" in the model fitted below. 
 
 "lsmeans" may be used as in linear models to obtain marginal linear predictions for a generalized linear model or, in this case, a generalized linear mixed model. Here, we use the "trt.vs.ctrl1" contrast family to compare each period with the first, as the primary goal was to track the spread or decline of CBPP over time.
-We will save the results from "lsmean", then add the inverse logits of the predictions and the estimated odds ratios for the comparisons as an aid in interpretation.
 \begin{Winput}
 R> cbpp$obs = 1:nrow(cbpp)
 R> cbpp.glmer = glmer(cbind(incidence, size - incidence) 
 R>    ~ period + (1 | herd) + (1 | obs),  family = binomial,  data = cbpp)
+R> anova(cbpp.glmer)   
 \end{Winput}
 \begin{Woutput}
-Number of levels of a grouping factor for the random effects
-is *equal* to n, the number of observations
+Analysis of Variance Table
+       Df Sum Sq Mean Sq F value
+period  3   15.1    5.05    5.05
 \end{Woutput}
+We will save the results from "lsmean", then add the inverse logits of the predictions and the estimated odds ratios for the comparisons as an aid in interpretation.
 \begin{Winput}
 R> cbpp.lsm = lsmeans(cbpp.glmer, trt.vs.ctrl1 ~ period)
 R> cbpp.lsm[[1]]$pred.incidence = 1 - 1 / (1 + exp(cbpp.lsm[[1]]$lsmean))
@@ -535,21 +528,87 @@ R> cbpp.lsm
 \end{Winput}
 \begin{Woutput}
 $`period lsmeans`
- period    lsmean        SE df asymp.LCL  asymp.UCL pred.incidence
-      1 -1.500292 0.2887610 NA -2.066253 -0.9343304     0.18238203
-      2 -2.726800 0.3809740 NA -3.473496 -1.9801052     0.06141032
-      3 -2.829133 0.3994052 NA -3.611953 -2.0463133     0.05577003
-      4 -3.366631 0.5193989 NA -4.384634 -2.3486279     0.03335476
+ period  lsmean      SE df asymp.LCL asymp.UCL pred.incidence
+      1 -1.5003 0.28876 NA   -2.0662  -0.93433       0.182382
+      2 -2.7268 0.38097 NA   -3.4735  -1.98010       0.061411
+      3 -2.8291 0.39940 NA   -3.6119  -2.04631       0.055771
+      4 -3.3665 0.51939 NA   -4.3845  -2.34856       0.033358
 
 $`period differences from control`
-       estimate        SE df  z.ratio p.value odds.ratio
-2 - 1 -1.226509 0.4734567 NA -2.59054 0.02851  0.2933148
-3 - 1 -1.328841 0.4883951 NA -2.72083 0.01944  0.2647839
-4 - 1 -1.866339 0.5905702 NA -3.16023 0.00474  0.1546889
+      estimate      SE df z.ratio p.value odds.ratio
+2 - 1  -1.2265 0.47345 NA -2.5905 0.02851    0.29332
+3 - 1  -1.3288 0.48839 NA -2.7208 0.01944    0.26479
+4 - 1  -1.8662 0.59056 NA -3.1601 0.00474    0.15470
     p values are adjusted using the sidak method for 3 tests
 \end{Woutput}
 When degrees of freedom are not available, as in this case, "lsmeans" emphasizes that fact by displaying "NA" for degrees of freedom and in the column headings.
 %In a way, the comparisons table is not needed because the results are the same as the regression coefficients under the default parameterization.
+
+
+\section{Trends}
+The "lsmeans" function also provides for estimating and comparing the slopes of fitted lines (or curves). To illustrate, consider the built-in R dataset "ChickWeight" which has data on the growths of newly hatched chicks under four different diets. Here is a display of the dataset.
+%The dataset is displayed in Figure~\ref{chick-fig}.
+%\begin{figure}
+\begin{Winput}
+R> xyplot(weight~Time | Diet, groups = ~ Chick, data=ChickWeight, type="o", layout=c(4,1))
+\end{Winput}
+\includegraphics[scale=.8]{using-lsmeans-chick-plot-fig.pdf}
+%\caption{Growth curves of chicks, dataset \texttt{ChickWeight}.}\label{chick-fig}
+%\end{figure}
+
+Let us fit a model to these data using random slopes for each chick and allowing for a different average slope for each diet:
+\begin{Winput}
+R> Chick.lmer = lmer(weight ~ Diet * Time + (0 + Time | Chick), data = ChickWeight)
+R> print(Chick.lmer, corr = FALSE)
+\end{Winput}
+\begin{Woutput}
+Linear mixed model fit by REML ['lmerMod']
+Formula: weight ~ Diet * Time + (0 + Time | Chick)
+   Data: ChickWeight
+
+REML criterion at convergence: 4869.6
+
+Random effects:
+ Groups   Name Variance Std.Dev.
+ Chick    Time   6.67    2.58
+ Residual      196.77   14.03
+Number of obs: 578, groups: Chick, 50
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)    33.22       1.77   18.77
+Diet2          -4.58       3.00   -1.53
+Diet3         -14.97       3.00   -4.98
+Diet4          -1.45       3.02   -0.48
+Time            6.34       0.61   10.39
+Diet2:Time      2.27       1.04    2.19
+Diet3:Time      5.08       1.04    4.90
+Diet4:Time      3.22       1.04    3.10
+\end{Woutput}
+Then call "lsmeans" with the "trend" argument to estimate and compare the average slopes for each diet:
+\begin{Winput}
+R> lsmeans(Chick.lmer, revpairwise ~ Diet, trend = "Time")
+\end{Winput}
+\begin{Woutput}
+$`Time.trend by Diet`
+ Diet Time.trend      SE     df lower.CL upper.CL
+    1     6.3386 0.61050 49.805   5.1122   7.5649
+    2     8.6091 0.83802 48.282   6.9244  10.2938
+    3    11.4229 0.83802 48.282   9.7382  13.1076
+    4     9.5558 0.83926 48.564   7.8689  11.2428
+
+$`Diet pairwise differences`
+      estimate     SE     df  t.ratio p.value
+2 - 1  2.27058 1.0368 48.802  2.18995 0.14041
+3 - 1  5.08432 1.0368 48.802  4.90376 0.00006
+3 - 2  2.81373 1.1851 48.282  2.37417 0.09583
+4 - 1  3.21727 1.0378 48.989  3.10002 0.01637
+4 - 2  0.94669 1.1860 48.423  0.79821 0.85489
+4 - 3 -1.86705 1.1860 48.423 -1.57421 0.40263
+    p values are adjusted using the tukey method for 4 means
+\end{Woutput}
+The tests of comparisons with Diet~1 match those from the regression coefficients, as they should.
+
 
 \section{Contrasts}
 You may occasionally want to know exactly what contrast coefficients are being used, especially in the polynomial case. Contrasts are implemented in functions having names of the form \texttt{\textsl{name}.lsmc} (``lsmc'' for ``least-squares means contrasts''), and you can simply call that function to see the contrasts; for example,
@@ -568,13 +627,13 @@ R> poly.lsmc(1:4)
 You may supply your own custom contrasts in two ways. One is to supply a "contr" argument in the "lsmeans" call, like this:
 \begin{Winput}
 R> print(lsmeans(typing.lm, custom.comp ~ type, 
-R>               contr = list(custom.comp = list(A.vs.others=c(1, -.5, -.5)))), 
+R>               contr = list(custom.comp = list(fancy.contrast=c(1, -.75, -.25)))), 
 R>     omit=1)
 \end{Winput}
 \begin{Woutput}
 $`type custom.comp`
-            estimate      SE df t.ratio p.value
-A.vs.others 21.59777 4.49307  8 4.80691 0.00134
+               estimate     SE df t.ratio p.value
+fancy.contrast   20.334 4.5783  8  4.4414 0.00216
     p values are not adjusted
 \end{Woutput}
 Each contrast family is potentially a list of several contrasts, and there are potentially more than one contrast family; so we must provide a list of lists.
@@ -613,18 +672,45 @@ R> print(lsmeans(Oats.lmer, inward ~ nitro), omit=1)
 \end{Winput}
 \begin{Woutput}
 $`nitro grand mean and inward contrasts`
-                   estimate       SE        df   t.ratio p.value
-grand.mean        103.97222 6.640491  5.000417  15.65731   2e-05
-first 1 vs last 1 -44.00000 4.249953 51.000000 -10.35306   0e+00
-first 2 vs last 2 -29.66667 3.005170 51.000000  -9.87188   0e+00
+                  estimate     SE df  t.ratio p.value
+grand.mean         103.972 6.6406  5  15.6570   2e-05
+first 1 vs last 1  -44.000 4.2500 51 -10.3530   0e+00
+first 2 vs last 2  -29.667 3.0052 51  -9.8719   0e+00
     p values are not adjusted
 \end{Woutput}
 
 
+\section{Differences from SAS}
+"lsmeans" started out with a goal of providing similar capabilities to the "LSMEANS" statements in various SAS procedures. The points below do not list all differences from SAS, but may help you understand how they differ and navigate how to translate a SAS specification to an "lsmeans" one.
+\begin{itemize}
+\item SAS will not print LS~means for factor combinations unless the model contains a corresponding interaction term.
+\item SAS allows only factors (i.e., CLASS variables) in the specification of levels for LS~means. The "lsmeans" function allows covariates as well.
+\item SAS does not seem to allow multiple "at" values for a covariate.
+\item As I understand it, SAS's "OBSMARGINS" ("OM") option allows one to specify a dataset that defines a grid of reference levels. In the R "lsmeans" function, this is done more simply using "at" (or in one special case,  "cov.reduce=FALSE").
+\item For unequal weights for the marginal LS~means, in SAS one must construct the "OM" dataset to reflect the desired proportions, or has a "weight" variable; whereas in "lsmeans" we customize the "fac.reduce" function.
+\item Some of the capabilities of SAS's "split" and "bylevel" options are provided by using a conditioning symbol ``"|"'' in the "lsmeans" specification to delineate the desired slices. "lsmeans" does not output $F$~tests for the slices.
+\end{itemize}
 
+\ifx %-------------------- EXCISED ------------------
+In general, now that covariates can be specified in an LS~means specification, the conceptual framework of "lsmeans" has evolved to serve a more general purpose than SAS does of providing predictions for any linear model on a grid of reference levels. For example, suppose that we have a model "mod" that involves a fractor "treat" and a complicated functions of two numeric variables "x1" and "x2". We can use "lsmeans" to easily create the data for side-by-side contour plots of the fitted surface, via code like this:
+\begin{Winput}
+R> require(lattice)
+R> contourplot(lsmean ~ x1*x2|treat, 
+R>     data = lsmeans(mod, ~x1*x2|treat, at = list(x1=x1.vals, x2=x2.vals))[[1]])
+\end{Winput}
+where "x1.vals" and "x2.vals" define the grid of values for the contour plot.
+\fi %-------------------- END OF CUT ---------------------
 
 \section*{References}
 \begin{description}
+
+\item[Box, G., Hunter,, J., and Hunter, W.~(2005)]
+\emph{Statistics for Experimenters} (2nd ed.).
+Wiley.
+
+\item[Harvey, W.~(1976)] Use of the HARVEY procedure.
+SUGI Proceedings, 
+\url{http://www.sascommunity.org/sugi/SUGI76/Sugi-76-20%20Harvey.pdf} (accessed June 20, 2013).
 
 \item[Lesnoff, M., Laval, G., Bonnet, P., \emph{et al.}~(2004)] Within-herd spread of contagious bovine pleuropneumonia in Ethiopian highlands, \emph{Preventive Veterinary Medicine},  \textbf{64}, 27--40.
 
@@ -648,4 +734,15 @@ Online documentation, SAS/STAT version 9.3: Shared concepts: LSMEANS statement.
 
 \end{document}
 
+
+%%% Complete penicillin dataset
+penicillin = expand.grid(treat = LETTERS[1:4], blend = factor(1:5))
+penicillin$yield = c (
+    89, 88, 97, 94,
+    84, 77, 92, 79,
+    81, 87, 87, 85,
+    87, 92, 89, 84,
+    79, 81, 80, 88
+)
+penicillin.lm = lm(yield ~ blend + treat, data = penicillin)
 
