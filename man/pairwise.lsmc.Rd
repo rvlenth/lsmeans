@@ -5,8 +5,8 @@
 \alias{trt.vs.ctrl.lsmc}
 \alias{trt.vs.ctrl1.lsmc}
 \alias{trt.vs.ctrlk.lsmc}
-\alias{effects.lsmc}
-\alias{del.effects.lsmc}
+\alias{eff.lsmc}
+\alias{del.eff.lsmc}
 
 \title{
 Contrast families
@@ -26,8 +26,8 @@ trt.vs.ctrl.lsmc(levs, ref = 1)
 trt.vs.ctrl1.lsmc(levs, ...)
 trt.vs.ctrlk.lsmc(levs, ...)
 
-effects.lsmc(levs, ...)
-del.effects.lsmc(levs, ...)
+eff.lsmc(levs, ...)
+del.eff.lsmc(levs, ...)
 }
 
 \arguments{
@@ -47,7 +47,7 @@ Each contrast family has a default multiple-testing adjustment as noted below. T
 \code{trt.vs.ctrl.lsmc} and its relatives generate contrasts for comparing one level (or the average over specified levels) with each of the other levels. The argument \code{ref} should be the \emph{index}(es) (not the labels) of the reference level(s). \code{trt.vs.ctrl1.lsmc} is the same as \code{trt.vs.ctrl , ref=1)}, and \code{trt.vs.ctrlk.lsmc} is the same as \code{trt.vs.ctrl , ref=length(levs))}.
 The default multiplicity adjustment method is \code{"sidak"}, which is slightly conservative.
 
-\code{effects.lsmc} and \code{del.effects.lsmc} generate contrasts that compare each level with the average over all levels (in \code{effects.lsmc}) or over all other levels (in \code{del.effects.lsmc}). These differ only in how they are scaled. For a set of k lsmeans, \code{del.effects.lsmc} gives weight 1 to one lsmean and weight -1/(k-1) to the others, while \code{effects.lsmc} gives weights (k-1)/k and -1/k respectively, as in subtracting the overall lsmean from each lsmean.
+\code{eff.lsmc} and \code{del.eff.lsmc} generate contrasts that compare each level with the average over all levels (in \code{eff.lsmc}) or over all other levels (in \code{del.eff.lsmc}). These differ only in how they are scaled. For a set of k lsmeans, \code{del.eff.lsmc} gives weight 1 to one lsmean and weight -1/(k-1) to the others, while \code{eff.lsmc} gives weights (k-1)/k and -1/k respectively, as in subtracting the overall lsmean from each lsmean.
 The default multiplicity adjustment method is \code{"fdr"}. This is a Bonferroni-based method and is slightly conservative; see \code{\link{p.adjust}}
 }
 \value{

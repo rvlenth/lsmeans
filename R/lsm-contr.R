@@ -106,7 +106,7 @@ trt.vs.ctrlk.lsmc = function(levs, ...) {
 }
 
 # effects contrasts. Each mean versus the average of all
-effects.lsmc = function(levs, ...) {
+eff.lsmc = function(levs, ...) {
     k = length(levs)
     M = data.frame(levs=levs)
     for (i in 1:k) {
@@ -124,9 +124,9 @@ effects.lsmc = function(levs, ...) {
 
 # "deleted" effects contrasts. 
 # Each mean versus the average of all others
-del.effects.lsmc = function(levs, ...) {
+del.eff.lsmc = function(levs, ...) {
     k = length(levs)
-    M = as.matrix(effects.lsmc(levs,...)) * k / (k-1)
+    M = as.matrix(eff.lsmc(levs,...)) * k / (k-1)
     M = as.data.frame(M)
     attr(M, "desc") = "differences from mean of others"
     attr(M, "adjust") = "fdr"

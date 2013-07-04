@@ -29,6 +29,7 @@
 \begin{Rcode}{hide,!echo}
 library(lsmeans)
 library(multcomp)
+library(lme4)
 options(width=88, digits=5)
 \end{Rcode}
 
@@ -43,7 +44,7 @@ options(width=88, digits=5)
 \subsection{Introduction}
 Least-squares means (or LS means), are generalizations of covariate-adjusted means, and date back at least to 1976 when they were incorporated in the contributed SAS procedure named \code{HARVEY} (Harvey 1976). Later, they were incorporated via \code{LSMEANS} statements in the regular SAS releases. SAS's documentation describes them as ``predicted population margins---that is, they estimate the marginal means over a balanced population'' (SAS Institute 2012).
 
-People disagree on the appropriateness of LS~means. As in many statistical calculations, there are times when they are, and times when they are not. However, if one understands what is being calculated, one can judge its appropriateness. So the first task is to try to explain it more explicitly than SAS's documentation. To that end, I will say this:
+People disagree on the appropriateness of LS~means. As in many statistical calculations, there are times when they are, and times when they are not. However, if one understands what is being calculated, one can judge its appropriateness. So the first task is to try to explain LS~means as clearly as possible. To that end, I offer this:
 \begin{quote}\it
 LS means are predictions from a model over a grid of predictor values; or marginal averages thereof. 
 \end{quote}
@@ -194,98 +195,47 @@ Each lsmean is the average of the three "tension" lsmeans at the given "wool". A
 
 \section{Split-plot example}
 The "nlme" package includes a famous dataset "Oats" that was used in Yates~(1935) as an example of a split-plot experiment. Here is a summary of the dataset.
-\begin{Rcode}{saveout}
-library(nlme)
+\begin{Rcode}
+data(Oats, package="nlme")
 summary(Oats)
 \end{Rcode}
-\recallout{lastchunk}
-The experiment was conducted in six blocks, and each block was divided into three plots, which were randomly assigned to varieties of oats. With just "Variety" as a factor, it is a randomized complete-block experiment. However, each plot was subdivided into 4 subplots and the subplots were treated with different amounts of nitrogen. Thus, "Block" is a blocking factor, "Variety" is the whole-plot factor, and "nitro" is the split-plot factor. The response variable is "yield", the yield of each subplot in bushels per~acre. Below is an interaction plot of the data, and also an interaction pl;ot of the least-squares means, which will be described later.
+The experiment was conducted in six blocks, and each block was divided into three plots, which were randomly assigned to varieties of oats. With just "Variety" as a factor, it is a randomized complete-block experiment. However, each plot was subdivided into 4 subplots and the subplots were treated with different amounts of nitrogen. Thus, "Block" is a blocking factor, "Variety" is the whole-plot factor, and "nitro" is the split-plot factor. The response variable is "yield", the yield of each subplot in bushels per~acre. Below is an interaction plot of these data.
 \begin{Rcode}{fig, scale=.5, height=4, label=oats-intplot}
 \coderef{hidden}{par(mar=c(4,4,1,.1))}
 with(Oats, interaction.plot(nitro, Variety, yield, type="b"))
 \end{Rcode}
-\hfill
-\begin{Rcode}{fig, !echo, hide, scale=.5, height=4, label=oats-intplot2}
-par(mar=c(4,4,1,.1))
-library(lme4)
-Oats.lmer = lmer(yield ~ Variety + factor(nitro) + (1 | Block/Variety), data=Oats)
-Oats.lsms = lsmeans(Oats.lmer, ~ nitro:Variety)
-with(Oats.lsms[[1]], interaction.plot(nitro, Variety, lsmean, type="b", ylab="Least-Squares means"))
-\end{Rcode}
+%\hfill
+%\begin{Rcode}{fig, !echo, hide, scale=.5, height=4, label=oats-intplot2}
+%par(mar=c(4,4,1,.1))
+%library(lme4)
+%Oats.lmer = lmer(yield ~ Variety + factor(nitro) + (1 | Block/Variety), data=Oats)
+%Oats.lsms = lsmeans(Oats.lmer, ~ nitro:Variety)
+%with(Oats.lsms[[1]], interaction.plot(nitro, Variety, lsmean, type="b", ylab="Least-Squares means"))
+%\end{Rcode}
 \\
-There is not much evidence of an interaction. In this dataset, we have random factors "Block" and "Block:Variety" (which identifies the plots). So we will fit a linear mixed-effects model that accounts for these. Another technicality is that "nitro" is a numeric variable, and initially we will model it as a factor. We will use "lmer" in the "lme4" package to fit a model.
+There is not much evidence of an interaction. In this dataset, we have random factors "Block" and "Block:Variety" (which identifies the plots). So we will fit a linear mixed-effects model that accounts for these. Another technicality is that "nitro" is a numeric variable, and initially we will model it as a factor. We will use "lmer" in the "lme4" package to fit a model, and display the marginal LS~means with appropriate contrasts.
 \enlargethispage{-36pt} %%% MANUAL FORMATTING %%%
 \begin{Rcode}
-library(lme4, quietly = TRUE, warn.conflicts = FALSE)
+library(lme4)
 Oats.lmer = lmer(yield ~ Variety + factor(nitro) + (1 | Block/Variety), data=Oats)
-lsmeans(Oats.lmer, list(revpairwise ~ Variety,  poly ~ nitro,  ~ Variety:nitro))
+lsmeans(Oats.lmer, list(revpairwise ~ Variety,  poly ~ nitro))
 \end{Rcode}
-Unlike the warpbreaks example, the additive model makes it reasonable to look at the marginal lsmeans, which are equally-weighted marginal averages of the cell predictions in the fifth table of the output.\footnote{%
-Interestingly, SAS's implementation of least-squares means will refuse to output these cell predictions unless the interaction term is in the model.}
-The right-hand interaction plot above was obtained using the statement
-\begin{Rcode}{!eval}
-with(Oats.lsms[[5]], interaction.plot(nitro, Variety, lsmean, type="b", 
-                                      ylab="Least-Squares means"))
-\end{Rcode}
-
-
-
-While the default for obtaining marginal lsmeans is to weight the predictions equally, we may override this via the "fac.reduce" argument. For example, suppose that we want the "Variety" predictions when "nitro" is 0.25. We can obtain these by interpolation as follows:
-\begin{Rcode}
-lsmeans(Oats.lmer, ~ Variety, fac.reduce = function(X, lev) .75 * X[2, ] + .25 * X[3, ])
-\end{Rcode}
-(There is also a "cov.reduce" argument to change the default handling of covariates.)
 The polynomial contrasts for "nitro" suggest that we could substitute a quadratic trend for "nitro"; and if we do that, then there is another (probably better) way to make the above predictions:
 \begin{Rcode}
 OatsPoly.lmer = lmer(yield ~ Variety + poly(nitro, 2) + (1 | Block/Variety), data=Oats)
-lsmeans(OatsPoly.lmer, ~ Variety, at = list(nitro = .25))
 \end{Rcode}
-These predictions are slightly higher than the interpolations mostly because they account for the downward concavity of the fitted quadratics.
-
-
-
-
-\ifx %******************* EXCISED IN FAVOR OF MESSY DATA SECTION ***************************
-\section{Rank deficiencies}
-In many fitted models, predictions may be made at any factor combination. However, some models have rank deficiencies due to collinearity among predictors or missing factor combinations, and this can mess-up predictions. Consider the following example using a simplified model on a subset of the Oats data.
-\begin{Rcode}
-just.some = c(1,5,9,11,12,14,15,18,19,20,26,27,29,31,32,33,36)
-wildOats.lm = lm(yield ~ Variety*factor(nitro), data=Oats, subset=just.some)
+The graphs below show the LS~means from these two models.
+\begin{multicols}{2}
+\begin{Rcode}{fig, scale=.5, height=4, label=oat-add-lsmip}
+lsmip(Oats.lmer, Variety ~ nitro)
 \end{Rcode}
-Now consider predictions at various factor combination. Let's first do this manually, using two different parameterizations of the model. 
-\begin{Rcode}
-illus = data.frame(Variety=levels(Oats$Variety), nitro=0.6)
-illus$lsm1 = predict(wildOats.lm, newdata=illus)
-# Another parameterization...
-wildOats.lm2 = update(wildOats.lm, . ~ Variety*ordered(nitro))
-illus$lsm2 = predict(wildOats.lm2, newdata=illus)
-illus
+\begin{Rcode}{fig, scale=.5, height=4, label=oat-poly-lsmip}
+lsmip(OatsPoly.lmer, Variety ~ nitro, 
+    cov.reduce = FALSE)
 \end{Rcode}
-We received warnings that there is a rank deficiency. And the predictions obtained illustrate why: they are not the same. In particular, they differ considerably for "Victory" even though they match for the other two varieties.
-
-It happens that the first two predictions match because they are \emph{estimable}, while the third is not. "lsmeans" takes pains to check for estimability, rather than just warning that the predictions may be misleading. Here is the "lsmeans" output for all twelve factor combinations:
-\begin{Rcode}
-lsmeans(wildOats.lm, ~ Variety*nitro)
-\end{Rcode}
-The results reflect the fact that two lsmeans are non-estimable due to empty cells.
-
-Here's a more subtle example. Suppose we add a covariate to the "typing" dataset used earlier, and fit a model with two covariates:
-\begin{Rcode}
-typing$foo = c(63,99,66,33,45,87,81,60,51,51,48,36)
-typing.lmfoo = lm(pain ~ hours + foo + type, data=typing)
-lsmeans(typing.lmfoo, ~ type)
-\end{Rcode}
-Everything looks fine, but now plug-in a different value for "hours":
-\begin{Rcode}
-lsmeans(typing.lmfoo, pairwise ~ type, at = list(hours=65))
-\end{Rcode}
-None of the lsmeans are estimable now (though, interestingly, the pairwise differences still are). This is due to linear dependence between "hours" and "foo". If you know the linear dependence, you can make predictions:
-\begin{Rcode}
-lsmeans(typing.lmfoo, ~ type, at = list(hours=65, foo=3*(65-39)))
-\end{Rcode}
-At the time of this writing, only "lm" and its relatives can support rank deficiencies. 
-
-\fi %************** END OF EXCISED SECTION ************************************
+\end{multicols}
+\noindent
+These plots are nearly identical. The "lsmip" function works by calling "lsmeans" with a specification for the required factor combinations. In the second plot, we passed the extra argument "cov.reduce = FALSE" to "lsmeans", which causes it to use the unique values of "nitro" rather than predicting at the average of "nitro".
 
 
 
@@ -302,26 +252,26 @@ lsmeans(nutr.lm, ~ group*race)
 \end{Rcode}
 One thing that this illustrates is that \code{lsmeans} incorporates an estimability check, and returns a missing value when a prediction cannot be made uniquely. In this example, we have very few Hispanic mothers in the dataset, resulting in empty cells. This creates a rank deficiency in the fitted model and some predictors are thrown out.
 
-One capability of \code{lsmeans} is that if a factor is included in the \code{at} argument, computations of lsmeans are restricted to the specified level(s). So if we confine ourselves to age group~3, we don't have an estimability issue:
+The "lsmip" function can display a three-way interaction plot
+
+\begin{Rcode}{fig, height=3.25in, scale=.75,label=nutr-intplot}
+lsmip(nutr.lm, race ~ age | group)
+\end{Rcode}
+
+
+We can avoid non-estimable cases by using "at" to restrict the reference levels to a smaller set:
 \begin{Rcode}
 lsmeans(nutr.lm, ~ group*race, at = list(age = "3"))
 \end{Rcode}
 Nonetheless, the standard errors for the Hispanic mothers are enormous due to very small counts.
-One useful summary of the results is to narrow the scope to two races and the two middle age groups, where most of the data lie. Here are the lsmeans and comparisons within rows and columns
+One useful summary of the results is to narrow the scoe of the reference levels to two races and the two middle age groups, where most of the data lie. Here are the lsmeans and comparisons within rows and columns
 \begin{Rcode}
 nutr.lsm = lsmeans(nutr.lm, list(pairwise~group|race, pairwise~race|group),
         at = list(age=c("2","3"), race=c("Black","White")))
 nutr.lsm[-3]
 \end{Rcode}
-An interaction plot of the results follows:
-\begin{Rcode}{fig, height=4.5in, scale=.5,label=nutr-intplot}
-\coderef{hidden}{par(mar=.1+c(4,4,.5,0))}
-with(nutr.lsm[[1]], interaction.plot(group, race, lsmean, type = "b",
-    ylab = "Least-squares mean"))
-\end{Rcode}
-\\
-The general conclusion from both is that the expected gains from the training are higher among families receiving food stamps
-Note that this analysis is somewhat different than the results we would obtain by subsetting the data, as we are borrowing information from the other observations in estimating and testing these lsmeans.
+The general conclusion from these analyses is that (except for age 4, where the data are very sparse), the expected gains from the training are higher among families receiving food stamps.
+Note that this analysis is somewhat different than the results we would obtain by subsetting the data, as we are borrowing information from the other observations in estimating and testing these LS~means.
 
 
 %\clearpage %-------- MANUAL FORMATTING ---------
@@ -329,20 +279,44 @@ Note that this analysis is somewhat different than the results we would obtain b
 The dataset "cbpp" in the "lme4" package, originally from Lesnoff \emph{et al.}~(1964), provides data on the incidence of contagious bovine pleuropneumonia in 15 herds of zebu cattle in Ethiopia, collected over four time periods. These data are used as the primary example for the "glmer" function, and it is found that a model that accounts for overdisperion is advantageous; hence the addition of the "(1|obs)" in the model fitted below. 
 
 "lsmeans" may be used as in linear models to obtain marginal linear predictions for a generalized linear model or, in this case, a generalized linear mixed model. Here, we use the "trt.vs.ctrl1" contrast family to compare each period with the first, as the primary goal was to track the spread or decline of CBPP over time.
-We will save the results from "lsmean", then add the inverse logits of the predictions and the estimated odds ratios for the comparisons as an aid in interpretation.
 \begin{Rcode}
 cbpp$obs = 1:nrow(cbpp)
 cbpp.glmer = glmer(cbind(incidence, size - incidence) 
    ~ period + (1 | herd) + (1 | obs),  family = binomial,  data = cbpp)
+anova(cbpp.glmer)   
 \end{Rcode}
-%\begin{Rcode}
-%cbpp.lsm = lsmeans(cbpp.glmer, trt.vs.ctrl1 ~ period)
-%cbpp.lsm[[1]]$pred.incidence = 1 - 1 / (1 + exp(cbpp.lsm[[1]]$lsmean))
-%cbpp.lsm[[2]]$odds.ratio = exp(cbpp.lsm[[2]]$estimate)
-%cbpp.lsm
-%\end{Rcode}
+We will save the results from "lsmean", then add the inverse logits of the predictions and the estimated odds ratios for the comparisons as an aid in interpretation.
+\begin{Rcode}
+cbpp.lsm = lsmeans(cbpp.glmer, trt.vs.ctrl1 ~ period)
+cbpp.lsm[[1]]$pred.incidence = 1 - 1 / (1 + exp(cbpp.lsm[[1]]$lsmean))
+cbpp.lsm[[2]]$odds.ratio = exp(cbpp.lsm[[2]]$estimate)
+cbpp.lsm
+\end{Rcode}
 When degrees of freedom are not available, as in this case, "lsmeans" emphasizes that fact by displaying "NA" for degrees of freedom and in the column headings.
 %In a way, the comparisons table is not needed because the results are the same as the regression coefficients under the default parameterization.
+
+
+\section{Trends}
+The "lsmeans" function also provides for estimating and comparing the slopes of fitted lines (or curves). To illustrate, consider the built-in R dataset "ChickWeight" which has data on the growths of newly hatched chicks under four different diets. Here is a display of the dataset.
+%The dataset is displayed in Figure~\ref{chick-fig}.
+%\begin{figure}
+\begin{Rcode}{fig, height=3, width=8, scale=.8, label=chick-plot}
+xyplot(weight~Time | Diet, groups = ~ Chick, data=ChickWeight, type="o", layout=c(4,1))
+\end{Rcode}
+%\caption{Growth curves of chicks, dataset \texttt{ChickWeight}.}\label{chick-fig}
+%\end{figure}
+
+Let us fit a model to these data using random slopes for each chick and allowing for a different average slope for each diet:
+\begin{Rcode}
+Chick.lmer = lmer(weight ~ Diet * Time + (0 + Time | Chick), data = ChickWeight)
+print(Chick.lmer, corr = FALSE)
+\end{Rcode}
+Then call "lsmeans" with the "trend" argument to estimate and compare the average slopes for each diet:
+\begin{Rcode}
+lsmeans(Chick.lmer, revpairwise ~ Diet, trend = "Time")
+\end{Rcode}
+The tests of comparisons with Diet~1 match those from the regression coefficients, as they should.
+
 
 \section{Contrasts}
 You may occasionally want to know exactly what contrast coefficients are being used, especially in the polynomial case. Contrasts are implemented in functions having names of the form \texttt{\textsl{name}.lsmc} (``lsmc'' for ``least-squares means contrasts''), and you can simply call that function to see the contrasts; for example,
@@ -354,7 +328,7 @@ poly.lsmc(1:4)
 You may supply your own custom contrasts in two ways. One is to supply a "contr" argument in the "lsmeans" call, like this:
 \begin{Rcode}
 print(lsmeans(typing.lm, custom.comp ~ type, 
-              contr = list(custom.comp = list(A.vs.others=c(1, -.5, -.5)))), 
+              contr = list(custom.comp = list(fancy.contrast=c(1, -.75, -.25)))), 
     omit=1)
 \end{Rcode}
 Each contrast family is potentially a list of several contrasts, and there are potentially more than one contrast family; so we must provide a list of lists.
@@ -385,7 +359,26 @@ print(lsmeans(Oats.lmer, inward ~ nitro), omit=1)
 \end{Rcode}
 
 
+\section{Differences from SAS}
+"lsmeans" started out with a goal of providing similar capabilities to the "LSMEANS" statements in various SAS procedures. The points below do not list all differences from SAS, but may help you understand how they differ and navigate how to translate a SAS specification to an "lsmeans" one.
+\begin{itemize}
+\item SAS will not print LS~means for factor combinations unless the model contains a corresponding interaction term.
+\item SAS allows only factors (i.e., CLASS variables) in the specification of levels for LS~means. The "lsmeans" function allows covariates as well.
+\item SAS does not seem to allow multiple "at" values for a covariate.
+\item As I understand it, SAS's "OBSMARGINS" ("OM") option allows one to specify a dataset that defines a grid of reference levels. In the R "lsmeans" function, this is done more simply using "at" (or in one special case,  "cov.reduce=FALSE").
+\item For unequal weights for the marginal LS~means, in SAS one must construct the "OM" dataset to reflect the desired proportions, or has a "weight" variable; whereas in "lsmeans" we customize the "fac.reduce" function.
+\item Some of the capabilities of SAS's "split" and "bylevel" options are provided by using a conditioning symbol ``"|"'' in the "lsmeans" specification to delineate the desired slices. "lsmeans" does not output $F$~tests for the slices.
+\end{itemize}
 
+\ifx %-------------------- EXCISED ------------------
+In general, now that covariates can be specified in an LS~means specification, the conceptual framework of "lsmeans" has evolved to serve a more general purpose than SAS does of providing predictions for any linear model on a grid of reference levels. For example, suppose that we have a model "mod" that involves a fractor "treat" and a complicated functions of two numeric variables "x1" and "x2". We can use "lsmeans" to easily create the data for side-by-side contour plots of the fitted surface, via code like this:
+\begin{Rcode}{!eval}
+require(lattice)
+contourplot(lsmean ~ x1*x2|treat, 
+    data = lsmeans(mod, ~x1*x2|treat, at = list(x1=x1.vals, x2=x2.vals))[[1]])
+\end{Rcode}
+where "x1.vals" and "x2.vals" define the grid of values for the contour plot.
+\fi %-------------------- END OF CUT ---------------------
 
 \section*{References}
 \begin{description}
