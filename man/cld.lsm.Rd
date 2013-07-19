@@ -1,22 +1,28 @@
 \name{cld.lsm}
+%%% May remove some of these later and not export them...
 \alias{cld}
+\alias{cld.lsm}
+\alias{extract_p.lsm}
+\alias{extract_values.lsm}
+\alias{order_p}
+\alias{wrapLetters}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-cld
+Compact letter displays for 'lsm' objects
 }
 \description{
   cld provides the results of lsmeans with a compact display letters for the
   differences between the means or trends.
 }
 \usage{
-cld(obj, reversed = FALSE, omitNotSig  = FALSE)
+\method{cld}{lsm}(object, reversed = FALSE, omitNotSig  = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{obj}{
+  \item{object}{
     a object of class lsm
 }
-  \item{revered}{
+  \item{reversed}{
     reverse the letters order, i.e (cba) instead of (abc)
 }
   \item{omitNotSig}{
@@ -37,6 +43,7 @@ cld(obj, reversed = FALSE, omitNotSig  = FALSE)
  Luciano Selzer
 }
 \note{
+This is contributed code and not yet very robust; so it should be regarded as only experimental at this time.
 %%  ~~further notes~~
 }
 
