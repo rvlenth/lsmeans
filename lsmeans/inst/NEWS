@@ -1,5 +1,8 @@
 Changelog for 'lsmeans' package
 
+1.10-01
+    Now works again for 'gls' objects
+
 1.10-00 
     Added contrast families for effects and "deleted effects"
     Added "scheffe" option for 'adjust' argument

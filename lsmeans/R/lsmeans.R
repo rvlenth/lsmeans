@@ -37,11 +37,15 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     
     trend.flag = !missing(trend)
     
-# Get RHS of model formula
-    if (inherits(object, "gls"))
+# Get model formula and index of response
+    if (inherits(object, "gls")) {
         Terms = getCovariateFormula(object)
-    else
+        yidx = 0
+    }
+    else {
         Terms = terms(object)
+        yidx = attr(Terms, "response")
+    }
 ### was    Terms = delete.response(terms(object))
 ### but we need to keep track of complete cases, including y values
 ### (Correction 2-13-13, version 1.06-05)    
@@ -210,7 +214,6 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     }
     
     # Keep the response variable from enlarging the grid, no matter what
-    yidx = attr(Terms, "response")
     if (yidx > 0) {
         yname = as.character(attr(Terms, "variables")[[1 + yidx]])
         if (!is.na(match(yname, names(baselevs))[1])) 
