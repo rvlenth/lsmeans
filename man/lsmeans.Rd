@@ -15,7 +15,7 @@ lsmeans(object, specs, adjust = c("auto","tukey","sidak","scheffe", p.adjust.met
   conf = .95, at, trend, contr = list(), 
   cov.reduce = function(x, name) mean(x), 
   fac.reduce = function(coefs, lev) apply(coefs, 2, mean), 
-  glhargs = NULL, lf = FALSE, ...)
+  glhargs = NULL, lf = FALSE, mlf = rep(1,nresp)/nresp, ...)
   
 \method{print}{lsm}(x, omit = NULL, ...)
 \method{print}{data.frame.lsm}(x, ...)
@@ -79,6 +79,11 @@ If \code{TRUE}, the linear functions of the regression coefficients are returned
 }
 \item{linfct}{
 \code{linfct} argument for \code{\link[multcomp]{glht}}
+}
+\item{mlf}{
+   Numeric vector defining a linear function of a multivariate response (i.e., \code{y %*% mlf}
+   where \code{y} is the response variable of dimension \code{nresp}). The default is the mean.)
+}
 }
   \item{\dots}{
 Additional argument(s) passed to the contrast function, or to \code{\link[multcomp]{glht}}; see Details.
