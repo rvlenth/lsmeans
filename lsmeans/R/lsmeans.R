@@ -2,7 +2,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
                    at, trend, contr=list(), 
                    cov.reduce = function(x, name) mean(x), 
                    fac.reduce = function(coefs, lev) apply(coefs, 2, mean), 
-                   glhargs  =NULL, lf = FALSE, mlf = rep(1, nresp) / nresp,
+                   glhargs = NULL, lf = FALSE, mlf = rep(1, nresp) / nresp,
                    ...) 
 {
     
