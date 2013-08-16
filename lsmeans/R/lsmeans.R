@@ -2,7 +2,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
                    at, trend, contr=list(), 
                    cov.reduce = function(x, name) mean(x), 
                    fac.reduce = function(coefs, lev) apply(coefs, 2, mean), 
-                   glhargs=NULL, lf = FALSE,
+                   glhargs=NULL, lf = FALSE, mlf = rep(1, nresp) / nresp,
                    ...) 
 {
     
@@ -98,6 +98,16 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     # Fixed-effects covariance matrix -- Happily, vcov works the same way for lm, lme, lmer
     if(is.null(adjV)) V = vcov(object)
     else V = adjV
+    
+    # If a multivariate model, reduce to univariate model y %*% mlf
+    if (is.matrix(bhat)) {
+        nresp = ncol(bhat)
+        Iden = diag(rep(1, nrow(bhat)))
+        K = kronecker(matrix(mlf, nrow=1), Iden)
+        V = K %*% V %*% t(K)
+        bhat = bhat %*% mlf
+    }
+    
     
     # We'll work only with the non-NA elements of bhat
     used = which(!is.na(bhat))
