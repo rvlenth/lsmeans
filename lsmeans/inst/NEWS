@@ -1,5 +1,8 @@
 Changelog for 'lsmeans' package
 
+1.10-**
+    Added simple support for models with a multivariate response
+
 1.10-01
     Now works again for 'gls' objects
 
