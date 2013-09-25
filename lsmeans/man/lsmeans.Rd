@@ -81,9 +81,8 @@ If \code{TRUE}, the linear functions of the regression coefficients are returned
 \code{linfct} argument for \code{\link[multcomp]{glht}}
 }
 \item{mlf}{
-   Numeric vector defining a linear function of a multivariate response (i.e., \code{y %*% mlf}
+   Numeric vector defining a linear function of a multivariate response (i.e., \code{y \%*\% mlf}
    where \code{y} is the response variable of dimension \code{nresp}). The default is the mean.)
-}
 }
   \item{\dots}{
 Additional argument(s) passed to the contrast function, or to \code{\link[multcomp]{glht}}; see Details.
@@ -195,27 +194,30 @@ lsmeans(Oatsq.lme, ~ Variety, cov.reduce = FALSE)
 
 
 # Compare with lmer result 
-require(lme4)
-Oats.lmer <- lmer(yield ~ factor(nitro) + Variety + (1 | Block/Variety), 
-                   subset = -c(1,2,3,5,8,13,21,34,55), data=Oats)
-# If pbkrtest installed, provides df, bias-adjusted SEs
-if (require(pbkrtest)) {
-  lsmeans(Oats.lmer, list(poly ~ nitro, pairwise ~ Variety))
-}
+if (require(lme4)) {
+    
+    Oats.lmer <- lmer(yield ~ factor(nitro) + Variety + (1 | Block/Variety), 
+                      subset = -c(1,2,3,5,8,13,21,34,55), data=Oats)
+    # If pbkrtest installed, provides df, bias-adjusted SEs
+    if (require(pbkrtest)) {
+        lsmeans(Oats.lmer, list(poly ~ nitro, pairwise ~ Variety))
+    }
+    
+    # Using in conjunction with 'glht' (note -- this does not use adjusted vcov)
+    if (require(multcomp)) {
+        # calling 'glht' from 'lsmeans' ...
+        lsmeans(Oats.lmer, pairwise ~ Variety, glhargs=list(df=9))
+        
+        # calling 'lsmeans' from 'glht' to get simultaneous CIs
+        confint(glht(Oats.lmer, linfct = lsm(~ Variety), df=9))
+    }
+    
+    # Custom contrasts
+    lsmeans(Oats.lmer, my.own ~ Variety, 
+            contr = list(my.own = list(G.vs.M = c(1,-1,0), GM.vs.V = c(.5,.5,-1))))
+    
+} # --- [ if (require(lme4)) ] ---
 
-# Using in conjunction with 'glht' (note -- this does not use adjusted vcov)
-if (require(multcomp)) {
-  # calling 'glht' from 'lsmeans' ...
-  lsmeans(Oats.lmer, pairwise ~ Variety, glhargs=list(df=9))
-  
-  # calling 'lsmeans' from 'glht' to get simultaneous CIs
-  confint(glht(Oats.lmer, linfct = lsm(~ Variety), df=9))
-}
-
-# Custom contrasts
-lsmeans(Oats.lmer, my.own ~ Variety, 
-  contr = list(my.own = list(G.vs.M = c(1,-1,0), GM.vs.V = c(.5,.5,-1))))
-  
 #### Examples with trends...
 # Model with interaction
 fiber.lm2 = lm(strength ~ diameter * machine, data = fiber)
