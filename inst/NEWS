@@ -1,7 +1,10 @@
 Changelog for 'lsmeans' package
 
-1.10-**
+1.10-02
     Added simple support for models with a multivariate response
+    Bug fix for case when only one contrast is specified
+    Examples that use lme4 package are made conditional per CRAN requirements
+        since lme4 version 1.0-4 and later depend on a non-portable package
 
 1.10-01
     Now works again for 'gls' objects

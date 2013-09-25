@@ -509,7 +509,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
             if (lf || !is.null(glhargs)) { # create linear fcn for glht
                 KK = t(sapply(Clist, function(con) {
                     nz = which(abs(con) > .0001)
-                    K[ , nz] %*% con[nz]    
+                    K[ , nz] %*% con[nz, drop = FALSE]    
                 }))
                 if (lf) {
                     dimnames(KK)[[2]] = row.names(K)
@@ -531,7 +531,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
                 if (is.na(adj)) adj = no.adj
                 ctbl = as.data.frame(t(sapply(Clist, function(con) {                    
                     nz = which(abs(con) > .0001)
-                    k = K[ , nz] %*% con[nz]
+                    k = K[ , nz, drop = FALSE] %*% con[nz]
                     do.est(k)
                 })))
                 
