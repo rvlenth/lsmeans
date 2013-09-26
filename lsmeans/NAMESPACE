@@ -1,5 +1,6 @@
 import(Matrix)
 import(multcomp)
+import(plyr)
 
 S3method(print, lsm)
 S3method(print, data.frame.lsm)
