@@ -204,19 +204,20 @@ if (require(lme4)) {
     }
     
     # Using in conjunction with 'glht' (note -- this does not use adjusted vcov)
-    if (require(multcomp)) {
-        # calling 'glht' from 'lsmeans' ...
-        lsmeans(Oats.lmer, pairwise ~ Variety, glhargs=list(df=9))
-        
-        # calling 'lsmeans' from 'glht' to get simultaneous CIs
-        confint(glht(Oats.lmer, linfct = lsm(~ Variety), df=9))
-    }
-    
+}
+if (require(multcomp) && require(lme4)) {
+    # calling 'glht' from 'lsmeans' ...
+    lsmeans(Oats.lmer, pairwise ~ Variety, glhargs=list(df=9))
+
+    # calling 'lsmeans' from 'glht' to get simultaneous CIs
+    confint(glht(Oats.lmer, linfct = lsm(~ Variety), df=9))
+}
+if (require(lme4)) {
     # Custom contrasts
     lsmeans(Oats.lmer, my.own ~ Variety, 
             contr = list(my.own = list(G.vs.M = c(1,-1,0), GM.vs.V = c(.5,.5,-1))))
+}
     
-} # --- [ if (require(lme4)) ] ---
 
 #### Examples with trends...
 # Model with interaction
