@@ -355,13 +355,18 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
         combs = do.call("expand.grid", levs)
 
 ### New (version 1.10) more efficient derivation of K matrix
-        RI = plyr:::splitter_a(row.indexes, match(facs, names(baselevs)))
-    # Each entry of RI has the row indexes of X
-    # for each combination of facs (in expand.grid order)
-        K = sapply(RI, function(idx) {
-            fac.reduce(X[idx, , drop=FALSE], "")
+#         RI = plyr:::splitter_a(row.indexes, match(facs, names(baselevs)))
+#     # Each entry of RI has the row indexes of X
+#     # for each combination of facs (in expand.grid order)
+#         K = sapply(RI, function(idx) {
+#             fac.reduce(X[idx, , drop=FALSE], "")
+#         })
+# Yet newer version, more efficient, uses an exported plyr function too
+        K = alply(row.indexes, match(facs, names(baselevs)), function(idx) {
+                    fac.reduce(X[idx, , drop=FALSE], "")
         })
-                
+        K = as.matrix(as.data.frame(K))
+        
 #--- above code replaces pre-1.10 code below...
 #         # For each comb, find the needed lin. comb. of bhat to estimate
 #         # (These will end up being the COLUMNS of K)
@@ -423,7 +428,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
             results[[lsmentry]] = t(K)
         }
         else {
-            lsms = as.data.frame(t(apply(K,2,do.est)))
+            lsms = as.data.frame(t(apply(K, 2, do.est)))
             # fix-up names and get CIs
             names(lsms)[1] = effname
             # include factor levels
@@ -519,7 +524,8 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
                     # If glht gets fixed for rank deficiency, may want to consider checking rows of KK
                     # for estimability (see code in do.est())
                     args = c(list(model=object, linfct=KK[ , used]), glhargs)
-                    ctbl = summary(do.call("glht", args))
+                    if (require(multcomp)) ### CRAN's check requires this even though I already checked earlier
+                        ctbl = summary(do.call("glht", args))
                 }
             }
             else { # internal way of doing contrasts
