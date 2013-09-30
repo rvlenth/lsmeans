@@ -5,7 +5,8 @@ Changelog for 'lsmeans' package
     Bug fix for case when only one contrast is specified
     Examples that use lme4 package are made conditional per CRAN requirements
         since lme4 version 1.0-4 and later depend on a non-portable package
-    Dependency modifications to meet CRAN requirements
+    Dependency modifications to meet CRAN requirements. Includes adding
+        multcomp as required package, since we enhance glht
 
 1.10-01
     Now works again for 'gls' objects

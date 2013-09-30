@@ -68,7 +68,9 @@ A function of \code{coefs} and \code{lev} where \code{lev} is the level of a fac
 The argument \code{coefs} is a matrix whose rows correspond to the combinations of all factors in the model other than those involved in the \code{lsmeans} specification. Each row has the coefficients for the linear combination of the regression coefficients to be used in that case. By default, these rows are averaged together (mimicking SAS), but the user may override that behavior. Besides \code{lev}, \code{names(lev)} will provide the name of the factor or factor combination, and the \code{row.names} of \code{coefs} provide the levels of the extraneous factors.
 }
   \item{glhargs}{
-If this is a \code{list}, the object and specified contrasts are passed to the function \code{\link[multcomp]{glht}} in the \code{multcomp} package, with the contents of \code{glhargs} as additional arguments. (If you do not wish to provide additional arguments, use \code{glsargs=list()}.) If \code{glhargs} is left at \code{NULL}, or if the \code{multcomp} package is not installed, then \code{glht} is not called, and the contrast results are produced internally by \code{lsmeans}. This argument affects only the results from contrasts and not those for the lsmeans themselves. Note: If \code{glhargs} is used, the \code{adjust} argument is ignored. 
+If this is a \code{list}, the object and specified contrasts are passed to the function \code{\link[multcomp]{glht}} in the \code{multcomp} package, with the contents of \code{glhargs} as additional arguments. (If you do not wish to provide additional arguments, use \code{glsargs=list()}.) If \code{glhargs} is left at \code{NULL}, 
+%%%or if the \code{multcomp} package is not installed, 
+then \code{glht} is not called, and the contrast results are produced internally by \code{lsmeans}. This argument affects only the results from contrasts and not those for the lsmeans themselves. Note: If \code{glhargs} is used, the \code{adjust} argument is ignored. 
 If only one set of lsmeans or contrasts thereof is desired, an alternative is to call \code{glht} with an \code{lsm} call as the \code{linfct} argument.
 }
 \item{lf}{
@@ -204,15 +206,12 @@ if (require(lme4)) {
     }
     
     # Using in conjunction with 'glht' (note -- this does not use adjusted vcov)
-}
-if (require(multcomp) && require(lme4)) {
     # calling 'glht' from 'lsmeans' ...
     lsmeans(Oats.lmer, pairwise ~ Variety, glhargs=list(df=9))
 
     # calling 'lsmeans' from 'glht' to get simultaneous CIs
     confint(glht(Oats.lmer, linfct = lsm(~ Variety), df=9))
-}
-if (require(lme4)) {
+
     # Custom contrasts
     lsmeans(Oats.lmer, my.own ~ Variety, 
             contr = list(my.own = list(G.vs.M = c(1,-1,0), GM.vs.V = c(.5,.5,-1))))

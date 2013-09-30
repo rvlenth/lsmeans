@@ -8,15 +8,16 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     
     if (missing(specs)) stop("Must specify specs, e.g. 'pairwise ~ treatment'")
     if(!is.null(glhargs)) { # we'll pass contrasts to glht, if multcomp installed; else don't, and warn
-        if(!require("multcomp")) {
-            glhargs = NULL
-            warning("'glhargs' option disabled because 'multcomp' package not installed")
-        }
+        # Version 1.10-2 start requiring multcomp        
+        #         if(!require("multcomp")) {
+        #             glhargs = NULL
+        #             warning("'glhargs' option disabled because 'multcomp' package not installed")
+        #         }
         # force integer df since mvtnorm no longer supports fractional
+        #        else {
         # I choose to round up if it's within .2 of next integer
-        else {
-            if (!is.null(glhargs$df)) glhargs$df = as.integer(max(1, .2 + glhargs$df))
-        }
+        if (!is.null(glhargs$df)) glhargs$df = as.integer(max(1, .2 + glhargs$df))
+        #        }
     }
     
 # added 6-18-2013 - allow cov.reduce to be logical
@@ -524,8 +525,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
                     # If glht gets fixed for rank deficiency, may want to consider checking rows of KK
                     # for estimability (see code in do.est())
                     args = c(list(model=object, linfct=KK[ , used]), glhargs)
-                    if (require(multcomp)) ### CRAN's check requires this even though I already checked earlier
-                        ctbl = summary(do.call("glht", args))
+                    ctbl = summary(do.call("glht", args))
                 }
             }
             else { # internal way of doing contrasts
