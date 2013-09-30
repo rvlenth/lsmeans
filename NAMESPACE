@@ -1,5 +1,5 @@
 import(Matrix)
-if (require(multcomp)) { importFrom(multcomp, glht) }
+importFrom(multcomp, glht)
 import(plyr)
 
 S3method(print, lsm)
