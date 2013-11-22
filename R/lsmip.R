@@ -36,10 +36,12 @@ lsmip = function(object, formula, pch=c(1,2,6,7,9,10,15:20), lty=1, col=NULL, ..
     
     
     tvars = all.vars(formula[[2]])
-    lsms$tvar = factor(do.call(paste, lsms[tvars]))
+    tv = do.call(paste, lsms[tvars])
+    lsms$tvar = factor(tv, levels=unique(tv))
     rhs = strsplit(as.character(formula[3]), "\\|")[[1]]
     xvars = all.vars(as.formula(paste("~", rhs[[1]])))
-    lsms$xvar = factor(do.call(paste, lsms[xvars]))
+    xv = do.call(paste, lsms[xvars])
+    lsms$xvar = factor(xv, levels = unique(xv))
     lsms = lsms[order(lsms$xvar), ]
     plotform = lsmean ~ xvar
     if (length(rhs) > 1) {
