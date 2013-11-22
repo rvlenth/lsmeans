@@ -56,29 +56,23 @@ warp.lm <- lm(breaks ~ wool * tension, data = warpbreaks)
 # Following plot is the same as the usual interaction plot of the data
 lsmip(warp.lm, wool ~ tension)
 
-#--- Four-factor example from Box, Hunter, Hunter (2nd ed) p. 199
-process <- expand.grid(Catalyst=factor(c(10,15)), Temp=factor(c(220,240)), 
-                       Pressure=factor(c(50,80)), Conc=factor(c(10,12)))
-process$Conversion <- c(70,60,89,81,69,62,88,81,60,49,88,82,60,52,86,79)
-process.lm <- lm(Conversion ~ Catalyst*Temp*Pressure*Conc, data = process)
+#--- Three-factor example
+noise.lm = lm(noise ~ size * type * side, data = auto.noise)
 
-op <- options(warn=-1) # zero df for error, suppress warnings
+# Separate interaction plots of size by type, for each side
+lsmip(noise.lm, type ~ size | side)
 
-# Multi-panel interaction plot
-lsmip(process.lm, Catalyst ~ Temp | Pressure*Conc)
+# One interaction plot, using combinations of size and side as the x factor
+lsmip(noise.lm, type ~ side * size)
 
-# One panel using different factor combinations and custom symbols and lines 
-lsmip(process.lm, Catalyst*Temp ~ Pressure*Conc, 
-      lty=1:2, col=1:2, pch=c(1,1,2,2))
+# One interaction plot using combinations of type and side as the trace factor
+# customize the colors, line types, and symbols to suggest these combinations
+lsmip(noise.lm, type * side ~ size, lty=1:2, col=1:2, pch=c(1,1,2,2))
 
-# Simplified model with just one two-way interaction
-process.lm2 <- update(process.lm, . ~ Catalyst + Pressure + Temp*Conc)
-lsmip(process.lm2, Catalyst*Temp ~ Pressure*Conc, 
-      lty=1:2, col=1:2, pch=c(1,1,2,2))
-
-options(op)
+# 3-way interaction is significant, but doesn't make a lot of visual difference...
+noise.lm2 = update(noise.lm, . ~ . - size:type:side)
+lsmip(noise.lm2, type * side ~ size, lty=1:2, col=1:2, pch=c(1,1,2,2))
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
+
 \keyword{ models }
 \keyword{ regression }

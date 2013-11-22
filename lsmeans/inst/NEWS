@@ -1,6 +1,10 @@
 Changelog for 'lsmeans' package
 
-1.10-02
+1.10-3
+    Fix to lsmip so factor levels are not re-ordered
+    Added new dataset: 'auto.noise'
+
+1.10-2
     Added simple support for models with a multivariate response
     Bug fix for case when only one contrast is specified
     Examples that use lme4 package are made conditional per CRAN requirements
