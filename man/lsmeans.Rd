@@ -68,8 +68,8 @@ A function of \code{coefs} and \code{lev} where \code{lev} is the level of a fac
 The argument \code{coefs} is a matrix whose rows correspond to the combinations of all factors in the model other than those involved in the \code{lsmeans} specification. Each row has the coefficients for the linear combination of the regression coefficients to be used in that case. By default, these rows are averaged together (mimicking SAS), but the user may override that behavior. Besides \code{lev}, \code{names(lev)} will provide the name of the factor or factor combination, and the \code{row.names} of \code{coefs} provide the levels of the extraneous factors.
 }
   \item{glhargs}{
-If this is a \code{list}, the object and specified contrasts are passed to the function \code{\link[multcomp]{glht}} in the \code{multcomp} package, with the contents of \code{glhargs} as additional arguments. (If you do not wish to provide additional arguments, use \code{glsargs=list()}.) If \code{glhargs} is left at \code{NULL}, 
-%%%or if the \code{multcomp} package is not installed, 
+If this is a \code{list}, the object and specified contrasts are passed to the function \code{\link[multcomp]{glht}} in the \pkg{multcomp} package, with the contents of \code{glhargs} as additional arguments. (If you do not wish to provide additional arguments, use \code{glsargs=list()}.) If \code{glhargs} is left at \code{NULL}, 
+%%%or if the \pkg{multcomp} package is not installed, 
 then \code{glht} is not called, and the contrast results are produced internally by \code{lsmeans}. This argument affects only the results from contrasts and not those for the lsmeans themselves. Note: If \code{glhargs} is used, the \code{adjust} argument is ignored. 
 If only one set of lsmeans or contrasts thereof is desired, an alternative is to call \code{glht} with an \code{lsm} call as the \code{linfct} argument.
 }
@@ -107,11 +107,13 @@ One other note concerning covariates: One must be careful with covariates that d
 
 The built-in contrast methods that can be used in \code{specs} formulas are \code{pairwise}, \code{revpairwise}, \code{poly}, \code{trt.vs.ctrl}, \code{trt.vs.ctrl1}, and \code{trt.vs.ctrlk}. They are implemented as functions having the same names with \code{.lsmc} added (e.g., \code{\link{pairwise.lsmc}}). Users may write additional \code{.lsmc} functions that generate custom families of contrasts. See the documentation for \code{\link{pairwise.lsmc}} for an example.
 
+Experimental feature: If a contrast family named \code{cld} is specified, then it is the same as \code{pairwise}, with the side effect that a column named \code{.group} is added to the table of least-squares means. This column is a compact letter display (CLD): means associated with one or more of the same letters have P values greater than \code{1 - conf} in the selected pairwise-comparison tests. For more details on CLDs, see the documentation for \code{\link[multcomp]{cld}} in the \pkg{multcomp} package.
+
 When \code{trend} is specified and it names a predictor variable in the model, the trend is estimated using a difference quotient over 1/1000 the range of the predictor (centered at the predictor's \code{at} value or its \code{cov.reduce} result). If \code{trend} instead names a model term, then the trend is determined symbolically. It could be informative to run with \code{lf=TRUE}. See the examples.
 
 Degrees of freedom are currently not provided for \code{lme} or \code{glme} objects, or for \code{mer} objects arising from generalized linear models; in those cases, asymptotic results are printed, and this fact is emphasized by displaying \code{NA} for the defrees of freedom. For linear \code{mer} objects, degrees of freedom are computed using the Kenward and Roger (1997) method, provided the \code{pbkrtest} package is installed (the package is loaded if needed). Moreover, in that case, the adjusted covariance matrix from the \code{vcovAdj()} function in the \code{pbkrtest} package is used to calculate standard errors. See Halekoh and H?jsgaard (2012) and the documentation for \code{\link[pbkrtest]{KRmodcomp}} for more details. Degrees of freedom are not known to \code{\link[multcomp]{glht}} except in the case of \code{lm} objects. Note that \code{glht} requires the degrees of freedom to be an integer; accordingly, if \code{df} is included in \code{glhargs}, it is coerced to an integer value of \code{max(1, as.integer(df + .2))}. That is, it is forced to be at least 1, and it is taken up to the next higher integer if its fractional part is at least .8.
 
-For users of the package \code{multcomp}, linear functions corresponding to \code{specs} may be passed to \code{\link[multcomp]{glht}} in two different ways. One is to call \code{glht} from within \code{lsmeans} by specifying \code{glhtargs}. The other way is to call \code{lsmeans} from within \code{glht} by supplying a call to \code{lsm} in its \code{linfct} argument. The first way provides \code{summary.glht} objects for all contrast results (but not for the lsmeans). The second way passes \emph{just one} set of linear functions to \code{glht}; in particular, only the first element of \code{specs} is used, and the last set of linear functions from that specification are given to \code{glht}. Thus, \code{glht(model, lsm(~treat))} will estimate the lsmeans of treatments, while \code{glht(model, lsm(pairwise~treat))} will estimate the pairwise comparisons.
+For users of the package \pkg{multcomp}, linear functions corresponding to \code{specs} may be passed to \code{\link[multcomp]{glht}} in two different ways. One is to call \code{glht} from within \code{lsmeans} by specifying \code{glhtargs}. The other way is to call \code{lsmeans} from within \code{glht} by supplying a call to \code{lsm} in its \code{linfct} argument. The first way provides \code{summary.glht} objects for all contrast results (but not for the lsmeans). The second way passes \emph{just one} set of linear functions to \code{glht}; in particular, only the first element of \code{specs} is used, and the last set of linear functions from that specification are given to \code{glht}. Thus, \code{glht(model, lsm(~treat))} will estimate the lsmeans of treatments, while \code{glht(model, lsm(pairwise~treat))} will estimate the pairwise comparisons.
 
 If the model contains a matrix among its predictors, each column is averaged using the function specified in \code{cov.reduce}. There is no provision for matrices in the \code{at} argument.
 }
@@ -148,10 +150,6 @@ Russell V. Lenth, The University of Iowa
 \code{\link{pairwise.lsmc}}, \code{\link[multcomp]{glht}}
 }
 
-\note{
-The functions \code{\link[multcomp]{mcp}} (in \code{multcomp})) and \code{\link[doBy]{popMeans}} (in \code{doBy)} also provide least-squares means, with a different user interface.
-}
-
 \examples{
 require(lsmeans)
 
@@ -168,6 +166,9 @@ warp.lm <- lm(breaks ~ wool * tension, data = warpbreaks)
 #-- We only need to see the wool*tension means listed once ...
 print(lsmeans (warp.lm,  list(pairwise ~ wool | tension,  poly ~ tension | wool)),
     omit=3)
+
+# Compact letter display
+lsmeans(warp.lm, cld ~ tension | wool)
 
 
 ### Unbalanced split-plot example ###
@@ -221,6 +222,7 @@ if (require(lme4)) {
 #### Examples with trends...
 # Model with interaction
 fiber.lm2 = lm(strength ~ diameter * machine, data = fiber)
+
 # Compare the linear trends for diameter
 lsmeans(fiber.lm2, pairwise ~ machine, trend = "diameter")
 
@@ -233,10 +235,12 @@ lsmeans(fiber.lm3, pairwise ~ machine, trend = "log(diameter)")
 # - this is done via a diff quotient - compare with fiber.lm2 results
 lsmeans(fiber.lm3, pairwise ~ machine, trend = "diameter")
 
+\dontrun{
 # Examine the linear functions generated for these examples
 lsmeans(fiber.lm2, ~ machine, trend = "diameter", lf = TRUE)
 lsmeans(fiber.lm3, ~ machine, trend = "log(diameter)", lf = TRUE)
 lsmeans(fiber.lm3, ~ machine, trend = "diameter", lf = TRUE)
+}
 }
 \keyword{ models }
 \keyword{ regression }
