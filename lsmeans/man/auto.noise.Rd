@@ -2,8 +2,7 @@
 \alias{auto.noise}
 \docType{data}
 \title{Auto Pollution Filter Noise}
-\description{
-}
+\description{Three-factor experiment comparing pollution-filter noise for two filters, three sizes of cars, and two sides of the car.}
 \usage{auto.noise}
 
 \format{
@@ -26,7 +25,7 @@ fuel consumption, exhaust gas back pressure, and silencing. On the last
 question, he referred to the data included here as evidence that the silencing
 properties of the Octel filter were at least equal to those of standard silencers.}
 
-\source{Dataset was imported from the Data and Story Library - \code{\link{http://lib.stat.cmu.edu/DASL/Datafiles/airpullutionfiltersdat.html}} (sic). However,
+\source{Dataset was imported from the Data and Story Library - \url{http://lib.stat.cmu.edu/DASL/Datafiles/airpullutionfiltersdat.html} (sic). However,
 the factor levels were assigned meaningful names, and the observations were sorted
 in random order as if this were the run order of the experiment.
 }

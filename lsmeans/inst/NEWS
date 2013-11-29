@@ -1,8 +1,10 @@
 Changelog for 'lsmeans' package
 
 1.10-3
+    Added cld capability
     Fix to lsmip so factor levels are not re-ordered
     Added new dataset: 'auto.noise'
+    Fixed problem in documentation link to another package
 
 1.10-2
     Added simple support for models with a multivariate response

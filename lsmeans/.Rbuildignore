@@ -1,7 +1,7 @@
 ^\.Rproj\.user$
 ^.*\.Rproj$
 
-cld.lsm.R
+####cld.lsm.R
 cld.lsm.Rd
 lsmeans-Ex.R
 using-lsmeans.aux

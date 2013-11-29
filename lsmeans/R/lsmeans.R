@@ -1,5 +1,5 @@
 lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.adjust.methods), conf = .95, 
-                   at, trend, contr=list(), 
+                   at, trend, contr=list(),
                    cov.reduce = function(x, name) mean(x), 
                    fac.reduce = function(coefs, lev) apply(coefs, 2, mean), 
                    glhargs = NULL, lf = FALSE, mlf = rep(1, nresp) / nresp,
@@ -447,6 +447,13 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
                     lsms$upper.CL = lsms[[effname]] + me
                 }
             }
+            
+#             if(sort) {
+#                 ord = order(lsms[[effname]])
+#                 lsms = lsms[ord, ]
+#                 K = K[, ord]
+#             }
+            
             attr(lsms, "print.row.names") = FALSE
             class(lsms) = c("data.frame.lsm", "data.frame")
             results[[lsmentry]] = lsms
@@ -454,6 +461,10 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
         
         # Do requested contrasts
         if (! is.null(method)) {
+            cld.flag = (method == "cld")
+            if (cld.flag)
+                method = "pairwise"
+            
             # look for contrast fcn
             fn = paste(method, "lsmc", sep=".")
             confcn = if (exists(fn, mode="function")) get(fn) 
@@ -559,6 +570,13 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
                 else "p values are not adjusted"
                 attr(ctbl, "print.row.names") = TRUE
                 class(ctbl) = c("data.frame.lsm", "data.frame")
+                
+                if(cld.flag) { ### add cld to lsm table
+                    lsms = cbind(.group = .get.cld(ctbl, 1-conf, nby), lsms)
+                    attr(lsms, "print.row.names") = FALSE
+                    class(lsms) = c("data.frame.lsm", "data.frame")
+                    results[[lsmentry]] = lsms
+                }
             }
             results[[paste(facs.lbl,methdesc)]] = ctbl
         }
