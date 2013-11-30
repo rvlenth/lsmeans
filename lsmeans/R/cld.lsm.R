@@ -27,8 +27,10 @@
     ltr.pool = c(LETTERS, letters)
     for (j in 1:ncol(x)) {
         IA = .insert_absorb(x[,j], Letters=ltr.pool, comps=comps, lvl_order=1:k)
-        pad = substr("                               ", 1, ncol(IA$LetterMatrix))
-        ltrs = sapply(ltrs, paste, pad, sep="")
+        if (j > 1) {
+            pad = substr("                               ", 1, ncol(IA$LetterMatrix))
+            ltrs = sapply(ltrs, paste, pad, sep="")
+        }
         ltrs = c(ltrs, IA$monospacedLetters)
         ltr.pool = setdiff(ltr.pool, dimnames(IA$LetterMatrix)[[2]])
     }
