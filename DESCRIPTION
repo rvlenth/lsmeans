@@ -1,12 +1,12 @@
 Package: lsmeans
 Type: Package
 Title: Least-squares means
-Version: 1.10-3
-Date: 2013-11-23
+Version: 1.10-4
+Date: 2013-11-29
 Encoding: latin1
 Author: Russell V. Lenth
 Maintainer: Russ Lenth <russell-lenth@uiowa.edu>
-Depends: plyr, multcomp, R (>= 2.14)
+Depends: plyr, multcomp, R (>= 3.0)
 Suggests: nlme, lme4, pbkrtest, lattice
 Enhances: 
 Imports: Matrix

@@ -1,5 +1,8 @@
 Changelog for 'lsmeans' package
 
+1.10-4
+    Fixed bug in cld spec that caused multiple letter columns
+
 1.10-3
     Added cld capability
     Fix to lsmip so factor levels are not re-ordered
