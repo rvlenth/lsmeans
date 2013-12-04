@@ -198,25 +198,28 @@ lsmeans(Oatsq.lme, ~ Variety, cov.reduce = FALSE)
 
 # Compare with lmer result 
 if (require(lme4)) {
+Oats.lmer <- lmer(yield ~ factor(nitro) + Variety + (1 | Block/Variety), 
+                  subset = -c(1,2,3,5,8,13,21,34,55), data=Oats)
+                      
+# If pbkrtest installed, provides df, bias-adjusted SEs
+if (require(pbkrtest))
+    lsmeans(Oats.lmer, list(poly ~ nitro, pairwise ~ Variety))
+}    
     
-    Oats.lmer <- lmer(yield ~ factor(nitro) + Variety + (1 | Block/Variety), 
-                      subset = -c(1,2,3,5,8,13,21,34,55), data=Oats)
-    # If pbkrtest installed, provides df, bias-adjusted SEs
-    if (require(pbkrtest)) {
-        lsmeans(Oats.lmer, list(poly ~ nitro, pairwise ~ Variety))
-    }
-    
-    # Using in conjunction with 'glht' (note -- this does not use adjusted vcov)
-    # calling 'glht' from 'lsmeans' ...
+# Using in conjunction with 'glht' (note -- this does not use adjusted vcov)
+# calling 'glht' from 'lsmeans' ...
+if (require(lme4))
     lsmeans(Oats.lmer, pairwise ~ Variety, glhargs=list(df=9))
 
-    # calling 'lsmeans' from 'glht' to get simultaneous CIs
+# calling 'lsmeans' from 'glht' to get simultaneous CIs
+if (require(lme4))    
     confint(glht(Oats.lmer, linfct = lsm(~ Variety), df=9))
 
-    # Custom contrasts
+# Custom contrasts
+if (require(lme4))    
     lsmeans(Oats.lmer, my.own ~ Variety, 
-            contr = list(my.own = list(G.vs.M = c(1,-1,0), GM.vs.V = c(.5,.5,-1))))
-}
+            contr = list(my.own = list(G.vs.M = c(1,-1,0), 
+                                       GM.vs.V = c(.5,.5,-1))))
     
 
 #### Examples with trends...
@@ -237,9 +240,9 @@ lsmeans(fiber.lm3, pairwise ~ machine, trend = "diameter")
 
 \dontrun{
 # Examine the linear functions generated for these examples
-lsmeans(fiber.lm2, ~ machine, trend = "diameter", lf = TRUE)
-lsmeans(fiber.lm3, ~ machine, trend = "log(diameter)", lf = TRUE)
-lsmeans(fiber.lm3, ~ machine, trend = "diameter", lf = TRUE)
+  lsmeans(fiber.lm2, ~ machine, trend = "diameter", lf = TRUE)
+  lsmeans(fiber.lm3, ~ machine, trend = "log(diameter)", lf = TRUE)
+  lsmeans(fiber.lm3, ~ machine, trend = "diameter", lf = TRUE)
 }
 }
 \keyword{ models }
