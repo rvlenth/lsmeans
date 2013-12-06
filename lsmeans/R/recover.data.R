@@ -12,30 +12,14 @@ recover.data = function(call) {
 }
 
 
-## For reference, this is model.frame method for 'lm' objects
-model.frame.lm <- function (formula, ...) 
-{
-    dots <- list(...)
-    nargs <- dots[match(c("data", "na.action", "subset"), names(dots), 
-                        0)]
-    if (length(nargs) || is.null(formula$model)) {
-        fcall <- formula$call
-        m <- match(c("formula", "data", "subset", "weights", 
-                     "na.action", "offset"), names(fcall), 0L)
-        fcall <- fcall[c(1L, m)]
-        fcall$drop.unused.levels <- TRUE
-        fcall[[1L]] <- as.name("model.frame")
-        fcall$xlev <- formula$xlevels
-        fcall$formula <- terms(formula)
-        fcall[names(nargs)] <- nargs
-        env <- environment(formula$terms)
-        if (is.null(env)) 
-            env <- parent.frame()
-        eval(fcall, env, parent.frame())
-    }
-    else formula$model
-}
 
+# The following function returns a data.frame with the variables
+# from the given object. 
+# It also adds attributes "predictors" and "responses"
+# This function is adapted from model.frame.lm
+
+# Currently this works correctly for obj of class "lm",
+# examples warp.data, warp.log, warp.with; and warp.att in data attached
 rd = function(obj) {
     fcall <- obj$call
     m <- match(c("formula", "data", "subset", "weights", 
