@@ -1,6 +1,10 @@
 ^\.Rproj\.user$
 ^.*\.Rproj$
 
+$ New devel stuff
+test-data.R
+recover.data.R
+
 ####cld.lsm.R
 cld.lsm.Rd
 lsmeans-Ex.R
