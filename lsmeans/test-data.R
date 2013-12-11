@@ -29,11 +29,6 @@ Oats.lmep = lme(yield ~ Variety*poly(nitro,2), ~1|Block/Variety,
 warp.gls = gls(breaks ~ poly(x,3) + wool*tension, subset = ws,
                data = mywarp, correlation = corAR1())
 
-Oats.lme = lme(yield ~ Variety*factor(nitro), ~1|Block/Variety, 
-               subset = 1:26, data=Oats)
-Oats.lmep = lme(yield ~ Variety*poly(nitro,2), ~1|Block/Variety, 
-                subset = 1:26, data=Oats)
-
 # lme4
 library(lme4)
 Oats.lmer = lmer(yield ~ Variety*factor(nitro) + (1|Block/Variety), 

@@ -22,13 +22,18 @@
     if (is.null(env)) 
         env <- parent.frame()
     tbl <- eval(fcall, env, parent.frame())
-    attr(tbl, "terms") = NULL
+    attr(tbl, "terms") = trms
     attr(tbl, "predictors") = all.vars(delete.response(trms))
     attr(tbl, "responses") = setdiff(vars, attr(tbl, "predictors"))
     tbl
 }
 
 ### S3 Methods...
+# All .recover.data methods will return a data.frame with at least these 
+# additional attrs:
+#   attr(, "terms")      - terms component of object
+#   attr(, "responses")  - names of response variable
+#   attr(, "predictors") - names of predictors
 
 # generic
 .recover.data = function(object, ...)
