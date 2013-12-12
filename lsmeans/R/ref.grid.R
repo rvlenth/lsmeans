@@ -2,16 +2,28 @@
 
 # S4 class definition:
 setClass("ref.grid", representation(
+    predictors = "character",
+    responses = "character",
     grid = "data.frame", 
-    levels = "list"
+    levels = "list",
+    matlevs = "list"
 ))
 
 setMethod("show", "ref.grid", function(object) {
+    showlevs = function(x) # internal convenience function
+        cat(paste(format(x, digits = 5), collapse=", "))
+    cat("responses: ")
+    showlevs(object@responses)
     levs = object@levels
-    cat("\"ref.grid\" object with levels:\n")
-    for (nm in names(levs)) {
-        cat(paste("\t", nm, " = ", sep = ""))
-        cat(paste(levs[[nm]], collapse = ", "))
+    cat("\npredictors:\n")
+    for (nm in object@predictors) {
+        cat(paste("    ", nm, " = ", sep = ""))
+        if (nm %in% names(object@matlevs)) {
+            cat(paste("matrix with constant columns: ", sep=""))
+            showlevs(object@matlevs[[nm]])
+        }
+        else
+            showlevs(levs[[nm]])
         cat("\n")
     }
 })
@@ -25,7 +37,7 @@ ref.grid <- function(object, at, cov.reduce = function(x, name) mean(x)) {
     coerced = anm[1 + grep("factor|ordered", anm)]
     
     # initialize empty lists
-    ref.levels = matdat = list()
+    ref.levels = matpred = list()
     
     for (nm in attr(data, "responses"))
         ref.levels[[nm]] = mean(data[[nm]])
@@ -41,7 +53,7 @@ ref.grid <- function(object, at, cov.reduce = function(x, name) mean(x)) {
         # matrices
         else if (is.matrix(x)) {
             # Matrices -- reduce columns thereof, but don't add to baselevs
-            matdat[[nm]] = if (!is.logical(cov.reduce)) apply(x, 2, cov.reduce, nm)
+            matpred[[nm]] = if (!is.logical(cov.reduce)) apply(x, 2, cov.reduce, nm)
                            else apply(x, 2, mean)
         }
         # covariate not mentioned in 'at'
@@ -60,8 +72,10 @@ ref.grid <- function(object, at, cov.reduce = function(x, name) mean(x)) {
     # Now create the reference grid
     grid = do.call(expand.grid, ref.levels)
     # add any matrices
-    for (nm in names(matdat))
-        grid[[nm]] = matrix(rep(matdat[[nm]], each=nrow(grid)), nrow=nrow(grid))
+    for (nm in names(matpred))
+        grid[[nm]] = matrix(rep(matpred[[nm]], each=nrow(grid)), nrow=nrow(grid))
     
-    new ("ref.grid", grid = grid, levels = ref.levels)
+    new ("ref.grid", 
+         predictors = attr(data, "predictors"), responses = attr(data, "responses"),
+         grid = grid, levels = ref.levels, matlevs = matpred)
 }
