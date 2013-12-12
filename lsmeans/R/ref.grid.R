@@ -17,7 +17,7 @@ setClass("ref.grid", representation (
 
 setMethod("show", "ref.grid", function(object) {
     showlevs = function(x) # internal convenience function
-        cat(paste(format(x, digits = 5), collapse=", "))
+        cat(paste(format(x, digits = 5, justify = "none"), collapse=", "))
     cat("responses: ")
     showlevs(object@responses)
     levs = object@levels
