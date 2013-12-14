@@ -1,5 +1,11 @@
 # Reference grid code
 
+# TO DO:
+# For multivariate respons, expand X via kronecker(Iden, X) 
+# where Iden is a kxk identity matrix. Also expand the nbasis
+# by replication, and create leves for the response "factor" to
+# add to the list
+
 # S4 class definition:
 setClass("ref.grid", representation (
     predictors = "character",
