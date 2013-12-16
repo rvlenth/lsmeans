@@ -35,3 +35,9 @@ Oats.lmer = lmer(yield ~ Variety*factor(nitro) + (1|Block/Variety),
                 subset = 1:26, data=Oats)
 Oats.lmerp = lmer(yield ~ Variety*poly(nitro,2) + (1|Block/Variety), 
                 subset = 1:26, data=Oats)
+
+# Multivariate version of Oats
+Oats.mult = with(Oats, expand.grid(Variety=unique(Variety), Block=unique(Block)))
+Oats.mult$yield = matrix(Oats$yield, ncol=4, byrow=TRUE)
+Oats.mult.lm = lm(yield ~ Block + Variety, data = Oats.mult)
+                 

@@ -42,7 +42,22 @@ lsm.basis.lm <- function(object, trms, xlev, grid) {
         # permute the rows via pivot
         nbasis[object$qr$pivot, ] = nbasis
     }
-    list(X=X, bhat=bhat, nbasis=nbasis, V=V, ddfm=function(...) NA, misc=list())
+    misc = list(df = nrow(X) - object$rank)
+    ddfm = function(k, se, V, misc) misc$df
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, ddfm=ddfm, misc=misc)
+}
+
+# Extension for multivariate case
+lsm.basis.mlm <- function(object, trms, xlev, grid) {
+    bas <- lsm.basis.lm(object, trms, xlev, grid)
+    bhat = coef(object)
+    k = ncol(bhat)
+    bas$X = kronecker(diag(rep(1,k)), bas$X)
+    bas$nbasis = kronecker(rep(1,k), bas$nbasis)
+    ylevs = dimnames(bhat)[[2]]
+    if (is.null(ynames)) ylevs = 1:k
+    bas$misc$ylevs = ylevs
+    bas
 }
 
 lsm.basis.merMod <- function(object, trms, xlev, grid) {
