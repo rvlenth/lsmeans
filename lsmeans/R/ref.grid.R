@@ -114,6 +114,11 @@ ref.grid <- function(object, at, cov.reduce = mean) {
         grid[[nm]] = matrix(rep(matlevs[[nm]], each=nrow(grid)), nrow=nrow(grid))
     
     basis = lsm.basis(object, attr(data, "terms"), xlev, grid)
+    ylevs = basis$misc$ylevs
+    if(!is.null(ylevs)) { # have a multivariate situation
+        ref.grid$rep.meas = ylevs
+### Need to develop more here        
+    }
     
     new ("ref.grid", 
          predictors = attr(data, "predictors"), responses = attr(data, "responses"),
