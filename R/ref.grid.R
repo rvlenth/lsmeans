@@ -1,15 +1,11 @@
 # Reference grid code
 
-# TO DO:
-# For multivariate respons, expand X via kronecker(Iden, X) 
-# where Iden is a kxk identity matrix. Also expand the nbasis
-# by replication, and create leves for the response "factor" to
-# add to the list
+# TO DO: Is there a less clunk way to do the mult.levs argument
+# in ref.grid? 
 
 # S4 class definition:
 setClass("ref.grid", representation (
-    predictors = "character",
-    responses = "character",
+    roles = "list",
     grid = "data.frame", 
     levels = "list",
     matlevs = "list",
@@ -24,15 +20,19 @@ setClass("ref.grid", representation (
 setMethod("show", "ref.grid", function(object) {
     showlevs = function(x) # internal convenience function
         cat(paste(format(x, digits = 5, justify = "none"), collapse=", "))
-    cat("responses: ")
-    showlevs(object@responses)
+    #cat("responses: ")
+    #showlevs(object@responses)
     levs = object@levels
-    cat("\npredictors:\n")
-    for (nm in object@predictors) {
+    cat("'ref.grid' object with these variables:\n")
+    for (nm in union(object@roles$predictors, object@roles$multresp)) {
         cat(paste("    ", nm, " = ", sep = ""))
-        if (nm %in% names(object@matlevs)) {
-            cat(paste("matrix with constant columns: ", sep=""))
+        if (nm %in% setdiff(names(object@matlevs), object@roles$multresp)) {
+            cat("matrix with constant columns: ")
             showlevs(object@matlevs[[nm]])
+        }
+        else if (nm %in% object@roles$multresp) {
+            cat("multivariate response with levels: ")
+            showlevs(levs[[nm]])
         }
         else
             showlevs(levs[[nm]])
@@ -46,7 +46,7 @@ setMethod("show", "ref.grid", function(object) {
 #     TRUE - same as mean
 #     FALSE - same as function(x) sort(unique(x))
 
-ref.grid <- function(object, at, cov.reduce = mean) {
+ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
     # recover the data
     data = .recover.data (object)
     
@@ -114,14 +114,27 @@ ref.grid <- function(object, at, cov.reduce = mean) {
         grid[[nm]] = matrix(rep(matlevs[[nm]], each=nrow(grid)), nrow=nrow(grid))
     
     basis = lsm.basis(object, attr(data, "terms"), xlev, grid)
+    
+    multresp = list()
     ylevs = basis$misc$ylevs
     if(!is.null(ylevs)) { # have a multivariate situation
-        ref.grid$rep.meas = ylevs
-### Need to develop more here        
+        if (missing(mult.levs)) {
+            yname = multresp = "rep.meas"
+            ref.levels[[yname]] = ylevs
+        }
+        else {
+            k = prod(sapply(mult.levs, length))
+            if (k != length(ylevs)) 
+                stop("supplied 'mult.levs' is of different length than that of multivariate response")
+            for (nm in names(mult.levs))
+                ref.levels[[nm]] = mult.levs[[nm]]
+            multresp = names(mult.levs)
+        }
     }
     
-    new ("ref.grid", 
-         predictors = attr(data, "predictors"), responses = attr(data, "responses"),
+    new ("ref.grid",
+         roles = list(predictors = attr(data, "predictors"), 
+                      responses = attr(data, "responses"), multresp = multresp),
          grid = grid, levels = ref.levels, matlevs = matlevs,
          X = basis$X, bhat = basis$bhat, nbasis = basis$nbasis, V = basis$V,
          ddfm = basis$ddfm, misc = basis$misc)
