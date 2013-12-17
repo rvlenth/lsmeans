@@ -55,7 +55,7 @@ lsm.basis.mlm <- function(object, trms, xlev, grid) {
     bas$X = kronecker(diag(rep(1,k)), bas$X)
     bas$nbasis = kronecker(rep(1,k), bas$nbasis)
     ylevs = dimnames(bhat)[[2]]
-    if (is.null(ynames)) ylevs = 1:k
+    if (is.null(ylevs)) ylevs = 1:k
     bas$misc$ylevs = ylevs
     bas
 }
