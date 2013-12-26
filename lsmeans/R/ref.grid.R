@@ -9,7 +9,7 @@ setClass("ref.grid", representation (
     grid = "data.frame", 
     levels = "list",
     matlevs = "list",
-    X = "matrix",
+    linfct = "matrix",
     bhat = "numeric",
     nbasis = "matrix",
     V = "matrix",
@@ -136,6 +136,31 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
          roles = list(predictors = attr(data, "predictors"), 
                       responses = attr(data, "responses"), multresp = multresp),
          grid = grid, levels = ref.levels, matlevs = matlevs,
-         X = basis$X, bhat = basis$bhat, nbasis = basis$nbasis, V = basis$V,
+         linfct = basis$X, bhat = basis$bhat, nbasis = basis$nbasis, V = basis$V,
          ddfm = basis$ddfm, misc = basis$misc)
+}
+
+# utility fcn to get est's and std errors
+# returns a data.frame
+.est.se = function(linfct, bhat, nbasis, V) {
+    active = which(!is.na(bhat))
+    bhat = bhat[active]
+    result = apply(linfct, 1, function(x) {
+        estble = if(is.na(nbasis[1]))
+            TRUE
+        else {
+            chk = t(nbasis) %*% x
+            x = x[active]
+            all(abs(chk) <= 1e-6)      
+        }
+        if (estble) {
+            est = sum(bhat * x)
+            se = sqrt(sum(x * V %*% x))
+            c(est, se)
+        }
+        else c(NA,NA)
+    })
+    result = as.data.frame(t(result))
+    names(result) = c("estimate", "SE")
+    result
 }

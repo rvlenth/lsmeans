@@ -13,6 +13,9 @@ warp.with = with(mywarp, lm(breaks ~ poly(x,3) + wool*tension, subset = ws))
 attach(mywarp)
 warp.att = lm(breaks ~ poly(x,3) + wool*tension, subset = ws)
 detach()
+# A case with empty cells
+AM.BL = c(10:18,28:36) # two cells of warpbreaks data
+warp.sing = lm(breaks ~ wool*tension, data = warpbreaks, subset = -AM.BL)
 
 data(Oats, package="nlme")
 Oats.aov = aov(yield ~ Variety*factor(nitro), subset = 1:26, data=Oats)
