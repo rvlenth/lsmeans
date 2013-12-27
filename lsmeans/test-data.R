@@ -29,7 +29,10 @@ Oats.lme = lme(yield ~ Variety*factor(nitro), ~1|Block/Variety,
                subset = 1:26, data=Oats)
 Oats.lmep = lme(yield ~ Variety*poly(nitro,2), ~1|Block/Variety, 
                 subset = 1:26, data=Oats)
-warp.gls = gls(breaks ~ poly(x,3) + wool*tension, subset = ws,
+warp.gls = gls(breaks ~ x + I(x^2) + I(x^3) + wool*tension, subset = ws,
+                data = mywarp, correlation = corAR1())
+# Following will fail because lme objects don't contain coefs info for poly())
+warp.gls2 = gls(breaks ~ poly(x,3) + wool*tension, subset = ws,
                data = mywarp, correlation = corAR1())
 
 # lme4
@@ -38,6 +41,11 @@ Oats.lmer = lmer(yield ~ Variety*factor(nitro) + (1|Block/Variety),
                 subset = 1:26, data=Oats)
 Oats.lmerp = lmer(yield ~ Variety*poly(nitro,2) + (1|Block/Variety), 
                 subset = 1:26, data=Oats)
+
+# MASS
+warp.rlm = rlm(breaks ~ poly(x,3) + wool*tension, data = mywarp)
+warp.lqs = lqs(breaks ~ poly(x,3) + wool*tension, data = mywarp)
+
 
 # Multivariate version of Oats
 Oats.mult = with(Oats, expand.grid(Variety=unique(Variety), Block=unique(Block)))
