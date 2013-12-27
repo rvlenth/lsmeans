@@ -10,7 +10,7 @@
 #     bhat   - regression coefficients for fixed effects (INCLUDING any NAs)
 #     nbasis - matrix whose columns for a basis for non-estimable functions of beta; matrix(NA) if none
 #     V      - estimated covariance matrix of bhat
-#     ddfm   - function(k, se, V, misc) to find df for k'bhat having std error se
+#     ddfm   - function(k, misc) to find df for k'bhat having std error se
 #     misc   - additional parameters needed by ddfm
 # Note: if no df exists, set ddfm = function(...) NA and misc = list()
     
@@ -42,8 +42,8 @@ lsm.basis.lm <- function(object, trms, xlev, grid) {
         # permute the rows via pivot
         nbasis[object$qr$pivot, ] = nbasis
     }
-    misc = list(df = nrow(X) - object$rank)
-    ddfm = function(k, se, V, misc) misc$df
+    misc = list(df = object$df.residual)
+    ddfm = function(k, misc) misc$df
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, ddfm=ddfm, misc=misc)
 }
 
@@ -68,9 +68,9 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
     V = as.matrix(vcov(object))
     if (isLMM(object)) {
         if (require("pbkrtest")) {
-            misc = list(unadjV = V)
-            V = as.matrix(vcovAdj(object, 0))
-            ddfm = function(k, se, V, misc) .KRdf.mer (V, misc$unadjV, k, se*se)
+            misc = list(unadjV = V, adjV = vcovAdj(object, 0))
+            V = as.matrix(misc$adjV)
+            ddfm = function(k, misc) .KRdf.mer (misc$adjV, misc$unadjV, k)
         }
         else {
             warning("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
@@ -80,4 +80,28 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
     X = model.matrix(trms, m, contrasts.arg = contrasts)
     list(X=X, bhat=bhat, nbasis=matrix(NA), V=V, ddfm=ddfm, misc=misc)
 }
+
+lsm.basis.lme <- function(object, trms, xlev, grid) {
+    contrasts = object$contrasts
+    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+    X = model.matrix(trms, m, contrasts.arg = contrasts)
+    bhat = fixef(object)
+    V = vcov(object)
+    nbasis = matrix(NA)
+    ddfm = function(...) NA
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, ddfm=ddfm, misc=list())
+}
+
+lsm.basis.gls <- function(object, trms, xlev, grid) {
+    contrasts = object$contrasts
+    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+    X = model.matrix(trms, m, contrasts.arg = contrasts)
+    bhat = coef(object)
+    V = vcov(object)
+    nbasis = matrix(NA)
+    misc = list(df = object$dims$N - object$dims$p)
+    ddfm = function(k, misc) misc$df
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, ddfm=ddfm, misc=misc)
+}
+
 

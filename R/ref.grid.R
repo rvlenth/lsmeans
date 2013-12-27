@@ -17,29 +17,6 @@ setClass("ref.grid", representation (
     misc = "list"
 ))
 
-setMethod("show", "ref.grid", function(object) {
-    showlevs = function(x) # internal convenience function
-        cat(paste(format(x, digits = 5, justify = "none"), collapse=", "))
-    #cat("responses: ")
-    #showlevs(object@responses)
-    levs = object@levels
-    cat("'ref.grid' object with these variables:\n")
-    for (nm in union(object@roles$predictors, object@roles$multresp)) {
-        cat(paste("    ", nm, " = ", sep = ""))
-        if (nm %in% setdiff(names(object@matlevs), object@roles$multresp)) {
-            cat("matrix with constant columns: ")
-            showlevs(object@matlevs[[nm]])
-        }
-        else if (nm %in% object@roles$multresp) {
-            cat("multivariate response with levels: ")
-            showlevs(levs[[nm]])
-        }
-        else
-            showlevs(levs[[nm]])
-        cat("\n")
-    }
-})
-
 # Change to cov.reduce specification: can be...
 #     a function: is applied to all covariates
 #     named list of functions: applied to those covariates (else mean is used)
@@ -48,7 +25,7 @@ setMethod("show", "ref.grid", function(object) {
 
 ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
     # recover the data
-    data = .recover.data (object)
+    data = recover.data (object)
     
     # find out if any variables are coerced to factors
     anm = all.names(attr(data, "terms"))    
@@ -140,9 +117,9 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
          ddfm = basis$ddfm, misc = basis$misc)
 }
 
-# utility fcn to get est's and std errors
+# utility fcn to get est's, std errors, and df
 # returns a data.frame
-.est.se = function(linfct, bhat, nbasis, V) {
+.est.se.df = function(linfct, bhat, nbasis, V, ddfm, misc) {
     active = which(!is.na(bhat))
     bhat = bhat[active]
     result = apply(linfct, 1, function(x) {
@@ -156,11 +133,42 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
         if (estble) {
             est = sum(bhat * x)
             se = sqrt(sum(x * V %*% x))
-            c(est, se)
+            df = ddfm(x, misc)
+            c(est, se, df)
         }
-        else c(NA,NA)
+        else c(NA,NA,NA)
     })
     result = as.data.frame(t(result))
-    names(result) = c("estimate", "SE")
+    names(result) = c("estimate", "SE", "df")
     result
 }
+
+### =========== Methods for ref.grid class =============================
+
+setMethod("show", "ref.grid", function(object) {
+    showlevs = function(x) # internal convenience function
+        cat(paste(format(x, digits = 5, justify = "none"), collapse=", "))
+    #cat("responses: ")
+    #showlevs(object@responses)
+    levs = object@levels
+    cat("'ref.grid' object with these variables:\n")
+    for (nm in union(object@roles$predictors, object@roles$multresp)) {
+        cat(paste("    ", nm, " = ", sep = ""))
+        if (nm %in% setdiff(names(object@matlevs), object@roles$multresp)) {
+            cat("matrix with constant columns: ")
+            showlevs(object@matlevs[[nm]])
+        }
+        else if (nm %in% object@roles$multresp) {
+            cat("multivariate response with levels: ")
+            showlevs(levs[[nm]])
+        }
+        else
+            showlevs(levs[[nm]])
+        cat("\n")
+    }
+})
+
+setMethod("summary", "ref.grid", function(object, ...) {
+    # for nor...
+    .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@ddfm, object@misc)
+})

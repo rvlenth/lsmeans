@@ -54,7 +54,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
     # get the pure formula w/o extra stuff
     formrhs = formula(Terms)
     
-# ddfm will be replaced with a function of k and se if there is a way to get denom df    
+# ddfm will be replaced with a function of k if there is a way to get denom df    
     ddfm = adjV = NULL
     
 # Figure out thecall (fixed effects part of model), bhat (=coefs), contrasts attr
@@ -67,7 +67,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
         if (isLMM(object)) {
             if (require("pbkrtest")) {
                 adjV = vcovAdj(object, 0)
-                ddfm = function(k, se) .KRdf.mer (adjV, V, k, se*se)
+                ddfm = function(k) .KRdf.mer (adjV, V, k)
             }
             else warning("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
         }
@@ -82,7 +82,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
         bhat = coef(object)
         contrasts = object$contrasts
         the.df = object$dims$N - object$dims$p
-        ddfm = function(k, se) the.df
+        ddfm = function(k) the.df
     }
     else if (inherits(object, "lm")) {  ## Also OK for aov, glm, rlm (MASS). Not lqs (but close?)
         thecall = object$call
@@ -90,7 +90,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
         contrasts = attr(model.matrix(object), "contrasts")
         if (!(family(object)$family %in% c("binomial", "poisson")))
             if (!is.na(object$df.residual)) 
-                ddfm = function(k, se) object$df.residual
+                ddfm = function(k) object$df.residual
     }
     else
         stop(paste("Can't handle an object of class", class(object)[1]))
@@ -395,7 +395,7 @@ lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.ad
                 k = k[used]
                 est = sum(k * bhat)
                 se = sqrt(sum(k * (V %*% k)))
-                if (!is.null(ddfm)) df = ddfm(k, se)
+                if (!is.null(ddfm)) df = ddfm(k)
             }
             c(estimate=est, SE=se, df=df)
         }
