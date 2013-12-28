@@ -14,8 +14,16 @@ setClass("ref.grid", representation (
     nbasis = "matrix",
     V = "matrix",
     ddfm = "function",
-    misc = "list"   # will always have an "estName" entry plus perhaps others
+    misc = "list"   
 ))
+# Note: misc will hold extra params for ddfm, 
+# plus at least the following req'd by the summary method
+#   estName: column name for the estimate in the summary ["prediction"]
+#   *infer: booleans (CIs?, tests?)  [(FALSE,FALSE)]
+#   *conf: default conf level [.95]
+#   *adjust: default adjust method ["none"]
+#   famSize: number of means in family
+# *starred ones can be provided as arguments to summary
 
 # Change to cov.reduce specification: can be...
 #     a function: is applied to all covariates
@@ -109,6 +117,10 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
         }
     }
     basis$misc$estName = "prediction"
+    basis$misc$infer = c(FALSE,FALSE)
+    basis$misc$conf = .95
+    basis$misc$adjust = "none"
+    basis$misc$famSize = nrow(grid)
     
     new ("ref.grid",
          roles = list(predictors = attr(data, "predictors"), 
@@ -169,14 +181,52 @@ setMethod("show", "ref.grid", function(object) {
     }
 })
 
+.getPref = function(arg, dots, default) {
+    if (is.null(dots[[arg]])) default
+    else dots[[arg]]
+}
+
+# utility to compute an adjusted p value
+.adj.p.value = function(t, df, adjust, fam.size) {
+    n.contr = sum(!is.na(t))
+    abst = abs(t)
+    unadj.p = 2*pt(abst, df, lower.tail=FALSE)
+    if (adjust %in% p.adjust.methods)
+        p.adjust(unadj.p, adjust, n = n.contr)
+    else switch(adjust,
+        auto = unadj.p,
+        tukey = ptukey(sqrt(2)*abst, fam.size, zapsmall(df), lower.tail=FALSE),
+        sidak = 1 - (1 - 2*pt(abst, df, lower.tail=FALSE))^n.contr,
+        scheffe = pf(t^2/(fam.size-1), fam.size-1, df, lower.tail=FALSE),
+        stop("adjust method '", adjust, "' not implemented")
+    ) 
+}
+
+
 setMethod("summary", "ref.grid", function(object, ...) {
     # for now...
     result = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@ddfm, object@misc)
     # figure out factors w/ more than one level
     nlev = sapply(object@levels, length)
-#    lblfacs = names(which(nlev > 1))
-#    lbls = do.call("expand.grid", lapply(lblfacs, function(nm) object@levels[[nm]]))
-#    names(lbls) = lblfacs
     lbls = object@grid[which(nlev > 1)]
+    zFlag = (all(is.na(result$df)))
+    
+    # Add any extras
+    dots = list(...)
+    infer = .getPref("infer", dots, object@misc$infer)
+    if(infer[1]) { # add CIs
+        conf = .getPref("conf", dots, object@misc$conf)
+        quant = 1 - (1 - conf)/2
+        cv = if(zFlag) qnorm(quant) else qt(quant, result$df)
+        cnm = if (zFlag) c("asymp.LCL", "asymp.UCL") else c("lower.CL","upper.CL")
+        result[[cnm[1]]] = result[[1]] - cv*result$SE
+        result[[cnm[2]]] = result[[1]] + cv*result$SE
+    }
+    if(infer[2]) { # add tests
+        cnm = ifelse (zFlag, "z.ratio", "t.ratio")
+        t.ratio = result[[cnm]] = result[[1]] / result$SE
+        adj = .getPref("adjust", dots, object@misc$adjust)
+        result$p.value = .adj.p.value(t.ratio, result$df, adj, object@misc$famSize)
+    }
     cbind(lbls, result)
 })

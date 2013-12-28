@@ -49,6 +49,8 @@ function(object, specs, fac.reduce = function(coefs) apply(coefs, 2, mean), ...)
     
     RG@misc$estName = "lsmean"
     RG@misc$adjust = "none"
+    RG@misc$infer = c(TRUE,FALSE)
+    RG@roles$predictors = names(levs)
     result = new("lsmobj", RG, linfct = linfct, levels = levs, grid = combs)
     result
 })
@@ -85,11 +87,14 @@ contrasts.lsmobj = function(object, method = "pairwise", adjust, ...) {
     misc = object@misc
     misc$estName = "estimate"
     misc$methDesc = attr(cmat, "desc")
+    misc$famSize = nrow(object@grid)
     if (missing(adjust)) adjust = attr(cmat, "adjust")
     if (is.na(adjust)) adjust = "none"
     misc$adjust = adjust
+    misc$infer = c(FALSE, TRUE)
+    object@roles$predictors = "contrast"
     grid = data.frame(contrast=names(cmat))
-    new("lsmobj", object, linfct=linfct, grid=grid, misc=misc)
+    new("lsmobj", object, linfct=linfct, levels=as.list(grid), grid=grid, misc=misc)
 }
 
 
