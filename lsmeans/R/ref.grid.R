@@ -169,6 +169,13 @@ setMethod("show", "ref.grid", function(object) {
 })
 
 setMethod("summary", "ref.grid", function(object, ...) {
-    # for nor...
-    .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@ddfm, object@misc)
+    # for now...
+    result = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@ddfm, object@misc)
+    # figure out factors w/ more than one level
+    nlev = sapply(object@levels, length)
+#    lblfacs = names(which(nlev > 1))
+#    lbls = do.call("expand.grid", lapply(lblfacs, function(nm) object@levels[[nm]]))
+#    names(lbls) = lblfacs
+    lbls = object@grid[which(nlev > 1)]
+    cbind(lbls, result)
 })

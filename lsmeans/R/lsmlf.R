@@ -12,20 +12,39 @@ lsm <- function(...) {
 }
 
 # here is S3 method for class "lsmlf" in glht
+
+#OLD VERSION
+# glht.lsmlf <- function(model, linfct, ...) {
+#     # linfct has the arguments to pass to lsmeans. We just need to fill it out and call
+#     linfct$object <- model
+#     linfct$lf <- TRUE
+#     
+#     # In this implementation, we'll NOT accommodate lists
+#     spec <- linfct$specs
+#     if (is.list(spec)) linfct$specs <- spec[[1]]
+#     
+#     # Get the linear function
+#     lf <- do.call("lsmeans", linfct)
+#     
+#     # Just use the last result - will be linfct for lsmeans if no rhs, else for the contrasts
+#     glht(model, linfct = lf[[length(lf)]], ...)
+# }
+
+# NEW VERSION
 glht.lsmlf <- function(model, linfct, ...) {
     # linfct has the arguments to pass to lsmeans. We just need to fill it out and call
-    linfct$object <- model
-    linfct$lf <- TRUE
+    linfct$object <- ref.grid(model)
     
-    # In this implementation, we'll NOT accommodate lists
-    spec <- linfct$specs
-    if (is.list(spec)) linfct$specs <- spec[[1]]
+    # Get the lsmobj
+    lsmo <- do.call("lsmeans", linfct)
     
-    # Get the linear function
-    lf <- do.call("lsmeans", linfct)
+    args = list(model=model, linfct=lsmo@linfct, ...)
     
-    # Just use the last result - will be linfct for lsmeans if no rhs, else for the contrasts
-    glht(model, linfct = lf[[length(lf)]], ...)
+    if (is.null(args$df)) {
+        df = summary(lsmo)$df
+        if(any(!is.na(df)))
+            args$df = max(1, as.integer(min(df, na.rm=TRUE)))
+    }
+    do.call("glht", args)
 }
-
 

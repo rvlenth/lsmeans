@@ -43,6 +43,7 @@ Oats.lmerp = lmer(yield ~ Variety*poly(nitro,2) + (1|Block/Variety),
                 subset = 1:26, data=Oats)
 
 # MASS
+library(MASS)
 warp.rlm = rlm(breaks ~ poly(x,3) + wool*tension, data = mywarp)
 warp.lqs = lqs(breaks ~ poly(x,3) + wool*tension, data = mywarp)
 
