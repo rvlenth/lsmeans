@@ -14,7 +14,7 @@ setClass("ref.grid", representation (
     nbasis = "matrix",
     V = "matrix",
     ddfm = "function",
-    misc = "list"
+    misc = "list"   # will always have an "estName" entry plus perhaps others
 ))
 
 # Change to cov.reduce specification: can be...
@@ -108,6 +108,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
             multresp = names(mult.levs)
         }
     }
+    basis$misc$estName = "prediction"
     
     new ("ref.grid",
          roles = list(predictors = attr(data, "predictors"), 
@@ -139,7 +140,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
         else c(NA,NA,NA)
     })
     result = as.data.frame(t(result))
-    names(result) = c("estimate", "SE", "df")
+    names(result) = c(misc$estName, "SE", "df")
     result
 }
 

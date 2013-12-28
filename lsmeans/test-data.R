@@ -53,3 +53,13 @@ Oats.mult = with(Oats, expand.grid(Variety=unique(Variety), Block=unique(Block))
 Oats.mult$yield = matrix(Oats$yield, ncol=4, byrow=TRUE)
 Oats.mult.lm = lm(yield ~ Block + Variety, data = Oats.mult)
                  
+
+# Load test files
+library(plyr)
+source("R/recover.data.R")
+source("R/ref.grid.R")
+source("R/KRstuff.R")
+source("R/lsm.basis.R")
+source("R/lsm-contr.R")
+source("R/lsmeans.R")
+
