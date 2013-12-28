@@ -2,9 +2,17 @@ setClass("lsmobj", contains="ref.grid")
 setMethod("show", "lsmobj", function(object) print(summary(object)) )
 
 # lsmeans methods...
-# setGeneric("lsmeans")
+# signature = (ALL, ALL)
+lsmeans = function(object, specs, ...) {
+    lsmeans(ref.grid(object), specs, ...)
+}
 
-lsmeans = function(object, specs, ...) {}
+setMethod("lsmeans", signature(object="ANY", specs="formula"),
+function(object, specs, ...) {
+# YET TODO: deal with contrast spec    
+    if(length(specs) == 3) specs = specs[-2]
+    lsmeans(object, all.vars(specs))
+})
 
 # Method for a ref.grid
 setMethod("lsmeans", signature(object="ref.grid", specs="character"), 
@@ -34,6 +42,8 @@ function(object, specs, fac.reduce = function(coefs) apply(coefs, 2, mean), ...)
     result = new("lsmobj", RG, linfct = linfct, levels = levs, grid = combs)
     result
 })
+
+              
 
 
 ### Old version of lsmeans
