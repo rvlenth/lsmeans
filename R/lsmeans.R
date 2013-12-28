@@ -3,15 +3,23 @@ setMethod("show", "lsmobj", function(object) print(summary(object)) )
 
 # lsmeans methods...
 # signature = (ALL, ALL)
+# Look for args: at, cov.reduce = mean, mult.levs
 lsmeans = function(object, specs, ...) {
-    lsmeans(ref.grid(object), specs, ...)
+    rgargs = list(object=object, ...)
+    RG = do.call("ref.grid", rgargs)
+    lsmeans(RG, specs, ...)
 }
+setGeneric("lsmeans")
 
 setMethod("lsmeans", signature(object="ANY", specs="formula"),
 function(object, specs, ...) {
-# YET TODO: deal with contrast spec    
-    if(length(specs) == 3) specs = specs[-2]
-    lsmeans(object, all.vars(specs))
+    if(length(specs) == 2) # just a rhs
+        lsmeans(object, all.vars(specs), ...)
+    else {
+        lsms = lsmeans(object, all.vars(specs[-2]), ...)
+        ctrs = contrasts(lsms, all.vars(specs[-3])[1], ...)
+        list(lsmeans = lsms, contrasts = ctrs)
+    }
 })
 
 # Method for a ref.grid
@@ -39,11 +47,53 @@ function(object, specs, fac.reduce = function(coefs) apply(coefs, 2, mean), ...)
     linfct = t(as.matrix(as.data.frame(K)))
     row.names(linfct) = NULL
     
+    RG@misc$estName = "lsmean"
+    RG@misc$adjust = "none"
     result = new("lsmobj", RG, linfct = linfct, levels = levs, grid = combs)
     result
 })
 
+
+
+### 'contrasts' S3 generic and method
+contrasts = function(object, ...)
+    UseMethod("contrasts")
               
+contrasts.lsmobj = function(object, method = "pairwise", adjust, ...) {
+    args = object@grid
+    args$sep = ","
+    levs = do.call("paste", args)
+    if (is.character(method)) {
+        fn = paste(method, "lsmc", sep=".")
+        method = if (exists(fn, mode="function")) 
+            get(fn) 
+        else 
+            stop(paste("Contrast function '", fn, "' not found", sep=""))
+    }
+    else if (!is.function(method))
+        stop("'method' must be a function or the basename of an '.lsmc' function")
+    
+    # Get the contrasts; this should be a data.frame
+    cmat = method(levs, ...)
+    if (!is.data.frame(cmat))
+        stop("Contrast function must provide a data.frame")
+    else if (nrow(cmat) != nrow(object@linfct))
+        stop("Nonconforming number of contrast coefficients")
+    
+    linfct = t(cmat) %*% object@linfct
+    row.names(linfct) = NULL
+    misc = object@misc
+    misc$estName = "estimate"
+    misc$methDesc = attr(cmat, "desc")
+    if (missing(adjust)) adjust = attr(cmat, "adjust")
+    if (is.na(adjust)) adjust = "none"
+    misc$adjust = adjust
+    grid = data.frame(contrast=names(cmat))
+    new("lsmobj", object, linfct=linfct, grid=grid, misc=misc)
+}
+
+
+
 
 
 ### Old version of lsmeans
