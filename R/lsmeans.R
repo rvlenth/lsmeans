@@ -1,4 +1,43 @@
-lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.adjust.methods), conf = .95, 
+setClass("lsmobj", contains="ref.grid")
+setMethod("show", "lsmobj", function(object) print(summary(object)) )
+
+# lsmeans methods...
+# setGeneric("lsmeans")
+
+lsmeans = function(object, specs, ...) {}
+
+# Method for a ref.grid
+setMethod("lsmeans", signature(object="ref.grid", specs="character"), 
+function(object, specs, fac.reduce = function(coefs) apply(coefs, 2, mean), ...) {
+    RG = object
+    facs = specs
+    
+    # Figure out the structure of the grid
+    dims = sapply(RG@levels, length)
+    row.idx = array(seq_len(nrow(RG@linfct)), dims)
+    
+    # Get the required factor combs
+    levs = list()
+    for (f in facs) {
+        levs[[f]] = RG@levels[[f]]
+        if (is.null(levs[[f]]))
+            stop(paste("No variable named", f, "in the reference grid"))
+    }
+    combs = do.call("expand.grid", levs)
+    K = alply(row.idx, match(facs, names(RG@levels)), function(idx) {
+        fac.reduce(RG@linfct[idx, , drop=FALSE])
+    })
+    
+    linfct = t(as.matrix(as.data.frame(K)))
+    row.names(linfct) = NULL
+    
+    result = new("lsmobj", RG, linfct = linfct, levels = levs, grid = combs)
+    result
+})
+
+
+### Old version of lsmeans
+.old.lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.adjust.methods), conf = .95, 
                    at, trend, contr=list(),
                    cov.reduce = function(x, name) mean(x), 
                    fac.reduce = function(coefs, lev) apply(coefs, 2, mean), 
