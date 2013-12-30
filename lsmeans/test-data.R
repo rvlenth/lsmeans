@@ -67,7 +67,9 @@ source("R/lsmeans.R")
 # Warning for effect in an interaction
 # By variables in contrasts
 # New print method to separate by 'by'?
-# Annotations showing adjust proceduere, etc.
+# Annotations showing adjust procedure, etc.
 # cld method(s)
 # Adjustments to CI methods?
 # Trends
+# Revise NAMESPACE to export only important stuff
+
