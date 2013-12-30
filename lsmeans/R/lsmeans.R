@@ -12,7 +12,9 @@ lsmeans = function(object, specs, ...) {
 setGeneric("lsmeans")
 
 setMethod("lsmeans", signature(object="ANY", specs="formula"),
-function(object, specs, ...) {
+function(object, specs, trend, ...) {
+    if (!missing(trend))
+        return(lstrends(object, specs, var=trend, ...))
     if(length(specs) == 2) # just a rhs
         lsmeans(object, all.vars(specs), ...)
     else {
@@ -117,6 +119,50 @@ tests.lsmobj = function(object, parm, ...) {
 pairs.lsmobj = function(x, ...) {
     object = x # for my sanity
     contrasts(object, method = "pairwise", ...)
+}
+
+
+### lstrends function
+lstrends = function(model, specs, var, delta.var=.01*rng, ...) {
+    estName = paste(var, "trend", sep=".") # Do now as I may replace var later
+
+    data = recover.data(model)
+    x = data[[var]]
+    fcn = NULL   # differential
+    if (is.null(x)) {
+        fcn = var
+        var = all.vars(as.formula(paste("~",var)))
+        if (length(var) > 1)
+            stop("Can only support a function of one variable")
+        else {
+            x = data[[var]]
+            if (is.null(x)) stop("Variable '", var, "' is not in the dataset")            
+        }
+    }
+    rng = diff(range(x))
+    if (delta.var == 0)  stop("Provide a nonzero value of 'delta.var'")
+    
+    RG = ref.grid(model, ...)
+    grid = RG@grid
+    grid[[var]] = grid[[var]] + delta.var
+    
+    basis = lsm.basis(model, attr(data, "terms"), RG@roles$xlev, grid)
+    if (is.null(fcn))
+        newlf = (basis$X - RG@linfct) / delta.var
+    else {
+        y0 = with(RG@grid, eval(parse(text = fcn)))
+        yh = with(grid, eval(parse(text = fcn)))
+        diffl = (yh - y0)
+        if (any(diffl == 0)) warning("Some differentials are zero")
+        newlf = (basis$X - RG@linfct) / diffl
+    }
+    
+    RG@linfct = newlf
+    args = list(object=RG, specs=specs, ...)
+    args$at = args$cov.reduce = args$mult.levs = NULL
+    result = do.call("lsmeans", args)
+    result@misc$estName = estName
+    result
 }
 
 
