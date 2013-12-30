@@ -100,6 +100,18 @@ contrasts.lsmobj = function(object, method = "pairwise", adjust, ...) {
 
 
 
+# confint method
+confint.lsmobj = function(object, parm, level=.95) {
+    summary(object, infer=c(TRUE,FALSE), conf=level)
+}
+
+# pairs method
+pairs.lsmobj = function(x, ...) {
+    object = x # for my sanity
+    contrasts(object, method = "pairwise", ...)
+}
+
+
 
 ### Old version of lsmeans
 .old.lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.adjust.methods), conf = .95, 

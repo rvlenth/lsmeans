@@ -63,3 +63,11 @@ source("R/lsm.basis.R")
 source("R/lsm-contr.R")
 source("R/lsmeans.R")
 
+# YET TO DO...
+# Warning for effect in an interaction
+# By variables in contrasts
+# New print method to separate by 'by'?
+# Annotations showing adjust proceduere, etc.
+# cld method(s)
+# Adjustments to CI methods?
+# Trends
