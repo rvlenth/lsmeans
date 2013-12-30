@@ -1,6 +1,6 @@
 # Reference grid code
 
-# TO DO: Is there a less clunk way to do the mult.levs argument
+# TO DO: Is there a less clunky way to do the mult.levs argument
 # in ref.grid? 
 
 # S4 class definition:
@@ -124,7 +124,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
     
     new ("ref.grid",
          roles = list(predictors = attr(data, "predictors"), 
-                      responses = attr(data, "responses"), multresp = multresp),
+                      responses = attr(data, "responses"), 
+                      multresp = multresp, xlev = xlev),
          grid = grid, levels = ref.levels, matlevs = matlevs,
          linfct = basis$X, bhat = basis$bhat, nbasis = basis$nbasis, V = basis$V,
          ddfm = basis$ddfm, misc = basis$misc)
