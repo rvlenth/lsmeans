@@ -20,7 +20,7 @@ setClass("ref.grid", representation (
 # plus at least the following req'd by the summary method
 #   estName: column name for the estimate in the summary ["prediction"]
 #   *infer: booleans (CIs?, tests?)  [(FALSE,FALSE)]
-#   *conf: default conf level [.95]
+#   *level: default conf level [.95]
 #   *adjust: default adjust method ["none"]
 #   famSize: number of means in family
 # *starred ones can be provided as arguments to summary
@@ -118,7 +118,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
     }
     basis$misc$estName = "prediction"
     basis$misc$infer = c(FALSE,FALSE)
-    basis$misc$conf = .95
+    basis$misc$level = .95
     basis$misc$adjust = "none"
     basis$misc$famSize = nrow(grid)
     
@@ -215,8 +215,8 @@ setMethod("summary", "ref.grid", function(object, ...) {
     dots = list(...)
     infer = .getPref("infer", dots, object@misc$infer)
     if(infer[1]) { # add CIs
-        conf = .getPref("conf", dots, object@misc$conf)
-        quant = 1 - (1 - conf)/2
+        level = .getPref("level", dots, object@misc$level)
+        quant = 1 - (1 - level)/2
         cv = if(zFlag) qnorm(quant) else qt(quant, result$df)
         cnm = if (zFlag) c("asymp.LCL", "asymp.UCL") else c("lower.CL","upper.CL")
         result[[cnm[1]]] = result[[1]] - cv*result$SE

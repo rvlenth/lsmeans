@@ -101,8 +101,16 @@ contrasts.lsmobj = function(object, method = "pairwise", adjust, ...) {
 
 
 # confint method
-confint.lsmobj = function(object, parm, level=.95) {
-    summary(object, infer=c(TRUE,FALSE), conf=level)
+confint.lsmobj = function(object, parm, level=.95, ...) {
+    summary(object, infer=c(TRUE,FALSE), level=level, ...)
+}
+
+# tests S3 generic and method
+tests = function(object, parm, ...) {
+    UseMethod("tests")
+}
+tests.lsmobj = function(object, parm, ...) {
+    summary(object, infer=c(FALSE,TRUE), ...)
 }
 
 # pairs method
