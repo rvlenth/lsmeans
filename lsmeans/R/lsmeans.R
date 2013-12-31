@@ -49,6 +49,9 @@ function(object, specs, fac.reduce = function(coefs) apply(coefs, 2, mean), ...)
     linfct = t(as.matrix(as.data.frame(K)))
     row.names(linfct) = NULL
     
+    if(.some.term.contains(union(facs, RG@roles$trend), RG@model.info$terms))
+        message("NOTE: Results may be misleading due to involvement in interactions")
+    
     RG@misc$estName = "lsmean"
     RG@misc$adjust = "none"
     RG@misc$infer = c(TRUE,FALSE)
@@ -158,6 +161,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, ...) {
     }
     
     RG@linfct = newlf
+    RG@roles$trend = var
     args = list(object=RG, specs=specs, ...)
     args$at = args$cov.reduce = args$mult.levs = NULL
     result = do.call("lsmeans", args)
@@ -165,6 +169,18 @@ lstrends = function(model, specs, var, delta.var=.01*rng, ...) {
     result
 }
 
+
+# Check if model contains a term containing all elts of facs
+# Note: if an lstrends call, we want to include trend var in facs
+# terms is terms() component of model
+.some.term.contains = function(facs, terms) {
+    for (trm in attr(terms, "term.labels")) {
+        if(all(sapply(facs, function(f) length(grep(f,trm))>0)))
+            if (length(all.vars(as.formula(paste("~",trm)))) > length(facs)) 
+                return(TRUE)
+    }
+    return(FALSE)
+}
 
 
 ### Old version of lsmeans

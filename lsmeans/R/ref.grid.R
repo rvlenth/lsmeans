@@ -5,6 +5,7 @@
 
 # S4 class definition:
 setClass("ref.grid", representation (
+    model.info = "list",
     roles = "list",
     grid = "data.frame", 
     levels = "list",
@@ -123,6 +124,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
     basis$misc$famSize = nrow(grid)
     
     new ("ref.grid",
+         model.info = list(call = attr(data,"call"), terms = attr(data, "terms"), xlev = xlev),
          roles = list(predictors = attr(data, "predictors"), 
                       responses = attr(data, "responses"), 
                       multresp = multresp, xlev = xlev),

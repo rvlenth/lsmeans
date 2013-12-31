@@ -17,6 +17,7 @@
     if (is.null(env)) 
         env <- parent.frame()
     tbl <- eval(fcall, env, parent.frame())
+    attr(tbl, "call") = fcall
     attr(tbl, "terms") = trms
     attr(tbl, "predictors") = all.vars(delete.response(trms))
     attr(tbl, "responses") = setdiff(vars, attr(tbl, "predictors"))

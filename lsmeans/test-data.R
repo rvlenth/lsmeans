@@ -65,12 +65,12 @@ source("R/lsm-contr.R")
 source("R/lsmeans.R")
 
 # YET TO DO...
-# Warning for effect in an interaction
+# ***DONE*** Warning for effect in an interaction
 # By variables in contrasts
 # New print method to separate by 'by'?
 # Annotations showing adjust procedure, etc.
 # cld method(s)
 # Adjustments to CI methods?
-# ***DONE Trends -- lstrends function
+# ***DONE*** Trends -- lstrends function
 # Revise NAMESPACE to export only important stuff
 
