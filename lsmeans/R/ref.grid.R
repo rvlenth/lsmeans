@@ -184,6 +184,7 @@ setMethod("show", "ref.grid", function(object) {
     }
 })
 
+# Utility to parse the dots argument
 .getPref = function(arg, dots, default) {
     if (is.null(dots[[arg]])) default
     else dots[[arg]]
@@ -231,5 +232,10 @@ setMethod("summary", "ref.grid", function(object, ...) {
         adj = .getPref("adjust", dots, object@misc$adjust)
         result$p.value = .adj.p.value(t.ratio, result$df, adj, object@misc$famSize)
     }
-    cbind(lbls, result)
+    summ = cbind(lbls, result)
+    by = object@misc$by
+    if (!is.null(by)) 
+        attr(summ, "by.vars") = by
+    class(summ) = c("summary.rg", "data.frame")
+    summ
 })
