@@ -66,8 +66,17 @@ function(object, specs, fac.reduce = function(coefs) apply(coefs, 2, mean), ...)
 contrasts = function(object, ...)
     UseMethod("contrasts")
               
-contrasts.lsmobj = function(object, method = "pairwise", adjust, ...) {
+contrasts.lsmobj = function(object, method = "pairwise", adjust, by=NULL, ...) {
     args = object@grid
+    if (!is.null(by)) {
+        if (any(is.na(match(by, names(args)))))
+            stop("'by' variables are not all in the grid")
+        bylevs = args[, by, drop=FALSE]
+        by.id = do.call("paste", bylevs)
+        by.rows = lapply(unique(by.id), function(id) which(by.id == id))
+        args = args[by.rows[[1]], ]
+        for (nm in by) args[[by]] = NULL
+    }
     args$sep = ","
     levs = do.call("paste", args)
     if (is.character(method)) {
@@ -84,21 +93,39 @@ contrasts.lsmobj = function(object, method = "pairwise", adjust, ...) {
     cmat = method(levs, ...)
     if (!is.data.frame(cmat))
         stop("Contrast function must provide a data.frame")
-    else if (nrow(cmat) != nrow(object@linfct))
+    else if (nrow(cmat) != nrow(args))
         stop("Nonconforming number of contrast coefficients")
     
-    linfct = t(cmat) %*% object@linfct
+    if (is.null(by)) {
+        linfct = t(cmat) %*% object@linfct
+        grid = data.frame(contrast=names(cmat))
+    }
+    
+    else {
+        tcmat = kronecker(diag(rep(1,length(by.rows))), t(cmat))
+        linfct = tcmat %*% object@linfct[unlist(by.rows), ]
+        tmp = expand.grid(con= names(cmat), by = unique(by.id))
+        grid = data.frame(contrast = tmp$con)
+        n.each = ncol(cmat)
+        row.1st = sapply(by.rows, function(x) x[1])
+        xlevs = list()
+        for (v in by)
+            xlevs[[v]] = rep(bylevs[row.1st, v], each=n.each)
+        grid = cbind(grid, as.data.frame(xlevs))
+    }
+    
     row.names(linfct) = NULL
     misc = object@misc
     misc$estName = "estimate"
     misc$methDesc = attr(cmat, "desc")
-    misc$famSize = nrow(object@grid)
+    misc$famSize = nrow(args)
     if (missing(adjust)) adjust = attr(cmat, "adjust")
     if (is.na(adjust)) adjust = "none"
     misc$adjust = adjust
     misc$infer = c(FALSE, TRUE)
+    misc$by = by
     object@roles$predictors = "contrast"
-    grid = data.frame(contrast=names(cmat))
+        
     new("lsmobj", object, linfct=linfct, levels=as.list(grid), grid=grid, misc=misc)
 }
 
@@ -181,6 +208,52 @@ lstrends = function(model, specs, var, delta.var=.01*rng, ...) {
     }
     return(FALSE)
 }
+
+# Format a data.frame produced by summary.ref.grid
+print.summary.rg = function(x, ...) {
+    xc = as.matrix(format.data.frame(x))
+    m = apply(rbind(names(x), xc), 2, function(x) {
+        w = max(sapply(x, nchar))
+        format(x[-1], width = w, justify="right")
+    })
+    dimnames(m)[[1]] = rep("", nrow(m))
+    by.vars = attr(x,"by.vars")
+    if (is.null(by.vars)) {
+        print(m, quote=FALSE, right=TRUE)
+        cat("\n")
+    }
+    else { # separate listing for each by variable
+        m = m[, setdiff(names(x), by.vars)]
+        lbls = do.call(paste, c(x[,by.vars, drop=FALSE], sep=", "))
+        for (lb in unique(lbls)) {
+            rows = which(lbls==lb)
+            levs = paste(by.vars, "=", xc[rows[1], by.vars])
+            cat(paste(paste(levs, collapse=", ")), ":\n", sep="")
+            print(m[rows, ], quote=FALSE, right=TRUE)
+            cat("\n")
+        }
+    }
+    
+    msg = attr(x, "mesg")
+    if (!is.null(msg))
+        for (j in seq_len(length(msg))) cat(paste(msg[j], "\n"))
+
+    invisible(x)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ### Old version of lsmeans

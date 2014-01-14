@@ -66,6 +66,7 @@ source("R/lsmeans.R")
 
 # YET TO DO...
 # ***DONE*** Warning for effect in an interaction
+# Names of list results
 # By variables in contrasts
 # New print method to separate by 'by'?
 # Annotations showing adjust procedure, etc.
