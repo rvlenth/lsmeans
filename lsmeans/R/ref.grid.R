@@ -196,14 +196,23 @@ setMethod("show", "ref.grid", function(object) {
     abst = abs(t)
     unadj.p = 2*pt(abst, df, lower.tail=FALSE)
     if (adjust %in% p.adjust.methods)
-        p.adjust(unadj.p, adjust, n = n.contr)
-    else switch(adjust,
+        pval = p.adjust(unadj.p, adjust, n = n.contr)
+    else pval = switch(adjust,
         auto = unadj.p,
         tukey = ptukey(sqrt(2)*abst, fam.size, zapsmall(df), lower.tail=FALSE),
         sidak = 1 - (1 - 2*pt(abst, df, lower.tail=FALSE))^n.contr,
         scheffe = pf(t^2/(fam.size-1), fam.size-1, df, lower.tail=FALSE),
         stop("adjust method '", adjust, "' not implemented")
-    ) 
+    )
+    chk.adj = match(adjust, c("none", "auto", "tukey", "scheffe"), nomatch = 99)
+    do.msg = (chk.adj > 1) && !((fam.size == 2) && (chk.adj < 10)) 
+    if (do.msg) {
+        xtra = if(chk.adj < 10) paste("a family of", fam.size, "means")
+               else             paste("a collection of", n.contr, "tests")
+        mesg = paste("P values are adjusted using the", adjust, "method for", xtra)
+    }
+    else mesg = NULL
+    list(pval=pval, mesg=mesg)
 }
 
 
@@ -213,11 +222,14 @@ setMethod("summary", "ref.grid", function(object, ...) {
     # figure out factors w/ more than one level
     nlev = sapply(object@levels, length)
     lbls = object@grid[which(nlev > 1)]
+    if (nrow(object@grid) == 1) # but if only one row, use everything
+        lbls = object@grid
     zFlag = (all(is.na(result$df)))
     
     # Add any extras
     dots = list(...)
     infer = .getPref("infer", dots, object@misc$infer)
+    mesg = NULL
     if(infer[1]) { # add CIs
         level = .getPref("level", dots, object@misc$level)
         quant = 1 - (1 - level)/2
@@ -227,16 +239,18 @@ setMethod("summary", "ref.grid", function(object, ...) {
         result[[cnm[2]]] = result[[1]] + cv*result$SE
     }
     if(infer[2]) { # add tests
+        adj = .getPref("adjust", dots, object@misc$adjust)
         cnm = ifelse (zFlag, "z.ratio", "t.ratio")
         t.ratio = result[[cnm]] = result[[1]] / result$SE
-        adj = .getPref("adjust", dots, object@misc$adjust)
-        result$p.value = .adj.p.value(t.ratio, result$df, adj, object@misc$famSize)
+        apv = .adj.p.value(t.ratio, result$df, adj, object@misc$famSize)
+        result$p.value = apv$pval
+        mesg = apv$mesg
     }
     summ = cbind(lbls, result)
     by = object@misc$by
-    if (!is.null(by)) 
-        attr(summ, "by.vars") = by
-    class(summ) = c("summary.rg", "data.frame")
+    attr(summ, "by.vars") = by
+    attr(summ, "mesg") = mesg
+    class(summ) = c("summary.ref.grid", "data.frame")
     summ
 })
 
@@ -252,7 +266,7 @@ setMethod("summary", "ref.grid", function(object, ...) {
 }
 
 # Format a data.frame produced by summary.ref.grid
-print.summary.rg = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) {
+print.summary.ref.grid = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) {
     x.save = x
     if (!is.null(x$df)) x$df = round(x$df, 2)
     if (!is.null(x$t.ratio)) x$t.ratio = round(x$t.ratio, 3)
@@ -267,7 +281,8 @@ print.summary.rg = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) {
         if (x[1] == "R") format(x[-(1:2)], width = w, justify="right")
         else format(x[-(1:2)], width = w, justify="left")
     })
-    by.vars = attr(x,"by.vars")
+    if(!is.matrix(m)) m = t(as.matrix(m))
+    by.vars = attr(x, "by.vars")
     if (is.null(by.vars)) {
         m = .just.labs(m, just)
         print(m, quote=FALSE, right=TRUE)
@@ -280,7 +295,7 @@ print.summary.rg = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) {
             rows = which(lbls==lb)
             levs = paste(by.vars, "=", xc[rows[1], by.vars])
             cat(paste(paste(levs, collapse=", ")), ":\n", sep="")
-            print(m[rows, ], quote=quote, right=right)
+            print(m[rows, ], ..., quote=quote, right=right)
             cat("\n")
         }
     }

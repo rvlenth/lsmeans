@@ -11,13 +11,6 @@ lsmeans = function(object, specs, ...) {
 }
 setGeneric("lsmeans")
 
-.find.by = function(rhs) {
-    b = strsplit(rhs, "\\|")[[1]]
-    if (length(b) > 1) 
-        all.vars(as.formula(paste("~",b[2])))
-    else NULL
-}
-
 setMethod("lsmeans", signature(object="ANY", specs="formula"),
 function(object, specs, trend, ...) {
     if (!missing(trend))
@@ -70,6 +63,14 @@ function(object, specs, fac.reduce = function(coefs) apply(coefs, 2, mean), ...)
     result
 })
 
+# utility to parse 'by' part of a formula
+.find.by = function(rhs) {
+    b = strsplit(rhs, "\\|")[[1]]
+    if (length(b) > 1) 
+        all.vars(as.formula(paste("~",b[2])))
+    else NULL
+}
+
 
 
 ### 'contrasts' S3 generic and method
@@ -110,7 +111,10 @@ contrasts.lsmobj = function(object, method = "pairwise", adjust, by=NULL, ...) {
         linfct = t(cmat) %*% object@linfct
         grid = data.frame(contrast=names(cmat))
     }
-    
+    # NOTE: The kronecker thing here is nice and efficient but depends
+    # on the grid being regular -- same number of rows for each 'by' case
+    # If you ever want to expand to irregular grids, this block will
+    # have to change, but everything else is probably OK.
     else {
         tcmat = kronecker(diag(rep(1,length(by.rows))), t(cmat))
         linfct = tcmat %*% object@linfct[unlist(by.rows), ]
