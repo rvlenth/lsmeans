@@ -167,7 +167,7 @@ setMethod("show", "ref.grid", function(object) {
     #cat("responses: ")
     #showlevs(object@responses)
     levs = object@levels
-    cat("'ref.grid' object with these variables:\n")
+    cat("'ref.grid' object with variables:\n")
     for (nm in union(object@roles$predictors, object@roles$multresp)) {
         cat(paste("    ", nm, " = ", sep = ""))
         if (nm %in% setdiff(names(object@matlevs), object@roles$multresp)) {
@@ -239,3 +239,66 @@ setMethod("summary", "ref.grid", function(object, ...) {
     class(summ) = c("summary.rg", "data.frame")
     summ
 })
+
+# left-or right-justify column labels for m depending on "l" or "R" in just
+.just.labs = function(m, just) {
+    nm = dimnames(m)[[2]]
+    for (j in seq_len(length(nm))) {
+        if(just[nm[j]] == "L") 
+            nm[j] = format(nm[j], width = nchar(m[1,j]), just="left")
+    }
+    dimnames(m) = list(rep("", nrow(m)), nm)
+    m
+}
+
+# Format a data.frame produced by summary.ref.grid
+print.summary.rg = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) {
+    x.save = x
+    if (!is.null(x$df)) x$df = round(x$df, 2)
+    if (!is.null(x$t.ratio)) x$t.ratio = round(x$t.ratio, 3)
+    if (!is.null(x$p.value)) {
+        fp = x$p.value = format(round(x$p.value,4), nsmall=4)
+        x$p.value[fp=="0.0000"] = "<.0001"
+    }
+    just = sapply(x.save, function(col) if(is.numeric(col)) "R" else "L")
+    xc = as.matrix(format.data.frame(x, digits=digits, na.encode=FALSE))
+    m = apply(rbind(just, names(x), xc), 2, function(x) {
+        w = max(sapply(x, nchar))
+        if (x[1] == "R") format(x[-(1:2)], width = w, justify="right")
+        else format(x[-(1:2)], width = w, justify="left")
+    })
+    by.vars = attr(x,"by.vars")
+    if (is.null(by.vars)) {
+        m = .just.labs(m, just)
+        print(m, quote=FALSE, right=TRUE)
+        cat("\n")
+    }
+    else { # separate listing for each by variable
+        m = .just.labs(m[, setdiff(names(x), by.vars)], just)
+        lbls = do.call(paste, c(x[,by.vars, drop=FALSE], sep=", "))
+        for (lb in unique(lbls)) {
+            rows = which(lbls==lb)
+            levs = paste(by.vars, "=", xc[rows[1], by.vars])
+            cat(paste(paste(levs, collapse=", ")), ":\n", sep="")
+            print(m[rows, ], quote=quote, right=right)
+            cat("\n")
+        }
+    }
+    
+    msg = attr(x, "mesg")
+    if (!is.null(msg))
+        for (j in seq_len(length(msg))) cat(paste(msg[j], "\n"))
+    
+    invisible(x.save)
+}
+
+print.ref.grid = function(x, ...) {
+    args.prt = list(...)
+    args.sum = list(object=x)
+    for (key in c("infer","level","adjust")) {
+        args.sum[[key]] = .getPref(key, args.prt, NULL)
+        args.prt[[key]] = NULL
+    }
+    args.prt$x = do.call("summary", args.sum)
+    do.call("print", args.prt)
+}

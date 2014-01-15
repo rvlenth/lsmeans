@@ -11,15 +11,25 @@ lsmeans = function(object, specs, ...) {
 }
 setGeneric("lsmeans")
 
+.find.by = function(rhs) {
+    b = strsplit(rhs, "\\|")[[1]]
+    if (length(b) > 1) 
+        all.vars(as.formula(paste("~",b[2])))
+    else NULL
+}
+
 setMethod("lsmeans", signature(object="ANY", specs="formula"),
 function(object, specs, trend, ...) {
     if (!missing(trend))
         return(lstrends(object, specs, var=trend, ...))
-    if(length(specs) == 2) # just a rhs
+    if(length(specs) == 2) { # just a rhs
+#        by = .find.by(as.character(specs[2]))
         lsmeans(object, all.vars(specs), ...)
+    }
     else {
         lsms = lsmeans(object, all.vars(specs[-2]), ...)
-        ctrs = contrasts(lsms, all.vars(specs[-3])[1], ...)
+        by = .find.by(as.character(specs[3]))
+        ctrs = contrasts(lsms, all.vars(specs[-3])[1], by = by, ...)
         list(lsmeans = lsms, contrasts = ctrs)
     }
 })
@@ -207,38 +217,6 @@ lstrends = function(model, specs, var, delta.var=.01*rng, ...) {
                 return(TRUE)
     }
     return(FALSE)
-}
-
-# Format a data.frame produced by summary.ref.grid
-print.summary.rg = function(x, ...) {
-    xc = as.matrix(format.data.frame(x))
-    m = apply(rbind(names(x), xc), 2, function(x) {
-        w = max(sapply(x, nchar))
-        format(x[-1], width = w, justify="right")
-    })
-    dimnames(m)[[1]] = rep("", nrow(m))
-    by.vars = attr(x,"by.vars")
-    if (is.null(by.vars)) {
-        print(m, quote=FALSE, right=TRUE)
-        cat("\n")
-    }
-    else { # separate listing for each by variable
-        m = m[, setdiff(names(x), by.vars)]
-        lbls = do.call(paste, c(x[,by.vars, drop=FALSE], sep=", "))
-        for (lb in unique(lbls)) {
-            rows = which(lbls==lb)
-            levs = paste(by.vars, "=", xc[rows[1], by.vars])
-            cat(paste(paste(levs, collapse=", ")), ":\n", sep="")
-            print(m[rows, ], quote=FALSE, right=TRUE)
-            cat("\n")
-        }
-    }
-    
-    msg = attr(x, "mesg")
-    if (!is.null(msg))
-        for (j in seq_len(length(msg))) cat(paste(msg[j], "\n"))
-
-    invisible(x)
 }
 
 
