@@ -1,13 +1,14 @@
 setClass("lsmobj", contains="ref.grid")
 setMethod("show", "lsmobj", function(object) print(summary(object)) )
 
-# lsmeans methods...
-# signature = (ALL, ALL)
+############# lsmeans methods...
+
+# signature = (ALL, ALL) <==> (some model object, ALL)
 # Look for args: at, cov.reduce = mean, mult.levs
-lsmeans = function(object, specs, ...) {
+lsmeans = function(object, specs, by = NULL, ...) {
     rgargs = list(object=object, ...)
     RG = do.call("ref.grid", rgargs)
-    lsmeans(RG, specs, ...)
+    lsmeans(RG, specs, by = by, ...)
 }
 setGeneric("lsmeans")
 
@@ -16,22 +17,30 @@ function(object, specs, trend, ...) {
     if (!missing(trend))
         return(lstrends(object, specs, var=trend, ...))
     if(length(specs) == 2) { # just a rhs
-#        by = .find.by(as.character(specs[2]))
-        lsmeans(object, all.vars(specs), ...)
+        by = .find.by(as.character(specs[2]))
+        lsmeans(object, all.vars(specs), by = by, ...)
     }
     else {
         lsms = lsmeans(object, all.vars(specs[-2]), ...)
+        contr.spec = all.vars(specs[-3])[1]
         by = .find.by(as.character(specs[3]))
-        ctrs = contrasts(lsms, all.vars(specs[-3])[1], by = by, ...)
+
+        # Currently I haven't provided for passing 'dots' args to cld
+        if (contr.spec == "cld")
+            return(cld(lsms, by = by, details = TRUE))
+        
+        ctrs = contrasts(lsms, contr.spec, by = by, ...)
         list(lsmeans = lsms, contrasts = ctrs)
     }
 })
 
 # Method for a ref.grid
 setMethod("lsmeans", signature(object="ref.grid", specs="character"), 
-function(object, specs, fac.reduce = function(coefs) apply(coefs, 2, mean), ...) {
+function(object, specs, by = NULL, 
+         fac.reduce = function(coefs) apply(coefs, 2, mean), ...) {
+    
     RG = object
-    facs = specs
+    facs = union(specs, by)
     
     # Figure out the structure of the grid
     dims = sapply(RG@levels, length)
@@ -58,6 +67,7 @@ function(object, specs, fac.reduce = function(coefs) apply(coefs, 2, mean), ...)
     RG@misc$estName = "lsmean"
     RG@misc$adjust = "none"
     RG@misc$infer = c(TRUE,FALSE)
+    RG@misc$by.vars = by
     RG@roles$predictors = names(levs)
     result = new("lsmobj", RG, linfct = linfct, levels = levs, grid = combs)
     result
@@ -77,14 +87,13 @@ function(object, specs, fac.reduce = function(coefs) apply(coefs, 2, mean), ...)
 contrasts = function(object, ...)
     UseMethod("contrasts")
               
-contrasts.lsmobj = function(object, method = "pairwise", adjust, by=NULL, ...) {
+contrasts.lsmobj = function(object, method = "pairwise", adjust, by, ...) {
     args = object@grid
+    if(missing(by)) 
+        by = object@misc$by.vars
     if (!is.null(by)) {
-        if (any(is.na(match(by, names(args)))))
-            stop("'by' variables are not all in the grid")
+        by.rows = .find.by.rows(args, by)
         bylevs = args[, by, drop=FALSE]
-        by.id = do.call("paste", bylevs)
-        by.rows = lapply(unique(by.id), function(id) which(by.id == id))
         args = args[by.rows[[1]], ]
         for (nm in by) args[[by]] = NULL
     }
@@ -118,7 +127,7 @@ contrasts.lsmobj = function(object, method = "pairwise", adjust, by=NULL, ...) {
     else {
         tcmat = kronecker(diag(rep(1,length(by.rows))), t(cmat))
         linfct = tcmat %*% object@linfct[unlist(by.rows), ]
-        tmp = expand.grid(con= names(cmat), by = unique(by.id))
+        tmp = expand.grid(con= names(cmat), by = seq_len(length(by.rows)))###unique(by.id))
         grid = data.frame(contrast = tmp$con)
         n.each = ncol(cmat)
         row.1st = sapply(by.rows, function(x) x[1])
@@ -143,7 +152,16 @@ contrasts.lsmobj = function(object, method = "pairwise", adjust, by=NULL, ...) {
     new("lsmobj", object, linfct=linfct, levels=as.list(grid), grid=grid, misc=misc)
 }
 
-
+# return list of row indexes in tbl for each combination of by
+# tbl should be a data.frame
+.find.by.rows = function(tbl, by) {
+    if (any(is.na(match(by, names(tbl)))))
+        stop("'by' variables are not all in the grid")    
+    bylevs = tbl[ , by, drop=FALSE]
+    by.id = do.call("paste", bylevs)
+    uids = unique(by.id)
+    lapply(uids, function(id) which(by.id == id))
+}
 
 
 # confint method

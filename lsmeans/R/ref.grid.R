@@ -205,7 +205,8 @@ setMethod("show", "ref.grid", function(object) {
         stop("adjust method '", adjust, "' not implemented")
     )
     chk.adj = match(adjust, c("none", "auto", "tukey", "scheffe"), nomatch = 99)
-    do.msg = (chk.adj > 1) && !((fam.size == 2) && (chk.adj < 10)) 
+    do.msg = (chk.adj > 1) && (n.contr > 1) && 
+             !((fam.size == 2) && (chk.adj < 10)) 
     if (do.msg) {
         xtra = if(chk.adj < 10) paste("a family of", fam.size, "means")
                else             paste("a collection of", n.contr, "tests")
