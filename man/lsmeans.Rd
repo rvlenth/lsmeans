@@ -130,7 +130,7 @@ The \code{lsm} function returns an object of class \code{"lsmlf"}, and may be us
 %%%%\note{}
 
 \references{
-Halekoh, U. and H?jsgaard, S. (2012)
+Halekoh, U. and Højsgaard, S. (2012)
 A Kenward-Roger Approximation and parametric bootsrap methods for tests in linear mixed models -- the R package \code{pbkrtest}, submitted. %%%%%\emph{Journal of Statistical Software}.
 
 Kenward, M.G. and Roger, J.H. (1997)

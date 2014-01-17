@@ -63,6 +63,7 @@ source("R/KRstuff.R")
 source("R/lsm.basis.R")
 source("R/lsm-contr.R")
 source("R/lsmeans.R")
+source("R/cld.lsm.R")
 
 # YET TO DO...
 # ***DONE*** Warning for effect in an interaction
