@@ -8,6 +8,7 @@
     Letters = as.character(unlist(sapply(Letters, function(stg) {
         sapply(seq_len(nchar(stg)), function(i) substr(stg, i, i))
     })))
+    
     result = .getNamespace("multcompView")$multcompLetters(..., Letters=Letters)
     if (is.null(result$monospacedLetters))
         result$monospacedLetters = result$Letters
@@ -38,6 +39,7 @@ cld.lsmobj = function(object, details=FALSE, sort=TRUE, by, alpha=.05,
     
     prwise = contrasts(object, "pairwise")    
     pwtbl = tests(prwise, ...)
+    
     p.boo = (pwtbl$p.value < alpha)
     if(is.null(by)) {
         by.rows = list(seq_len(nrow(pwtbl)))
@@ -63,7 +65,11 @@ cld.lsmobj = function(object, details=FALSE, sort=TRUE, by, alpha=.05,
         mcl = .mcletters(p, Letters=Letters)
         ltrs[by.out[[i]]] = paste(" ", mcl$monospacedLetters, sep="")
     }
-    lsmtbl[[".group"]] = ltrs   
+    lsmtbl[[".group"]] = ltrs
+    
+    attr(lsmtbl, "mesg") = c(attr(pwtbl, "mesg"), 
+                             paste("significance level used: alpha =", alpha))
+        
     if (details)
         list(lsmeans = lsmtbl, comparisons = pwtbl)
     else
