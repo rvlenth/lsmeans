@@ -8,14 +8,16 @@
 \alias{show,lsmobj-method}
 \alias{summary,ref.grid-method}
 
-\title{Class \code{"ref.grid"}}
+\title{Classes \code{"ref.grid"} and \code{"lsmobj"}}
 \description{
-Encapsulates everything needed to compute least-squares means, independently of the underlying model object. 
+A reference grid encapsulates everything needed to compute least-squares means, independently of the underlying model object. The \code{"lsmobj"} class is a minor extension of \code{"ref.grid"} where the linear predictors for the reference grid are averaged over the levels of zero or more variables in the grid.
 }
-\section{Objects from the Class}{
-Objects can be created by calls of the form \code{new("ref.grid", ...)}.
-%%  ~~ describe objects here ~~ 
-}
+
+\section{Objects from the Classes}{
+Objects of class \code{"ref.grid"} are most commonly created by calling the \code{\link{ref.grid}} function. 
+
+Objects of class \code{"lsmobj"} are created by calling \code{\ref{lsmeans}} or a related function such as \code{\ref{contrasts}}.}
+
 \section{Slots}{
   \describe{
     \item{\code{model.info}:}{Object of class \code{"list"} containing the elements \code{call} (the call that produced the model), \code{terms} (its \code{terms} object), and \code{xlev} (factor-level information)}
@@ -30,12 +32,18 @@ Objects can be created by calls of the form \code{new("ref.grid", ...)}.
     \item{\code{ddfm}:}{Object of class \code{"function"}. \code{ddfm(k,misc)} should return the degrees of freedom for the linear function \code{sum(k*bhat)}, or \code{NA} if unavailable}
     \item{\code{misc}:}{Object of class \code{"list"} passed to \code{ddfm} in case additional arguments are needed. It also serves as a repository of additional information used by methods. These include at least the following: \code{estName} (the label for the estimates of linear functions), and the values of \code{infer}, \code{level}, and \code{adjust} used in the \code{summary} method.}
 
+\section{Extends}{
+Class \code{"lsmobj"}} extends \code{Class \code{"ref.grid"}}, directly. There is hardly a difference between these classes except how you think about them.}
+
 \section{Methods}{
   \describe{
-    \item{lsmeans}{\code{signature(object = "ref.grid", specs = "character")}: Computes least-squares means }
     \item{show}{\code{signature(object = "ref.grid")}: Displays a brief listing of the variables and levels defining the grid. }
     \item{summary}{\code{signature(object = "ref.grid")}: Displays a summary of estimates, standard errors, degrees of freedom, and optionally, tests and/or confidence intervals. }
+    \item{lsmeans}{\code{signature(object = "ref.grid", specs = "character")}: Computes least-squares means and creates an \code{"lsmobj"} object.}
     \item{show}{\code{signature(object = "lsmobj")}: This is the same as \code{summary} for an \code{lsmobj} object. }
+    
+    %%% THERE WILL BE MORE -- contrasts, tests - convert to S4 methods
+    %%% Also mention S3 methods confint, pairs
 
 } % end of \describe
 } % end of Methods section
@@ -52,9 +60,9 @@ Russell V. Lenth
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%%  ~~objects to See Also as \code{\link{~~fun~~}}, ~~~
-%%  ~~or \code{\linkS4class{CLASSNAME}} for links to other classes ~~~
+\code{\link{ref.grid}}, \code{\link{lsmeans}}
 }
+
 \examples{
 showClass("ref.grid")
 }

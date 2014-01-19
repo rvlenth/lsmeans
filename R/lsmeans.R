@@ -1,3 +1,15 @@
+# Utility to pick out the args that can be passed to a function
+.args.for.fcn = function(fcn, args) {
+    oknames = names(as.list(args(fcn)))
+    mat = pmatch(names(args), oknames)
+    args = args[!is.na(mat)]
+    mat = mat[!is.na(mat)]
+    names(args) = oknames[mat]
+    args
+}
+
+
+
 setClass("lsmobj", contains="ref.grid")
 setMethod("show", "lsmobj", function(object) print(summary(object)) )
 
@@ -5,39 +17,44 @@ setMethod("show", "lsmobj", function(object) print(summary(object)) )
 
 # signature = (ALL, ALL) <==> (some model object, ALL)
 # Look for args: at, cov.reduce = mean, mult.levs
-lsmeans = function(object, specs, by = NULL, ...) {
-    rgargs = list(object=object, ...)
+lsmeans = function(object, specs, ...) {
+    rgargs = .args.for.fcn(ref.grid, list(object=object, ...))
     RG = do.call("ref.grid", rgargs)
-    lsmeans(RG, specs, by = by, ...)
+    lsargs = list(object = RG, specs = specs, ...)
+    for (nm in names(rgargs)[-1]) lsargs[[nm]] = NULL
+    do.call("lsmeans", lsargs)###lsmeans(RG, specs, ...)
 }
 setGeneric("lsmeans")
 
 setMethod("lsmeans", signature(object="ANY", specs="formula"),
-function(object, specs, trend, ...) {
+function(object, specs, trend, by, ...) {
     if (!missing(trend))
         return(lstrends(object, specs, var=trend, ...))
+    
     if(length(specs) == 2) { # just a rhs
         by = .find.by(as.character(specs[2]))
         lsmeans(object, all.vars(specs), by = by, ...)
     }
     else {
-        lsms = lsmeans(object, all.vars(specs[-2]), ...)
+#        lsms = lsmeans(object, all.vars(specs[-2]), ...)
         contr.spec = all.vars(specs[-3])[1]
         by = .find.by(as.character(specs[3]))
+        lsmeans(object, specs = all.vars(specs[-2]), 
+                by = by, contr = contr.spec, ...)
 
-        # Currently I haven't provided for passing 'dots' args to cld
-        if (contr.spec == "cld")
-            return(cld(lsms, by = by, details = TRUE))
-        
-        ctrs = contrasts(lsms, contr.spec, by = by, ...)
-        list(lsmeans = lsms, contrasts = ctrs)
+#         # Currently I haven't provided for passing 'dots' args to cld
+#         if (contr.spec == "cld")
+#             return(cld(lsms, by = by, details = TRUE))
+#         
+#         ctrs = contrasts(lsms, contr.spec, by = by, ...)
+#         list(lsmeans = lsms, contrasts = ctrs)
     }
 })
 
 # Method for a ref.grid
 setMethod("lsmeans", signature(object="ref.grid", specs="character"), 
 function(object, specs, by = NULL, 
-         fac.reduce = function(coefs) apply(coefs, 2, mean), ...) {
+         fac.reduce = function(coefs) apply(coefs, 2, mean), contr, ...) {
     
     RG = object
     facs = union(specs, by)
@@ -70,8 +87,20 @@ function(object, specs, by = NULL,
     RG@misc$by.vars = by
     RG@roles$predictors = names(levs)
     result = new("lsmobj", RG, linfct = linfct, levels = levs, grid = combs)
-    result
+    
+    if (missing(contr))
+        result
+    
+    else { # return a list with lsmeans and contrasts
+        if (is.character(contr) && contr == "cld") {
+# TO DO: provide for passing dots to cld                
+            return(cld(result, by = by))
+        }
+        ctrs = contrasts(result, method = contr, by, ...)
+        list(lsmeans = result, contrasts = ctrs)
+    }
 })
+
 
 # utility to parse 'by' part of a formula
 .find.by = function(rhs) {
@@ -87,7 +116,7 @@ function(object, specs, by = NULL,
 contrasts = function(object, ...)
     UseMethod("contrasts")
               
-contrasts.lsmobj = function(object, method = "pairwise", adjust, by, ...) {
+contrasts.lsmobj = function(object, method = "pairwise", by, adjust, ...) {
     args = object@grid
     if(missing(by)) 
         by = object@misc$by.vars
@@ -143,7 +172,7 @@ contrasts.lsmobj = function(object, method = "pairwise", adjust, by, ...) {
     misc$methDesc = attr(cmat, "desc")
     misc$famSize = nrow(args)
     if (missing(adjust)) adjust = attr(cmat, "adjust")
-    if (is.na(adjust)) adjust = "none"
+    if (is.null(adjust)) adjust = "none"
     misc$adjust = adjust
     misc$infer = c(FALSE, TRUE)
     misc$by = by

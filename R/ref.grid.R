@@ -67,12 +67,18 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
     
     for (nm in attr(data, "predictors")) {
         x = data[[nm]]
-        # mentioned in 'at' list
-        if (!missing(at) && !is.null(at[[nm]]))
+        
+    # Save the original levels of factors, no matter what
+    if (is.factor(x))
+        xlev[[nm]] = levels(x)
+    
+    # Now go thru and find reference levels...
+        # mentioned in 'at' list but not coerced
+        if (!(nm %in% coerced) && !missing(at) && !is.null(at[[nm]]))
             ref.levels[[nm]] = at[[nm]]
         # factors not in 'at'
         else if (is.factor(x))
-                xlev[[nm]] = ref.levels[[nm]] = levels(x)
+            ref.levels[[nm]] = levels(x)
         # matrices
         else if (is.matrix(x)) {
             # Matrices -- reduce columns thereof, but don't add to baselevs
@@ -81,10 +87,11 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
             if (is.matrix(matlevs[[nm]]))
                 matlevs[[nm]] = apply(matlevs[[nm]], 2, mean)
         }
-        # covariate not mentioned in 'at'
+        # covariate coerced, or not mentioned in 'at'
         else {
             # single numeric pred but coerced to a factor - use unique values
-            if (length(grep(nm, coerced)) > 0)             
+            # even if in 'at' list. We'll fix this up later
+            if (nm %in% coerced)            
                 ref.levels[[nm]] = sort.unique(x)
             
             # Ordinary covariates - summarize
@@ -98,9 +105,33 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
     # add any matrices
     for (nm in names(matlevs))
         grid[[nm]] = matrix(rep(matlevs[[nm]], each=nrow(grid)), nrow=nrow(grid))
-    
+
     basis = lsm.basis(object, attr(data, "terms"), xlev, grid)
     
+# Here's a complication. If a numeric predictor was coerced to a factor, we had to
+# include all its levels in the reference grid, even if altered in 'at'
+# Moreover, whatever levels are in 'at' must be a subset of the unique values
+# So we now need to subset the rows of the grid and linfct based on 'at'
+    problems = if (!missing(at)) intersect(coerced, names(at)) 
+               else character(0)
+    if (length(problems > 0)) {
+        incl.flags = rep(TRUE, nrow(grid))
+        for (nm in problems) {
+            # get only "legel" levels
+            at[[nm]] = round(at[[nm]], 3)
+            at[[nm]] = at[[nm]][at[[nm]] %in% round(ref.levels[[nm]],3)]
+            # Now which of those are left out?
+            excl = setdiff(round(ref.levels[[nm]], 3), at[[nm]])
+            for (x in excl)
+                incl.flags[round(grid[[nm]] - x, 3) == 0] = FALSE
+            ref.levels[[nm]] = at[[nm]]
+        }
+        if (!any(incl.flags))
+            stop("Reference grid is empty due to mismatched levels in 'at'")
+        grid = grid[incl.flags, , drop=FALSE]
+        basis$X = basis$X[incl.flags, , drop=FALSE]
+    }
+
     multresp = list()
     ylevs = basis$misc$ylevs
     if(!is.null(ylevs)) { # have a multivariate situation
@@ -127,7 +158,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
          model.info = list(call = attr(data,"call"), terms = attr(data, "terms"), xlev = xlev),
          roles = list(predictors = attr(data, "predictors"), 
                       responses = attr(data, "responses"), 
-                      multresp = multresp, xlev = xlev),
+                      multresp = multresp),
          grid = grid, levels = ref.levels, matlevs = matlevs,
          linfct = basis$X, bhat = basis$bhat, nbasis = basis$nbasis, V = basis$V,
          ddfm = basis$ddfm, misc = basis$misc)
@@ -184,68 +215,77 @@ setMethod("show", "ref.grid", function(object) {
     }
 })
 
-# Utility to parse the dots argument
-.getPref = function(arg, dots, default) {
-    if (is.null(dots[[arg]])) default
-    else dots[[arg]]
-}
+# Utility to parse the dots argument - I deprecated this already
+# .getPref = function(arg, dots, default) {
+#     if (is.null(dots[[arg]])) default
+#     else dots[[arg]]
+# }
 
 # utility to compute an adjusted p value
 .adj.p.value = function(t, df, adjust, fam.size) {
+# do a pmatch of the adjust method, case insensitive
+    adj.meths = c("tukey", "sidak", "scheffe", p.adjust.methods)
+    k = pmatch(tolower(adjust), adj.meths)
+    if(is.na(k))
+        stop("Adjust method '", adjust, "' is not recognized")
+    adjust = adj.meths[k]
+    
     n.contr = sum(!is.na(t))
     abst = abs(t)
     unadj.p = 2*pt(abst, df, lower.tail=FALSE)
     if (adjust %in% p.adjust.methods)
         pval = p.adjust(unadj.p, adjust, n = n.contr)
     else pval = switch(adjust,
-        auto = unadj.p,
         tukey = ptukey(sqrt(2)*abst, fam.size, zapsmall(df), lower.tail=FALSE),
         sidak = 1 - (1 - 2*pt(abst, df, lower.tail=FALSE))^n.contr,
         scheffe = pf(t^2/(fam.size-1), fam.size-1, df, lower.tail=FALSE),
-        stop("adjust method '", adjust, "' not implemented")
     )
-    chk.adj = match(adjust, c("none", "auto", "tukey", "scheffe"), nomatch = 99)
+    chk.adj = match(adjust, c("none", "tukey", "scheffe"), nomatch = 99)
     do.msg = (chk.adj > 1) && (n.contr > 1) && 
              !((fam.size == 2) && (chk.adj < 10)) 
     if (do.msg) {
         xtra = if(chk.adj < 10) paste("a family of", fam.size, "means")
-               else             paste("a collection of", n.contr, "tests")
-        mesg = paste("P values are adjusted using the", adjust, "method for", xtra)
+               else             paste(n.contr, "tests")
+        mesg = paste("P value adjustment:", adjust, "method for", xtra)
     }
     else mesg = NULL
-    list(pval=pval, mesg=mesg)
+    list(pval=pval, mesg=mesg, adjust=adjust)
 }
 
-
-setMethod("summary", "ref.grid", function(object, ...) {
-    # for now...
+### S4 "summary" method for ref.grid (and lsmobj)
+# originally I did not have infer, level, or adjust args
+# and looked for them in ... -- bad idea, I think
+setMethod("summary", "ref.grid", function(object, infer, level, adjust) {
     result = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@ddfm, object@misc)
-    # figure out factors w/ more than one level
+
+# figure out factors w/ more than one level
     nlev = sapply(object@levels, length)
     lbls = object@grid[which(nlev > 1)]
     if (nrow(object@grid) == 1) # but if only one row, use everything
         lbls = object@grid
     zFlag = (all(is.na(result$df)))
     
-    # Add any extras
-    dots = list(...)
-    infer = .getPref("infer", dots, object@misc$infer)
+### implement my 'variable defaults' scheme    
+    if(missing(infer)) infer = object@misc$infer
+    if(missing(level)) level = object@misc$level
+    if(missing(adjust)) adjust = object@misc$adjust
+
     mesg = NULL
     if(infer[1]) { # add CIs
-        level = .getPref("level", dots, object@misc$level)
         quant = 1 - (1 - level)/2
         cv = if(zFlag) qnorm(quant) else qt(quant, result$df)
         cnm = if (zFlag) c("asymp.LCL", "asymp.UCL") else c("lower.CL","upper.CL")
         result[[cnm[1]]] = result[[1]] - cv*result$SE
         result[[cnm[2]]] = result[[1]] + cv*result$SE
+        mesg = paste("Confidence level used:", level)
     }
     if(infer[2]) { # add tests
-        adj = .getPref("adjust", dots, object@misc$adjust)
         cnm = ifelse (zFlag, "z.ratio", "t.ratio")
         t.ratio = result[[cnm]] = result[[1]] / result$SE
-        apv = .adj.p.value(t.ratio, result$df, adj, object@misc$famSize)
+        apv = .adj.p.value(t.ratio, result$df, adjust, object@misc$famSize)
+        adjust = apv$adjust # matched name in case it was abbreviated
         result$p.value = apv$pval
-        mesg = apv$mesg
+        mesg = c(mesg, apv$mesg)
     }
     summ = cbind(lbls, result)
     by = object@misc$by

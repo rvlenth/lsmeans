@@ -31,8 +31,8 @@ cld.lsmobj = function(object, details=FALSE, sort=TRUE, by, alpha=.05,
         args$.lsm. = lsmtbl[[object@misc$estName]]
         ord = do.call("order", args)
         lsmtbl = lsmtbl[ord, ]
-        object@grid = object@grid[ord, ]
-        object@linfct = object@linfct[ord, ]
+        object@grid = object@grid[ord, , drop=FALSE]
+        object@linfct = object@linfct[ord, , drop = FALSE]
     }
     attr(lsmtbl, "by.vars") = by
     object@misc$by.vars = by
@@ -67,7 +67,7 @@ cld.lsmobj = function(object, details=FALSE, sort=TRUE, by, alpha=.05,
     }
     lsmtbl[[".group"]] = ltrs
     
-    attr(lsmtbl, "mesg") = c(attr(pwtbl, "mesg"), 
+    attr(lsmtbl, "mesg") = c(attr(lsmtbl,"mesg"), attr(pwtbl, "mesg"), 
                              paste("significance level used: alpha =", alpha))
         
     if (details)
