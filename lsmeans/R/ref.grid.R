@@ -108,29 +108,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
 
     basis = lsm.basis(object, attr(data, "terms"), xlev, grid)
     
-# Here's a complication. If a numeric predictor was coerced to a factor, we had to
-# include all its levels in the reference grid, even if altered in 'at'
-# Moreover, whatever levels are in 'at' must be a subset of the unique values
-# So we now need to subset the rows of the grid and linfct based on 'at'
-    problems = if (!missing(at)) intersect(coerced, names(at)) 
-               else character(0)
-    if (length(problems > 0)) {
-        incl.flags = rep(TRUE, nrow(grid))
-        for (nm in problems) {
-            # get only "legel" levels
-            at[[nm]] = round(at[[nm]], 3)
-            at[[nm]] = at[[nm]][at[[nm]] %in% round(ref.levels[[nm]],3)]
-            # Now which of those are left out?
-            excl = setdiff(round(ref.levels[[nm]], 3), at[[nm]])
-            for (x in excl)
-                incl.flags[round(grid[[nm]] - x, 3) == 0] = FALSE
-            ref.levels[[nm]] = at[[nm]]
-        }
-        if (!any(incl.flags))
-            stop("Reference grid is empty due to mismatched levels in 'at'")
-        grid = grid[incl.flags, , drop=FALSE]
-        basis$X = basis$X[incl.flags, , drop=FALSE]
-    }
+# Take care of multivariate response
 
     multresp = list()
     ylevs = basis$misc$ylevs
@@ -147,7 +125,43 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
                 ref.levels[[nm]] = mult.levs[[nm]]
             multresp = names(mult.levs)
         }
+        grid = do.call("expand.grid", ref.levels)
+        # add any matrices
+        for (nm in names(matlevs))
+            grid[[nm]] = matrix(rep(matlevs[[nm]], each=nrow(grid)), nrow=nrow(grid))
     }
+
+# Here's a complication. If a numeric predictor was coerced to a factor, we had to
+# include all its levels in the reference grid, even if altered in 'at'
+# Moreover, whatever levels are in 'at' must be a subset of the unique values
+# So we now need to subset the rows of the grid and linfct based on 'at'
+
+    problems = if (!missing(at)) 
+        intersect(c(multresp, coerced), names(at)) 
+    else character(0)
+    if (length(problems > 0)) {
+        incl.flags = rep(TRUE, nrow(grid))
+        for (nm in problems) {
+            if (is.numeric(ref.levels[[nm]])) {
+                at[[nm]] = round(at[[nm]], 3)
+                ref.levels[[nm]] = round(ref.levels[[nm]], 3)
+            }
+            # get only "legal" levels
+            at[[nm]] = at[[nm]][at[[nm]] %in% ref.levels[[nm]]]
+            # Now which of those are left out?
+            excl = setdiff(ref.levels[[nm]], at[[nm]])
+            for (x in excl)
+                incl.flags[grid[[nm]] == x] = FALSE
+            ref.levels[[nm]] = at[[nm]]
+        }
+        if (!any(incl.flags))
+            stop("Reference grid is empty due to mismatched levels in 'at'")
+        grid = grid[incl.flags, , drop=FALSE]
+        basis$X = basis$X[incl.flags, , drop=FALSE]
+    }
+
+
+
     basis$misc$estName = "prediction"
     basis$misc$infer = c(FALSE,FALSE)
     basis$misc$level = .95
@@ -196,17 +210,25 @@ setMethod("show", "ref.grid", function(object) {
     showlevs = function(x) # internal convenience function
         cat(paste(format(x, digits = 5, justify = "none"), collapse=", "))
     #cat("responses: ")
-    #showlevs(object@responses)
+    #showlevs(object@roles$responses)
     levs = object@levels
     cat("'ref.grid' object with variables:\n")
-    for (nm in union(object@roles$predictors, object@roles$multresp)) {
+    for (nm in union(object@roles$predictors, union(object@roles$multresp, object@roles$responses))) {
         cat(paste("    ", nm, " = ", sep = ""))
-        if (nm %in% setdiff(names(object@matlevs), object@roles$multresp)) {
-            cat("matrix with constant columns: ")
+        if (nm %in% names(object@matlevs)) {
+            if (nm %in% object@roles$responses)
+                cat("multivariate response with means: ")
+            else
+                cat("matrix with column means: ")
+            cat("\n        ")
             showlevs(object@matlevs[[nm]])
         }
         else if (nm %in% object@roles$multresp) {
-            cat("multivariate response with levels: ")
+            cat("multivariate response levels: ")
+            showlevs(levs[[nm]])
+        }
+        else if (nm %in% object@roles$responses) {
+            cat("response variable with mean ")
             showlevs(levs[[nm]])
         }
         else

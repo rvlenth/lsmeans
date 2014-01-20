@@ -16,52 +16,48 @@ ref.grid(object, at, cov.reduce = mean, mult.levs)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{object}{An object produced by a model-fitting function, e.g. \code{lm}}
+  \item{object}{An object produced by a supported model-fitting function, such as \code{lm}}
   \item{at}{Optional named list of levels for the corresponding variables}
   \item{cov.reduce}{A function, logical value, or a named list of functions, applied to covariates in the underlying data. If a single function, it applies to all covariates. 
   
   If \code{cov.reduce} is a list, then the names of its entries determine which function is used. If no entry is found, the default is \code{mean}. 
   
   If a logical value, \code{TRUE} is equivalent to  \code{cov.reduce=mean}, and \code{FALSE} is equivalent to \code{cov.reduce = function(x) sort(unique(x))}.}
-  \item{mult.levs}{A named list of levels for the dimensions of a multivariate response}
+  \item{mult.levs}{A named list of levels for the dimensions of a multivariate response. If there is more than one element, the combinations of levels are used, in \code{ref{expand.grid}} order. The (total) number of levels must match the number of dimensions. If there is a multivariate response and \code{mult.levs} is missing, the default name is \code{rep.meas} with levels \code{1,2,...}}
 }
 \details{The reference grid consists of combinations of independent variables over which predictions are made. Least-squares means are defined as these predictions, or marginal averages thereof.
 The grid is determined by first reconstructing the data used in fitting the model (see \code{\link{recover.data}}). The default reference grid is determined by the observed levels of any factors, and the results of \code{cov.reduce} for numeric predictors. Any of these may be overridden using \code{at}.
 
-The following model objects are currently supported:
+Ability to support a particular class of \code{object} depends on the existence of \code{recover.data} and \code{lsm.basis} methods -- see \link{extending-lsmeans} for details. The call \code{methods("recover.data")} will help identify these.
 }
 \value{An S4 object of class \code{\linkS4Class{ref.grid}}. These objects encapsulate everything needed to do calculations and inferences for least-squares means, and contain nothing that depends on the model-fitting procedure.
 }
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+
 }
-\references{
-%% ~put references to the literature/web site here ~
-}
+%\references{}
 \author{
-%%  ~~who you are~~
+Russell V. Lenth
 }
-\note{
-%%  ~~further notes~~
-}
+%\note{}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\code{link{lsmeans}}
 }
-\examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-c("print.ref.grid", "print.summary.ref.grid", "ref.grid")
+\examples{
+require(lsmeans)
+
+fiber.lm <- lm(strength ~ machine*diameter, data = fiber)
+ref.grid(fiber.lm)
+summary(ref.grid(fiber.lm, at = list(diameter = c(15,25))))
+
+# Multivariate example
+MOats.lm = lm(yield ~ Block + Variety, data = MOats)
+ref.grid(MOats.lm, mult.levs = list(nitro = c(0,.2,.4,.6)))
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ regression }
+\keyword{ models }% __ONLY ONE__ keyword per line
