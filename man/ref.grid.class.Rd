@@ -10,7 +10,7 @@
 
 \title{Classes \code{"ref.grid"} and \code{"lsmobj"}}
 \description{
-A reference grid encapsulates everything needed to compute least-squares means, independently of the underlying model object. The \code{"lsmobj"} class is a minor extension of \code{"ref.grid"} where the linear predictors for the reference grid are averaged over the levels of zero or more variables in the grid.
+A reference grid encapsulates everything needed to compute least-squares means, independently of the underlying model object. The \code{"lsmobj"} class is a minor extension of \code{"ref.grid"} where the linear predictors for the reference grid are transformed in some linear way such as marginal averages or contrasts.
 }
 
 \section{Objects from the Classes}{
@@ -33,7 +33,7 @@ Objects of class \code{"lsmobj"} are created by calling \code{\ref{lsmeans}} or 
     \item{\code{misc}:}{Object of class \code{"list"} passed to \code{ddfm} in case additional arguments are needed. It also serves as a repository of additional information used by methods. These include at least the following: \code{estName} (the label for the estimates of linear functions), and the values of \code{infer}, \code{level}, and \code{adjust} used in the \code{summary} method.}
 
 \section{Extends}{
-Class \code{"lsmobj"}} extends \code{Class \code{"ref.grid"}}, directly. There is hardly a difference between these classes except how you think about them.}
+Class \code{"lsmobj"}} extends \code{Class \code{"ref.grid"}}, directly. There is hardly a difference between these classes except for how the slots \code{linfct} is and \code{grid} are obtained.}
 
 \section{Methods}{
   \describe{
@@ -41,9 +41,11 @@ Class \code{"lsmobj"}} extends \code{Class \code{"ref.grid"}}, directly. There i
     \item{summary}{\code{signature(object = "ref.grid")}: Displays a summary of estimates, standard errors, degrees of freedom, and optionally, tests and/or confidence intervals. }
     \item{lsmeans}{\code{signature(object = "ref.grid", specs = "character")}: Computes least-squares means and creates an \code{"lsmobj"} object.}
     \item{show}{\code{signature(object = "lsmobj")}: This is the same as \code{summary} for an \code{lsmobj} object. }
-    
-    %%% THERE WILL BE MORE -- contrasts, tests - convert to S4 methods
-    %%% Also mention S3 methods confint, pairs
+    \item{confint}{(S3 method for \code{lsmobj}): Confidence intervals for lsmeans.} 
+    \item{tests}{(S3 method for \code{lsmobj}): Hypothesis tests. }
+    \item{cld}{(S3 method for \code{lsmobj}): Compact-letter display for tests of pairwise comparisons}
+    \item{contrasts}{(S3 method for \code{lsmobj}): Contrasts among lsmeans. }
+    \item{pairs}{(S3 method for \code{lsmobj}): A special case of \code{contrasts} for pairwise comparisons. }
 
 } % end of \describe
 } % end of Methods section
@@ -53,17 +55,17 @@ Class \code{"lsmobj"}} extends \code{Class \code{"ref.grid"}}, directly. There i
 \author{
 Russell V. Lenth
 }
-\note{
-%%  ~~further notes~~
-}
+
+%\note{}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{ref.grid}}, \code{\link{lsmeans}}
+  \code{\link{ref.grid}}, \code{\link{lsmeans}}
 }
 
 \examples{
 showClass("ref.grid")
+showClass("lsmobj")
 }
 \keyword{classes}
