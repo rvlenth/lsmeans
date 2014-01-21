@@ -1,7 +1,20 @@
 # Recover data routines
 
-# Workhorse for methods
-.rd.wh <- function(fcall, trms) {
+### S3 Methods...
+# All recover.data methods will return a data.frame with at least these 
+# additional attrs:
+#   attr(, "terms")      - terms component of object
+#   attr(, "responses")  - names of response variable
+#   attr(, "predictors") - names of predictors
+
+# generic
+recover.data <- function(object, ...)
+    UseMethod("recover.data")
+
+# Method for class "call" -- This one is the workhorse
+# For model objects, call this with the object's call and its terms component
+recover.data.call <- function(object, trms) {
+    fcall <- object # because I'm easily confused
     m <- match(c("formula", "data", "subset", "weights", 
                  "na.action", "offset"), names(fcall), 0L)
     fcall <- fcall[c(1L, m)]
@@ -22,23 +35,6 @@
     attr(tbl, "predictors") = all.vars(delete.response(trms))
     attr(tbl, "responses") = setdiff(vars, attr(tbl, "predictors"))
     tbl
-}
-
-### S3 Methods...
-# All recover.data methods will return a data.frame with at least these 
-# additional attrs:
-#   attr(, "terms")      - terms component of object
-#   attr(, "responses")  - names of response variable
-#   attr(, "predictors") - names of predictors
-
-# generic
-recover.data <- function(object, ...)
-    UseMethod("recover.data")
-
-# Method for class "call" -- This one is the workhorse
-# For model objects, call this with the object's call and its terms component
-recover.data.call <- function(object, trms) {
-    .rd.wh(object, trms)
 }
 
 # default -- used for classes we don't know about

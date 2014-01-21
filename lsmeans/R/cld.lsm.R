@@ -29,7 +29,7 @@ cld.lsmobj = function(object, details=FALSE, sort=TRUE, by, alpha=.05,
         args = list()
         for (nm in by) args[[nm]] = lsmtbl[[nm]]
         args$.lsm. = lsmtbl[[object@misc$estName]]
-        ord = do.call("order", args)
+        ord = rev(do.call("order", args))
         lsmtbl = lsmtbl[ord, ]
         object@grid = object@grid[ord, , drop=FALSE]
         object@linfct = object@linfct[ord, , drop = FALSE]
