@@ -1,8 +1,11 @@
 # lsmip code - interaction plots
 
+lsmip = function(object, formula, ...)
+    UseMethod("lsmip")
+
 # object - a model object supported by lsmeans
 # formula - a formula of the form  x.factors ~ trace.factors | panel.factors
-lsmip = function(object, formula, pch=c(1,2,6,7,9,10,15:20), lty=1, col=NULL, ...) {
+lsmip.default = function(object, formula, pch=c(1,2,6,7,9,10,15:20), lty=1, col=NULL, ...) {
     if (!require("lattice"))
         stop("This function requires the 'lattice' package be installed.")
     if (length(formula) < 3)
@@ -21,19 +24,12 @@ lsmip = function(object, formula, pch=c(1,2,6,7,9,10,15:20), lty=1, col=NULL, ..
         }
     }
     
-# Get the lsmeans - either from an existing lsm object...    
-    if (inherits(object,"lsm"))
-        lsms = object[[1]]
-    
-# ... or from a model        
-    else {
-        allvars = all.vars(formula)
-        lsmopts$object = object
-        lsmopts$specs = as.formula(paste("~", paste(allvars, collapse = "+")))
-        lsms = do.call("lsmeans", lsmopts) [[1]]
-        ylab = paste(ylab, "of", formula(object)[[2]])
-    }
-    
+    allvars = all.vars(formula)
+    lsmopts$object = object
+    lsmopts$specs = as.formula(paste("~", paste(allvars, collapse = "+")))
+    lsms = summary(do.call("lsmeans", lsmopts))
+
+    ylab = paste(ylab, "of", formula(object)[[2]])
     
     tvars = all.vars(formula[[2]])
     tv = do.call(paste, lsms[tvars])
