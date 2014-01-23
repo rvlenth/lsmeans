@@ -40,7 +40,6 @@ glht.lsmobj <- function(model, linfct, by, ...) {
     names(bylevs) = by
     bygrid = do.call("expand.grid", bylevs)
     levlbls = lapply(by, function(byv) paste(byv, "=", bygrid[[byv]]))
-print(bylevs); print(bygrid); print(levlbls)
     levlbls$sep = ", "
     names(result) = do.call("paste", levlbls)
     result
