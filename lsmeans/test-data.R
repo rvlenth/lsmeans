@@ -66,16 +66,17 @@ source("R/lsmeans.R")
 source("R/cld.lsm.R")
 
 # YET TO DO...
-# Fix SERIOUS bug in ref.grid with 'at' - doesn't get levels right
+# *** DONE *** Fix SERIOUS bug in ref.grid with 'at' - doesn't get levels right
 # ***DONE*** Warning for effect in an interaction
 # *** DECIDED ITS GOOD AS-IS *** Names of list results
 # *** DONE *** By variables in contrasts
 # *** DONE *** New print method to separate by 'by'?
 # *** DONE *** Annotations showing adjust procedure, etc.
 # *** DONE *** cld method(s)
+# lstrends doesn't work when contrasts supplied
 # Passing arguments to contrasts in cld
 # User-defined list of contrasts
-# Check fac.reduce works for named list?
+# *** NO -- consider that it doesn't make sense! *** Check fac.reduce works for named list?
 # Document glhargs, mlf, and lf are deprecated
 # Adjustments to CI methods?
 # *** DONE *** Trends -- lstrends function
