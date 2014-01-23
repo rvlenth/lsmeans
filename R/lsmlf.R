@@ -12,8 +12,9 @@ lsm <- function(...) {
 }
 
 # S3 method for an lsmobj
-glht.lsmobj <- function(model, linfct, ...) {
-    args = list(model=model, linfct=linfct@linfct, ...)
+glht.lsmobj <- function(model, linfct, by, ...) {
+    object = linfct # so I don't get confused
+    args = list(model=model, ...)
     # add a df value if not supplied
     if (is.null(args$df)) {
         df = summary(linfct)$df
@@ -21,10 +22,31 @@ glht.lsmobj <- function(model, linfct, ...) {
             args$df = max(1, as.integer(mean(df, na.rm=TRUE) + .25))
             message("Note: df set to ", args$df)
         }
-        
     }
-    do.call("glht", args)
+    if (missing(by)) by = object@misc$by.vars
+    
+    if (is.null(by)) {
+        args$linfct = object@linfct
+        return(do.call("glht", args))
+    }
+    
+    # (else...)
+    by.rows = .find.by.rows(object@grid, by)
+    result = lapply(by.rows, function(r) {
+        args$linfct = object@linfct[r, , drop=FALSE]
+        do.call("glht", args)
+    })
+    bylevs = lapply(by, function(byv) unique(object@grid[[byv]]))
+    names(bylevs) = by
+    bygrid = do.call("expand.grid", bylevs)
+    levlbls = lapply(by, function(byv) paste(byv, "=", bygrid[[byv]]))
+print(bylevs); print(bygrid); print(levlbls)
+    levlbls$sep = ", "
+    names(result) = do.call("paste", levlbls)
+    result
 }
+
+
 
 # New S3 method for lsmlf objects
 glht.lsmlf <- function(model, linfct, ...) {

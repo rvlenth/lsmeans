@@ -206,7 +206,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
 
 ### =========== Methods for ref.grid class =============================
 
-setMethod("show", "ref.grid", function(object) {
+str.ref.grid <- function(object) {
     showlevs = function(x) # internal convenience function
         cat(paste(format(x, digits = 5, justify = "none"), collapse=", "))
     #cat("responses: ")
@@ -235,16 +235,13 @@ setMethod("show", "ref.grid", function(object) {
             showlevs(levs[[nm]])
         cat("\n")
     }
-})
+}
 
-# Utility to parse the dots argument - I deprecated this already
-# .getPref = function(arg, dots, default) {
-#     if (is.null(dots[[arg]])) default
-#     else dots[[arg]]
-# }
+setMethod("show", "ref.grid", str.ref.grid)
+
 
 # utility to compute an adjusted p value
-.adj.p.value = function(t, df, adjust, fam.size) {
+.adj.p.value = function(t, df, adjust, fam.info) {
 # do a pmatch of the adjust method, case insensitive
     adj.meths = c("tukey", "sidak", "scheffe", p.adjust.methods)
     k = pmatch(tolower(adjust), adj.meths)
@@ -252,11 +249,17 @@ setMethod("show", "ref.grid", function(object) {
         stop("Adjust method '", adjust, "' is not recognized")
     adjust = adj.meths[k]
     
-    n.contr = sum(!is.na(t))
+    fam.size = fam.info[1]
+    n.contr = fam.info[2] ## n.contr = sum(!is.na(t))
     abst = abs(t)
     unadj.p = 2*pt(abst, df, lower.tail=FALSE)
-    if (adjust %in% p.adjust.methods)
-        pval = p.adjust(unadj.p, adjust, n = n.contr)
+    if (adjust %in% p.adjust.methods) {
+        if (n.contr == length(unadj.p))
+            pval = p.adjust(unadj.p, adjust, n = n.contr)
+        else
+            pval = as.numeric(apply(matrix(unadj.p, nrow=n.contr), 2, 
+                function(pp) p.adjust(pp, adjust, n=sum(!is.na(pp)))))
+    }
     else pval = switch(adjust,
         tukey = ptukey(sqrt(2)*abst, fam.size, zapsmall(df), lower.tail=FALSE),
         sidak = 1 - (1 - 2*pt(abst, df, lower.tail=FALSE))^n.contr,
@@ -274,23 +277,32 @@ setMethod("show", "ref.grid", function(object) {
     list(pval=pval, mesg=mesg, adjust=adjust)
 }
 
-### S4 "summary" method for ref.grid (and lsmobj)
-# originally I did not have infer, level, or adjust args
-# and looked for them in ... -- bad idea, I think
-setMethod("summary", "ref.grid", function(object, infer, level, adjust) {
-    result = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@ddfm, object@misc)
 
-# figure out factors w/ more than one level
-    nlev = sapply(object@levels, length)
-    lbls = object@grid[which(nlev > 1)]
-    if (nrow(object@grid) == 1) # but if only one row, use everything
-        lbls = object@grid
+# S3 summary method
+summary.ref.grid <- function(object, infer, level, adjust, by) {
+    result = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@ddfm, object@misc)
+    
+#     # figure out factors w/ more than one level
+#     nlev = sapply(object@levels, length)
+#     lbls = object@grid[which(nlev > 1)]
+#     if (nrow(object@grid) == 1) # but if only one row, use everything
+#         lbls = object@grid
+    # above code replace by just excluding labels for responseses and matrices:
+    lblnms = setdiff(names(object@grid), object@roles$responses)
+    lbls = object@grid[lblnms]
+
     zFlag = (all(is.na(result$df)))
     
-### implement my 'variable defaults' scheme    
+    ### implement my 'variable defaults' scheme    
     if(missing(infer)) infer = object@misc$infer
     if(missing(level)) level = object@misc$level
     if(missing(adjust)) adjust = object@misc$adjust
+    if(missing(by)) by = object@misc$by.vars
+    
+    if ((length(infer) == 0) || !is.logical(infer)) 
+        infer = c(FALSE, FALSE)
+    if(length(infer == 1)) 
+        infer = c(infer,infer)
 
     mesg = NULL
     if(infer[1]) { # add CIs
@@ -302,20 +314,28 @@ setMethod("summary", "ref.grid", function(object, infer, level, adjust) {
         mesg = paste("Confidence level used:", level)
     }
     if(infer[2]) { # add tests
+        by.size = nrow(object@grid)
+        if (!is.null(by))
+            for (nm in by)
+                by.size = by.size / length(unique(object@levels[[nm]]))
         cnm = ifelse (zFlag, "z.ratio", "t.ratio")
         t.ratio = result[[cnm]] = result[[1]] / result$SE
-        apv = .adj.p.value(t.ratio, result$df, adjust, object@misc$famSize)
-        adjust = apv$adjust # matched name in case it was abbreviated
+        fam.info = c(object@misc$famSize, by.size)
+        apv = .adj.p.value(t.ratio, result$df, adjust, fam.info)
+        adjust = apv$adjust   # in case it was abbreviated
         result$p.value = apv$pval
         mesg = c(mesg, apv$mesg)
     }
     summ = cbind(lbls, result)
-    by = object@misc$by
     attr(summ, "by.vars") = by
     attr(summ, "mesg") = mesg
     class(summ) = c("summary.ref.grid", "data.frame")
     summ
-})
+}
+
+### S4 "summary" method for ref.grid (and lsmobj)
+setMethod("summary", "ref.grid", summary.ref.grid)
+
 
 # left-or right-justify column labels for m depending on "l" or "R" in just
 .just.labs = function(m, just) {
@@ -334,7 +354,7 @@ print.summary.ref.grid = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) 
     if (!is.null(x$df)) x$df = round(x$df, 2)
     if (!is.null(x$t.ratio)) x$t.ratio = round(x$t.ratio, 3)
     if (!is.null(x$p.value)) {
-        fp = x$p.value = format(round(x$p.value,4), nsmall=4)
+        fp = x$p.value = format(round(x$p.value,4), nsmall=4, sci=FALSE)
         x$p.value[fp=="0.0000"] = "<.0001"
     }
     just = sapply(x.save, function(col) if(is.numeric(col)) "R" else "L")
@@ -353,7 +373,9 @@ print.summary.ref.grid = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) 
     }
     else { # separate listing for each by variable
         m = .just.labs(m[, setdiff(names(x), by.vars)], just)
-        lbls = do.call(paste, c(x[,by.vars, drop=FALSE], sep=", "))
+        pargs = as.list(x[,by.vars, drop=FALSE])
+        pargs$sep = ", "
+        lbls = do.call(paste, pargs)
         for (lb in unique(lbls)) {
             rows = which(lbls==lb)
             levs = paste(by.vars, "=", xc[rows[1], by.vars])
@@ -370,13 +392,21 @@ print.summary.ref.grid = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) 
     invisible(x.save)
 }
 
-print.ref.grid = function(x, ...) {
-    args.prt = list(...)
-    args.sum = list(object=x)
-    for (key in c("infer","level","adjust")) {
-        args.sum[[key]] = .getPref(key, args.prt, NULL)
-        args.prt[[key]] = NULL
-    }
-    args.prt$x = do.call("summary", args.sum)
-    do.call("print", args.prt)
-}
+# print.ref.grid = function(x, ...) {
+#     .getPref = function(arg, dots, default) {
+#         if (is.null(dots[[arg]])) default
+#         else dots[[arg]]
+#     }
+#     args.prt = list(...)
+#     args.sum = list(object=x)
+#     for (key in c("infer","level","adjust")) {
+#         args.sum[[key]] = .getPref(key, args.prt, NULL)
+#         args.prt[[key]] = NULL
+#     }
+#     args.prt$x = do.call("summary", args.sum)
+#     do.call("print", args.prt)
+# }
+
+print.ref.grid = function(x,...)
+    print(summary.ref.grid(x, ...))
+

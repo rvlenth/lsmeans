@@ -15,7 +15,7 @@ Extract and display information on all pairwise comparisons of least-squares mea
   \item{details}{Logical value determining whether detailed
   information on tests of pairwise comparisons is displayed}
   \item{sort}{Logical value determining whether the LS means are 
-  sorted in decreasing order before the comparisons are produced}
+  sorted before the comparisons are produced}
   \item{by}{Character name or names of variables by which separate  
   families of comparisons are tested. 
   If \code{NULL}, all means are compared. If missing, and a \code{by} variable was used in creating \code{object}, it is used as the \code{by} variable in \code{cld}.}

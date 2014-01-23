@@ -11,6 +11,7 @@
 
 
 setClass("lsmobj", contains="ref.grid")
+
 setMethod("show", "lsmobj", function(object) print(summary(object)) )
 
 ############# lsmeans methods...
@@ -51,6 +52,28 @@ function(object, specs, trend, by, ...) {
     }
 })
 
+# List of specs
+setMethod("lsmeans", signature(object="ANY", specs="list"),
+function(object, specs, ...) {
+    result = list()
+    nms = names(specs)
+    blanks = which(nms == "")
+    nms[blanks] = seq_len(length(nms))[blanks]
+    for (i in seq_len(length(specs))) {
+        res = lsmeans(object=object, specs = specs[[i]], ...)
+        if (is.list(res)) {
+            names(res) = paste(nms[i], names(res))
+            result = c(result,res)
+        }
+        else{
+            nm = paste(nms[i], " ", res@misc$estName, "s", sep="")
+            result[[nm]] = res
+        }
+    }
+    result  
+})
+              
+
 # Method for a ref.grid
 setMethod("lsmeans", signature(object="ref.grid", specs="character"), 
 function(object, specs, by = NULL, 
@@ -81,6 +104,8 @@ function(object, specs, by = NULL,
     if(.some.term.contains(union(facs, RG@roles$trend), RG@model.info$terms))
         message("NOTE: Results may be misleading due to involvement in interactions")
     
+    RG@roles$responses = character()
+    RG@misc$famSize = nrow(linfct)
     RG@misc$estName = "lsmean"
     RG@misc$adjust = "none"
     RG@misc$infer = c(TRUE,FALSE)
@@ -147,8 +172,9 @@ contrasts.lsmobj = function(object, method = "pairwise", by, adjust, ...) {
     
     if (is.null(by)) {
         linfct = t(cmat) %*% object@linfct
-        grid = data.frame(contrast=names(cmat))
+        grid = data.frame(.contrast.=names(cmat))
     }
+    
     # NOTE: The kronecker thing here is nice and efficient but depends
     # on the grid being regular -- same number of rows for each 'by' case
     # If you ever want to expand to irregular grids, this block will
@@ -157,7 +183,7 @@ contrasts.lsmobj = function(object, method = "pairwise", by, adjust, ...) {
         tcmat = kronecker(diag(rep(1,length(by.rows))), t(cmat))
         linfct = tcmat %*% object@linfct[unlist(by.rows), ]
         tmp = expand.grid(con= names(cmat), by = seq_len(length(by.rows)))###unique(by.id))
-        grid = data.frame(contrast = tmp$con)
+        grid = data.frame(.contrast. = tmp$con)
         n.each = ncol(cmat)
         row.1st = sapply(by.rows, function(x) x[1])
         xlevs = list()
@@ -166,19 +192,30 @@ contrasts.lsmobj = function(object, method = "pairwise", by, adjust, ...) {
         grid = cbind(grid, as.data.frame(xlevs))
     }
     
+    # Rename the .contrast. column -- ordinarily to "contrast",
+    # but otherwise a unique variation thereof
+    n.prev.con = length(grep("^contrast[0-9]?", names(grid)))
+    con.col = grep("\\.contrast\\.", names(grid))
+    con.name = paste("contrast", 
+                     ifelse(n.prev.con == 0, "", n.prev.con), sep="")
+    names(grid)[con.col] = con.name
+    
     row.names(linfct) = NULL
     misc = object@misc
     misc$estName = "estimate"
     misc$methDesc = attr(cmat, "desc")
-    misc$famSize = nrow(args)
+    misc$famSize = size=nrow(args)
     if (missing(adjust)) adjust = attr(cmat, "adjust")
     if (is.null(adjust)) adjust = "none"
     misc$adjust = adjust
     misc$infer = c(FALSE, TRUE)
-    misc$by = by
+    misc$by.vars = by
     object@roles$predictors = "contrast"
+    levels = list()
+    for (nm in names(grid))
+        levels[[nm]] = unique(grid[[nm]])
         
-    new("lsmobj", object, linfct=linfct, levels=as.list(grid), grid=grid, misc=misc)
+    new("lsmobj", object, linfct=linfct, levels=levels, grid=grid, misc=misc)
 }
 
 # return list of row indexes in tbl for each combination of by
@@ -253,7 +290,12 @@ lstrends = function(model, specs, var, delta.var=.01*rng, ...) {
     args = list(object=RG, specs=specs, ...)
     args$at = args$cov.reduce = args$mult.levs = NULL
     result = do.call("lsmeans", args)
-    result@misc$estName = estName
+    if (is.list(result)) {
+        names(result)[1] = "lstrends"
+        result[[1]]@misc$estName = estName
+    }
+    else
+        result@misc$estName = estName
     result
 }
 
