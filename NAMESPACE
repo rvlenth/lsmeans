@@ -1,9 +1,73 @@
 import(Matrix)
+importFrom(multcomp, cld)
 importFrom(multcomp, glht)
 import(plyr)
 
+# Visible exports
+exportPattern("*.lsmc")  #all contrast fcns
+export(
+    contrast,
+    lsm,
+    lsm.basis,
+    lsmeans, 
+    lsmeans.character,  # because it is a generic
+    lsmip,
+    lstrends,
+    recover.data,
+    ref.grid,
+    test
+)    
+
+
+# S3 methods
+S3method(cld, lsmobj)
+
+S3method(confint, lsmobj)
+
+S3method(contrast, lsmobj)
+
+S3method(glht, lsmlf)
+S3method(glht, lsmobj)
+
+S3method(lsm.basis, gls)
+S3method(lsm.basis, lm)
+S3method(lsm.basis, lme)
+S3method(lsm.basis, mer)
+S3method(lsm.basis, merMod)
+S3method(lsm.basis, mlm)
+
+S3method(lsmeans, character)
+S3method(lsmeans.character, default)
+S3method(lsmeans.character, ref.grid)
+S3method(lsmeans, default)
+S3method(lsmeans, formula)
+S3method(lsmeans, list)
+
+S3method(lsmip, default)
+
+S3method(pairs, lsmobj)
+
+S3method(print, ref.grid)
+S3method(print, summary.ref.grid)
+
+S3method(recover.data, call)
+S3method(recover.data, default)
+S3method(recover.data, gls)
+S3method(recover.data, lm)
+S3method(recover.data, mer)
+S3method(recover.data, merMod)
+
+S3method(str, ref.grid)
+
+S3method(summary, ref.grid)
+S3method(summary, glht.list)
+
+S3method(test, lsmobj)
+
+
+# interim support for .old.lsmeans
+export(.old.lsmeans)
 S3method(print, lsm)
 S3method(print, data.frame.lsm)
-S3method(glht, lsmlf)
 
-exportPattern("^[[:alpha:]]+")
+###exportPattern("^[[:alpha:]]+")
