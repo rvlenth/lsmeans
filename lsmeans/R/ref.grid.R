@@ -1,30 +1,5 @@
 # Reference grid code
 
-# TO DO: Is there a less clunky way to do the mult.levs argument
-# in ref.grid? 
-
-# S4 class definition:
-setClass("ref.grid", representation (
-    model.info = "list",
-    roles = "list",
-    grid = "data.frame", 
-    levels = "list",
-    matlevs = "list",
-    linfct = "matrix",
-    bhat = "numeric",
-    nbasis = "matrix",
-    V = "matrix",
-    ddfm = "function",
-    misc = "list"   
-))
-# Note: misc will hold extra params for ddfm, 
-# plus at least the following req'd by the summary method
-#   estName: column name for the estimate in the summary ["prediction"]
-#   *infer: booleans (CIs?, tests?)  [(FALSE,FALSE)]
-#   *level: default conf level [.95]
-#   *adjust: default adjust method ["none"]
-#   famSize: number of means in family
-# *starred ones can be provided as arguments to summary
 
 # Change to cov.reduce specification: can be...
 #     a function: is applied to all covariates
@@ -111,7 +86,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
 # Take care of multivariate response
 
     multresp = list()
-    ylevs = basis$misc$ylevs
+    ylevs = basis$dfargs$ylevs
     if(!is.null(ylevs)) { # have a multivariate situation
         if (missing(mult.levs)) {
             yname = multresp = "rep.meas"
@@ -161,12 +136,12 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
     }
 
 
-
-    basis$misc$estName = "prediction"
-    basis$misc$infer = c(FALSE,FALSE)
-    basis$misc$level = .95
-    basis$misc$adjust = "none"
-    basis$misc$famSize = nrow(grid)
+    misc = list()
+    misc$estName = "prediction"
+    misc$infer = c(FALSE,FALSE)
+    misc$level = .95
+    misc$adjust = "none"
+    misc$famSize = nrow(grid)
     
     new ("ref.grid",
          model.info = list(call = attr(data,"call"), terms = attr(data, "terms"), xlev = xlev),
@@ -175,12 +150,12 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
                       multresp = multresp),
          grid = grid, levels = ref.levels, matlevs = matlevs,
          linfct = basis$X, bhat = basis$bhat, nbasis = basis$nbasis, V = basis$V,
-         ddfm = basis$ddfm, misc = basis$misc)
+         dffun = basis$dffun, dfargs = basis$dfargs, misc = misc)
 }
 
 # utility fcn to get est's, std errors, and df
 # returns a data.frame
-.est.se.df = function(linfct, bhat, nbasis, V, ddfm, misc) {
+.est.se.df = function(linfct, bhat, nbasis, V, dffun, dfargs, misc) {
     active = which(!is.na(bhat))
     bhat = bhat[active]
     result = apply(linfct, 1, function(x) {
@@ -194,7 +169,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
         if (estble) {
             est = sum(bhat * x)
             se = sqrt(sum(x * V %*% x))
-            df = ddfm(x, misc)
+            df = dffun(x, dfargs)
             c(est, se, df)
         }
         else c(NA,NA,NA)
@@ -237,8 +212,6 @@ str.ref.grid <- function(object) {
     }
 }
 
-setMethod("show", "ref.grid", str.ref.grid)
-
 
 # utility to compute an adjusted p value
 .adj.p.value = function(t, df, adjust, fam.info) {
@@ -248,6 +221,9 @@ setMethod("show", "ref.grid", str.ref.grid)
     if(is.na(k))
         stop("Adjust method '", adjust, "' is not recognized")
     adjust = adj.meths[k]
+    
+    # pseudo-asymptotic results when df is NA
+    df[is.na(df)] = 10000
     
     fam.size = fam.info[1]
     n.contr = fam.info[2] ## n.contr = sum(!is.na(t))
@@ -280,7 +256,7 @@ setMethod("show", "ref.grid", str.ref.grid)
 
 # S3 summary method
 summary.ref.grid <- function(object, infer, level, adjust, by) {
-    result = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@ddfm, object@misc)
+    result = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@dffun, object@dfargs, object@misc)
     
 #     # figure out factors w/ more than one level
 #     nlev = sapply(object@levels, length)
@@ -325,6 +301,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by) {
         adjust = apv$adjust   # in case it was abbreviated
         result$p.value = apv$pval
         mesg = c(mesg, apv$mesg)
+        if(zFlag) mesg = c(mesg, "P values are asymptotic")
     }
     summ = cbind(lbls, result)
     attr(summ, "by.vars") = by
@@ -332,9 +309,6 @@ summary.ref.grid <- function(object, infer, level, adjust, by) {
     class(summ) = c("summary.ref.grid", "data.frame")
     summ
 }
-
-### S4 "summary" method for ref.grid (and lsmobj)
-setMethod("summary", "ref.grid", summary.ref.grid)
 
 
 # left-or right-justify column labels for m depending on "l" or "R" in just
@@ -392,21 +366,10 @@ print.summary.ref.grid = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) 
     invisible(x.save)
 }
 
-# print.ref.grid = function(x, ...) {
-#     .getPref = function(arg, dots, default) {
-#         if (is.null(dots[[arg]])) default
-#         else dots[[arg]]
-#     }
-#     args.prt = list(...)
-#     args.sum = list(object=x)
-#     for (key in c("infer","level","adjust")) {
-#         args.sum[[key]] = .getPref(key, args.prt, NULL)
-#         args.prt[[key]] = NULL
-#     }
-#     args.prt$x = do.call("summary", args.sum)
-#     do.call("print", args.prt)
-# }
 
 print.ref.grid = function(x,...)
     print(summary.ref.grid(x, ...))
 
+### S4 methods
+## use S3 for this setMethod("summary", "ref.grid", summary.ref.grid)
+setMethod("show", "ref.grid", str.ref.grid)

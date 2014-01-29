@@ -8,27 +8,40 @@
     args
 }
 
-
-
-setClass("lsmobj", contains="ref.grid")
-
 setMethod("show", "lsmobj", function(object) print(summary(object)) )
 
-############# lsmeans methods...
 
-# signature = (ALL, ALL) <==> (some model object, ALL)
-# Look for args: at, cov.reduce = mean, mult.levs
-lsmeans = function(object, specs, ...) {
+
+### lsmeans S3 generics ...
+### I am opting to use S3 methods, cascaded for two arguments
+### rather than messing with S4 methods
+
+lsmeans = function(object, specs, ...)
+    UseMethod("lsmeans", specs)
+
+# 
+lsmeans.default = function(object, specs, ...) {
     rgargs = .args.for.fcn(ref.grid, list(object=object, ...))
     RG = do.call("ref.grid", rgargs)
     lsargs = list(object = RG, specs = specs, ...)
     for (nm in names(rgargs)[-1]) lsargs[[nm]] = NULL
     do.call("lsmeans", lsargs)###lsmeans(RG, specs, ...)
 }
-setGeneric("lsmeans")
 
-setMethod("lsmeans", signature(object="ANY", specs="formula"),
-function(object, specs, trend, by, ...) {
+# signature = (ALL, ALL) <==> (some model object, ALL)
+# Look for args: at, cov.reduce = mean, mult.levs
+# lsmeans = function(object, specs, ...) {
+#     rgargs = .args.for.fcn(ref.grid, list(object=object, ...))
+#     RG = do.call("ref.grid", rgargs)
+#     lsargs = list(object = RG, specs = specs, ...)
+#     for (nm in names(rgargs)[-1]) lsargs[[nm]] = NULL
+#     do.call("lsmeans", lsargs)###lsmeans(RG, specs, ...)
+# }
+# setGeneric("lsmeans")
+
+#setMethod("lsmeans", signature(object="ANY", specs="formula"),
+lsmeans.formula =
+function(object, specs, trend, by, contr.list, ...) {
     if (!missing(trend))
         return(lstrends(object, specs, var=trend, ...))
     
@@ -40,28 +53,31 @@ function(object, specs, trend, by, ...) {
 #        lsms = lsmeans(object, all.vars(specs[-2]), ...)
         contr.spec = all.vars(specs[-3])[1]
         by = .find.by(as.character(specs[3]))
+        # Handle old-style case where contr is a list of lists
+        if (!missing(contr.list)) {
+            cmat = contr.list[[contr.spec]]
+            if (!is.null(cmat))
+                contr.spec = cmat
+        }
         lsmeans(object, specs = all.vars(specs[-2]), 
                 by = by, contr = contr.spec, ...)
-
-#         # Currently I haven't provided for passing 'dots' args to cld
-#         if (contr.spec == "cld")
-#             return(cld(lsms, by = by, details = TRUE))
-#         
-#         ctrs = contrasts(lsms, contr.spec, by = by, ...)
-#         list(lsmeans = lsms, contrasts = ctrs)
     }
-})
+}
 
 # List of specs
-setMethod("lsmeans", signature(object="ANY", specs="list"),
-function(object, specs, ...) {
+#setMethod("lsmeans", signature(object="ANY", specs="list"),
+lsmeans.list = function(object, specs, ...) {
     result = list()
     nms = names(specs)
     blanks = which(nms == "")
     nms[blanks] = seq_len(length(nms))[blanks]
     for (i in seq_len(length(specs))) {
         res = lsmeans(object=object, specs = specs[[i]], ...)
-        if (is.list(res)) {
+        if (is.data.frame(res)) { # happens e.g. when cld is used
+            nm = paste("summary for", names(res)[1])
+            result[[nm]] = res
+        }
+        else if (is.list(res)) {
             names(res) = paste(nms[i], names(res))
             result = c(result,res)
         }
@@ -71,12 +87,20 @@ function(object, specs, ...) {
         }
     }
     result  
-})
-              
+}
 
-# Method for a ref.grid
-setMethod("lsmeans", signature(object="ref.grid", specs="character"), 
-function(object, specs, by = NULL, 
+
+# Generic for after we've gotten specs in character form
+lsmeans.character = function(object, specs, ...)
+    UseMethod("lsmeans.character", object)
+
+# Needed for model objects
+lsmeans.character.default = function(object, specs, ...)
+    lsmeans.default(object, specs, ...)
+
+# Method for a ref.grid -- all methods will get us here eventually
+#setMethod("lsmeans", signature(object="ref.grid", specs="character"), 
+lsmeans.character.ref.grid = function(object, specs, by = NULL, 
          fac.reduce = function(coefs) apply(coefs, 2, mean), contr, ...) {
     
     RG = object
@@ -118,13 +142,18 @@ function(object, specs, by = NULL,
     
     else { # return a list with lsmeans and contrasts
         if (is.character(contr) && contr == "cld") {
-# TO DO: provide for passing dots to cld                
+        # TO DO: provide for passing dots to cld                
             return(cld(result, by = by))
         }
-        ctrs = contrasts(result, method = contr, by, ...)
+        # case like in old lsmeans, contr = list
+        if (is.list(contr)) {
+            cmat = as.data.frame(contr)
+            contr = function(levs) cmat
+        }
+        ctrs = contrast(result, method = contr, by, ...)
         list(lsmeans = result, contrasts = ctrs)
     }
-})
+}
 
 
 # utility to parse 'by' part of a formula
@@ -137,11 +166,11 @@ function(object, specs, by = NULL,
 
 
 
-### 'contrasts' S3 generic and method
-contrasts = function(object, ...)
-    UseMethod("contrasts")
+### 'contrast' S3 generic and method
+contrast = function(object, ...)
+    UseMethod("contrast")
               
-contrasts.lsmobj = function(object, method = "pairwise", by, adjust, ...) {
+contrast.lsmobj = function(object, method = "pairwise", by, adjust, ...) {
     args = object@grid
     if(missing(by)) 
         by = object@misc$by.vars
@@ -153,6 +182,8 @@ contrasts.lsmobj = function(object, method = "pairwise", by, adjust, ...) {
     }
     args$sep = ","
     levs = do.call("paste", args)
+    
+    
     if (is.character(method)) {
         fn = paste(method, "lsmc", sep=".")
         method = if (exists(fn, mode="function")) 
@@ -235,18 +266,18 @@ confint.lsmobj = function(object, parm, level=.95, ...) {
     summary(object, infer=c(TRUE,FALSE), level=level, ...)
 }
 
-# tests S3 generic and method
-tests = function(object, parm, ...) {
-    UseMethod("tests")
+# test S3 generic and method
+test = function(object, parm, ...) {
+    UseMethod("test")
 }
-tests.lsmobj = function(object, parm, ...) {
+test.lsmobj = function(object, parm, ...) {
     summary(object, infer=c(FALSE,TRUE), ...)
 }
 
 # pairs method
 pairs.lsmobj = function(x, ...) {
     object = x # for my sanity
-    contrasts(object, method = "pairwise", ...)
+    contrast(object, method = "pairwise", ...)
 }
 
 
@@ -326,7 +357,15 @@ lstrends = function(model, specs, var, delta.var=.01*rng, ...) {
 
 
 
-
+#===================================================================
+#===================================================================
+#===================================================================
+#===================================================================
+#===================================================================
+#===================================================================
+#===================================================================
+#===================================================================
+#===================================================================
 ### Old version of lsmeans
 .old.lsmeans = function(object, specs, adjust=c("auto","tukey","sidak","scheffe",p.adjust.methods), conf = .95, 
                    at, trend, contr=list(),

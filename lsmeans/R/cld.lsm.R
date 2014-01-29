@@ -37,8 +37,8 @@ cld.lsmobj = function(object, details=FALSE, sort=TRUE, by, alpha=.05,
     attr(lsmtbl, "by.vars") = by
     object@misc$by.vars = by
     
-    prwise = contrasts(object, "revpairwise", by=by)    
-    pwtbl = tests(prwise, ...)
+    prwise = contrast(object, "revpairwise", by=by)    
+    pwtbl = test(prwise, ...)
     
     p.boo = (pwtbl$p.value < alpha)
     if(is.null(by)) {

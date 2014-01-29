@@ -56,14 +56,18 @@ Oats.mult.lm = lm(yield ~ Block + Variety, data = Oats.mult)
                  
 
 # Load test files
-library(plyr)
-source("R/recover.data.R")
-source("R/ref.grid.R")
-source("R/KRstuff.R")
-source("R/lsm.basis.R")
-source("R/lsm-contr.R")
-source("R/lsmeans.R")
-source("R/cld.lsm.R")
+# library(plyr)
+# library(multcomp)
+# source("R/recover.data.R")
+# source("R/ref.grid.R")
+# source("R/KRstuff.R")
+# source("R/lsm.basis.R")
+# source("R/lsm-contr.R")
+# source("R/lsmeans.R")
+# source("R/cld.lsm.R")
+# source("R/lsmlf.R")
+# source("R/lsmip.R")
+
 
 # YET TO DO...
 # *** DONE *** Fix SERIOUS bug in ref.grid with 'at' - doesn't get levels right
@@ -73,10 +77,10 @@ source("R/cld.lsm.R")
 # *** DONE *** New print method to separate by 'by'?
 # *** DONE *** Annotations showing adjust procedure, etc.
 # *** DONE *** cld method(s)
-# lstrends doesn't work when contrasts supplied
+# *** Seems OK now *** lstrends doesn't work when contrasts supplied
 # Passing arguments to contrasts in cld
-# User-defined list of contrasts
-# *** NO -- consider that it doesn't make sense! *** Check fac.reduce works for named list?
+# *** DONE *** User-defined list of contrasts
+# *** NO -- Doesn't make sense! *** Check fac.reduce works for named list?
 # Document glhargs, mlf, and lf are deprecated
 # Adjustments to CI methods?
 # *** DONE *** Trends -- lstrends function

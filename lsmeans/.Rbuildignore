@@ -3,9 +3,24 @@
 
 $ New devel stuff
 test-data.R
+int.plot.R
+CopyOflsmeans.R
 
-####cld.lsm.R
 lsmeans-Ex.R
 using-lsmeans.aux
 using-lsmeans.log
 using-lsmeans.out
+
+
+
+#for checking build problems
+#cld.lsm.R
+#int.plot.R
+#KRstuff.R
+#lsm-contr.R
+#lsm.basis.R
+#lsmeans.R
+#lsmip.R
+#lsmlf.R
+#recover.data.R
+#ref.grid.R

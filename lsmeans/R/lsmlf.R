@@ -42,8 +42,14 @@ glht.lsmobj <- function(model, linfct, by, ...) {
     levlbls = lapply(by, function(byv) paste(byv, "=", bygrid[[byv]]))
     levlbls$sep = ", "
     names(result) = do.call("paste", levlbls)
+    class(result) = c("glht.list", "list")
     result
 }
+
+# S3 methods for glht.list
+summary.glht.list = function(object, ...)
+    lapply(object, summary, ...)
+
 
 
 

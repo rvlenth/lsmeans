@@ -10,9 +10,9 @@
 #     bhat   - regression coefficients for fixed effects (INCLUDING any NAs)
 #     nbasis - matrix whose columns for a basis for non-estimable functions of beta; matrix(NA) if none
 #     V      - estimated covariance matrix of bhat
-#     ddfm   - function(k, misc) to find df for k'bhat having std error se
-#     misc   - additional parameters needed by ddfm
-# Note: if no df exists, set ddfm = function(...) NA and misc = list()
+#     dffun  - function(k, dfargs) to find df for k'bhat having std error se
+#     dfargs  - additional arguments, if any, for dffun
+# Note: if no df exists, set dffun = function(...) NA and dfargs = list()
     
 lsm.basis = function(object, trms, xlev, grid, ...)
     UseMethod("lsm.basis")
@@ -42,9 +42,9 @@ lsm.basis.lm <- function(object, trms, xlev, grid) {
         # permute the rows via pivot
         nbasis[object$qr$pivot, ] = nbasis
     }
-    misc = list(df = object$df.residual)
-    ddfm = function(k, misc) misc$df
-    list(X=X, bhat=bhat, nbasis=nbasis, V=V, ddfm=ddfm, misc=misc)
+    dfargs = list(df = object$df.residual)
+    dffun = function(k, dfargs) dfargs$df
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs)
 }
 
 # Extension for multivariate case
@@ -56,21 +56,22 @@ lsm.basis.mlm <- function(object, trms, xlev, grid) {
     bas$nbasis = kronecker(rep(1,k), bas$nbasis)
     ylevs = dimnames(bhat)[[2]]
     if (is.null(ylevs)) ylevs = 1:k
-    bas$misc$ylevs = ylevs
+    # save ylevs. Not needed by dffun, but it's a conventient place
+    bas$dfargs$ylevs = ylevs
     bas
 }
 
 lsm.basis.merMod <- function(object, trms, xlev, grid) {
     bhat = fixef(object)
     contrasts = attr(model.matrix(object), "contrasts")
-    misc = list()
-    ddfm = function(...) NA
+    dfargs = list()
+    dffun = function(...) NA
     V = as.matrix(vcov(object))
     if (isLMM(object)) {
         if (require("pbkrtest")) {
-            misc = list(unadjV = V, adjV = vcovAdj(object, 0))
-            V = as.matrix(misc$adjV)
-            ddfm = function(k, misc) .KRdf.mer (misc$adjV, misc$unadjV, k)
+            dfargs = list(unadjV = V, adjV = vcovAdj(object, 0))
+            V = as.matrix(dfargs$adjV)
+            dffun = function(k, dfargs) .KRdf.mer (dfargs$adjV, dfargs$unadjV, k)
         }
         else {
             warning("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
@@ -78,8 +79,12 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
     }
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
-    list(X=X, bhat=bhat, nbasis=matrix(NA), V=V, ddfm=ddfm, misc=misc)
+    list(X=X, bhat=bhat, nbasis=matrix(NA), V=V, dffun=dffun, dfargs=dfargs)
 }
+
+# For lme4.0, I think
+lsm.basis.mer = function(object, trms, xlev, grid)
+    lsm.basis.merMod(object, ...)
 
 lsm.basis.lme <- function(object, trms, xlev, grid) {
     contrasts = object$contrasts
@@ -88,8 +93,8 @@ lsm.basis.lme <- function(object, trms, xlev, grid) {
     bhat = fixef(object)
     V = vcov(object)
     nbasis = matrix(NA)
-    ddfm = function(...) NA
-    list(X=X, bhat=bhat, nbasis=nbasis, V=V, ddfm=ddfm, misc=list())
+    dffun = function(...) NA
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=list())
 }
 
 lsm.basis.gls <- function(object, trms, xlev, grid) {
@@ -99,9 +104,9 @@ lsm.basis.gls <- function(object, trms, xlev, grid) {
     bhat = coef(object)
     V = vcov(object)
     nbasis = matrix(NA)
-    misc = list(df = object$dims$N - object$dims$p)
-    ddfm = function(k, misc) misc$df
-    list(X=X, bhat=bhat, nbasis=nbasis, V=V, ddfm=ddfm, misc=misc)
+    dfargs = list(df = object$dims$N - object$dims$p)
+    dffun = function(k, dfargs) dfargs$df
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs)
 }
 
 

@@ -1,9 +1,5 @@
 \name{lsmeans}
 \alias{lsmeans}
-\alias{print.lsm}
-\alias{print.data.frame.lsm}
-\alias{lsm}
-\alias{glht.lsmlf}
 
 \title{Least-squares means}
 \description{
@@ -11,17 +7,9 @@ Compute least-squares means for specified factors or factor combinations in a li
 and optionally comparisons or contrasts among them.
 }
 \usage{
-lsmeans(object, specs, adjust = c("auto","tukey","sidak","scheffe", p.adjust.methods),
-  conf = .95, at, trend, contr = list(), 
-  cov.reduce = function(x, name) mean(x), 
-  fac.reduce = function(coefs, lev) apply(coefs, 2, mean), 
-  glhargs = NULL, lf = FALSE, mlf = rep(1,nresp)/nresp, ...)
-  
-\method{print}{lsm}(x, omit = NULL, ...)
-\method{print}{data.frame.lsm}(x, ...)
-
-lsm(...)
-\method{glht}{lsmlf}(model, linfct, ...)
+lsmeans(object, specs, at, trend, contr.list, 
+  cov.reduce = mean, 
+  fac.reduce = function(coefs) apply(coefs, 2, mean), ...)
 }
 \arguments{
   \item{object}{
