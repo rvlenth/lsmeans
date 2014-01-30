@@ -22,13 +22,13 @@ Extract and display information on all pairwise comparisons of least-squares mea
   \item{alpha}{Numeric significance level for the comparisons}
   \item{Letters}{Character vector of letters to use in the display.
   Any strings of length greater than 1 are expanded into individual characters}
-  \item{\dots}{Arguments passed to \code{\link{contrasts}} (for example, an \code{adjust} method)}
+  \item{\dots}{Arguments passed to \code{\link{contrast}} (for example, an \code{adjust} method)}
 }
 \details{
-This function uses the Piepho (2004) algorithm (as implemented in the \pkg{multcompView} package) to generate a compact letter display of all pairwise comparisons of least-squares means. The function obtains (possibly adjusted) \emph{P} values for all pairwise comparisons of means, using the \code{\link{contrasts}} function with \code{method = "pairwise"}. When a \code{P} value exceeds \code{alpha}, then the two means have at least one letter in common.
+This function uses the Piepho (2004) algorithm (as implemented in the \pkg{multcompView} package) to generate a compact letter display of all pairwise comparisons of least-squares means. The function obtains (possibly adjusted) \emph{P} values for all pairwise comparisons of means, using the \code{\link{contrast}} function with \code{method = "pairwise"}. When a \code{P} value exceeds \code{alpha}, then the two means have at least one letter in common.
 }
 \value{
-When \code{details == FALSE}, an object of class \code{summary.ref.grid} (which inherits from \code{data.frame}) showing the summary of LS means with an added column named \code{.groups} with the cld information. When \code{details == TRUE}, a list of two such objects, the second one being the summary of the pairwise comparisons.
+When \code{details == FALSE}, an object of class \code{summary.ref.grid} (which inherits from \code{data.frame}) showing the summary of LS means with an added column named \code{.groups} with the cld information. When \code{details == TRUE}, a list the object just described, as well as the summary of the \code{contrast} results showing each comparison, its estimate, standard error, t ration, and adjusted P value.
 }
 \references{
 Hans-Peter Piepho (2004) An algorithm for a letter-based representation of all pairwise comparisons, \emph{Journal of Computational and Graphical Statistics}, 13(2), 456–466.

@@ -14,7 +14,7 @@
 #     dfargs  - additional arguments, if any, for dffun
 # Note: if no df exists, set dffun = function(...) NA and dfargs = list()
     
-lsm.basis = function(object, trms, xlev, grid, ...)
+lsm.basis = function(object, trms, xlev, grid)
     UseMethod("lsm.basis")
 
 

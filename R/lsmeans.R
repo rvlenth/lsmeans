@@ -41,7 +41,7 @@ lsmeans.default = function(object, specs, ...) {
 
 #setMethod("lsmeans", signature(object="ANY", specs="formula"),
 lsmeans.formula =
-function(object, specs, trend, by, contr.list, ...) {
+function(object, specs, contr.list, trend, ...) {
     if (!missing(trend))
         return(lstrends(object, specs, var=trend, ...))
     

@@ -1,5 +1,7 @@
 \name{lsmeans}
 \alias{lsmeans}
+\alias{lsmeans.character}
+\alias{lstrends}
 
 \title{Least-squares means}
 \description{
@@ -7,80 +9,54 @@ Compute least-squares means for specified factors or factor combinations in a li
 and optionally comparisons or contrasts among them.
 }
 \usage{
-lsmeans(object, specs, at, trend, contr.list, 
-  cov.reduce = mean, 
-  fac.reduce = function(coefs) apply(coefs, 2, mean), ...)
+\method{lsmeans}{character}(object, specs, ...)
+
+\method{lsmeans}{character.ref.grid}(object, specs, by = NULL, fac.reduce = function(coefs) apply(coefs, 2, mean), contr, ...)
+    
+\method{lsmeans}{list}(object, specs, ...)
+
+\method{lsmeans}{formula}(object, specs, contr.list, trend, ...)
+
+lstrends(model, specs, var, delta.var = 0.01 * rng, ...)
 }
 \arguments{
-  \item{object}{
-A \code{lm}, \code{aov} (with no \code{Error} component), \code{glm}, \code{lme}, \code{gls}, \code{lmer}, or \code{glmer} object having at least one fixed factor among the predictors.
+\item{object}{
+An object of class \code{ref.grid}; or a fitted model object that is supported, such as the result of a call to \code{lm} or \code{lmer}.}
+\item{specs}{
+A \code{character} vector specifying the names of the predictors over which LS-means are desired. \code{specs} may also be a \code{formula} or a \code{list} of valid \code{spec}s. Use of formulas is given in the Details section below.}
+\item{by}{
+A character vector specifying the names of predictors to condition on.}
+\item{fac.reduce}{
+A function that combines the rows of a matrix into a single vector. This implements the ``marginal averaging'' aspect of least-squares means. The default is the mean of the rows. Typically if it is overridden, it would be some kind of weighted mean of the rows.}
+\item{contr}{
+A \code{list} of contrast coefficients to apply to the least-squares means -- or the root name of an \code{.lsmc} function that returns such coefficients. See \code{\link{contrast}} for more details.
 }
-  \item{specs}{
+\item{contr.list}{
+A named \code{list} of \code{list}s of contrast coefficients, as for \code{contr}. See details below. 
+}
+\item{trend}{
+Including this argument is an alternative way of calling \code{lstrends} with it as its \code{var} argument.
+}
+\item{model}{
+A supported model object.
+}
+\item{var}{
+Character giving the name of a variable with respect to which a difference quotient of the linear predictors is computed. In order for this to be useful, \code{var} should be a numeric predictor that interacts with at least one factor in \code{specs}. Then instead of computing least-squares means, we compute and compare the slopes of the \code{var} trend over levels of the specified other predictor(s). As in least-squares means, marginal averages are computed when some variables in the reference grid are excluded for the specification.
+
+The user may specify some monotone function of the variable of interest, e.g., \code{var = "log(dose)"}. If so, the chain rule is applied. Note that, in this example, if \code{model} contains \code{log(dose)} as a predictor, we will be comparing the slopes estimated by that model, whereas specifying \code{var = "dose"} would perform a transformation of those slopes.
+}
+\item{delta.var}{
+The value of \emph{h} to use in forming the difference quotient \emph{(f(x+h) - f(x))/h}. Changing it (especially changing its sign) may be necessary to avoid numerical problems such as logs of negative numbers. The default value is the range of \code{var} over the dataset.
+}
+\item{\dots}{Additional arguments passed to other methods or to \code{\link{ref.grid}}.}
+}
+
+\details{
 A formula, or a list of formulas, specifying the desired families of least-squares means.
 The right-hand side of each formula specifies the desired predictors for which we want least-squares means. The optional left-hand side specifies
 what kind of comparisons or contrasts are desired. For example, \code{~ treatment} requests least-squares means for each level of \code{treatment}, and \code{pairwise ~ treatments} requests those results, plus pairwise comparisons among them.
 As another example, in a three-factor model, \code{trt.vs.ctrl1 ~ A | B:C} requests least-squares means for all combinations of factors \code{A}, \code{B}, and \code{C}, as well as treatment-minus-control comparisons of \code{A} for each combination of \code{B} and \code{C}, where the first level of \code{A} is considered the control level.
-}
-  \item{adjust}{
-Adjustment method for the p values of tests of contrasts.
-\code{"auto"} uses the method returned in the \code{"adjust"} attribute of the contrast function;
-\code{"tukey"} computes p values using the Studentized range distribution with the number of means in the family;
-\code{"sidak"} replaces each p value by \code{1 - (1 - p)^c}, where c is the number of contrasts;
-\code{"scheffe"} computes p values from the F distribution, according to the Scheffe criterion;
-\code{"none"} makes no adjustments to the p values.
-In addition, the Bonferroni-inequality-based adjustment methods in \code{\link{p.adjust}} are available; many of those involve step-down testing with a stopping rule, whereas \code{"tukey"}, \code{"sidak"}, \code{"bonferroni"}, and \code{"none"} anticipate that all contrasts will be tested.
-In many cases, these adjustments are only approximate, especially when the degrees of freedom vary
-greatly within the family of comparisons. For more accurate adjustments, use \code{glhargs} instead.
-}
-  \item{conf}{
-Desired confidence level for intervals. For robustness, you may specify either a fraction or a percentage; i.e., \code{.975} and \code{97.5} yield the same results.
-}
-  \item{at}{
-An optional named list or named vector of predictor values for the reference grid. If no value is found in \code{at} for a particular predictor, then if it is a factor, all its levels are used, and if a covariate, we use the results of \code{cov.reduce}.  
-}
-  \item{trend}{
-If non-missing and \code{trend} is the name of a numeric predictor or a term in \code{object}'s model,
-then the linear trends for this predictor are estimated and compared instead of the least-squares means. This is useful in models where the specified variable or term interacts with one or more of the factors in the right-hand side of \code{specs}. In multi-factor cases, sets of 
-regression coefficients are averaged using \code{fac.reduce}, just as with least-squares means.
-}
-  \item{contr}{
-An optional named \code{list}. Each entry is itself a \code{list} or a \code{data.frame} specifying contrast coefficients. If the left-hand side of a formula in \code{specs} matches a name in \code{contr}, then those contrasts are estimated with the specified least-squares means. An error will result if the length or one or more contrast vectors mismatches the number of levels of the factor or factor combination. Actually, it is not necessary that they be contrasts; one may use this argument to estimate arbitrary linear combinations of the least-squares means.
-}
-  \item{cov.reduce}{
-A logical value, or a function with arguments \code{x} and \code{name} that should return the value to use in prediction for the covariate with name \code{name} and values \code{x}. By default, the mean is used. The \code{name} argument may help distinguish one covariate from another. 
 
-If \code{cov.reduce} is logical, a value of \code{TRUE} is the same as the default, and a value of \code{FALSE} calls \code{\link{unique}} for each covariate (be careful using this if covariates have more than a few levels).
-}
-  \item{fac.reduce}{
-A function of \code{coefs} and \code{lev} where \code{lev} is the level of a factor or factor combination at which a least-squares mean is calculated.
-The argument \code{coefs} is a matrix whose rows correspond to the combinations of all factors in the model other than those involved in the \code{lsmeans} specification. Each row has the coefficients for the linear combination of the regression coefficients to be used in that case. By default, these rows are averaged together (mimicking SAS), but the user may override that behavior. Besides \code{lev}, \code{names(lev)} will provide the name of the factor or factor combination, and the \code{row.names} of \code{coefs} provide the levels of the extraneous factors.
-}
-  \item{glhargs}{
-If this is a \code{list}, the object and specified contrasts are passed to the function \code{\link[multcomp]{glht}} in the \pkg{multcomp} package, with the contents of \code{glhargs} as additional arguments. (If you do not wish to provide additional arguments, use \code{glsargs=list()}.) If \code{glhargs} is left at \code{NULL}, 
-%%%or if the \pkg{multcomp} package is not installed, 
-then \code{glht} is not called, and the contrast results are produced internally by \code{lsmeans}. This argument affects only the results from contrasts and not those for the lsmeans themselves. Note: If \code{glhargs} is used, the \code{adjust} argument is ignored. 
-If only one set of lsmeans or contrasts thereof is desired, an alternative is to call \code{glht} with an \code{lsm} call as the \code{linfct} argument.
-}
-\item{lf}{
-If \code{TRUE}, the linear functions of the regression coefficients are returned unevaluated.
-}
-\item{model}{
-\code{model} argument for \code{\link[multcomp]{glht}}
-}
-\item{linfct}{
-\code{linfct} argument for \code{\link[multcomp]{glht}}
-}
-\item{mlf}{
-   Numeric vector defining a linear function of a multivariate response (i.e., \code{y \%*\% mlf}
-   where \code{y} is the response variable of dimension \code{nresp}). The default is the mean.)
-}
-  \item{\dots}{
-Additional argument(s) passed to the contrast function, or to \code{\link[multcomp]{glht}}; see Details.
-}
-\item{x}{Object of class \code{"lsm"}}
-\item{omit}{Indexes of elements of \code{x} that you do not want printed.}
-}
-\details{
 Least-squares means, popularized by SAS, are predictions from a linear model at combinations
 of specified factors. SAS's documentation describes them as ``predicted population margins---that is, they estimate the marginal means over a balanced population'' (SAS Institute 2012). In generalized linear models, least-squares means are marginal linear predictions that can be transformed back to the response scale via the inverse-link function.
 Unspecified factors and covariates are handled by summarizing the predictions
