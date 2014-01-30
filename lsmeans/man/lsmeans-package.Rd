@@ -5,13 +5,14 @@
 Least-squares means
 }
 \description{
-This package provides the function \code{\link{lsmeans}} for outputting so-called least-squares means for factor combinations in an \code{lm}, \code{lme}, \code{gls}, or \code{lmer} object. It can also compute contrasts or linear combinations of these least-squares means, and several standard contrast families are provided.
-It may also be used for the obtaining linear predictors and contrasts thereof in \code{glm} and \code{glmer} objects.
-Popular adjustments for multiple-comparisons are provided; optionally, contrasts may instead be passed to \code{\link[multcomp]{glht}}, if the \code{multcomp} package is installed. 
+This package provides methods for obtaining so-called least-squares means for factor combinations in a variety of fitted linear models. It can also compute contrasts or linear combinations of these least-squares means, (several standard contrast families are provided), and in addition can estimate and contrasts slopes of trend lines.
+Popular adjustments for multiple-comparisons are provided. There is also an interface to \code{\link[multcomp]{glht}}, if the \pkg{multcomp} package is installed, and a coompact letter display method for pairwise comparisons.
 
-In analyzing \code{mer} objects, if the \code{pbkrtest} package is installed, its \code{\link[pbkrtest]{vcovAdj}} function is used to bias-adjust the covariance matrix and obtain degrees of freedom.
+In analyzing models fitted by the \pkg{lme4} package, if the \code{pbkrtest} package is installed, its \code{\link[pbkrtest]{vcovAdj}} function is used to bias-adjust the covariance matrix and obtain degrees of freedom.
 
 Examples and discussion are available via \code{vignette("using-lsmeans", package="lsmeans")}.
+
+It is possible to extend the package's capabilities to additional types of models by writing methods that provide the needed information. See \link{extending-lsmeans} for details.
 }
 \details{
 \tabular{ll}{
@@ -35,8 +36,7 @@ Maintainer: Russ Lenth <russell-lenth@uiowa.edu>
 \keyword{ regression }
 \keyword{ htest }
 \seealso{
-\code{\link[nlme:lme]{nlme}}
-\code{\link[lme4:lmer]{lme4}}
-\code{\link[multcomp:glht]{multcomp}}
+\code{\link[lme4:lmer]{lme4}}, 
+\code{\link[multcomp:glht]{multcomp}}, 
 \code{\link[pbkrtest:vcovAdj]{pbkrtest}}
 }
