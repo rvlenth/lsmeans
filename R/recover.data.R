@@ -13,7 +13,7 @@ recover.data <- function(object, ...)
 
 # Method for class "call" -- This one is the workhorse
 # For model objects, call this with the object's call and its terms component
-recover.data.call <- function(object, trms) {
+recover.data.call <- function(object, trms, ...) {
     fcall <- object # because I'm easily confused
     m <- match(c("formula", "data", "subset", "weights", 
                  "na.action", "offset"), names(fcall), 0L)
@@ -42,7 +42,7 @@ recover.data.default <- function(object, ...)
     stop(paste("Can't handle a model of class", class(object)[1]))
 
 # stats...
-recover.data.lm <- function(object) {
+recover.data.lm <- function(object, ...) {
     fcall = object$call
     recover.data(fcall, terms(object))
 }
@@ -54,10 +54,10 @@ recover.data.lm <- function(object) {
 # (also rlm is extension of lm)
 
 # nlme ...
-recover.data.lme <- function(object)
+recover.data.lme <- function(object, ...)
     recover.data.lm(object)
 
-recover.data.gls <- function(object) {
+recover.data.gls <- function(object, ...) {
     fcall = object$call
     xlev = object$xlevels
     recover.data(fcall, getCovariateFormula(object))
@@ -65,7 +65,7 @@ recover.data.gls <- function(object) {
 
 # lme4 ...
 # If it turns out we need xlev after all, we'll need to fix this
-recover.data.merMod <- function(object) {
+recover.data.merMod <- function(object, ...) {
     if(!isLMM(object) && !isGLMM(object)) 
         stop("Can't handle a nonlinear mixed model")
     fcall = object@call
@@ -73,6 +73,6 @@ recover.data.merMod <- function(object) {
 }
 
 # lme4.0 if I can get it and test it
-recover.data.mer <- function(object)
+recover.data.mer <- function(object, ...)
     recover.data.merMod(object)
 

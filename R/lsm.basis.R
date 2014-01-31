@@ -65,7 +65,6 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
     bhat = fixef(object)
     contrasts = attr(model.matrix(object), "contrasts")
     dfargs = list()
-    dffun = function(...) NA
     V = as.matrix(vcov(object))
     if (isLMM(object)) {
         if (require("pbkrtest")) {
@@ -75,6 +74,7 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
         }
         else {
             warning("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
+            dffun = function(k, dfargs) NA
         }
     }
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
@@ -84,7 +84,7 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
 
 # For lme4.0, I think
 lsm.basis.mer = function(object, trms, xlev, grid)
-    lsm.basis.merMod(object, ...)
+    lsm.basis.merMod(object,  trms, xlev, grid)
 
 lsm.basis.lme <- function(object, trms, xlev, grid) {
     contrasts = object$contrasts
