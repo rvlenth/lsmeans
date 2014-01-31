@@ -1,8 +1,5 @@
 \name{ref.grid}
 \alias{ref.grid}
-\alias{str.ref.grid}
-\alias{summary.ref.grid}
-\alias{print.ref.grid}
 
 
 % handy for extra documentation...
@@ -51,7 +48,7 @@ Russell V. Lenth
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{lsmeans}}
+See also \code{\link[lsmeans]{summary}} and other methods for the returned objcts. Reference grids are fundamental to \code{\link{lsmeans}}. Click here for more on the \code{\link[=ref.grid-class]{ref.grid}} class. 
 }
 
 \examples{

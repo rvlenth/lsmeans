@@ -8,7 +8,7 @@
 
 \title{Support functions for creating a reference grid}
 \description{
-This documents the methods used to create a \code{\link{ref.grid.class}} object from a fitted model.
+This documents the methods used to create a \code{\link[=ref.grid-class]{ref.grid}} object from a fitted model.
 }
 \usage{
 recover.data(object, ...)

@@ -63,7 +63,7 @@ For models fitted using the \pkg{lme4} package, degrees of freedom are obtained 
 }
 
 \value{
-An object of class \code{\link{lsmobj}} -- except when \code{specs} is a \code{list} or a \code{formula} having a left-hand side, a \code{list} of \code{slmobj} objects. A number of methods are provided for further analysis, including \code{\link[lsmeans]{summary}}, \code{\link[lsmeans]{confint}}, \code{\link[lsmeans]{test}}, \code{\link[lsmeans]{contrast}}, \code{\link[lsmeans]{pairs}}, and \code{\link[lsmeans]{cld}}.
+An object of class \code{\link[=lsmobj-class]{lsmobj}} -- except when \code{specs} is a \code{list} or a \code{formula} having a left-hand side, a \code{list} of \code{slmobj} objects. A number of methods are provided for further analysis, including \code{\link[lsmeans]{summary}}, \code{\link[lsmeans]{confint}}, \code{\link[lsmeans]{test}}, \code{\link[lsmeans]{contrast}}, \code{\link[lsmeans]{pairs}}, and \code{\link[lsmeans]{cld}}.
 }
 
 %%%%\note{}

@@ -181,7 +181,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
 
 ### =========== Methods for ref.grid class =============================
 
-str.ref.grid <- function(object) {
+str.ref.grid <- function(object, ...) {
     showlevs = function(x) # internal convenience function
         cat(paste(format(x, digits = 5, justify = "none"), collapse=", "))
     #cat("responses: ")
@@ -255,7 +255,7 @@ str.ref.grid <- function(object) {
 
 
 # S3 summary method
-summary.ref.grid <- function(object, infer, level, adjust, by) {
+summary.ref.grid <- function(object, infer, level, adjust, by, ...) {
     result = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@dffun, object@dfargs, object@misc)
     
 #     # figure out factors w/ more than one level
@@ -372,4 +372,4 @@ print.ref.grid = function(x,...)
 
 ### S4 methods
 ## use S3 for this setMethod("summary", "ref.grid", summary.ref.grid)
-setMethod("show", "ref.grid", str.ref.grid)
+setMethod("show", "ref.grid", function(object) str.ref.grid(object))
