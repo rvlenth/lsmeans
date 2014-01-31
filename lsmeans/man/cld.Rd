@@ -1,4 +1,5 @@
-\name{cld.lsmobj}
+\name{cld}
+\alias{cld}
 \alias{cld.lsmobj}
 
 \title{Compact letter display of pairwise comparisons}
