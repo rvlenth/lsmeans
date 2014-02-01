@@ -14,7 +14,7 @@ This function creates an interaction plot of the least-squares means based on a 
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{
-An object of class \code{lsm}, or a fitted model of a class supported by \code{\link{lsmeans}}.
+An object of class \code{lsmobj}, or a fitted model of a class supported by \code{\link{lsmeans}}.
 }
   \item{formula}{
 Formula of the form \code{trace.factors ~ x.factors | by.factors}. The least-squares means are plotted against \code{x.factor} for each level of \code{trace.factors}. \code{by.factors} is optional, but if present, it determines separate panels. Each element of this formula may be a single factor in the model, or a combination of factors using the \code{*} operator.

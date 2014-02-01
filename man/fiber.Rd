@@ -26,6 +26,9 @@ Montgomery, D. C. (2013) \emph{Design and Analysis of Experiments} (8th ed.). Jo
 \examples{
 require(lsmeans)
 fiber.lm <- lm(strength ~ diameter + machine, data=fiber)
+ref.grid(fiber.lm)
+
+# Covariate-adjusted means and comparisons
 lsmeans(fiber.lm, pairwise ~ machine)
 }
 \keyword{datasets}

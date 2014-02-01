@@ -97,92 +97,31 @@ require(lsmeans)
 fiber.lm <- lm(strength ~ diameter + machine, data = fiber)
 
 # adjusted means and comparisons, treating machine C as control
-lsmeans (fiber.lm, trt.vs.ctrlk ~ machine)
-
+lsmeans (fiber.lm, "machine", contr = "trt.vs.ctrlk")
 
 ### Factorial experiment
 warp.lm <- lm(breaks ~ wool * tension, data = warpbreaks)
-#-- We only need to see the wool*tension means listed once ...
-print(lsmeans (warp.lm,  list(pairwise ~ wool | tension,  poly ~ tension | wool)),
-    omit=3)
-
-# Compact letter display
-lsmeans(warp.lm, cld ~ tension | wool)
-
+( warp.lsm <- lsmeans (warp.lm,  ~ wool | tension) )
+pairs(warp.lsm) # remembers 'by' structure
+contrast(warp.lsm, method = "poly", by = "wool")
 
 ### Unbalanced split-plot example ###
 #-- The imbalance is imposed deliberately to illustrate that
 #-- the variance estimates become biased
 require(nlme)
-Oats.lme <- lme(yield ~ factor(nitro) + Variety, random = ~1 | Block/Variety, 
-    subset = -c(1,2,3,5,8,13,21,34,55), data=Oats)
+Oats.lme <- lme(yield ~ factor(nitro) + Variety, 
+    random = ~1 | Block/Variety, 
+    subset = -c(1,2,3,5,8,13,21,34,55), data = Oats)
 lsmeans(Oats.lme, list(poly ~ nitro, pairwise ~ Variety))
 
 # Model with a quadratic trend for 'nitro'
 Oatsq.lme <- update(Oats.lme, . ~ nitro + I(nitro^2) + Variety)
-
 # Predictions at each unique 'nitro' value in the dataset
 lsmeans(Oatsq.lme, ~ nitro, cov.reduce = FALSE)
 
-# lsmeans for 'Variety' at the average 'nitro' value.
-lsmeans(Oatsq.lme, ~ Variety)
-# These differ quite a bit from those obtained from 'Oats.lme', because each
-# is a single prediction rather than the average of 4 predictions
-
-# lsmeans for 'Variety', using the four unique 'nitro' values
-lsmeans(Oatsq.lme, ~ Variety, cov.reduce = FALSE)
-# These are pretty close to those from 'Oats.lme' because both are based
-# on averaging predictions for the 12 
-
-
-# Compare with lmer result 
-if (require(lme4)) {
-Oats.lmer <- lmer(yield ~ factor(nitro) + Variety + (1 | Block/Variety), 
-                  subset = -c(1,2,3,5,8,13,21,34,55), data=Oats)
-                      
-# If pbkrtest installed, provides df, bias-adjusted SEs
-if (require(pbkrtest))
-    lsmeans(Oats.lmer, list(poly ~ nitro, pairwise ~ Variety))
-}    
-    
-# Using in conjunction with 'glht' (note -- this does not use adjusted vcov)
-# calling 'glht' from 'lsmeans' ...
-if (require(lme4))
-    lsmeans(Oats.lmer, pairwise ~ Variety, glhargs=list(df=9))
-
-# calling 'lsmeans' from 'glht' to get simultaneous CIs
-if (require(lme4))    
-    confint(glht(Oats.lmer, linfct = lsm(~ Variety), df=9))
-
-# Custom contrasts
-if (require(lme4))    
-    lsmeans(Oats.lmer, my.own ~ Variety, 
-            contr = list(my.own = list(G.vs.M = c(1,-1,0), 
-                                       GM.vs.V = c(.5,.5,-1))))
-    
-
-#### Examples with trends...
-# Model with interaction
-fiber.lm2 = lm(strength ~ diameter * machine, data = fiber)
-
-# Compare the linear trends for diameter
-lsmeans(fiber.lm2, pairwise ~ machine, trend = "diameter")
-
-# Model with log(diameter) as the covariate
-fiber.lm3 = lm(strength ~ log(diameter) * machine, data = fiber)
-# Compare the fitted linear trends for log(diameter)
-lsmeans(fiber.lm3, pairwise ~ machine, trend = "log(diameter)")
-
-# Compare the fitted linear trends for diameter itself 
-# - this is done via a diff quotient - compare with fiber.lm2 results
-lsmeans(fiber.lm3, pairwise ~ machine, trend = "diameter")
-
-\dontrun{
-# Examine the linear functions generated for these examples
-  lsmeans(fiber.lm2, ~ machine, trend = "diameter", lf = TRUE)
-  lsmeans(fiber.lm3, ~ machine, trend = "log(diameter)", lf = TRUE)
-  lsmeans(fiber.lm3, ~ machine, trend = "diameter", lf = TRUE)
-}
+# See also many other examples in documentation for 
+# 'contrast', 'cld', 'glht', 'lsmip', 'ref.grid', 'MOats',
+# 'nutrition', etc., and in the vignettes
 }
 \keyword{ models }
 \keyword{ regression }
