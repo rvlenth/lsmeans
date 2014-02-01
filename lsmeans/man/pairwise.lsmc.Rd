@@ -71,7 +71,6 @@ You may create your own contrast functions, using these as guides. A function na
 ### View orthogonal polynomials for 4 levels
 poly.lsmc(1:4)
 
-\dontrun{
 ### Setting up a custom contrast function
 helmert.lsmc <- function(levs, ...) {
   M <- as.data.frame(contr.helmert(levs))
@@ -79,9 +78,8 @@ helmert.lsmc <- function(levs, ...) {
   attr(M, "desc") <- "Helmert contrasts"
   M
 }
-lsmeans(Oats.lme, helmert ~ Variety)
-}
-
+warp.lm <- lm(breaks ~ wool*tension, data = warpbreaks)
+lsmeans(warp.lm, helmert ~ tension | wool)
 }
 
 \keyword{ models }

@@ -35,7 +35,7 @@ A.Y. Lewin and M.F. Shakun (1976) \emph{Policy Sciences: Methodology and Cases}.
 }
 \examples{
 require(lsmeans)
-noise.lm = lm(noise ~ size * type * side, data = auto.noise)
+noise.lm <- lm(noise ~ size * type * side, data = auto.noise)
 lsmip(noise.lm, type ~ size | side)
 }
 \keyword{datasets}

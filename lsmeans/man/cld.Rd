@@ -32,7 +32,7 @@ This function uses the Piepho (2004) algorithm (as implemented in the \pkg{multc
 When \code{details == FALSE}, an object of class \code{summary.ref.grid} (which inherits from \code{data.frame}) showing the summary of LS means with an added column named \code{.groups} with the cld information. When \code{details == TRUE}, a list the object just described, as well as the summary of the \code{contrast} results showing each comparison, its estimate, standard error, t ration, and adjusted P value.
 }
 \references{
-Hans-Peter Piepho (2004) An algorithm for a letter-based representation of all pairwise comparisons, \emph{Journal of Computational and Graphical Statistics}, 13(2), 456–466.
+Hans-Peter Piepho (2004) An algorithm for a letter-based representation of all pairwise comparisons, \emph{Journal of Computational and Graphical Statistics}, 13(2), 456-466.
 }
 \author{Russell V. Lenth}
 \note{This function requires the \pkg{multcompView} package to be installed. Otherwise an error message is produced.}
