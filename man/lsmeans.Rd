@@ -1,6 +1,9 @@
 \name{lsmeans}
 \alias{lsmeans}
+\alias{lsmeans.formula}
+\alias{lsmeans.list}
 \alias{lsmeans.character}
+\alias{lsmeans.character.ref.grid}
 \alias{lstrends}
 
 \title{Least-squares means}

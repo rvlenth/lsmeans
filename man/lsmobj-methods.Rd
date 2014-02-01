@@ -1,6 +1,8 @@
 \name{contrast}
 \alias{contrast}
+\alias{contrast.lsmobj}
 \alias{test}
+\alias{test.lsmobj}
 \alias{confint}
 \alias{confint.lsmobj}
 \alias{pairs}
@@ -12,7 +14,7 @@
 Methods for \code{lsmobj} objects
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+These method provide for follow-up analyses of \code{lsmobj} objects: Contrasts, pairwise comparisons, tests, and confidence intervals.
 }
 \usage{
 \method{contrast}{lsmobj}(object, method = "pairwise", by, adjust, ...)
@@ -61,9 +63,7 @@ The ``grid'' for the returned value is simply the set of variables that identify
 \author{
 Russell V. Lenth
 }
-\note{
-%%  ~~further notes~~
-}
+%\note{}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 

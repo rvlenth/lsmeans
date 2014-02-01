@@ -50,7 +50,7 @@ Russell V. Lenth
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{ref.grid}}, \code{\link{ref.grid.class}}
+\code{\link{ref.grid}}, \code{\link{ref.grid-class}}
 }
 %%\examples{}
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -1,5 +1,6 @@
 \name{lsmip}
 \alias{lsmip}
+\alias{lsmip.default}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Least-squares means interaction plot
@@ -8,7 +9,7 @@ Least-squares means interaction plot
 This function creates an interaction plot of the least-squares means based on a fitted model and a simple formula specification.
 }
 \usage{
-lsmip(object, formula, pch = c(1,2,6,7,9,10,15:20), lty = 1, col = NULL, ...)
+\method{lsmip}{default}(object, formula, pch = c(1,2,6,7,9,10,15:20), lty = 1, col = NULL, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
