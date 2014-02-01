@@ -31,12 +31,13 @@ require(lsmeans)
 nutr.aov <- aov(gain ~ (group + age + race)^2, data = nutrition)
 
 # Summarize predictions for age group 3
-nutr.lsm <- lsmeans(nutr.aov, list(pairwise ~ group|race, pairwise ~ race|group),
-                   at = list(age="3"))
+nutr.lsm <- lsmeans(nutr.aov, ~ race * group, 
+                at = list(age="3"))
                    
-with(nutr.lsm[[1]], interaction.plot(group, race, lsmean, type="b"))
+lsmip(nutr.lsm, race ~ group)
 
 # Hispanics seem exceptional; but, this doesn't test out due to very sparse data
-print(nutr.lsm, omit=3)
+cld(nutr.lsm, by = "group")
+cld(nutr.lsm, by = "race")
 }
 \keyword{datasets}

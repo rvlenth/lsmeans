@@ -23,7 +23,8 @@ lsm.basis.lm <- function(object, trms, xlev, grid) {
     contrasts = attr(model.matrix(object), "contrasts")
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
-    bhat = as.numeric(coef(object)) # stretches it out if multivariate
+    # coef() works right for lm but coef.aov tosses out NAs
+    bhat = as.numeric(object$coefficients) # stretches it out if multivariate
     V = vcov(object)
     
     nbasis = matrix(NA)
