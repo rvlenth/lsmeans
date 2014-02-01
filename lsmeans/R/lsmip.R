@@ -29,7 +29,7 @@ lsmip.default = function(object, formula, pch=c(1,2,6,7,9,10,15:20), lty=1, col=
     lsmopts$specs = as.formula(paste("~", paste(allvars, collapse = "+")))
     lsms = summary(do.call("lsmeans", lsmopts))
 
-    ylab = paste(ylab, "of", formula(object)[[2]])
+    ylab = paste(ylab, "of", formula[[2]])
     
     tvars = all.vars(formula[[2]])
     tv = do.call(paste, lsms[tvars])
