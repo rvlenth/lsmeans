@@ -14,9 +14,9 @@ Methods for \code{ref.grid} objects
 Use these methods to summarize, print, or examine objects of class \code{"ref.grid"}. They also apply to the class \code{"lsmobj"}, which is an extension of \code{"ref.grid"}.
 }
 \usage{
-\method{summary}{ref.grid}(object, infer, level, adjust, by)
+\method{summary}{ref.grid}(object, infer, level, adjust, by, ...)
 
-\method{str}{ref.grid}(object)
+\method{str}{ref.grid}(object, ...)
 
 \method{print}{ref.grid}(x, ...)
 \method{print}{summary.ref.grid}(x, ..., digits = NULL, quote = FALSE, right = TRUE)

@@ -34,7 +34,7 @@ The grid is determined by first reconstructing the data used in fitting the mode
 Ability to support a particular class of \code{object} depends on the existence of \code{recover.data} and \code{lsm.basis} methods -- see \link{extending-lsmeans} for details. The call \code{methods("recover.data")} will help identify these.
 } % --- end of details
 
-\value{An S4 object of class \code{"ref.grid"} (see \code{\link{ref.grid.class}}). These objects encapsulate everything needed to do calculations and inferences for least-squares means, and contain nothing that depends on the model-fitting procedure.
+\value{An S4 object of class \code{"ref.grid"} (see \code{\link{ref.grid-class}}). These objects encapsulate everything needed to do calculations and inferences for least-squares means, and contain nothing that depends on the model-fitting procedure.
 }
 
 

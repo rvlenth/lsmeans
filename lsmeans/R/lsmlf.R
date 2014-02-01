@@ -25,15 +25,19 @@ glht.lsmobj <- function(model, linfct, by, ...) {
     }
     if (missing(by)) by = object@misc$by.vars
     
+    nms = setdiff(names(object@grid), by)
+    lf = object@linfct
+    dimnames(lf)[[1]] = as.character(interaction(object@grid[, nms], sep=", "))
+    
     if (is.null(by)) {
-        args$linfct = object@linfct
+        args$linfct = lf
         return(do.call("glht", args))
     }
     
     # (else...)
     by.rows = .find.by.rows(object@grid, by)
     result = lapply(by.rows, function(r) {
-        args$linfct = object@linfct[r, , drop=FALSE]
+        args$linfct = lf[r, , drop=FALSE]
         do.call("glht", args)
     })
     bylevs = lapply(by, function(byv) unique(object@grid[[byv]]))
