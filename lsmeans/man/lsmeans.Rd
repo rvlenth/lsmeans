@@ -13,12 +13,16 @@ and optionally comparisons or contrasts among them.
 }
 \usage{
 \method{lsmeans}{character}(object, specs, ...)
+## ('specs' is character)
 
 \method{lsmeans}{character.ref.grid}(object, specs, by = NULL, fac.reduce = function(coefs) apply(coefs, 2, mean), contr, ...)
+## ('specs' is character, 'object' is a ref.grid)
     
 \method{lsmeans}{list}(object, specs, ...)
+## ('specs' is a list)
 
 \method{lsmeans}{formula}(object, specs, contr.list, trend, ...)
+## ('specs' is a formula)
 
 lstrends(model, specs, var, delta.var = 0.01 * rng, ...)
 }
@@ -26,7 +30,7 @@ lstrends(model, specs, var, delta.var = 0.01 * rng, ...)
 \item{object}{
 An object of class \code{ref.grid}; or a fitted model object that is supported, such as the result of a call to \code{lm} or \code{lmer}.}
 \item{specs}{
-A \code{character} vector specifying the names of the predictors over which LS-means are desired. \code{specs} may also be a \code{formula} or a \code{list} of valid \code{spec}s. Use of formulas is given in the Details section below.}
+A \code{character} vector specifying the names of the predictors over which LS-means are desired. \code{specs} may also be a \code{formula} or a \code{list} (preferably named) of valid \code{spec}s. Use of formulas is given in the Details section below.}
 \item{by}{
 A character vector specifying the names of predictors to condition on.}
 \item{fac.reduce}{
@@ -69,7 +73,7 @@ For models fitted using the \pkg{lme4} package, degrees of freedom are obtained 
 An object of class \code{\link[=lsmobj-class]{lsmobj}} -- except when \code{specs} is a \code{list} or a \code{formula} having a left-hand side, a \code{list} of \code{slmobj} objects. A number of methods are provided for further analysis, including \code{\link[lsmeans]{summary}}, \code{\link[lsmeans]{confint}}, \code{\link[lsmeans]{test}}, \code{\link[lsmeans]{contrast}}, \code{\link[lsmeans]{pairs}}, and \code{\link[lsmeans]{cld}}.
 }
 
-%%%%\note{}
+\note{}
 
 \references{
 Kenward, M.G. and Roger, J.H. (1997)
