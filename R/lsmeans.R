@@ -172,8 +172,8 @@ contrast.lsmobj = function(object, method = "pairwise", by, adjust, ...) {
     if (!is.null(by)) {
         by.rows = .find.by.rows(args, by)
         bylevs = args[, by, drop=FALSE]
-        args = args[by.rows[[1]], ]
-        for (nm in by) args[[by]] = NULL
+        args = args[by.rows[[1]], , drop=FALSE]
+        for (nm in by) args[[nm]] = NULL
     }
     args$sep = ","
     levs = do.call("paste", args)
@@ -323,7 +323,8 @@ lstrends = function(model, specs, var, delta.var=.01*rng, ...) {
     result = do.call("lsmeans", args)
     if (is.list(result)) {
         names(result)[1] = "lstrends"
-        result[[1]]@misc$estName = estName
+        if (is(result[[1]], "ref.grid")) 
+            result[[1]]@misc$estName = estName
     }
     else
         result@misc$estName = estName

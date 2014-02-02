@@ -354,7 +354,7 @@ print.summary.ref.grid = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) 
             rows = which(lbls==lb)
             levs = paste(by.vars, "=", xc[rows[1], by.vars])
             cat(paste(paste(levs, collapse=", ")), ":\n", sep="")
-            print(m[rows, ], ..., quote=quote, right=right)
+            print(m[rows, , drop=FALSE], ..., quote=quote, right=right)
             cat("\n")
         }
     }
