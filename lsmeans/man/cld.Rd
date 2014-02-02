@@ -40,7 +40,7 @@ Hans-Peter Piepho (2004) An algorithm for a letter-based representation of all p
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link[multcomp]{cld}}
+\code{\link[multcomp]{cld}} in the \pkg{multcomp} package
 }
 \examples{
 warp.lm <- lm(breaks ~ wool * tension, data = warpbreaks)

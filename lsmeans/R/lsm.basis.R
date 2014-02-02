@@ -65,8 +65,8 @@ lsm.basis.mlm <- function(object, trms, xlev, grid) {
 lsm.basis.merMod <- function(object, trms, xlev, grid) {
     bhat = fixef(object)
     contrasts = attr(model.matrix(object), "contrasts")
-    dfargs = list()
     V = as.matrix(vcov(object))
+    dfargs = list()
     if (isLMM(object)) {
         if (require("pbkrtest")) {
             dfargs = list(unadjV = V, adjV = vcovAdj(object, 0))
@@ -78,6 +78,11 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
             dffun = function(k, dfargs) NA
         }
     }
+    else if (isGLMM(object))
+        dffun = function(...) NA
+    else 
+        stop("Can't handle a nonlinear mixed model")
+    
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
     list(X=X, bhat=bhat, nbasis=matrix(NA), V=V, dffun=dffun, dfargs=dfargs)
