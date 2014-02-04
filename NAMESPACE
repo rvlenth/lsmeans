@@ -1,3 +1,6 @@
+# Namespaces for lsmeans p0ackage
+
+# Imports
 import(Matrix)
 import(methods)
 importFrom(multcomp, cld)
@@ -70,5 +73,3 @@ S3method(test, lsmobj)
 export(.old.lsmeans)
 S3method(print, lsm)
 S3method(print, data.frame.lsm)
-
-###exportPattern("^[[:alpha:]]+")
