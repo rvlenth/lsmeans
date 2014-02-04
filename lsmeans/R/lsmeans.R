@@ -69,20 +69,38 @@ function(object, specs, contr.list, trend, ...) {
 lsmeans.list = function(object, specs, ...) {
     result = list()
     nms = names(specs)
-    blanks = which(nms == "")
-    nms[blanks] = seq_len(length(nms))[blanks]
+    # Format a string describing the results
+    .make.desc = function(meth, pri, by) {
+        pri = paste(pri, collapse = ", ")
+        desc = paste(meth, "of", pri)
+        if (!is.null(by)) {
+            by = paste(by, collapse = ", ")
+            desc = paste(desc, "|", by)
+        }
+        desc
+    }
+    
     for (i in seq_len(length(specs))) {
         res = lsmeans(object=object, specs = specs[[i]], ...)
+        nm = nms[i]
         if (is.data.frame(res)) { # happens e.g. when cld is used
-            nm = paste("summary for", names(res)[1])
+            if (is.null(nm))
+                nm = .make.desc("summary", attr(res, "pri.vars"), attr(res, "by.vars"))
             result[[nm]] = res
         }
         else if (is.list(res)) {
-            names(res) = paste(nms[i], names(res))
+            for (j in seq_len(length(res))) {
+                m = res[[j]]@misc
+                if (is.null(nm))
+                    names(res)[j] = .make.desc(m$methDesc, m$pri.vars, m$by.vars)
+                else
+                    names(res)[j] = paste(nm, m$methDesc)
+            }
             result = c(result,res)
         }
         else{
-            nm = paste(nms[i], " ", res@misc$estName, "s", sep="")
+            if (is.null(nm))
+                nm = .make.desc(res@misc$methDesc, res@misc$pri.vars, res@misc$by.vars)
             result[[nm]] = res
         }
     }
@@ -133,7 +151,9 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     RG@misc$estName = "lsmean"
     RG@misc$adjust = "none"
     RG@misc$infer = c(TRUE,FALSE)
+    RG@misc$pri.vars = setdiff(facs, by)
     RG@misc$by.vars = by
+    RG@misc$methDesc = "lsmeans"
     RG@roles$predictors = names(levs)
     result = new("lsmobj", RG, linfct = linfct, levels = levs, grid = combs)
     

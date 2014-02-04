@@ -8,19 +8,8 @@ CopyOflsmeans.R
 
 lsmeans-Ex.R
 
-using-lsmeans.pdf
-lsmeans-changes.pdf
+# I am so damn confused about whether I'm supposed to make the pdfs myself or not.
+#using-lsmeans.pdf
+#lsmeans-changes.pdf
 
 
-
-#for checking build problems
-#cld.lsm.R
-#int.plot.R
-#KRstuff.R
-#lsm-contr.R
-#lsm.basis.R
-#lsmeans.R
-#lsmip.R
-#lsmlf.R
-#recover.data.R
-#ref.grid.R

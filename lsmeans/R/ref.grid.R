@@ -304,6 +304,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, ...) {
         if(zFlag) mesg = c(mesg, "P values are asymptotic")
     }
     summ = cbind(lbls, result)
+    attr(summ, "pri.vars") = setdiff(union(object@misc$pri.vars, object@misc$by.vars), by)
     attr(summ, "by.vars") = by
     attr(summ, "mesg") = mesg
     class(summ) = c("summary.ref.grid", "data.frame")

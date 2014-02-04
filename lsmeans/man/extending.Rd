@@ -30,7 +30,7 @@ To create a reference grid, the \code{ref.grid} function needs to reconstruct th
 
 To extend \pkg{lsmeans}'s support to additional model types, one need only write S3 methods for these two functions. (To see what model objects are currently supported, enter the command \code{methods("lsm.basis")}.) The existing methods serve as helpful guidance for writing new ones.  Most of the work for \code{recover.data} can be done by its method for class \code{"call"}, providing the \code{terms} component as the second argument. Writing an \code{lsm.basis} method is more involved, but the existing methods (e.g., \code{lsmeans:::lsm.basis.lm}) can serve as models. See the ``Value'' section below for details on what it needs to return.
 
-One further detail. If the model has a multivariate response, \code{bhat} needs to be \dquote{flattened} into a single vector, and \code{X} and \code{V} must be constructed consistently.
+One further detail. If the model has a multivariate response, \code{bhat} needs to be \dQuote{flattened} into a single vector, and \code{X} and \code{V} must be constructed consistently.
 }
 \value{
 A \code{list} with the following elements:
