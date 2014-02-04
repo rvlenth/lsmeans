@@ -9,7 +9,8 @@ Least-squares means interaction plot
 This function creates an interaction plot of the least-squares means based on a fitted model and a simple formula specification.
 }
 \usage{
-\method{lsmip}{default}(object, formula, pch = c(1,2,6,7,9,10,15:20), lty = 1, col = NULL, ...)
+\method{lsmip}{default}(object, formula, pch = c(1,2,6,7,9,10,15:20), 
+    lty = 1, col = NULL, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -35,13 +36,13 @@ Additional arguments passed to \code{\link{lsmeans}} or to \code{\link[lattice]{
 }
 \details{
 If \code{object} is a fitted model, \code{\link{lsmeans}} is called with an appropriate specification to obtain least-squares means for each combination of the factors present in \code{formula} (in addition, any arguments in \code{\dots} that match \code{at}, \code{trend}, \code{cov.reduce}, or \code{fac.reduce} are passed to \code{lsmeans}).
-Otherwise, if \code{object} is an \code{lsm} object, its first element is used, and it must contain one \code{lsmean} value for each combination of the factors present in \code{formula}.
+Otherwise, if \code{object} is an \code{lsmobj} object, its first element is used, and it must contain one \code{lsmean} value for each combination of the factors present in \code{formula}.
 }
 \value{
 (Invisibly), the table of least-squares means that were plotted.
 }
 \author{
-Russell V. Lenth, The University of Iowa
+Russell V. Lenth
 }
 \note{
 This function uses the \code{\link[lattice]{xyplot}} function in the \code{lattice} package (an error is returned if \code{lattice} is not installed). Conceptually, it is equivalent to \code{\link{interaction.plot}} where the summarization function is the least-squares means.
@@ -51,6 +52,9 @@ This function uses the \code{\link[lattice]{xyplot}} function in the \code{latti
 \code{\link{interaction.plot}}
 }
 \examples{
+require(lsmeans)
+require(lattice)
+
 #--- Two-factor example
 warp.lm <- lm(breaks ~ wool * tension, data = warpbreaks)
 

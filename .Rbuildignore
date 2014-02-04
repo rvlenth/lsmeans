@@ -7,9 +7,9 @@ int.plot.R
 CopyOflsmeans.R
 
 lsmeans-Ex.R
-using-lsmeans.aux
-using-lsmeans.log
-using-lsmeans.out
+
+using-lsmeans.pdf
+lsmeans-changes.pdf
 
 
 

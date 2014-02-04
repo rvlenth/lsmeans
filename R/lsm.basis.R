@@ -79,7 +79,7 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
         }
     }
     else if (isGLMM(object))
-        dffun = function(...) NA
+        dffun = function(k, dfargs) NA
     else 
         stop("Can't handle a nonlinear mixed model")
     
