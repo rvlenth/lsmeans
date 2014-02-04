@@ -13,6 +13,7 @@ These functions and methods provide an interface between \pkg{lsmeans} and the \
 }
 \usage{
 \method{glht}{lsmobj}(model, linfct, by, ...)
+## (for 'linfct' being an 'lsmobj')
 
 \method{summary}{glht.list}(object, ...)
 
@@ -36,7 +37,7 @@ Additional arguuments to other methods.
 }
 }
 \details{
-\code{lsm} is meant to be called only \emph{from} \code{"glht"} as its second (\code{linfct}) argument. It works similarly to \code{\link[multcomp]{mcp}} except with \code{specs}, (and optionally \code{by} and \code{contr} arguments) as in a call to \code{\link{lsmeans}}. 
+\code{lsm} is meant to be called only \emph{from} \code{"glht"} as its second (\code{linfct}) argument. It works similarly to \code{\link[multcomp]{mcp}} except with \code{specs} (and optionally \code{by} and \code{contr} arguments) provided as in a call to \code{\link{lsmeans}}. 
 
 When there is a non-\code{NULL} \code{by} variable (either explicitly or implicitly), each ``by'' group is passed separately to \code{glht} and returned as a \code{list} of \code{"glht"} objects. For convenience, this is classed as \code{"glht.list"} and a \code{summary} method is provided.
 }

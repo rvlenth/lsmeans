@@ -27,28 +27,27 @@ Objects of class \code{"lsmobj"} are created by calling \code{\link{lsmeans}} or
     \item{\code{matlevs}:}{Object of class \code{"list"} Like \code{levels} but has the levels of any matrices in the original dataset. Matrix columns must always be reduced to a single value for purposes of the reference grid }
     \item{\code{linfct}:}{Object of class \code{"matrix"} giving the linear functions of the regression coefficients for predicting each element of the reference grid. The rows of this matrix go in one-to-one correspondence with the rows of \code{grid}, and the columns with elements of \code{bhat}}
     \item{\code{bhat}:}{Object of class \code{"numeric"} with the regression coefficients. If there is a multivariate response, this must be flattened to a single vector, and \code{linfct} and \code{V} redefined appropriately. Important: \code{bhat} must \emph{include} any \code{NA} values produced by collinearity in the predictors. These are taken care of later in the estimability check.}
-    \item{\code{nbasis}:}{Object of class \code{"matrix"} with the basis for the non-estimable functions of the regression coefficients. Every LS mean will correspond to a linear combination of rows of \code{linfct}, and it must be orthogonal to all the columns of \code{nbasis} in order to be estimable. This will be \code{NULL} if everything is estimable}
+    \item{\code{nbasis}:}{Object of class \code{"matrix"} with the basis for the non-estimable functions of the regression coefficients. Every LS mean will correspond to a linear combination of rows of \code{linfct}, and that result must be orthogonal to all the columns of \code{nbasis} in order to be estimable. This will be \code{NULL} if everything is estimable}
     \item{\code{V}:}{Object of class \code{"matrix"}, the symmetric variance-covariance matrix of \code{bhat} }
     \item{\code{dffun, dfargs:}}{Objects of class \code{"function"} and \code{"list"} respectively. \code{dffun(k,dfargs)} should return the degrees of freedom for the linear function \code{sum(k*bhat)}, or \code{NA} if unavailable}
-    \item{\code{misc}:}{Object of class \code{"list"} passed to \code{ddfm} in case additional arguments are needed. It also serves as a repository of additional information used by methods. These include at least the following: \code{estName} (the label for the estimates of linear functions), and the values of \code{infer}, \code{level}, and \code{adjust} used in the \code{summary} method.}
+    \item{\code{misc}:}{Object of class \code{"list"} passed to \code{ddfm} in case additional arguments are needed. It also serves as a repository of additional information used by methods. These include at least the following: \code{estName} (the label for the estimates of linear functions), and the default values of \code{infer}, \code{level}, and \code{adjust} to be used in the \code{\link{summary}} method.}
 }} % end of describe and slots section
 
 \section{Extends}{
-\code{Class "lsmobj"} extends \code{Class "ref.grid"}, directly. There is hardly a difference between these classes except for how the slots \code{linfct} is and \code{grid} are obtained.}
+\code{Class "lsmobj"} extends \code{Class "ref.grid"}, directly. There is hardly a difference between these classes except for how the slots \code{linfct} and \code{grid} are obtained.}
 
 \section{Methods}{
   All methods for these objects are S3 methods except for \code{show}.
   \describe{
-    \item{show}{Prints the results of \code{str} for \code{ref.grid} objects, and \code{summary} for \code{lsmobj} objects.}
-    \item{str}{Displays a brief listing of the variables and levels defining the grid. }
-    \item{summary}{Displays a summary of estimates, standard errors, degrees of freedom, and optionally, tests and/or confidence intervals. }
-    \item{lsmeans}{Computes least-squares means and creates an \code{"lsmobj"} object.}
-    \item{confint}{Confidence intervals for lsmeans.} 
-    \item{test}{Hypothesis tests. }
-    \item{cld}{Compact-letter display for tests of pairwise comparisons}
-    \item{contrast}{Contrasts among lsmeans. }
-    \item{pairs}{A special case of \code{contrasts} for pairwise comparisons. }
-
+    \item{\code{show}:}{Prints the results of \code{str} for \code{ref.grid} objects, and \code{summary} for \code{lsmobj} objects.}
+    \item{\code{str}:}{Displays a brief listing of the variables and levels defining the grid. }
+    \item{\code{summary}:}{Displays a summary of estimates, standard errors, degrees of freedom, and optionally, tests and/or confidence intervals. }
+    \item{\code{lsmeans}:}{Computes least-squares means and creates an \code{"lsmobj"} object.}
+    \item{\code{confint}:}{Confidence intervals for lsmeans.} 
+    \item{\code{test}:}{Hypothesis tests. }
+    \item{\code{cld}:}{Compact-letter display for tests of pairwise comparisons}
+    \item{\code{contrast}:}{Contrasts among lsmeans. }
+    \item{\code{pairs}:}{A special case of \code{contrasts} for pairwise comparisons. }
 } % end of \describe
 } % end of Methods section
 

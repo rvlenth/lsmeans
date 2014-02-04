@@ -13,16 +13,17 @@ and optionally comparisons or contrasts among them.
 }
 \usage{
 \method{lsmeans}{character}(object, specs, ...)
-## ('specs' is character)
+## (used when 'specs' is 'character')
 
-\method{lsmeans}{character.ref.grid}(object, specs, by = NULL, fac.reduce = function(coefs) apply(coefs, 2, mean), contr, ...)
-## ('specs' is character, 'object' is a ref.grid)
+\method{lsmeans}{character.ref.grid}(object, specs, by = NULL, 
+    fac.reduce = function(coefs) apply(coefs, 2, mean), contr, ...)
+## (used when 'object' is a 'ref.grid' and 'specs' is 'character')
     
 \method{lsmeans}{list}(object, specs, ...)
-## ('specs' is a list)
+## (used when 'specs' is a 'list')
 
 \method{lsmeans}{formula}(object, specs, contr.list, trend, ...)
-## ('specs' is a formula)
+## (used when 'specs' is a 'formula')
 
 lstrends(model, specs, var, delta.var = 0.01 * rng, ...)
 }
@@ -30,16 +31,16 @@ lstrends(model, specs, var, delta.var = 0.01 * rng, ...)
 \item{object}{
 An object of class \code{ref.grid}; or a fitted model object that is supported, such as the result of a call to \code{lm} or \code{lmer}.}
 \item{specs}{
-A \code{character} vector specifying the names of the predictors over which LS-means are desired. \code{specs} may also be a \code{formula} or a \code{list} (preferably named) of valid \code{spec}s. Use of formulas is given in the Details section below.}
+A \code{character} vector specifying the names of the predictors over which LS-means are desired. \code{specs} may also be a \code{formula} or a \code{list} (optionally named) of valid \code{spec}s. Use of formulas is described in the Details section below.}
 \item{by}{
 A character vector specifying the names of predictors to condition on.}
 \item{fac.reduce}{
-A function that combines the rows of a matrix into a single vector. This implements the ``marginal averaging'' aspect of least-squares means. The default is the mean of the rows. Typically if it is overridden, it would be some kind of weighted mean of the rows.}
+A function that combines the rows of a matrix into a single vector. This implements the ``marginal averaging'' aspect of least-squares means. The default is the mean of the rows. Typically if it is overridden, it would be some kind of weighted mean of the rows. If \code{fac.reduce} is nonlinear, bizarre results are likely, and LS means will not be interpretable.}
 \item{contr}{
 A \code{list} of contrast coefficients to apply to the least-squares means -- or the root name of an \code{.lsmc} function that returns such coefficients. In addition, \code{contr = "cld"} is an alternative way to invoke the \code{\link[lsmeans]{cld}} function. See \code{\link{contrast}} for more details on contrasts.
 }
 \item{contr.list}{
-A named \code{list} of \code{list}s of contrast coefficients, as for \code{contr}. This is used only in the formula method; see details below. 
+A named \code{list} of \code{list}s of contrast coefficients, as for \code{contr}. This is used only in the formula method; see Details below. 
 }
 \item{trend}{
 Including this argument is an alternative way of calling \code{lstrends} with it as its \code{var} argument.
@@ -53,7 +54,7 @@ Character giving the name of a variable with respect to which a difference quoti
 The user may specify some monotone function of one variable, e.g., \code{var = "log(dose)"}. If so, the chain rule is applied. Note that, in this example, if \code{model} contains \code{log(dose)} as a predictor, we will be comparing the slopes estimated by that model, whereas specifying \code{var = "dose"} would perform a transformation of those slopes.
 }
 \item{delta.var}{
-The value of \emph{h} to use in forming the difference quotient \emph{(f(x+h) - f(x))/h}. Changing it (especially changing its sign) may be necessary to avoid numerical problems such as logs of negative numbers. The default value is the range of \code{var} over the dataset.
+The value of \emph{h} to use in forming the difference quotient \emph{(f(x+h) - f(x))/h}. Changing it (especially changing its sign) may be necessary to avoid numerical problems such as logs of negative numbers. The default value is 1/100 of the range of \code{var} over the dataset.
 }
 \item{\dots}{Additional arguments passed to other methods or to \code{\link{ref.grid}}.}
 }
@@ -62,9 +63,9 @@ The value of \emph{h} to use in forming the difference quotient \emph{(f(x+h) - 
 \details{
 Least-squares means are predictions from a linear model over a \emph{reference grid}, or marginal averages thereof. They have been popularized by \pkg{SAS} (SAS Institute, 2012). The \code{\link{ref.grid}} function identifies/creates the reference grid upon which \code{lsmeans} is based.
 
-If \code{specs} is a \code{formula}, it should be of the form \code{contr ~ specs | by}. The formula is parsed and then used as the arguments \code{contr}, \code{specs}, and \code{by} as indicated. The left-hand side is optional, but if specified it should be the name of a contrast family (e.g., \code{pairwise}) or of an list in \code{contr.list}. Operators like \code{*}, \code{:}, or \code{+} are necessary to delineate names in the formulas, but otherwise are ignored.
+If \code{specs} is a \code{formula}, it should be of the form \code{contr ~ specs | by}. The formula is parsed and then used as the arguments \code{contr}, \code{specs}, and \code{by} as indicated. The left-hand side is optional, but if specified it should be the name of a contrast family (e.g., \code{pairwise}) or of a sub-list of \code{contr.list}. Operators like \code{*} or \code{:} are necessary to delineate names in the formulas, but otherwise are ignored.
 
-A number of standard contrast families are provided. They can be identified as functions having names ending in \code{.lsmc} -- use \code{ls("package:lsmeans", pat=".lsmc")} to list them. See the documentation for \code{\link{pairwise.lsmc}} and its siblings for details. You may write your own \code{.lsmc} function for custom contrasts.
+A number of standard contrast families are provided. They can be identified as functions having names ending in \code{.lsmc} -- use \preformatted{ls("package:lsmeans", pat=".lsmc")} to list them. See the documentation for \code{\link{pairwise.lsmc}} and its siblings for details. You may write your own \code{.lsmc} function for custom contrasts.
 
 For models fitted using the \pkg{lme4} package, degrees of freedom are obtained using the Kenward-Roger (1997) method as implemented in the package \pkg{pbkrtest}, if it is installed. If \pkg{pbkrtest} is not installed, the degrees of freedom are set to \code{NA} and asymptotic results are displayed.
 }
@@ -73,7 +74,7 @@ For models fitted using the \pkg{lme4} package, degrees of freedom are obtained 
 An object of class \code{\link[=lsmobj-class]{lsmobj}} -- except when \code{specs} is a \code{list} or a \code{formula} having a left-hand side, a \code{list} of \code{slmobj} objects. A number of methods are provided for further analysis, including \code{\link[lsmeans]{summary}}, \code{\link[lsmeans]{confint}}, \code{\link[lsmeans]{test}}, \code{\link[lsmeans]{contrast}}, \code{\link[lsmeans]{pairs}}, and \code{\link[lsmeans]{cld}}.
 }
 
-\note{}
+%\note{}
 
 \references{
 Kenward, M.G. and Roger, J.H. (1997)
@@ -86,7 +87,7 @@ Online documentation; Shared concepts; LSMEANS statement,
 }
 
 \author{
-Russell V. Lenth, The University of Iowa
+Russell V. Lenth
 }
 
 \seealso{

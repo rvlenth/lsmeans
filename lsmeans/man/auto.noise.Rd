@@ -16,7 +16,7 @@
 }
 
 \details{
-The data are from a statement by Texaco, Inc. to the Air and Water Pollution
+The data are from a statement by Texaco, Inc., to the Air and Water Pollution
 Subcommittee of the Senate Public Works Committee on June 26, 1973.    
 Mr. John McKinley, President of Texaco, cited an automobile filter developed
 by Associated Octel Company as effective in reducing pollution. However, 
@@ -25,7 +25,7 @@ fuel consumption, exhaust gas back pressure, and silencing. On the last
 question, he referred to the data included here as evidence that the silencing
 properties of the Octel filter were at least equal to those of standard silencers.}
 
-\source{Dataset was imported from the Data and Story Library - \url{http://lib.stat.cmu.edu/DASL/Datafiles/airpullutionfiltersdat.html} (sic). However,
+\source{The dataset was imported from the Data and Story Library - \url{http://lib.stat.cmu.edu/DASL/Datafiles/airpullutionfiltersdat.html} (sic). However,
 the factor levels were assigned meaningful names, and the observations were sorted
 in random order as if this were the run order of the experiment.
 }

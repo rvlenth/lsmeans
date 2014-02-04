@@ -14,7 +14,7 @@
 Methods for \code{lsmobj} objects
 }
 \description{
-These method provide for follow-up analyses of \code{lsmobj} objects: Contrasts, pairwise comparisons, tests, and confidence intervals.
+These methods provide for follow-up analyses of \code{lsmobj} objects: Contrasts, pairwise comparisons, tests, and confidence intervals.
 }
 \usage{
 \method{contrast}{lsmobj}(object, method = "pairwise", by, adjust, ...)
@@ -31,16 +31,16 @@ These method provide for follow-up analyses of \code{lsmobj} objects: Contrasts,
 An object of class \code{"lsmobj"}.
 }
   \item{method}{
-Character giving the root name of a contast method (e.g. \\code{"pairwise"}), or a named list of contrast coefficients that must conform to the number of least-squares means in each \code{by} group. This is just like the \code{contr} argument in \code{\link{lsmeans}}. To identify the available methods, see \code{ls("package:lsmeans", pat=".lsmc")}. You may define your own \code{.lsmc} function and use its root name as \code{method}. 
+Character value giving the root name of a contast method (e.g. \code{"pairwise"}). Alternatively, a named list of contrast coefficients that must each conform to the number of least-squares means in each \code{by} group. This is just like the \code{contr} argument in \code{\link{lsmeans}}. To identify the available methods, see \preformatted{ls("package:lsmeans", pat=".lsmc")} You may define your own \code{.lsmc} function and use its root name as \code{method}. 
 }
   \item{by}{
-Character names of variable(s) to be used for ``by'' groups. The contrasts will be evaluated separately for each combination of these variables. If \code{object} was created with by groups, those are used unless overridden: use \code{by = NULL} to use no by groups at all.
+Character names of variable(s) to be used for ``by'' groups. The contrasts will be evaluated separately for each combination of these variables. If \code{object} was created with by groups, those are used unless overridden. Use \code{by = NULL} to use no by groups at all.
 }
   \item{adjust}{
 Method to use for adjusting \emph{P} values. This is passed to \code{\link[lsmeans]{summary}}.
 }
   \item{parm}{
-(This is a required argument for \code{\link[stats]{confint}}) and the parallel generic \code{test} provided here, but is ignored by the methods for \code{lsmobj}.)
+(This is a required argument for the generic \code{\link[stats]{confint}}) and \code{test} methods, but is ignored by the methods for \code{lsmobj}.)
   }
   \item{level}{
 Numeric value of the desired confidence level.
@@ -52,7 +52,7 @@ Additional arguments passed to \code{\link[lsmeans]{summary}} or to a contrast f
 \details{
 \code{pairs} is equivalent to \code{contrast} with \code{method = "pairwise"}.
 
-\code{confint} and \code{test} are equivalent to calling \code{\link[lsmeans]{summary}} with \code{infer=c(TRUE,FALSE)} and \code{infer=c(FALSE,TRUE)}, respoctively.
+\code{confint} and \code{test} are equivalent to calling \code{\link[lsmeans]{summary}} with \code{infer=c(TRUE,FALSE)} and \code{infer=c(FALSE,TRUE)}, respectively.
 }
 \value{
 All of these methods return an object of class \code{"lsmobj"}, which is an extension of \code{"ref.grid"}. Consequently, they may be used as arguments to other \code{"lsmobj"} or \code{"ref.grid"} methods. The user may, for example, compute contrasts of contrasts, or re-summarize a set of confidence intervals with a different \code{by} grouping or confidence level.

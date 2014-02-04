@@ -12,9 +12,9 @@ It is used as a case study in Milliken and Johnson, Chapter 17, p.202. (You may 
 \format{
   A data frame with 107 observations on the following 4 variables.
   \describe{
-    \item{\code{age}}{a factor with levels \code{1} \code{2} \code{3} \code{4}. Mother's age group.}
-    \item{\code{group}}{a factor with levels \code{FoodStamps} \code{NoAid}. Whether or not the family receives food stamp assistance.}
-    \item{\code{race}}{a factor with levels \code{Black} \code{Hispanic} \code{White}. Mother's race.}
+    \item{\code{age}}{a factor with levels \code{1}, \code{2}, \code{3}, \code{4}. Mother's age group.}
+    \item{\code{group}}{a factor with levels \code{FoodStamps}, \code{NoAid}. Whether or not the family receives food stamp assistance.}
+    \item{\code{race}}{a factor with levels \code{Black}, \code{Hispanic}, \code{White}. Mother's race.}
     \item{\code{gain}}{a numeric vector (the response variable). Gain score (posttest minus pretest) on knowledge of nutrition.}
   }
 }

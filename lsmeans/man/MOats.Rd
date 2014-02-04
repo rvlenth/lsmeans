@@ -12,7 +12,7 @@ but it is rearranged as one multivariate observation per plot.
 \format{
   A data frame with 18 observations on the following 3 variables.
   \describe{
-    \item{\code{Variety}}{a factor with levels \code{Golden Rain} \code{Marvellous} \code{Victory}}
+    \item{\code{Variety}}{a factor with levels \code{Golden Rain}, \code{Marvellous}, \code{Victory}}
     \item{\code{Block}}{an ordered factor with levels \code{VI} < \code{V} < \code{III} < \code{IV} < \code{II} < \code{I}}
     \item{\code{yield}}{a matrix with 4 columns, giving the yields with nitrogen concentrations of 0, .2, .4, and .6.}
   }
