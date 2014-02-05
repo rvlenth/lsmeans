@@ -1,4 +1,4 @@
-# Namespaces for lsmeans p0ackage
+# Namespace for lsmeans package
 
 # Imports
 import(Matrix)
