@@ -1,5 +1,13 @@
 Changelog for 'lsmeans' package
 
+1.99 (pre-2.00)
+    This is a major redesign of the package. Single function 'lsmeans'
+    is replaced by methods for different types of models and 
+    specifications, and returns an 'lsmobj' rather than a 'data.frame'.
+    New functions 'ref.grid', 'contrast', 'lstrends', and new 'summary',
+    'confint', 'test', 'glht', 'cld' methods for 'ref.grid' and 'lsmobj'
+    objects. See the vignette "lsmeans-changes" for more details.
+
 1.10-4
     Fixed bug in cld spec that caused multiple letter columns
 
