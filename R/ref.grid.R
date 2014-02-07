@@ -12,8 +12,9 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
     data = recover.data (object)
     
     # find out if any variables are coerced to factors
-    anm = all.names(attr(data, "terms"))    
-    coerced = anm[1 + grep("factor|ordered", anm)]
+    ### OLD VERSION: anm = all.names(attr(data, "terms"))    
+    ###              coerced = anm[1 + grep("factor|ordered", anm)]
+    coerced = .find.coerced(attr(data, "terms"), data)
     
     # convenience functions
     sort.unique = function(x) sort(unique(x))
@@ -151,6 +152,36 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
          grid = grid, levels = ref.levels, matlevs = matlevs,
          linfct = basis$X, bhat = basis$bhat, nbasis = basis$nbasis, V = basis$V,
          dffun = basis$dffun, dfargs = basis$dfargs, misc = misc)
+}
+
+# This function figures out which covariates in a model 
+# have been coerced to factors. Does NOT rely on the names of
+# functions like 'factor' or 'interaction' as we use actual results
+.find.coerced = function(trms, data) {
+    isfac = sapply(data, function(x) inherits(x, "factor"))
+    
+    # Character vectors of factors and covariates in the data...
+    facs.d = names(data)[isfac]
+    covs.d = names(data)[!isfac]
+    
+    lbls = attr(trms, "term.labels")
+    M = model.frame(trms, data)
+    isfac = sapply(M, function(x) inherits(x, "factor"))
+    
+    # Character vector of terms in the model frame that are factors ...
+    facs.m = names(M)[isfac]
+    
+    # Exclude the terms that are already factors
+    # What's left will be things like "factor(dose)", "interact(dose,treat)", etc
+    cterms = setdiff(facs.m, facs.d)
+    
+    if(length(cterms) == 0) 
+        return(cterms)
+    # (else) Strip off the function calls
+    cvars = lapply(paste("~",cterms), function(x) all.vars(as.formula(x)))
+    
+    # Exclude any variables that are already factors
+    intersect(unique(unlist(cvars)), covs.d)
 }
 
 # utility fcn to get est's, std errors, and df
