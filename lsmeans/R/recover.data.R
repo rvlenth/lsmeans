@@ -44,7 +44,7 @@ recover.data.default <- function(object, ...)
 # stats...
 recover.data.lm <- function(object, ...) {
     fcall = object$call
-    recover.data(fcall, terms(object))
+    recover.data(fcall, delete.response(terms(object)))
 }
 # (also aov is extension of lm when no Error() in model)
 
@@ -60,7 +60,7 @@ recover.data.lme <- function(object, ...)
 recover.data.gls <- function(object, ...) {
     fcall = object$call
     xlev = object$xlevels
-    recover.data(fcall, getCovariateFormula(object))
+    recover.data(fcall, delete.response(getCovariateFormula(object)))
 }
 
 # lme4 ...
@@ -69,7 +69,7 @@ recover.data.merMod <- function(object, ...) {
     if(!isLMM(object) && !isGLMM(object)) 
         stop("Can't handle a nonlinear mixed model")
     fcall = object@call
-    recover.data(fcall, terms(object))
+    recover.data(fcall, delete.response(terms(object)))
 }
 
 # lme4.0 if I can get it and test it

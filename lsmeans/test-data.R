@@ -45,14 +45,20 @@ chick.logTime = lmer(weight ~ log(Time+1)*Diet + (0+log(Time+1)|Chick), data=Chi
 
 # MASS
 library(MASS)
-warp.rlm = rlm(breaks ~ poly(x,3) + wool*tension, data = mywarp)
-warp.lqs = lqs(breaks ~ poly(x,3) + wool*tension, data = mywarp)
+warp.rlm = rlm(breaks ~ poly(x,3) + wool*tension, data = mywarp, subset=ws)
+warp.lqs = lqs(breaks ~ poly(x,3) + wool*tension, data = mywarp, subset=ws)
 
 
 # Multivariate version of Oats
 Oats.mult = with(Oats, expand.grid(Variety=unique(Variety), Block=unique(Block)))
 Oats.mult$yield = matrix(Oats$yield, ncol=4, byrow=TRUE)
 Oats.mult.lm = lm(yield ~ Block + Variety, data = Oats.mult)
+
+
+# Survival models
+library(survival)
+Oats.sr = survreg(Surv(sapply(yield,min,100), yield<100) ~ Block + factor(nitro) + Variety, 
+                  dist="gaussian", data = Oats[13:72,])
                  
 
 # Load test files
