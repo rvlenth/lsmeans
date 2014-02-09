@@ -8,6 +8,13 @@
     args
 }
 
+# Create a list and give it class class.name
+.cls.list <- function(class.name, ...) {
+    result <- list(...)
+    class(result) <- c(class.name, "list")
+    result
+}
+
 setMethod("show", "lsmobj", function(object) print(summary(object)) )
 
 
@@ -104,7 +111,8 @@ lsmeans.list = function(object, specs, ...) {
             result[[nm]] = res
         }
     }
-    result  
+    class(result) = c("lsm.list", "list")
+    result
 }
 
 
@@ -166,9 +174,20 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
             return(cld(result, by = by))
         }
         ctrs = contrast(result, method = contr, by, ...)
-        list(lsmeans = result, contrasts = ctrs)
+        .cls.list("lsm.list", lsmeans = result, contrasts = ctrs)
     }
 }
+
+
+# Summary method for an lsm.list
+summary.lsm.list <- function(object, ...)
+    lapply(object, function(x, ...) {
+        if (inherits(x, "summary.ref.grid"))  x
+        else summary(x, ...)
+    })
+
+print.lsm.list <- function(x, ...) 
+    print(summary(x, ...))
 
 
 # utility to parse 'by' part of a formula
@@ -178,8 +197,6 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
         all.vars(as.formula(paste("~",b[2])))
     else NULL
 }
-
-
 
 ### 'contrast' S3 generic and method
 contrast = function(object, ...)

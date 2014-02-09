@@ -11,10 +11,25 @@ lsm <- function(...) {
     result
 }
 
+# New S3 method for lsmlf objects
+glht.lsmlf <- function(model, linfct, ...) {
+    # Just grab the arguments passed to lsm and call lsmeans
+    linfct$object <- ref.grid(model)
+    lsmo <- do.call("lsmeans", linfct)
+    if (is.list(lsmo)) 
+        lsmo = lsmo[[length(lsmo)]]
+    # Then call the method for lsmobj
+    glht(model, lsmo, ...)
+}
+
+
 # S3 method for an lsmobj
+# Note: model is redundant, really, so can be omitted
 glht.lsmobj <- function(model, linfct, by, ...) {
     object = linfct # so I don't get confused
-    args = list(model=model, ...)
+    if (missing(model)) 
+        model = .cls.list("lsmwrap", object = object)
+    args = list(model = model, ...)
     # add a df value if not supplied
     if (is.null(args$df)) {
         df = summary(linfct)$df
@@ -50,6 +65,26 @@ glht.lsmobj <- function(model, linfct, by, ...) {
     result
 }
 
+### as. glht -- convert my object to glht object
+as.glht <- function(object, ...)
+    UseMethod("as.glht")
+
+as.glht.default <- function(object, ...)
+    stop("Cannot convert an object of class ", sQuote(class(object)[1]),
+         " to a ", sQuote("glht"), " object")
+
+as.glht.lsmobj <- function(object, ...)
+    glht( , object, ...)
+
+
+# S3 modelparm method for lsmwrap (S3 wrapper for an lsmobj - see glht.lsmobj)
+modelparm.lsmwrap <- function(model, coef., vcov., df, ...) {
+    object = model$object
+    estimable = ! sapply(object@bhat, is.na)
+    .cls.list("modelparm", coef = object@bhat, vcov = object@V,
+              df = df, estimable = estimable)
+}
+
 # S3 methods for glht.list
 summary.glht.list = function(object, ...)
     lapply(object, summary, ...)
@@ -57,14 +92,4 @@ summary.glht.list = function(object, ...)
 
 
 
-# New S3 method for lsmlf objects
-glht.lsmlf <- function(model, linfct, ...) {
-    # Just grab the arguments passed to lsm and call lsmeans
-    linfct$object <- ref.grid(model)
-    lsmo <- do.call("lsmeans", linfct)
-    if (is.list(lsmo)) 
-        lsmo = lsmo[[length(lsmo)]]
-    # Then call the method for lsmobj
-    glht(model, lsmo, ...)
-}
 
