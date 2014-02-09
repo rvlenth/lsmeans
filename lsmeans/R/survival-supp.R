@@ -43,3 +43,19 @@ lsm.basis.survreg <- function(object, trms, xlev, grid) {
     dffun = function(k, dfargs) dfargs$df
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs)
 }
+
+
+
+### coxph objects
+recover.data.coxph <- recover.data.survreg
+
+lsm.basis.coxph <- function(object, trms, xlev, grid) {
+    result = lsm.basis.survreg(object, trms, xlev, grid)
+    # asymptotic
+    result$dfargs$df = NA
+    # mimic reference = "sample" in predict.coxph
+    result$X = result$X - rep(object$means, each = nrow(result$X))
+    result
+}
+
+

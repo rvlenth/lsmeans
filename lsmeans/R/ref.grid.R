@@ -178,7 +178,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
     if(length(cterms) == 0) 
         return(cterms)
     # (else) Strip off the function calls
-    cvars = lapply(paste("~",cterms), function(x) all.vars(as.formula(x)))
+    cvars = lapply(cterms, function(x) all.vars(reformulate(x)))
     
     # Exclude any variables that are already factors
     intersect(unique(unlist(cvars)), covs.d)

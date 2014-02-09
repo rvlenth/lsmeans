@@ -343,11 +343,15 @@ lstrends = function(model, specs, var, delta.var=.01*rng, ...) {
     result = do.call("lsmeans", args)
     if (is.list(result)) {
         names(result)[1] = "lstrends"
-        if (is(result[[1]], "ref.grid")) 
+        if (is(result[[1]], "ref.grid")) {
             result[[1]]@misc$estName = estName
+            result[[1]]@misc$methDesc = "trends"
+        }
     }
-    else
+    else {
         result@misc$estName = estName
+        result@misc$methDesc = "trends"
+    }
     result
 }
 

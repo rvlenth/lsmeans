@@ -24,7 +24,10 @@ recover.data.call <- function(object, trms, ...) {
     fcall$na.action <- na.omit
     vars <- all.vars(trms) # (length will always be >= 2)
     # Put one var on left - keeps out lhs transformations
-    form <- as.formula(paste(vars[1], "~", paste(vars[-1], collapse="+")))
+    if (length(vars) > 1) 
+        form <- reformulate(vars[-1], response = vars[1])
+    else 
+        form <- reformulate(vars)
     fcall$formula <- update(trms, form)
     env <- environment(trms)
     if (is.null(env)) 
