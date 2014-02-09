@@ -9,10 +9,12 @@ lsmip.default = function(object, formula, pch=c(1,2,6,7,9,10,15:20), lty=1, col=
     if (!require("lattice"))
         stop("This function requires the 'lattice' package be installed.")
     if (length(formula) < 3)
-        stop("'formula' must be two-sided, e.g. trace.factor ~ x.factor")
+        formula = reformulate(as.character(formula)[[2]], response = ".single.")
+        ###stop("'formula' must be two-sided, e.g. trace.factor ~ x.factor")
+        ### NEW: Allow lhs to be empty, so then we get a single trace
     ylab = "Least-squares mean"
     
-# Glean the parts of ... to use in lsmeans call
+    # Glean the parts of ... to use in lsmeans call
     # arguments allowed to be passed
     lsa.allowed = c("at","trend","cov.reduce","fac.reduce")
     xargs = list(...)
@@ -24,32 +26,43 @@ lsmip.default = function(object, formula, pch=c(1,2,6,7,9,10,15:20), lty=1, col=
         }
     }
     
-    allvars = all.vars(formula)
+    allvars = setdiff(all.vars(formula), ".single.")
     lsmopts$object = object
-    lsmopts$specs = as.formula(paste("~", paste(allvars, collapse = "+")))
+    lsmopts$specs = reformulate(allvars)
     lsms = summary(do.call("lsmeans", lsmopts))
-
     ylab = paste(ylab, "of", formula[[2]])
     
+    # Set up trace vars and key
     tvars = all.vars(formula[[2]])
+    if (all(tvars == ".single.")) {
+        lsms$.single. = 1
+        my.key = function(tvars) list()
+    }
+    else {
+        my.key = function(tvars) 
+            list(space="right", 
+                 title = paste(tvars, collapse=" * "), 
+                 points = TRUE, 
+                 lines=length(lty) > 1,
+                 cex.title=1)
+    }
     tv = do.call(paste, lsms[tvars])
     lsms$tvar = factor(tv, levels=unique(tv))
+    
+    # figure out 'x' and 'by' vars
     rhs = strsplit(as.character(formula[3]), "\\|")[[1]]
-    xvars = all.vars(as.formula(paste("~", rhs[[1]])))
+    xvars = all.vars(reformulate(rhs[[1]]))
     xv = do.call(paste, lsms[xvars])
     lsms$xvar = factor(xv, levels = unique(xv))
     lsms = lsms[order(lsms$xvar), ]
     plotform = lsmean ~ xvar
+    
+    # see if we have any 'by' vars
     if (length(rhs) > 1) {
-        byvars = all.vars(as.formula(paste("~", rhs[[2]])))
+        byvars = all.vars(reformulate(rhs[[2]]))
         plotform = as.formula(paste("lsmean ~ xvar |", paste(byvars, collapse="*")))
     }
-    my.key = function(tvars) 
-        list(space="right", 
-             title = paste(tvars, collapse=" * "), 
-             points = TRUE, 
-             lines=length(lty) > 1,
-             cex.title=1)
+
     # The strips the way I want them
     my.strip = function(...)
         strip.default(..., strip.names = c(TRUE,TRUE), sep = " = ")

@@ -58,8 +58,17 @@ Oats.mult.lm = lm(yield ~ Block + Variety, data = Oats.mult)
 # Survival models
 library(survival)
 Oats.sr = survreg(Surv(sapply(yield,min,100), yield<100) ~ Block + factor(nitro) + Variety, 
-                  dist="gaussian", data = Oats[13:72,])
-                 
+    dist="gaussian", data = Oats, subset=13:72)
+
+# CGD data discussed in Therneau & Crowson papaer w/ survival package
+cgd.ph <- coxph(Surv(tstart, tstop, status) ~ treat * inherit + 
+    sex + age + cluster(id), data = cgd)
+
+cgd.rg <- ref.grid(cgd.ph)
+# Here are the "right answers":
+predict(cgd.ph, newdata=cgd.rg@grid, se.fit=TRUE)
+# Compare with my answers:
+summary(cgd.rg)
 
 # Load test files
 # library(plyr)
