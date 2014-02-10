@@ -1,5 +1,11 @@
 Changelog for 'lsmeans' package
 
+1.99-3
+    Support for more models -- coxme, polr
+    replacing lsm.basis.R, recover.data.R, survival-supp.R
+        with helpers.R
+    new exported function nonest.basis
+
 1.99-2
     Added as.glht function and modelparm.lsmwrap method
     Added informative message on supported objects

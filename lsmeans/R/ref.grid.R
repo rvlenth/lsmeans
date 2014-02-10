@@ -95,7 +95,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
         }
         else {
             k = prod(sapply(mult.levs, length))
-            if (k != length(ylevs)) 
+            if (k != length(ylevs[[1]])) 
                 stop("supplied 'mult.levs' is of different length than that of multivariate response")
             for (nm in names(mult.levs))
                 ref.levels[[nm]] = mult.levs[[nm]]
@@ -286,7 +286,7 @@ str.ref.grid <- function(object, ...) {
 
 
 # S3 summary method
-summary.ref.grid <- function(object, infer, level, adjust, by, ...) {
+summary.ref.grid <- function(object, infer, level, adjust, by, inv=FALSE, ...) {
     result = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@dffun, object@dfargs, object@misc)
     
 #     # figure out factors w/ more than one level
@@ -311,6 +311,10 @@ summary.ref.grid <- function(object, infer, level, adjust, by, ...) {
     if(length(infer == 1)) 
         infer = c(infer,infer)
 
+    if(inv && !is.null(object@misc$tran))
+        link.code = make.link(object@misc$tran)
+    else link.code = NULL
+
     mesg = NULL
     if(infer[1]) { # add CIs
         quant = 1 - (1 - level)/2
@@ -318,6 +322,10 @@ summary.ref.grid <- function(object, infer, level, adjust, by, ...) {
         cnm = if (zFlag) c("asymp.LCL", "asymp.UCL") else c("lower.CL","upper.CL")
         result[[cnm[1]]] = result[[1]] - cv*result$SE
         result[[cnm[2]]] = result[[1]] + cv*result$SE
+        if (!is.null(link.code)) {
+            result[[cnm[1]]] = link.code$linkinv(result[[cnm[1]]])
+            result[[cnm[2]]] = link.code$linkinv(result[[cnm[2]]])
+        }
         mesg = paste("Confidence level used:", level)
     }
     if(infer[2]) { # add tests
@@ -334,6 +342,12 @@ summary.ref.grid <- function(object, infer, level, adjust, by, ...) {
         mesg = c(mesg, apv$mesg)
         if(zFlag) mesg = c(mesg, "P values are asymptotic")
     }
+    if (!is.null(link.code)) {
+        result[[1]] = link.code$linkinv(result[[1]])
+        result[["SE"]] = link.code$linkinv(result[["SE"]]) * result[["SE"]]
+        mesg = c("Inverse transformation applied", mesg)
+    }
+
     summ = cbind(lbls, result)
     attr(summ, "pri.vars") = setdiff(union(object@misc$pri.vars, object@misc$by.vars), by)
     attr(summ, "by.vars") = by

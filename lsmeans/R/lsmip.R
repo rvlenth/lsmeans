@@ -5,7 +5,7 @@ lsmip = function(object, formula, ...)
 
 # object - a model object supported by lsmeans
 # formula - a formula of the form  x.factors ~ trace.factors | panel.factors
-lsmip.default = function(object, formula, pch=c(1,2,6,7,9,10,15:20), lty=1, col=NULL, ...) {
+lsmip.default = function(object, formula, pch=c(1,2,6,7,9,10,15:20), lty=1, col=NULL, inv=FALSE,  ...) {
     if (!require("lattice"))
         stop("This function requires the 'lattice' package be installed.")
     if (length(formula) < 3)
@@ -29,7 +29,7 @@ lsmip.default = function(object, formula, pch=c(1,2,6,7,9,10,15:20), lty=1, col=
     allvars = setdiff(all.vars(formula), ".single.")
     lsmopts$object = object
     lsmopts$specs = reformulate(allvars)
-    lsms = summary(do.call("lsmeans", lsmopts))
+    lsms = summary(do.call("lsmeans", lsmopts), infer=FALSE, inv=inv)
     ylab = paste(ylab, "of", formula[[2]])
     
     # Set up trace vars and key

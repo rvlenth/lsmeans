@@ -1,0 +1,328 @@
+### Helper functions for lsmeans
+### Here we have 'recover.data' and 'lsm.basis' methods
+### For models that this package supports.
+#----------------------------------------------------------
+### Recover data methods will return a data.frame with 
+### the original data, and at least these additional attrs:
+#   attr(, "terms")      - terms component of object
+#   attr(, "responses")  - names of response variable
+#   attr(, "predictors") - names of predictors
+#-----------------------------------------------------------
+# generic version
+recover.data <- function(object, ...)
+    UseMethod("recover.data")
+
+#----------------------------------------------------------
+### lsm.basis methods create a basis for the reference grid
+#
+# Required args:
+#     object - the model object
+#     trms   - terms component of object
+#     xlev   - named list of factor levels (but not the coerced ones)
+#     grid   - reference grid
+# All methods must return a list with these elements:
+#     X      - basis for linear fcns over reference grid
+#     bhat   - regression coefficients for fixed effects (INCLUDING any NAs)
+#     nbasis - matrix whose columns for a basis for non-estimable functions of beta; matrix(NA) if none
+#     V      - estimated covariance matrix of bhat
+#     dffun  - function(k, dfargs) to find df for k'bhat having std error se
+#     dfargs - additional arguments, if any, for dffun
+#              Also, if extra levels need to be added (e.g. mlm, polr),
+#              put them in dfargs$ylevs where ref.grid will look for them
+# Note: if no df exists, set dffun = function(...) NA and dfargs = list()
+#--------------------------------------------------------------
+# generic version
+lsm.basis = function(object, trms, xlev, grid)
+    UseMethod("lsm.basis")
+
+
+
+#--------------------------------------------------------------
+### DEFAULT METHODS (we hit these when a model is NOT supported)
+recover.data.default <- function(object, ...)
+    stop("Can't handle an object of class ", dQuote(class(object)[1]), "\n",
+         .show_supported())
+
+lsm.basis.default <- function(object, trms, xlev, grid) {
+    stop("Can't handle an object of class ", dQuote(class(object)[1]), "\n",
+         .show_supported())
+}
+
+# Private fcn to get a list of supported objects
+# does this by looking in namespace [ns] and methods [meth]
+# then strips that off leaving extensions
+.show_supported = function(ns = "lsmeans", meth = "lsm.basis") {
+    pat = paste(meth, ".", sep="")
+    objs = ls(envir = getNamespace(ns), pat = pat)
+    clss = gsub(pat, "", objs)
+    c("Objects of the following classes are supported:\n",
+      paste(dQuote(setdiff(clss, "default")), collapse = ", "))
+}
+
+
+#--------------------------------------------------------------
+### call' objects
+# This recover.data method serves as the workhorse for the others
+# For model objects, call this with the object's call and its terms component
+recover.data.call <- function(object, trms, ...) {
+    fcall <- object # because I'm easily confused
+    m <- match(c("formula", "data", "subset", "weights", 
+                 "na.action", "offset"), names(fcall), 0L)
+    fcall <- fcall[c(1L, m)]
+    fcall$drop.unused.levels <- TRUE
+    fcall[[1L]] <- as.name("model.frame")
+    fcall$xlev <- NULL # we'll ignore xlev
+    fcall$na.action <- na.omit
+    vars <- all.vars(trms) # (length will always be >= 2)
+    # Put one var on left - keeps out lhs transformations
+    if (length(vars) > 1) 
+        form <- reformulate(vars[-1], response = vars[1])
+    else 
+        form <- reformulate(vars)
+    fcall$formula <- update(trms, form)
+    env <- environment(trms)
+    if (is.null(env)) 
+        env <- parent.frame()
+    tbl <- eval(fcall, env, parent.frame())
+    attr(tbl, "call") = fcall
+    attr(tbl, "terms") = trms
+    attr(tbl, "predictors") = all.vars(delete.response(trms))
+    attr(tbl, "responses") = setdiff(vars, attr(tbl, "predictors"))
+    tbl
+}
+
+
+
+#--------------------------------------------------------------
+### lm objects (and also aov, rlm, others that inherit) -- but NOT aovList
+recover.data.lm <- function(object, ...) {
+    fcall = object$call
+    recover.data(fcall, delete.response(terms(object)))
+}
+
+lsm.basis.lm <- function(object, trms, xlev, grid) {
+    contrasts = attr(model.matrix(object), "contrasts")
+    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+    X = model.matrix(trms, m, contrasts.arg = contrasts)
+    # coef() works right for lm but coef.aov tosses out NAs
+    bhat = as.numeric(object$coefficients) 
+    # stretches it out if multivariate - see mlm method
+    V = vcov(object)
+    
+    if (sum(is.na(bhat)) > 0)
+        nbasis = nonest.basis(object$qr)
+    else
+        nbasis = matrix(NA)
+    dfargs = list(df = object$df.residual)
+    dffun = function(k, dfargs) dfargs$df
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs)
+}
+
+
+
+#--------------------------------------------------------------
+### mlm objects
+# (recover.data.lm works just fine)
+
+lsm.basis.mlm <- function(object, trms, xlev, grid) {
+    bas <- lsm.basis.lm(object, trms, xlev, grid)
+    bhat = coef(object)
+    k = ncol(bhat)
+    bas$X = kronecker(diag(rep(1,k)), bas$X)
+    bas$nbasis = kronecker(rep(1,k), bas$nbasis)
+    ylevs = dimnames(bhat)[[2]]
+    if (is.null(ylevs)) ylevs = 1:k
+    # Quirky, but I use dfargs as repository for ylevs
+    bas$dfargs$ylevs = list(rep.meas = ylevs)
+    bas
+}
+
+
+
+#--------------------------------------------------------------
+### merMod objects (lme4 package)
+recover.data.merMod <- function(object, ...) {
+    if(!isLMM(object) && !isGLMM(object)) 
+        stop("Can't handle a nonlinear mixed model")
+    fcall = object@call
+    recover.data(fcall, delete.response(terms(object)))
+}
+
+lsm.basis.merMod <- function(object, trms, xlev, grid) {
+    bhat = fixef(object)
+    contrasts = attr(model.matrix(object), "contrasts")
+    V = as.matrix(vcov(object))
+    dfargs = list()
+    if (isLMM(object)) {
+        if (require("pbkrtest")) {
+            dfargs = list(unadjV = V, adjV = vcovAdj(object, 0))
+            V = as.matrix(dfargs$adjV)
+            dffun = function(k, dfargs) .KRdf.mer (dfargs$adjV, dfargs$unadjV, k)
+        }
+        else {
+            warning("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
+            dffun = function(k, dfargs) NA
+        }
+    }
+    else if (isGLMM(object))
+        dffun = function(k, dfargs) NA
+    else 
+        stop("Can't handle a nonlinear mixed model")
+    
+    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+    X = model.matrix(trms, m, contrasts.arg = contrasts)
+    list(X=X, bhat=bhat, nbasis=matrix(NA), V=V, dffun=dffun, dfargs=dfargs)
+}
+
+
+
+#--------------------------------------------------------------
+### mer objects (from old lme4 version, now lme4.0 I guess)
+recover.data.mer <- recover.data.merMod
+
+lsm.basis.mer <- lsm.basis.merMod
+
+
+
+#--------------------------------------------------------------
+### lme objects (nlme package)
+recover.data.lme <- recover.data.lm
+
+lsm.basis.lme <- function(object, trms, xlev, grid) {
+    contrasts = object$contrasts
+    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+    X = model.matrix(trms, m, contrasts.arg = contrasts)
+    bhat = fixef(object)
+    V = vcov(object)
+    nbasis = matrix(NA)
+    dffun = function(...) NA
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=list())
+}
+
+
+
+#--------------------------------------------------------------
+### gls objects (nlme package)
+recover.data.gls <- function(object, ...) {
+    fcall = object$call
+    recover.data(fcall, delete.response(getCovariateFormula(object)))
+}
+
+lsm.basis.gls <- function(object, trms, xlev, grid) {
+    contrasts = object$contrasts
+    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+    X = model.matrix(trms, m, contrasts.arg = contrasts)
+    bhat = coef(object)
+    V = vcov(object)
+    nbasis = matrix(NA)
+    dfargs = list(df = object$dims$N - object$dims$p)
+    dffun = function(k, dfargs) dfargs$df
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs)
+}
+
+
+
+#--------------------------------------------------------------
+### polr objects (MASS package)
+recover.data.polr <- recover.data.lm
+
+lsm.basis.polr <- function(object, trms, xlev, grid) {
+    contrasts = object$contrasts
+    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+    X = model.matrix(trms, m, contrasts.arg = contrasts)
+    # Strip out the intercept (borrowed code from predict.polr)
+    xint <- match("(Intercept)", colnames(X), nomatch = 0L)
+    if (xint > 0L) 
+        X <- X[, -xint, drop = FALSE]
+    bhat = c(coef(object), object$zeta)
+    V = vcov(object)
+    k = length(object$zeta)
+    j = matrix(1, nrow=k, ncol=1)
+    J = matrix(1, nrow=nrow(X), ncol=1)
+    # Tricky, tricky: need to reverse the sign of the X part
+    # because lin. pred is zeta - eta
+    X = cbind(kronecker(-j, X), kronecker(diag(1,k), J))
+    dfargs = list(ylevs = list(cut = names(object$zeta)))
+    nbasis = matrix(NA)
+    dffun = function(...) NA
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs)
+}
+
+
+
+
+#--------------------------------------------------------------
+### survreg objects (survival package)
+recover.data.survreg <- recover.data.lm
+
+# Seems to work right in a little testing.
+# However, it fails sometimes if I update the model 
+# with a subset argument. Workaround: just fitting a new model
+lsm.basis.survreg <- function(object, trms, xlev, grid) {
+    # Much of this code is adapted from predict.survreg
+    bhat = object$coefficients
+    k = length(bhat)
+    V = vcov(object)[1:k, 1:k, drop=FALSE]
+    is.fixeds = (k == ncol(object$var))
+    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)    
+    # Hmmm, differs from my lm method using model.matrix(trms, m, contrasts)
+    X = model.matrix(object, m)
+    nbasis = nonest.basis(model.matrix(object))
+    dfargs = list(df = object$df.residual)
+    dffun = function(k, dfargs) dfargs$df
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs)
+}
+
+
+
+#--------------------------------------------------------------
+###  coxph objects (survival package)
+recover.data.coxph <- recover.data.survreg
+
+lsm.basis.coxph <- function(object, trms, xlev, grid) {
+    result = lsm.basis.survreg(object, trms, xlev, grid)
+    result$dfargs$df = NA
+    # mimic code for reference = "sample" in predict.coxph
+    result$X = result$X - rep(object$means, each = nrow(result$X))
+    result
+}
+
+# Note: Very brief experimentation suggests coxph.penal also works.
+# This is an extension of coxph
+
+
+#--------------------------------------------------------------
+###  coxme objects ####
+recover.data.coxme <- recover.data.coxph
+
+# I guess this works because it's based on lme code
+lsm.basis.coxme <- lsm.basis.lme
+
+
+
+#--------------------------------------------------------------
+#--------------------------------------------------------------
+#--------------------------------------------------------------
+#--------------------------------------------------------------
+### Public utility to use for obtaining a basis nor nonestimable functions
+# Call with its QR decomp (LAPACK=FALSE!), if available
+nonest.basis <- function(qrX) {
+    if (!is.qr(qrX))
+        qrX = qr(qrX, LAPACK=FALSE)
+    rank = qrX$rank
+    tR = t(qr.R(qrX))
+    if (rank == nrow(tR))
+        return (matrix(NA))
+    # null space of X is same as null space of R in QR decomp
+    if (ncol(tR) < nrow(tR)) # add columns if not square
+        tR = cbind(tR, matrix(0, nrow=nrow(tR), ncol=nrow(tR)-ncol(tR)))
+    # last few rows are zero -- add a diagonal
+    for (i in (rank+1):nrow(tR)) 
+        tR[i,i] = 1
+    nbasis = qr.resid(qr(tR[, seq_len(rank)]), tR[, -seq_len(rank)])
+    if (!is.matrix(nbasis)) 
+        nbasis = matrix(nbasis, ncol=1)
+    # permute the rows via pivot
+    nbasis[qrX$pivot, ] = nbasis
+    nbasis
+}
