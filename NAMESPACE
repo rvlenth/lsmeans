@@ -18,6 +18,7 @@ export(
     lsmeans.character,  # because it is a generic
     lsmip,
     lstrends,
+    nonest.basis,
     recover.data,
     ref.grid,
     test

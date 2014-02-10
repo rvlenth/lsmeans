@@ -1,10 +1,15 @@
 ^\.Rproj\.user$
 ^.*\.Rproj$
 
-$ New devel stuff
+# New devel stuff
 test-data.R
 int.plot.R
 CopyOflsmeans.R
+
+# code that I moved to helpers.R
+recover.data.R
+lsm.basis.R
+survival-supp.R
 
 lsmeans-Ex.R
 
