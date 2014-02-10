@@ -90,8 +90,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
     ylevs = basis$dfargs$ylevs
     if(!is.null(ylevs)) { # have a multivariate situation
         if (missing(mult.levs)) {
-            yname = multresp = "rep.meas"
-            ref.levels[[yname]] = ylevs
+            yname = multresp = names(ylevs)[1]
+            ref.levels[[yname]] = ylevs[[1]]
         }
         else {
             k = prod(sapply(mult.levs, length))

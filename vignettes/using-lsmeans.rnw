@@ -108,7 +108,7 @@ The \code{summary} method for \code{ref.grid} and \code{lsmobj} objects computes
 
 There are several useful functions that can be used to do follow-up analyses. The most important one is "contrast", which computes contrasts of LS~means. A number of standard contrast families are provided and they can be specified by name, e.g., \verb|"pairwise"| or \verb|"poly"|. User-specified contrasts (or for that matter, any set of linear functions, be they contrasts or not) may be specified using a "list" of coefficients. Contrasts may also be requested directly from \lsmeans{} via a "contr" argument or in the left-hand side of a formula, e.g., "poly ~ dose | treat" would request orthogonal polynomial contrasts of "dose" means at each level of each "treat". The "contrast" function returns an "lsmobj" object; thus it is possible to do further analyses of those results, such as contrasts of contrasts.
 
-Other useful methods for "lsmobj" objects include "test" and "confint", which simply call "summary" with the implied portion of the statistical output; "pairs", which calls "contrasts" for pairwise comparisons; "cld", which provides a compact letter display of comparisons; "glht", which passes the object to the \pkg{multcomp} package \citep{multc} for more exacting multiplicity adjustments; and "lsmip", which produces an interaction-plot-like display of the LS~means.
+Other useful methods for "lsmobj" objects include "test" and "confint", which simply call "summary" with the implied portion of the statistical output; "pairs", which calls "contrasts" for pairwise comparisons; "cld", which provides a compact letter display of comparisons; "glht" and "as.glht", which interface with the \pkg{multcomp} package \citep{multc} for more exacting multiplicity adjustments; and "lsmip", which produces an interaction-plot-like display of the LS~means.
 
 \lsmeans{} works as follows. First, if given a fitted-model object, the "ref.grid" is created. This entails reconstructing the dataset used in fitting the model, by calling a "recover.data" method. Then the factor levels and other summary information is used to define the reference grid, and an "lsm.basis" method is called to assemble other needed information, such as the linear function associated with each grid point, the regression coefficients, covariance matrix, degrees of freedom information, basis for estimable functions, and so forth. New "recover.data" and "lsm.basis" methods may be written to support additional model types. The "ref.grid" object contains all needed information needed for subsequent least-squares-mean analysis, independent of the model type. In mixed models fitted by a \pkg{lme4} function, the \pkg{pbkrtest} package \citep{pbkrt}, if installed, is used to adjust the covariance matrix and obtain degrees of freedom using the Kenward-Roger method. If degrees of freedom are not available, asymptotic results are used and labeled as such.
 
@@ -199,10 +199,10 @@ summary(typing.pairs, adjust = "none")
 
 \subsection[Interfacing with multcomp]{Interfacing with \pkg{multcomp}}
 As seen in the previous output, \code{lsmeans} provides for adjusting the $p$~values of contrasts to preserve a familywise error rate. The default for pairwise comparisons is the Tukey (HSD) method. One must use these adjustments with caution. For example, when the standard errors are unequal, the Tukey method is only approximate, even under normality and independence assumptions. 
-To get a more exact adjustment, we can pass the results to the \code{glht} function in the \pkg{multcomp} package \citep{multc}:
+To get a more exact adjustment, we can convert an \code{lsmobj} object to a \code{glht} one for further analysis in the \pkg{multcomp} package \citep{multc}:
 <<>>=
 library("multcomp")
-typing.glht <- glht(typing.lm, typing.pairs)
+typing.glht <- as.glht(typing.pairs)
 summary(typing.glht)
 @
 These $p$~values are exact (if the assumptions hold) and, as expected, differ slightly from those in the previous \code{lsmeans} output. We may of course use other methods available for \code{glht} objects. The plot in \Fig{glht-plot} displays the comparisons in the preceding table:
