@@ -17,7 +17,7 @@ ref.grid(object, at, cov.reduce = mean, mult.levs)
 }
 
 \arguments{
-  \item{object}{An object produced by a supported model-fitting function, such as \code{lm}. See \samp{methods("lsm.basis")} to get an idea of what model objects are supported.}
+  \item{object}{An object produced by a supported model-fitting function, such as \code{lm}. }
   \item{at}{Optional named list of levels for the corresponding variables}
   \item{cov.reduce}{A function, logical value, or a named list of functions, applied to covariates in the underlying data. If a single function, it applies to all covariates. 
   

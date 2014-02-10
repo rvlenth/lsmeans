@@ -1,5 +1,9 @@
 Changelog for 'lsmeans' package
 
+1.99-2
+    Added as.glht function and modelparm.lsmwrap method
+    Added informative message on supported objects
+
 1.99-1 
     Added .find.coerced function to definitively identify coerced covariates
     Included delete.response() for model types where I can get away with it

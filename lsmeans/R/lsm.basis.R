@@ -57,8 +57,8 @@ lsm.basis.mlm <- function(object, trms, xlev, grid) {
     bas$nbasis = kronecker(rep(1,k), bas$nbasis)
     ylevs = dimnames(bhat)[[2]]
     if (is.null(ylevs)) ylevs = 1:k
-    # save ylevs. Not needed by dffun, but it's a conventient place
-    bas$dfargs$ylevs = ylevs
+    # Quirky, but I use dfargs as repository for ylevs
+    bas$dfargs$ylevs = list(rep.meas = ylevs)
     bas
 }
 
@@ -116,3 +116,47 @@ lsm.basis.gls <- function(object, trms, xlev, grid) {
 }
 
 
+# ----------- addition for polr objects in MASS package ------------
+recover.data.polr <- function(object, ...) {
+    fcall = object$call
+    recover.data(fcall, delete.response(terms(object)))
+}
+
+lsm.basis.polr <- function(object, trms, xlev, grid) {
+    contrasts = object$contrasts
+    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+    X = model.matrix(trms, m, contrasts.arg = contrasts)
+    # Strip out the intercept (borrowed code from predict.polr)
+    xint <- match("(Intercept)", colnames(X), nomatch = 0L)
+    if (xint > 0L) 
+        X <- X[, -xint, drop = FALSE]
+    bhat = c(coef(object), object$zeta)
+    V = vcov(object)
+    k = length(object$zeta)
+    j = matrix(1, nrow=k, ncol=1)
+    J = matrix(1, nrow=nrow(X), ncol=1)
+    X = cbind(kronecker(j, X), kronecker(diag(1,k), J))
+    dfargs = list(ylevs = list(cut = names(object$zeta)))
+    nbasis = matrix(NA)
+    dffun = function(...) NA
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs)
+}
+
+
+# default method is an error condition...
+lsm.basis.default <- function(object, trms, xlev, grid) {
+    stop("Can't handle an object of class ", dQuote(class(object)[1]), "\n",
+         .show_supported())
+}
+
+
+# get a list of supported objects
+# does this by looking in namespace [ns] and methods [meth]
+# then strips that off leaving extensions
+.show_supported = function(ns = "lsmeans", meth = "lsm.basis") {
+    pat = paste(meth, ".", sep="")
+    objs = ls(envir = getNamespace(ns), pat = pat)
+    clss = gsub(pat, "", objs)
+    c("Objects of the following classes are supported:\n",
+      paste(dQuote(setdiff(clss, "default")), collapse = ", "))
+}

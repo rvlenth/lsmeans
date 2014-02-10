@@ -2,6 +2,8 @@
 \alias{glht}
 \alias{lsm}
 \alias{glht.lsmobj}
+\alias{as.glht}
+\alias{as.glht.lsmobj}
 \alias{summary.glht.list}
 
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -12,25 +14,18 @@
 These functions and methods provide an interface between \pkg{lsmeans} and the \code{\link[multcomp]{glht}} function for simultaneous inference in the \pkg{multcomp} package.
 }
 \usage{
-\method{glht}{lsmobj}(model, linfct, by, ...)
-## (for 'linfct' being an 'lsmobj')
+\method{as.glht}{lsmobj}(object, by, ...)
 
 \method{summary}{glht.list}(object, ...)
 
 lsm(...)
 }
 \arguments{
-  \item{model}{
-A model object supported by \code{glht}
-}
-  \item{linfct}{
-An object of class \code{\link[=lsmobj-class]{lsmobj}} or \code{lsmlf}
-}
   \item{by}{
 Character name(s) of grouping variables; or \code{NULL} to disable ``by'' variables already there.
 }
   \item{object}{
-An object of class \code{"glht.list"} (which is simply a list of \code{"glht"} objects).
+An object of the required class.
 }
   \item{\dots}{
 Additional arguuments to other methods.
@@ -42,13 +37,15 @@ Additional arguuments to other methods.
 When there is a non-\code{NULL} \code{by} variable (either explicitly or implicitly), each ``by'' group is passed separately to \code{glht} and returned as a \code{list} of \code{"glht"} objects. For convenience, this is classed as \code{"glht.list"} and a \code{summary} method is provided.
 }
 \value{
-\code{glht} returns an object of class \code{\link[multcomp]{glht}}, or if \code{by} is non-\code{NULL}, a list of \code{glht} objects. 
+\code{as.glht} returns an object of class \code{\link[multcomp]{glht}}, or of class \code{glht.list} if \code{by} is non-\code{NULL}. The latter is simply a list of \code{glht} objects but it has its own \code{summary} method which returns a list of \code{summary.glht} objects. 
 }
 %\references{}
 \author{
 Russell V. Lenth
 }
-%\note{}
+\note{
+There is also a \code{glht} method for class \code{lsmobj}, but it is far preferable to use \code{as.glht} instead, as \code{model} is redundant. 
+}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
@@ -64,12 +61,12 @@ warp.lm <- lm(breaks ~ wool*tension, data = warpbreaks)
 # Using 'lsm'
 summary(glht(warp.lm, lsm(pairwise ~ tension | wool)))
 
-# Same, passing an 'lsmobj' object
+# Same, but using an existing 'lsmeans' result
 warp.lsmobj <- lsmeans(warp.lm, ~ tension | wool)
-summary(glht(warp.lm, pairs(warp.lsmobj)))
+summary(as.glht(pairs(warp.lsmobj)))
 
 # Same contrasts, but treat as one family
-summary(glht(warp.lm, pairs(warp.lsmobj), by = NULL))
+summary(as.glht(pairs(warp.lsmobj), by = NULL))
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

@@ -58,4 +58,13 @@ lsm.basis.coxph <- function(object, trms, xlev, grid) {
     result
 }
 
+# Note: Very brief experimentation suggests coxph.penal also works.
+# This is an extension of coxph
+
+
+##### coxme objects ####
+recover.data.coxme <- recover.data.coxph
+
+# seems to work to base it on lme...
+lsm.basis.coxme <- lsm.basis.lme
 

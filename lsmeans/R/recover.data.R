@@ -40,10 +40,6 @@ recover.data.call <- function(object, trms, ...) {
     tbl
 }
 
-# default -- used for classes we don't know about
-recover.data.default <- function(object, ...)
-    stop(paste("Can't handle a model of class", class(object)[1]))
-
 # stats...
 recover.data.lm <- function(object, ...) {
     fcall = object$call
@@ -62,7 +58,6 @@ recover.data.lme <- function(object, ...)
 
 recover.data.gls <- function(object, ...) {
     fcall = object$call
-    xlev = object$xlevels
     recover.data(fcall, delete.response(getCovariateFormula(object)))
 }
 
@@ -79,3 +74,8 @@ recover.data.merMod <- function(object, ...) {
 recover.data.mer <- function(object, ...)
     recover.data.merMod(object)
 
+
+#default is an error condition...
+recover.data.default <- function(object, ...)
+    stop("Can't handle an object of class ", dQuote(class(object)[1]), "\n",
+         .show_supported())

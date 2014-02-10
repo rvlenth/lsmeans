@@ -5,7 +5,7 @@
 \def\lsm{\pkg{lsmeans}}
 \def\code{\texttt}
 
-\title{Redesign of \lsm}
+\title{Changes in \lsm, Version 2.00}
 \author{Russell V.~Lenth}
 
 %\VignetteIndexEntry{Changes in the lsmeans package}
@@ -100,9 +100,9 @@ Continuing with the "warp.lm" example and the returned object "warp.lsmobj", the
 <<>>=
 confint(warp.lsmobj, level = .90)
 @
-The "glhargs" capability is replaced by a method for "glht" in the \pkg{multcomp} package:
+The "glhargs" capability is replaced by an "as.glht" method to create a "glht" for use with the \pkg{multcomp} package:
 <<>>=
-summary(glht(warp.lm, warp.lsmobj))
+summary(as.glht(warp.lsmobj))
 @
 In lieu of "lf", simply access the "linfct" slot:
 <<>>=
@@ -174,7 +174,7 @@ summary(Oats.lsm, by = "nitro")
 summary(Oats.n, infer = c(TRUE,TRUE))
 @
 
-Most other methods are S3 ones, as those are suitable to our needs and often extend existing S3 methods. The "glht" methodis illustrated earlier in this document. The "confint" and "test" methods are really courtesy methods for "summary" with argument "infer" set to "c(TRUE,FALSE)" and "c(FALSE,TRUE)" respectively.
+Most other methods are S3 ones, as those are suitable to our needs and often extend existing S3 methods. The "as.glht" method is illustrated earlier in this document. The "confint" and "test" methods are really courtesy methods for "summary" with argument "infer" set to "c(TRUE,FALSE)" and "c(FALSE,TRUE)" respectively.
 
 An important method is "contrast":
 <<>>=
