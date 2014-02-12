@@ -1,6 +1,7 @@
 \name{recover.data}
 \alias{recover.data}
 \alias{lsm.basis}
+\alias{nonest.basis}
 
 % additional ref topic
 \alias{extending-lsmeans}
@@ -14,6 +15,8 @@ This documents the methods used to create a \code{\link[=ref.grid-class]{ref.gri
 recover.data(object, ...)
 
 lsm.basis(object, trms, xlev, grid)
+
+nonest.basis(qrX)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -22,6 +25,8 @@ An object returned from a model-fitting function, e.g., \code{\link{lm}} or \cod
   \item{trms}{The \code{\link{terms}} component of \code{object}}
   \item{xlev}{Named list of levels of factors in the model frame. This should \emph{not} include levels of factors created in the model itself, e.g., by including a \code{factor} call in the mdoel formula.}
   \item{grid}{A \code{data.frame} containing predictor values at which predictions are needed.}
+  \item{qrX}{A model matrix, or the QR decomposition thereof (from \code{\link{qr}} with \samp{LAPACK=FALSE}). The latter is preferred if already available, as it saves computation.
+  }
   \item{\dots}{Additional arguments passed to other methods (though currently used only by the method for class \code{call}).}
 }
 
@@ -30,7 +35,9 @@ To create a reference grid, the \code{ref.grid} function needs to reconstruct th
 
 To extend \pkg{lsmeans}'s support to additional model types, one need only write S3 methods for these two functions. The existing methods serve as helpful guidance for writing new ones.  Most of the work for \code{recover.data} can be done by its method for class \code{"call"}, providing the \code{terms} component as the second argument. Writing an \code{lsm.basis} method is more involved, but the existing methods (e.g., \code{lsmeans:::lsm.basis.lm}) can serve as models. See the ``Value'' section below for details on what it needs to return.
 
-One further detail. If the model has a multivariate response, \code{bhat} needs to be \dQuote{flattened} into a single vector, and \code{X} and \code{V} must be constructed consistently.
+If the model has a multivariate response, \code{bhat} needs to be \dQuote{flattened} into a single vector, and \code{X} and \code{V} must be constructed consistently. 
+
+In models where a non-full-rank result is possible (often you can tell by seeing if there is a \code{singular.ok} argument in the model-fitting function), \code{summary} and \code{predict} check the estimability of each prediction, and for this, a basis for the non-estimable functions is required. The \code{nonest.basis} function provides an easy way to obtain this.
 }
 \value{
 A \code{list} with the following elements:
@@ -52,7 +59,14 @@ Russell V. Lenth
 \seealso{
 \code{\link{ref.grid}}, \code{\link{ref.grid-class}}
 }
-%%\examples{}
+\examples{
+require(lsmeans)
+
+# Fit a 2-factor model with two empty cells
+warpsing.lm <- lm(breaks ~ wool*tension, 
+    data = warpbreaks, subset = -(16:40))
+nonest.basis(warpsing.lm$qr)
+}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{ models }

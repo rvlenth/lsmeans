@@ -278,6 +278,20 @@ contrast.lsmobj = function(object, method = "pairwise", by, adjust, ...) {
     misc$adjust = adjust
     misc$infer = c(FALSE, TRUE)
     misc$by.vars = by
+    # zap the transformation info except in very special cases
+    if (!is.null(misc$tran)) {
+        misc$orig.tran = misc$tran
+        # anything other than (-1,0,1)?
+        non.comp = setdiff(zapsmall(unique(as.matrix(cmat))), c(-1,0,1)) 
+        if(length(non.comp) == 0 && (misc$tran %in% c("log", "logit"))) {
+            misc$orig.inv.label = misc$inv.label
+            misc$inv.lbl = ifelse(misc$tran == "logit", "odds.ratio", "ratio")
+            misc$tran = "log"
+        }
+        else
+            misc$tran = NULL
+    }
+    
     object@roles$predictors = "contrast"
     levels = list()
     for (nm in names(grid))
@@ -369,6 +383,13 @@ lstrends = function(model, specs, var, delta.var=.01*rng, ...) {
         result@misc$estName = estName
         result@misc$methDesc = "trends"
     }
+    
+    # No transformation info here
+    if (!is.null(result@misc$tran)) {
+        result@misc$orig.tran = result@misc$tran
+        result@misc$tran = NULL
+    }
+    
     result
 }
 

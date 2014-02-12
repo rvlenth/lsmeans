@@ -1,5 +1,6 @@
 ^\.Rproj\.user$
 ^.*\.Rproj$
+^\.svn$
 
 # New devel stuff
 test-data.R

@@ -225,4 +225,27 @@ lsmeans(lm(avg.yield ~ Block + Variety, data = MOats), ~ Variety)
 @
 
 
+\section{Support for more models}
+Several more model types are supported, including "survreg", "coxph", "coxme", and "polr" models. Here's an example for a Cox proportional-hazards model for the "cgd" dataset in the \pkg{survival} package:
+<<>>=
+library(survival)
+cgd.ph <- coxph(Surv(tstart, tstop, status) ~ treat * inherit + 
+                sex + age + cluster(id), data = cgd)
+(cgd.lsm <- lsmeans(cgd.ph, ~ treat | inherit))
+@
+
+\section{Transformations}
+\lsm{} tries to discover response transformations and link functions,
+and provides a "type" argument in "summary", "lsmip", and "predict" that
+allows inverting the transformation. For example, consider the Cox model just fitted.
+<<>>=
+summary(cgd.lsm, type = "response")
+@
+As another example, suppose we transform the response in "warp.lm":
+<<>>=
+logwarp.rg <- ref.grid(update(warp.lm, log(breaks) ~ .))
+summary(logwarp.rg)
+summary(logwarp.rg, type = "response")
+@
+
 \end{document}

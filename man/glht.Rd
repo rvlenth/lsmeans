@@ -14,7 +14,7 @@
 These functions and methods provide an interface between \pkg{lsmeans} and the \code{\link[multcomp]{glht}} function for simultaneous inference in the \pkg{multcomp} package.
 }
 \usage{
-\method{as.glht}{lsmobj}(object, by, ...)
+\method{as.glht}{lsmobj}(object, ...)
 
 \method{summary}{glht.list}(object, ...)
 

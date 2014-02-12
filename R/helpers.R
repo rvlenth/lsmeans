@@ -27,8 +27,13 @@ recover.data <- function(object, ...)
 #     V      - estimated covariance matrix of bhat
 #     dffun  - function(k, dfargs) to find df for k'bhat having std error se
 #     dfargs - additional arguments, if any, for dffun
-#              Also, if extra levels need to be added (e.g. mlm, polr),
-#              put them in dfargs$ylevs where ref.grid will look for them
+#     misc   - Extra info ...
+#              -- if extra levels need to be added (e.g. mlm, polr),
+#                 put them in misc$ylevs
+#              -- For transformations or link fcns, use misc$tran
+#                 for name (see 'make.link'), and use misc$inv.lbl
+#                 for label to use in 'summary' when tran is inverted
+#                 (ref.grid looks at lhs of model for tran if none found)
 # Note: if no df exists, set dffun = function(...) NA and dfargs = list()
 #--------------------------------------------------------------
 # generic version
@@ -53,7 +58,7 @@ lsm.basis.default <- function(object, trms, xlev, grid) {
 # then strips that off leaving extensions
 .show_supported = function(ns = "lsmeans", meth = "lsm.basis") {
     pat = paste(meth, ".", sep="")
-    objs = ls(envir = getNamespace(ns), pat = pat)
+    objs = ls(envir = getNamespace(ns), pattern = pat)
     clss = gsub(pat, "", objs)
     c("Objects of the following classes are supported:\n",
       paste(dQuote(setdiff(clss, "default")), collapse = ", "))
@@ -115,7 +120,17 @@ lsm.basis.lm <- function(object, trms, xlev, grid) {
         nbasis = matrix(NA)
     dfargs = list(df = object$df.residual)
     dffun = function(k, dfargs) dfargs$df
-    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs)
+    misc = list()
+    if (inherits(object, "glm")) {
+        fam = object$family
+        misc$tran = fam$link
+        misc$inv.lbl = "lsresponse"
+        if (length(grep("binomial", fam$family)) == 1)
+            misc$inv.lbl = "lsprob"
+        else if (length(grep("poisson", fam$family)) == 1)
+            misc$inv.lbl = "lsrate"
+    }
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=misc)
 }
 
 
@@ -132,8 +147,7 @@ lsm.basis.mlm <- function(object, trms, xlev, grid) {
     bas$nbasis = kronecker(rep(1,k), bas$nbasis)
     ylevs = dimnames(bhat)[[2]]
     if (is.null(ylevs)) ylevs = 1:k
-    # Quirky, but I use dfargs as repository for ylevs
-    bas$dfargs$ylevs = list(rep.meas = ylevs)
+    bas$misc$ylevs = list(rep.meas = ylevs)
     bas
 }
 
@@ -152,7 +166,7 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
     bhat = fixef(object)
     contrasts = attr(model.matrix(object), "contrasts")
     V = as.matrix(vcov(object))
-    dfargs = list()
+    dfargs = misc = list()
     if (isLMM(object)) {
         if (require("pbkrtest")) {
             dfargs = list(unadjV = V, adjV = vcovAdj(object, 0))
@@ -164,14 +178,22 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
             dffun = function(k, dfargs) NA
         }
     }
-    else if (isGLMM(object))
+    else if (isGLMM(object)) {
         dffun = function(k, dfargs) NA
+        fam = family(object)
+        misc$tran = fam$link
+        misc$inv.lbl = "lsresponse"
+        if (length(grep("binomial", fam$family)) == 1)
+            misc$inv.lbl = "lsprob"
+        else if (length(grep("poisson", fam$family)) == 1)
+            misc$inv.lbl = "lsrate"
+    }
     else 
         stop("Can't handle a nonlinear mixed model")
     
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
-    list(X=X, bhat=bhat, nbasis=matrix(NA), V=V, dffun=dffun, dfargs=dfargs)
+    list(X=X, bhat=bhat, nbasis=matrix(NA), V=V, dffun=dffun, dfargs=dfargs, misc=misc)
 }
 
 
@@ -196,7 +218,7 @@ lsm.basis.lme <- function(object, trms, xlev, grid) {
     V = vcov(object)
     nbasis = matrix(NA)
     dffun = function(...) NA
-    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=list())
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=list(), misc=list())
 }
 
 
@@ -217,7 +239,7 @@ lsm.basis.gls <- function(object, trms, xlev, grid) {
     nbasis = matrix(NA)
     dfargs = list(df = object$dims$N - object$dims$p)
     dffun = function(k, dfargs) dfargs$df
-    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs)
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=list())
 }
 
 
@@ -242,10 +264,13 @@ lsm.basis.polr <- function(object, trms, xlev, grid) {
     # Tricky, tricky: need to reverse the sign of the X part
     # because lin. pred is zeta - eta
     X = cbind(kronecker(-j, X), kronecker(diag(1,k), J))
-    dfargs = list(ylevs = list(cut = names(object$zeta)))
+    link = object$method
+    if (link == "logistic") link = "logit"
+    misc = list(ylevs = list(cut = names(object$zeta)), 
+                tran = link, inv.lbl = "lscumprob")
     nbasis = matrix(NA)
     dffun = function(...) NA
-    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs)
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=list(), misc=misc)
 }
 
 
@@ -270,7 +295,11 @@ lsm.basis.survreg <- function(object, trms, xlev, grid) {
     nbasis = nonest.basis(model.matrix(object))
     dfargs = list(df = object$df.residual)
     dffun = function(k, dfargs) dfargs$df
-    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs)
+    if (object$dist %in% c("exponential","weibull","loglogistic","loggaussian","lognormal")) 
+        misc = list(tran = "log", inv.lbl = "lsresponse")
+    else 
+        misc = list()
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=misc)
 }
 
 
@@ -280,10 +309,13 @@ lsm.basis.survreg <- function(object, trms, xlev, grid) {
 recover.data.coxph <- recover.data.survreg
 
 lsm.basis.coxph <- function(object, trms, xlev, grid) {
+    object$dist = "doesn't matter"
     result = lsm.basis.survreg(object, trms, xlev, grid)
     result$dfargs$df = NA
     # mimic code for reference = "sample" in predict.coxph
     result$X = result$X - rep(object$means, each = nrow(result$X))
+    result$misc$tran = "log"
+    result$misc$inv.lbl = "lshazard"
     result
 }
 
@@ -296,8 +328,12 @@ lsm.basis.coxph <- function(object, trms, xlev, grid) {
 recover.data.coxme <- recover.data.coxph
 
 # I guess this works because it's based on lme code
-lsm.basis.coxme <- lsm.basis.lme
-
+lsm.basis.coxme <- function(object, trms, xlev, grid) {
+    result <- lsm.basis.lme(object, trms, xlev, grid)
+    result$misc$tran = "log"
+    result$misc$inv.lbl = "lshazard"
+    result
+}
 
 
 #--------------------------------------------------------------

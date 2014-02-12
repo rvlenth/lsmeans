@@ -419,7 +419,7 @@ cld (lstrends (Chick.lmer2, ~ Diet, var = "Time"))
 These results are somewhat comparable to those we obtained with the first model. We will get a different set of slopes at different \code{Time}s, because the fitted trends are curved with respect to \code{Time}.
 
 
-\section{Multivariate models}
+\subsection{Multivariate models}
 The \code{MOats} dataset provided in the package gives the "Oats" data mentioned previously, but with a multivariate response variable "yield"  with four columns representing the yields of each plot with the four levels of nitrogen. We fit a model to these data
 <<>>=
 MOats.mlm <- lm(yield ~ Block + Variety, data = MOats)
@@ -447,21 +447,24 @@ pairs(MOats.pcon, by = "contrast")
 
 \subsection{GLMM example}
 The dataset \code{cbpp} in the \code{lme4} package, originally from \citet{Les04}, provides data on the incidence of contagious bovine pleuropneumonia in 15 herds of zebu cattle in Ethiopia, collected over four time periods. These data are used as the primary example in \pkg{lme4} for the \code{glmer} function, and it is found that a model that accounts for overdisperion is advantageous; hence the addition of the \code{(1|obs)} in the model fitted below. 
-\lsmeans{} may be used as in linear models to obtain marginal linear predictions for a generalized linear model or, in this case, a generalized linear mixed model. Here, we use the \code{trt.vs.ctrl1} contrast family to compare each period with the first, as the primary goal was to track the spread or decline of CBPP over time.
+\lsmeans{} may be used as in linear models to obtain marginal linear predictions for a generalized linear model or, in this case, a generalized linear mixed model. 
+%Here, we use the \code{trt.vs.ctrl1} contrast family to compare each period with the first, as the primary goal was to track the spread or decline of CBPP over time.
 <<>>=
 cbpp$obs <- 1:nrow(cbpp)
 cbpp.glmer <- glmer(cbind(incidence, size - incidence) 
    ~ period + (1 | herd) + (1 | obs),  family = binomial,  data = cbpp)
 @
-Let us save the "summary" results from \lsmeans{}, then add the inverse logits of the predictions and the estimated odds ratios for the comparisons as an aid in interpretation.
+Here are the LSmeans for the four periods
 <<>>=
-cbpp.lsm <- lsmeans(cbpp.glmer, ~ period)
-cbpp.sum <- summary(cbpp.lsm)
-cbpp.sum$pred.incidence <- 1 - 1 / (1 + exp(cbpp.sum$lsmean))
-cbpp.sum
-cbpp.con <- summary(contrast(cbpp.lsm, "trt.vs.ctrl1"))
-cbpp.con$odds.ratio <- exp(cbpp.con$estimate)
-cbpp.con
+(cbpp.lsm <- lsmeans(cbpp.glmer, ~ period))
+@
+These LSmeans are on the scale of the linear predictor, so the units are on the logit scale. If you want to see the predicted incidences, simply summarize the results and ask for \verb|"response"| predictions:
+<<>>=
+summary(cbpp.lsm, type = "response")
+@
+The \verb"response"| predictions for certain contrasts come out on the odds-ratio scale:
+<<>>=
+summary(contrast(cbpp.lsm, "trt.vs.ctrl1"), type = "response")
 @
 When degrees of freedom are not available, as in this case, \lsmeans{} emphasizes that fact by displaying \code{NA} for degrees of freedom and in the column headings.
 
