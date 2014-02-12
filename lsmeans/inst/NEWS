@@ -1,5 +1,11 @@
 Changelog for 'lsmeans' package
 
+1.99-4
+    Detection of link functions and transformations, and
+        provision for inverse transformation in summary
+    Added predict method
+
+
 1.99-3
     Support for more models -- coxme, polr
     replacing lsm.basis.R, recover.data.R, survival-supp.R

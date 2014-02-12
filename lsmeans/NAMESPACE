@@ -5,6 +5,7 @@ import(Matrix)
 import(methods)
 importFrom(multcomp, cld)
 importFrom(multcomp, glht)
+importFrom(multcomp, modelparm)
 import(plyr)
 
 # Visible exports
@@ -57,6 +58,8 @@ S3method(lsmip, default)
 S3method(modelparm, lsmwrap)
 
 S3method(pairs, lsmobj)
+
+S3method(predict, ref.grid)
 
 S3method(print, ref.grid)
 S3method(print, summary.ref.grid)

@@ -84,10 +84,17 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
 
     basis = lsm.basis(object, attr(data, "terms"), xlev, grid)
     
-# Take care of multivariate response
-
+    misc = basis$misc
+    if (is.null(misc$tran)) { # No link fcn, but response may be transformed
+        lhs = terms(object)[[2]]
+        tran = setdiff(all.names(lhs), c(all.vars(lhs), "~"))
+        if(length(tran) == 1)
+            misc$tran = tran
+    }
+    
+    # Take care of multivariate response
     multresp = list()
-    ylevs = basis$dfargs$ylevs
+    ylevs = misc$ylevs
     if(!is.null(ylevs)) { # have a multivariate situation
         if (missing(mult.levs)) {
             yname = multresp = names(ylevs)[1]
@@ -137,12 +144,13 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
     }
 
 
-    misc = list()
+    ### using result from basis instead. misc = list()
     misc$estName = "prediction"
     misc$infer = c(FALSE,FALSE)
     misc$level = .95
     misc$adjust = "none"
     misc$famSize = nrow(grid)
+
     
     new ("ref.grid",
          model.info = list(call = attr(data,"call"), terms = attr(data, "terms"), xlev = xlev),
@@ -185,8 +193,9 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
 }
 
 # utility fcn to get est's, std errors, and df
-# returns a data.frame
-.est.se.df = function(linfct, bhat, nbasis, V, dffun, dfargs, misc) {
+# new arg: do.se -- if FALSE, just do the estimates and return 0 for se and df
+# returns a data.frame with an add'l "link" attribute if misc$tran is non-null
+.est.se.df = function(linfct, bhat, nbasis, V, dffun, dfargs, misc, do.se=TRUE) {
     active = which(!is.na(bhat))
     bhat = bhat[active]
     result = apply(linfct, 1, function(x) {
@@ -199,14 +208,23 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
         }
         if (estble) {
             est = sum(bhat * x)
-            se = sqrt(sum(x * V %*% x))
-            df = dffun(x, dfargs)
+            if(do.se) {
+                se = sqrt(sum(x * V %*% x))
+                df = dffun(x, dfargs)
+            }
+            else # if these unasked-for results are used, we're bound to get an error!
+                se = df = 0
             c(est, se, df)
         }
         else c(NA,NA,NA)
     })
     result = as.data.frame(t(result))
     names(result) = c(misc$estName, "SE", "df")
+    if (!is.null(misc$tran) && (misc$tran != "none")) {
+        link = try(make.link(misc$tran))
+        if (!inherits(link, "try-error"))
+            attr(result, "link") = link
+    }
     result
 }
 
@@ -285,20 +303,30 @@ str.ref.grid <- function(object, ...) {
 }
 
 
+# S3 predict method
+predict.ref.grid <- function(object, type = c("link","response","lp","linear"), ...) {
+    type <- match.arg(type)
+    pred = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@dffun, object@dfargs, object@misc, do.se=FALSE)
+    result = pred[[1]]
+    if (type == "response") {
+        link = attr(pred, "link")
+        if (!is.null(link))
+            result = link$linkinv(result)
+    }
+    result
+}
+
 # S3 summary method
-summary.ref.grid <- function(object, infer, level, adjust, by, inv=FALSE, ...) {
+summary.ref.grid <- function(object, infer, level, adjust, by, 
+        type = c("link","response","lp","linear"), ...) {
     result = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@dffun, object@dfargs, object@misc)
     
-#     # figure out factors w/ more than one level
-#     nlev = sapply(object@levels, length)
-#     lbls = object@grid[which(nlev > 1)]
-#     if (nrow(object@grid) == 1) # but if only one row, use everything
-#         lbls = object@grid
-    # above code replace by just excluding labels for responseses and matrices:
     lblnms = setdiff(names(object@grid), object@roles$responses)
     lbls = object@grid[lblnms]
 
     zFlag = (all(is.na(result$df)))
+    type = match.arg(type)
+    inv = (type == "response") # flag to inverse-transform
     
     ### implement my 'variable defaults' scheme    
     if(missing(infer)) infer = object@misc$infer
@@ -311,9 +339,16 @@ summary.ref.grid <- function(object, infer, level, adjust, by, inv=FALSE, ...) {
     if(length(infer == 1)) 
         infer = c(infer,infer)
 
-    if(inv && !is.null(object@misc$tran))
-        link.code = make.link(object@misc$tran)
-    else link.code = NULL
+    if(inv && !is.null(object@misc$tran)) {
+        link = attr(result, "link")
+        if (!is.null(object@misc$inv.lbl))
+            names(result)[1] = object@misc$inv.lbl
+        else
+            names(result)[1] = "lsresponse"
+    }
+    else
+        link = NULL
+    attr(result, "link") = NULL
 
     mesg = NULL
     if(infer[1]) { # add CIs
@@ -322,9 +357,9 @@ summary.ref.grid <- function(object, infer, level, adjust, by, inv=FALSE, ...) {
         cnm = if (zFlag) c("asymp.LCL", "asymp.UCL") else c("lower.CL","upper.CL")
         result[[cnm[1]]] = result[[1]] - cv*result$SE
         result[[cnm[2]]] = result[[1]] + cv*result$SE
-        if (!is.null(link.code)) {
-            result[[cnm[1]]] = link.code$linkinv(result[[cnm[1]]])
-            result[[cnm[2]]] = link.code$linkinv(result[[cnm[2]]])
+        if (!is.null(link)) {
+            result[[cnm[1]]] = link$linkinv(result[[cnm[1]]])
+            result[[cnm[2]]] = link$linkinv(result[[cnm[2]]])
         }
         mesg = paste("Confidence level used:", level)
     }
@@ -340,12 +375,14 @@ summary.ref.grid <- function(object, infer, level, adjust, by, inv=FALSE, ...) {
         adjust = apv$adjust   # in case it was abbreviated
         result$p.value = apv$pval
         mesg = c(mesg, apv$mesg)
-        if(zFlag) mesg = c(mesg, "P values are asymptotic")
+        if(zFlag) 
+            mesg = c(mesg, "P values are asymptotic")
+        if (!is.null(link)) 
+            mesg = c(mesg, "Tests are performed on the linear-predictor scale")
     }
-    if (!is.null(link.code)) {
-        result[[1]] = link.code$linkinv(result[[1]])
-        result[["SE"]] = link.code$linkinv(result[["SE"]]) * result[["SE"]]
-        mesg = c("Inverse transformation applied", mesg)
+    if (!is.null(link)) {
+        result[["SE"]] = link$mu.eta(result[[1]]) * result[["SE"]]
+        result[[1]] = link$linkinv(result[[1]])
     }
 
     summ = cbind(lbls, result)

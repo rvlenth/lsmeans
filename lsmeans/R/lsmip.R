@@ -5,14 +5,19 @@ lsmip = function(object, formula, ...)
 
 # object - a model object supported by lsmeans
 # formula - a formula of the form  x.factors ~ trace.factors | panel.factors
-lsmip.default = function(object, formula, pch=c(1,2,6,7,9,10,15:20), lty=1, col=NULL, inv=FALSE,  ...) {
+lsmip.default = function(object, formula, type = c("link","response","lp","linear"),  
+        pch=c(1,2,6,7,9,10,15:20), lty=1, col=NULL, ...) {
     if (!require("lattice"))
         stop("This function requires the 'lattice' package be installed.")
     if (length(formula) < 3)
         formula = reformulate(as.character(formula)[[2]], response = ".single.")
         ###stop("'formula' must be two-sided, e.g. trace.factor ~ x.factor")
         ### NEW: Allow lhs to be empty, so then we get a single trace
-    ylab = "Least-squares mean"
+    
+    type = match.arg(type)
+    ylab = ifelse(type == "response", 
+                  "Predicted response",
+                  "Linear prediction")
     
     # Glean the parts of ... to use in lsmeans call
     # arguments allowed to be passed
@@ -29,9 +34,9 @@ lsmip.default = function(object, formula, pch=c(1,2,6,7,9,10,15:20), lty=1, col=
     allvars = setdiff(all.vars(formula), ".single.")
     lsmopts$object = object
     lsmopts$specs = reformulate(allvars)
-    lsms = summary(do.call("lsmeans", lsmopts), infer=FALSE, inv=inv)
-    ylab = paste(ylab, "of", formula[[2]])
-    
+    lsmo = do.call("lsmeans", lsmopts)
+    lsms = cbind(lsmo@grid, lsmean = predict(lsmo, type=type))
+
     # Set up trace vars and key
     tvars = all.vars(formula[[2]])
     if (all(tvars == ".single.")) {
