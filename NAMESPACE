@@ -3,9 +3,20 @@
 # Imports
 import(Matrix)
 import(methods)
-importFrom(multcomp, cld)
-importFrom(multcomp, glht)
-importFrom(multcomp, modelparm)
+# 'requireNamespace' block below would allow me to put multcomp in
+# Imports instead of Depends. But then it won't support clht or cld
+# stuff unless multcomp was installed before lsmeans was installed
+# Plus need requireNamespace in code too. It just isn't worth the trouble.
+#if (requireNamespace("multcomp", quietly = TRUE)) {
+  importFrom(multcomp, cld)
+  importFrom(multcomp, glht)
+  importFrom(multcomp, modelparm)
+  
+#  S3method(cld, lsmobj)
+#  S3method(glht, lsmlf)
+#  S3method(glht, lsmobj)
+#  S3method(modelparm, lsmwrap)
+#}
 import(plyr)
 
 # Visible exports

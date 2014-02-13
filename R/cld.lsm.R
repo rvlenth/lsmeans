@@ -18,7 +18,6 @@
 # NOTE: I'm assuming that 'multcomp' is required, 
 # hence the prototype for cld(object, ...) is visible
 
-
 # S3 method for lsmobj
 cld.lsmobj = function(object, details=FALSE, sort=TRUE, by, alpha=.05, 
                       Letters = c("1234567890",LETTERS,letters), ...) {

@@ -21,9 +21,6 @@ These functions and methods provide an interface between \pkg{lsmeans} and the \
 lsm(...)
 }
 \arguments{
-  \item{by}{
-Character name(s) of grouping variables; or \code{NULL} to disable ``by'' variables already there.
-}
   \item{object}{
 An object of the required class.
 }

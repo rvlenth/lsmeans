@@ -9,7 +9,7 @@ Least-squares means interaction plot
 This function creates an interaction plot of the least-squares means based on a fitted model and a simple formula specification.
 }
 \usage{
-S3method{lsmip}{default}(object, formula, 
+\method{lsmip}{default}(object, formula, 
     type = c("link","response","lp","linear"),
     pch = c(1,2,6,7,9,10,15:20), 
     lty = 1, col = NULL, ...)
