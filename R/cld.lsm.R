@@ -1,7 +1,7 @@
 # Runs the function multicompLetters from the multcompView package
 # returns an error if not installed
 .mcletters = function(..., Letters=c("1234567890",LETTERS,letters)) {
-    if(!requireNamespace("multcompView"))
+    if(!requireNamespace("multcompView", quietly = TRUE))
         stop("The 'multcompView' package must be installed to use cld methods")
     
     # Expand strings to individual letters
@@ -9,14 +9,20 @@
         sapply(seq_len(nchar(stg)), function(i) substr(stg, i, i))
     })))
     
-    result = .getNamespace("multcompView")$multcompLetters(..., Letters=Letters)
+    result = multcompView::multcompLetters(..., Letters=Letters)
     if (is.null(result$monospacedLetters))
         result$monospacedLetters = result$Letters
     result
 }
 
-# NOTE: I'm assuming that 'multcomp' is required, 
-# hence the prototype for cld(object, ...) is visible
+# If multcomp not installed, define my own generic for cld
+# (It is exported in the NAMESPACE file under the same cond)
+if(!requireNamespace("multcomp", quietly = TRUE)) {
+    
+    cld <- function(object, ...)
+        UseMethod("cld")
+    
+}
 
 # S3 method for lsmobj
 cld.lsmobj = function(object, details=FALSE, sort=TRUE, by, alpha=.05, 

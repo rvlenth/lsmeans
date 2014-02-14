@@ -144,7 +144,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
             stop(paste("No variable named", f, "in the reference grid"))
     }
     combs = do.call("expand.grid", levs)
-    K = alply(row.idx, match(facs, names(RG@levels)), function(idx) {
+    K = plyr::alply(row.idx, match(facs, names(RG@levels)), function(idx) {
         fac.reduce(RG@linfct[idx, , drop=FALSE])
     })
     
@@ -181,7 +181,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
 
 # Summary method for an lsm.list
 summary.lsm.list <- function(object, ...)
-    lapply(object, function(x, ...) {
+    lapply(object, function(x) {
         if (inherits(x, "summary.ref.grid"))  x
         else summary(x, ...)
     })
@@ -202,7 +202,7 @@ print.lsm.list <- function(x, ...)
 contrast = function(object, ...)
     UseMethod("contrast")
               
-contrast.lsmobj = function(object, method = "pairwise", by, adjust, ...) {
+contrast.lsmobj = function(object, method = "eff", by, adjust, ...) {
     args = object@grid
     if(missing(by)) 
         by = object@misc$by.vars
@@ -285,7 +285,8 @@ contrast.lsmobj = function(object, method = "pairwise", by, adjust, ...) {
         non.comp = setdiff(zapsmall(unique(as.matrix(cmat))), c(-1,0,1)) 
         if(length(non.comp) == 0 && (misc$tran %in% c("log", "logit"))) {
             misc$orig.inv.label = misc$inv.label
-            misc$inv.lbl = ifelse(misc$tran == "logit", "odds.ratio", "ratio")
+            misc$inv.lbl = ifelse(misc$tran == "logit", "odds.ratio", 
+                                  paste(misc$inv.lbl,"ratio",sep="."))
             misc$tran = "log"
         }
         else
@@ -795,7 +796,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, ...) {
 #             fac.reduce(X[idx, , drop=FALSE], "")
 #         })
 # Yet newer version, more efficient, uses an exported plyr function too
-        K = alply(row.indexes, match(facs, names(baselevs)), function(idx) {
+        K = plyr::alply(row.indexes, match(facs, names(baselevs)), function(idx) {
                     fac.reduce(X[idx, , drop=FALSE], "")
         })
         K = as.matrix(as.data.frame(K))

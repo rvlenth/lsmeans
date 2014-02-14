@@ -102,6 +102,7 @@ confint(warp.lsmobj, level = .90)
 @
 The "glhargs" capability is replaced by an "as.glht" method to create a "glht" for use with the \pkg{multcomp} package:
 <<>>=
+library(multcomp)
 summary(as.glht(warp.lsmobj))
 @
 In lieu of "lf", simply access the "linfct" slot:

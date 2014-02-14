@@ -1,5 +1,9 @@
 Changelog for 'lsmeans' package
 
+1.99-5
+    Changed plyr and multcomp to "Imports" dependency
+    Changed default 'contrast' method
+
 1.99-4
     Detection of link functions and transformations, and
         provision for inverse transformation in summary

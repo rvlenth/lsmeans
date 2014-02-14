@@ -3,21 +3,28 @@
 # Imports
 import(Matrix)
 import(methods)
-# 'requireNamespace' block below would allow me to put multcomp in
-# Imports instead of Depends. But then it won't support clht or cld
-# stuff unless multcomp was installed before lsmeans was installed
-# Plus need requireNamespace in code too. It just isn't worth the trouble.
-#if (requireNamespace("multcomp", quietly = TRUE)) {
-  importFrom(multcomp, cld)
-  importFrom(multcomp, glht)
-  importFrom(multcomp, modelparm)
-  
-#  S3method(cld, lsmobj)
-#  S3method(glht, lsmlf)
-#  S3method(glht, lsmobj)
-#  S3method(modelparm, lsmwrap)
+
+# 'requireNamespace' block below allows me to put multcomp in
+# Imports instead of Depends. But it won't support glht
+# unless multcomp was installed BEFORE lsmeans was installed
+# There is corresponding requireNamespace calls in the code too. 
+if (requireNamespace("multcomp", quietly = TRUE)) {
+    importFrom(multcomp, cld, glht, modelparm)
+    # I'll export multcomp's cld generic
+    # Maybe I don't need to? export(cld)
+    
+    #S3method(cld, lsmobj) # This is outside this block
+    S3method(glht, lsmlf)
+    S3method(glht, lsmobj)
+    S3method(modelparm, lsmwrap)
+}
+#else {
+    # I'll export my own cld generic'
+    export(cld)
 #}
-import(plyr)
+if (requireNamespace("plyr", quietly = TRUE)) {
+    importFrom(plyr, alply)
+}
 
 # Visible exports
 exportPattern("*.lsmc")  #all contrast fcns
@@ -37,7 +44,8 @@ export(
 )    
 
 
-# S3 methods
+# S3 methods - 
+# For clarity, I'm showing them all and commenting out the ones I'll keep to myself
 
 S3method(as.glht, lsmobj)
 
@@ -47,8 +55,8 @@ S3method(confint, lsmobj)
 
 S3method(contrast, lsmobj)
 
-S3method(glht, lsmlf)
-S3method(glht, lsmobj)
+#S3method(glht, lsmlf)   # in namespace block above
+#S3method(glht, lsmobj)
 
 #S3method(lsm.basis, gls)
 #S3method(lsm.basis, lm)
@@ -66,7 +74,7 @@ S3method(lsmeans, list)
 
 S3method(lsmip, default)
 
-S3method(modelparm, lsmwrap)
+#S3method(modelparm, lsmwrap) # in namespace block above
 
 S3method(pairs, lsmobj)
 
