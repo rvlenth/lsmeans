@@ -15,9 +15,6 @@ lsmip.default = function(object, formula, type = c("link","response","lp","linea
         ### NEW: Allow lhs to be empty, so then we get a single trace
     
     type = match.arg(type)
-    ylab = ifelse(type == "response", 
-                  "Predicted response",
-                  "Linear prediction")
     
     # Glean the parts of ... to use in lsmeans call
     # arguments allowed to be passed
@@ -27,7 +24,9 @@ lsmip.default = function(object, formula, type = c("link","response","lp","linea
     for (arg in names(xargs)) {
         idx = pmatch(arg, lsa.allowed)
         if (!is.na(idx)) {
-            lsmopts[[lsa.allowed[idx]]] = xargs[[arg]]
+            opt = lsa.allowed[idx]
+            lsmopts[[opt]] = xargs[[arg]]
+            xargs[[arg]] = NULL
         }
     }
     
@@ -76,13 +75,25 @@ lsmip.default = function(object, formula, type = c("link","response","lp","linea
     TP$superpose.line$lty = lty
     if (!is.null(col)) TP$superpose.symbol$col = TP$superpose.line$col = col
     trellis.par.set(TP)
-    grobj = xyplot(plotform, groups=~tvar, data=lsms, 
-                   xlab = paste("Levels of", paste(xvars, collapse=" * ")),
-                   ylab = ylab,
-                   strip = my.strip,
-                   auto.key = my.key(tvars), 
-                   type=c("p","l"), 
-                   ... )
+    
+    xlab = ifelse(is.null(xargs$xlab),
+        paste("Levels of", paste(xvars, collapse=" * ")), xargs$xlab)
+    ylab = ifelse(is.null(xargs$ylab),
+        ifelse(type == "response", "Predicted response", "Linear prediction"),
+        xargs$ylab)
+    
+    # remove the unneeded stuff from xlabs
+    xargs = xargs[setdiff(names(xargs), c("xlab","ylab"))]
+    plotspecs = list(x = plotform, data = lsms, groups = ~ tvar, 
+        xlab = xlab, ylab = ylab,
+        strip = my.strip, auto.key = my.key(tvars), type=c("p","l"))
+    grobj = do.call("xyplot", c(plotspecs, xargs))
+#     grobj = xyplot(plotform, groups=~tvar, data=lsms, 
+#                    xlab = xlab, ylab = ylab,
+#                    strip = my.strip,
+#                    auto.key = my.key(tvars), 
+#                    type=c("p","l"), 
+#                    ... )
     print(grobj)
     trellis.par.set(TP.orig)
     invisible(lsms)
