@@ -118,17 +118,21 @@ lsm.basis.lm <- function(object, trms, xlev, grid) {
         nbasis = nonest.basis(object$qr)
     else
         nbasis = matrix(NA)
-    dfargs = list(df = object$df.residual)
-    dffun = function(k, dfargs) dfargs$df
     misc = list()
     if (inherits(object, "glm")) {
         fam = object$family
         misc$tran = fam$link
-        misc$inv.lbl = "lsresponse"
+        misc$inv.lbl = "response"
         if (length(grep("binomial", fam$family)) == 1)
-            misc$inv.lbl = "lsprob"
+            misc$inv.lbl = "prob"
         else if (length(grep("poisson", fam$family)) == 1)
-            misc$inv.lbl = "lsrate"
+            misc$inv.lbl = "rate"
+        dffun = function(k, dfargs) NA
+        dfargs = list()
+    }
+    else {
+        dfargs = list(df = object$df.residual)
+        dffun = function(k, dfargs) dfargs$df
     }
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=misc)
 }
@@ -182,11 +186,11 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
         dffun = function(k, dfargs) NA
         fam = family(object)
         misc$tran = fam$link
-        misc$inv.lbl = "lsresponse"
+        misc$inv.lbl = "response"
         if (length(grep("binomial", fam$family)) == 1)
-            misc$inv.lbl = "lsprob"
+            misc$inv.lbl = "prob"
         else if (length(grep("poisson", fam$family)) == 1)
-            misc$inv.lbl = "lsrate"
+            misc$inv.lbl = "rate"
     }
     else 
         stop("Can't handle a nonlinear mixed model")
@@ -267,7 +271,7 @@ lsm.basis.polr <- function(object, trms, xlev, grid) {
     link = object$method
     if (link == "logistic") link = "logit"
     misc = list(ylevs = list(cut = names(object$zeta)), 
-                tran = link, inv.lbl = "lscumprob")
+                tran = link, inv.lbl = "cumprob")
     nbasis = matrix(NA)
     dffun = function(...) NA
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=list(), misc=misc)
@@ -296,7 +300,7 @@ lsm.basis.survreg <- function(object, trms, xlev, grid) {
     dfargs = list(df = object$df.residual)
     dffun = function(k, dfargs) dfargs$df
     if (object$dist %in% c("exponential","weibull","loglogistic","loggaussian","lognormal")) 
-        misc = list(tran = "log", inv.lbl = "lsresponse")
+        misc = list(tran = "log", inv.lbl = "response")
     else 
         misc = list()
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=misc)
@@ -315,7 +319,7 @@ lsm.basis.coxph <- function(object, trms, xlev, grid) {
     # mimic code for reference = "sample" in predict.coxph
     result$X = result$X - rep(object$means, each = nrow(result$X))
     result$misc$tran = "log"
-    result$misc$inv.lbl = "lshazard"
+    result$misc$inv.lbl = "hazard"
     result
 }
 
@@ -331,7 +335,7 @@ recover.data.coxme <- recover.data.coxph
 lsm.basis.coxme <- function(object, trms, xlev, grid) {
     result <- lsm.basis.lme(object, trms, xlev, grid)
     result$misc$tran = "log"
-    result$misc$inv.lbl = "lshazard"
+    result$misc$inv.lbl = "hazard"
     result
 }
 

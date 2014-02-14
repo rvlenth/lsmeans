@@ -26,6 +26,8 @@ glht.lsmlf <- function(model, linfct, ...) {
 # S3 method for an lsmobj
 # Note: model is redundant, really, so can be omitted
 glht.lsmobj <- function(model, linfct, by, ...) {
+    if (!requireNamespace("multcomp"))
+        stop(sQuote("glht")," requires ", dQuote("multcomp"), " to be installed")
     object = linfct # so I don't get confused
     if (missing(model)) 
         model = .cls.list("lsmwrap", object = object)

@@ -17,7 +17,7 @@ Methods for \code{lsmobj} objects
 These methods provide for follow-up analyses of \code{lsmobj} objects: Contrasts, pairwise comparisons, tests, and confidence intervals.
 }
 \usage{
-\method{contrast}{lsmobj}(object, method = "pairwise", by, adjust, ...)
+\method{contrast}{lsmobj}(object, method = "eff", by, adjust, ...)
 
 \method{test}{lsmobj}(object, parm, ...)
 

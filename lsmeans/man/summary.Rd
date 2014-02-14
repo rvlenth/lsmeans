@@ -91,6 +91,16 @@ summary(sqwarp.rg)
 
 # Back-transformed results - compare with summary of 'warp.rg'
 summary(sqwarp.rg, type = "response")
+
+# Logistic regression
+# Reshape the Titanic data
+Titan <- do.call("expand.grid", dimnames(Titanic)[-4])
+Titan$Died <- matrix(Titanic, ncol=2)
+Titan.glm <- glm(Died ~ (Class + Sex + Age)^2, 
+    family = binomial, data = Titan)
+Titan.lsm <- lsmeans(Titan.glm, ~ Class|Sex, at = list(Age="Adult"))
+summary(Titan.lsm, type="response")
+summary(pairs(Titan.lsm), type="response")
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
