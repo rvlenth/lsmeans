@@ -7,9 +7,15 @@
 #     TRUE - same as mean
 #     FALSE - same as function(x) sort(unique(x))
 
-ref.grid <- function(object, at, cov.reduce = mean, mult.levs) {
+ref.grid <- function(object, at, cov.reduce = mean, mult.levs, data) {
     # recover the data
-    data = recover.data (object)
+    if (missing(data)) {
+        data = try(recover.data (object, data = NULL))
+        if (inherits(data, "try-error"))
+            stop("Possible remedy: Supply the data used in the 'data' argument")
+    }
+    else # attach needed attributes to given data
+        data = recover.data(object, data = data)
     
     # find out if any variables are coerced to factors
     ### OLD VERSION: anm = all.names(attr(data, "terms"))    

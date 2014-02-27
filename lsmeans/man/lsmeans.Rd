@@ -25,7 +25,7 @@ and optionally comparisons or contrasts among them.
 \method{lsmeans}{formula}(object, specs, contr.list, trend, ...)
 ## (used when 'specs' is a 'formula')
 
-lstrends(model, specs, var, delta.var = 0.01 * rng, ...)
+lstrends(model, specs, var, delta.var = 0.01 * rng, data, ...)
 }
 \arguments{
 \item{object}{
@@ -56,6 +56,7 @@ The user may specify some monotone function of one variable, e.g., \code{var = "
 \item{delta.var}{
 The value of \emph{h} to use in forming the difference quotient \emph{(f(x+h) - f(x))/h}. Changing it (especially changing its sign) may be necessary to avoid numerical problems such as logs of negative numbers. The default value is 1/100 of the range of \code{var} over the dataset.
 }
+\item{data}{As in \code{\link{ref.grid}}, you may use this argument to supply the dataset used in fitting the model, for situations where it is not possible to reconstruct the data. Otherwise, leave it missing.}
 \item{\dots}{Additional arguments passed to other methods or to \code{\link{ref.grid}}.}
 }
 
