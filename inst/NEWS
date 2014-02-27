@@ -1,5 +1,9 @@
 Changelog for 'lsmeans' package
 
+1.99-6
+    Added 'data' argument to ref.grid to help with cases
+    where the dataset cannot be reconstructed.
+
 1.99-5
     Changed plyr and multcomp to "Imports" dependency
     Changed default 'contrast' method

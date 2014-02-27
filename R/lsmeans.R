@@ -334,10 +334,17 @@ pairs.lsmobj = function(x, ...) {
 
 
 ### lstrends function
-lstrends = function(model, specs, var, delta.var=.01*rng, ...) {
+lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
     estName = paste(var, "trend", sep=".") # Do now as I may replace var later
 
-    data = recover.data(model)
+    if (missing(data)) {
+        data = try(recover.data (model, data = NULL))
+        if (inherits(data, "try-error"))
+            stop("Possible remedy: Supply the data used in the 'data' argument")
+    }
+    else # attach needed attributes to given data
+        data = recover.data(model, data = data)
+    
     x = data[[var]]
     fcn = NULL   # differential
     if (is.null(x)) {
