@@ -69,8 +69,9 @@ lsm.basis.default <- function(object, trms, xlev, grid) {
 ### call' objects
 # This recover.data method serves as the workhorse for the others
 # For model objects, call this with the object's call and its terms component
-# Late addition: if context is non-null, use it in place of recovered data
-recover.data.call <- function(object, trms, data, ...) {
+# Late addition: if data is non-null, use it in place of recovered data
+# Later addition: na.action arg req'd - vector of row indexes removed due to NAs
+recover.data.call <- function(object, trms, na.action, data, ...) {
     fcall <- object # because I'm easily confused
     vars <- all.vars(trms)
     tbl = data
@@ -93,10 +94,14 @@ recover.data.call <- function(object, trms, data, ...) {
         if (is.null(env)) 
             env <- parent.frame()
         tbl <- eval(fcall, env, parent.frame())
+        # Drop rows associated with NAs in data
+        if (!is.null(na.action))
+            tbl = tbl[-(na.action),  , drop=FALSE]
     }
     
     else
-        fcall$data = tbl
+        fcall$data = tbl[complete.cases(data), , drop=FALSE]
+    
     
     attr(tbl, "call") = fcall
     attr(tbl, "terms") = trms
@@ -110,7 +115,7 @@ recover.data.call <- function(object, trms, data, ...) {
 ### lm objects (and also aov, rlm, others that inherit) -- but NOT aovList
 recover.data.lm <- function(object, ...) {
     fcall = object$call
-    recover.data(fcall, delete.response(terms(object)), ...)
+    recover.data(fcall, delete.response(terms(object)), object$na.action, ...)
 }
 
 lsm.basis.lm <- function(object, trms, xlev, grid) {
@@ -171,7 +176,8 @@ recover.data.merMod <- function(object, ...) {
     if(!isLMM(object) && !isGLMM(object)) 
         stop("Can't handle a nonlinear mixed model")
     fcall = object@call
-    recover.data(fcall, delete.response(terms(object)), ...)
+    recover.data(fcall, delete.response(terms(object)), 
+                 attr(object@frame, "na.action"), ...)
 }
 
 lsm.basis.merMod <- function(object, trms, xlev, grid) {
@@ -239,7 +245,8 @@ lsm.basis.lme <- function(object, trms, xlev, grid) {
 ### gls objects (nlme package)
 recover.data.gls <- function(object, ...) {
     fcall = object$call
-    recover.data(fcall, delete.response(getCovariateFormula(object)), ...)
+    recover.data(fcall, delete.response(getCovariateFormula(object)), 
+                 object$na.action, ...)
 }
 
 lsm.basis.gls <- function(object, trms, xlev, grid) {

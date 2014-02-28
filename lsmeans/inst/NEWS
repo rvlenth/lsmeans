@@ -1,5 +1,9 @@
 Changelog for 'lsmeans' package
 
+1.99-7
+    Added fix for na.actions that can cause errors
+    if an entire factor level is dropped due to NAs
+
 1.99-6
     Added 'data' argument to ref.grid to help with cases
     where the dataset cannot be reconstructed.
