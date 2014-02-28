@@ -52,7 +52,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs, data) {
         
     # Save the original levels of factors, no matter what
     if (is.factor(x))
-        xlev[[nm]] = levels(x)
+        xlev[[nm]] = levels(factor(x))
+    # (applying factor drops any unused levels)
     
     # Now go thru and find reference levels...
         # mentioned in 'at' list but not coerced
@@ -60,7 +61,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs, data) {
             ref.levels[[nm]] = at[[nm]]
         # factors not in 'at'
         else if (is.factor(x))
-            ref.levels[[nm]] = levels(x)
+            ref.levels[[nm]] = levels(factor(x))
         # matrices
         else if (is.matrix(x)) {
             # Matrices -- reduce columns thereof, but don't add to baselevs

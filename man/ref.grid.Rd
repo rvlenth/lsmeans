@@ -35,7 +35,9 @@ The grid is determined by first reconstructing the data used in fitting the mode
 Ability to support a particular class of \code{object} depends on the existence of \code{recover.data} and \code{lsm.basis} methods -- see \link{extending-lsmeans} for details. The call \code{methods("recover.data")} will help identify these.
 
 In certain models, (e.g., results of \code{\link[lme4]{glmer.nb}}), 
-it is not possible to identify the original dataset. In such cases, we can work around this by setting \code{data} equal to the dataset used in fitting the model. Using \code{data} can also help save computing, especially when the dataset is large. In any case, \code{data} must represent all factor levels used in fitting the model. It \emph{cannot} be used as an alternative to \code{at}.
+it is not possible to identify the original dataset. In such cases, we can work around this by setting \code{data} equal to the dataset used in fitting the model, or a suitable subset.
+Only the complete cases in \code{data} are used, so it may be necessary to exclude some unused variables.
+Using \code{data} can also help save computing, especially when the dataset is large. In any case, \code{data} must represent all factor levels used in fitting the model. It \emph{cannot} be used as an alternative to \code{at}. (Note: If there is a pattern of \code{NAs} that caused one or more factor levels to be excluded when fitting the model, then \code{data} should also exclude those levels.)
 } % --- end of details
 
 \value{An S4 object of class \code{"ref.grid"} (see \code{\link{ref.grid-class}}). These objects encapsulate everything needed to do calculations and inferences for least-squares means, and contain nothing that depends on the model-fitting procedure.
