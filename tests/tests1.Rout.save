@@ -1,0 +1,393 @@
+
+R version 3.0.2 (2013-09-25) -- "Frisbee Sailing"
+Copyright (C) 2013 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> # Tests of lsmeans for lm and mlm objects
+> 
+> require(lsmeans)
+Loading required package: lsmeans
+> 
+> # ---------- multivariate ---------------------------------
+> 
+> MOats.lm <- lm (yield ~ Block + Variety, data = MOats)
+> MOats.rg <- ref.grid (MOats.lm, 
++                 mult.levs = list(nitro = c(0,.2,.4,.6)))
+> lsmeans(MOats.rg, ~ nitro | Variety)
+Variety = Golden Rain:
+ nitro    lsmean       SE df  lower.CL  upper.CL
+   0.0  80.00000 5.540591 10  67.65479  92.34521
+   0.2  98.50000 6.602048 10  83.78972 113.21028
+   0.4 114.66667 8.695358 10  95.29220 134.04113
+   0.6 124.83333 7.303221 10 108.56074 141.10592
+
+Variety = Marvellous:
+ nitro    lsmean       SE df  lower.CL  upper.CL
+   0.0  86.66667 5.540591 10  74.32146  99.01187
+   0.2 108.50000 6.602048 10  93.78972 123.21028
+   0.4 117.16667 8.695358 10  97.79220 136.54113
+   0.6 126.83333 7.303221 10 110.56074 143.10592
+
+Variety = Victory:
+ nitro    lsmean       SE df  lower.CL  upper.CL
+   0.0  71.50000 5.540591 10  59.15479  83.84521
+   0.2  89.66667 6.602048 10  74.95639 104.37695
+   0.4 110.83333 8.695358 10  91.45887 130.20780
+   0.6 118.50000 7.303221 10 102.22741 134.77259
+
+Confidence level used: 0.95 
+> 
+> # Try putting missing values whenever Yield is "Marvellous"
+> # plus another one for good measure
+> mo = MOats
+> mo$yield[mo$Variety == "Marvellous", 3] <- NA
+> mo$yield[2,4] <- NA
+> mo.lm <- lm (yield ~ Block + Variety, data = mo)
+> lsmeans(mo.lm, "Variety")
+ Variety      lsmean       SE df lower.CL upper.CL
+ Golden Rain 107.825 3.658594  4 97.66711 117.9829
+ Victory      97.625 3.092077  4 89.04002 106.2100
+
+Confidence level used: 0.95 
+> 
+> # Same as above, but use na.exclude
+> ## I hope this test FAILS soon! because there's a bug in estVar.mlm
+> ## that causes the vcov() result to be all NAs
+> mo.excl.lm <- lm (yield ~ Block + Variety, data = mo, na.action = na.exclude)
+> lsmeans(mo.excl.lm, "Variety")
+ Variety      lsmean SE df lower.CL upper.CL
+ Golden Rain 107.825 NA  4       NA       NA
+ Victory      97.625 NA  4       NA       NA
+
+Confidence level used: 0.95 
+> 
+> 
+> # ------------ univariate -------------
+> # make an unbalanced, collinear, dataset with covariates
+> set.seed(19841776)
+> warp <- warpbreaks[-c(1,2,3,5,8,13,21,34), ]
+> warp$x1 <- rnorm(nrow(warp), 17, 3)
+> warp$x2 <- warp$x1^3 / 1007
+> warp.lm <- lm(breaks ~ poly(x1,3) + x2 + wool*tension, data=warp)
+> # Note: This model is not full-rank
+> ( warp.lsm <- lsmeans(warp.lm, "tension", by = "wool") )
+wool = A:
+ tension lsmean SE df asymp.LCL asymp.UCL
+ L       NA     NA NA        NA        NA
+ M       NA     NA NA        NA        NA
+ H       NA     NA NA        NA        NA
+
+wool = B:
+ tension lsmean SE df asymp.LCL asymp.UCL
+ L       NA     NA NA        NA        NA
+ M       NA     NA NA        NA        NA
+ H       NA     NA NA        NA        NA
+
+Confidence level used: 0.95 
+> # (Nothing is estimable)
+> 
+> # However, contrasts ARE estimable:
+> pairs(warp.lsm)
+wool = A:
+ contrast   estimate       SE df t.ratio p.value
+ L - M    24.5835929 6.065419 37   4.053  0.0007
+ L - H    24.7443633 6.179264 37   4.004  0.0008
+ M - H     0.1607705 4.959344 37   0.032  0.9994
+
+wool = B:
+ contrast   estimate       SE df t.ratio p.value
+ L - M    -1.5953197 4.805899 37  -0.332  0.9412
+ L - H     8.2584640 4.920788 37   1.678  0.2269
+ M - H     9.8537837 4.687418 37   2.102  0.1032
+
+P value adjustment: tukey method for a family of 3 means 
+> 
+> #switcheroo of by variables:
+> pairs(warp.lsm, by = "tension")
+tension = L:
+ contrast  estimate       SE df t.ratio p.value
+ A - B    20.604585 6.155409 37   3.347  0.0019
+
+tension = M:
+ contrast  estimate       SE df t.ratio p.value
+ A - B    -5.574328 4.907136 37  -1.136  0.2633
+
+tension = H:
+ contrast  estimate       SE df t.ratio p.value
+ A - B     4.118686 5.000739 37   0.824  0.4154
+
+> 
+> # compare these contrasts
+> pairs(.Last.value, by = "contrast")
+contrast = A - B:
+ contrast1  estimate       SE df t.ratio p.value
+ L - M     26.178913 7.679004 37   3.409  0.0044
+ L - H     16.485899 7.867834 37   2.095  0.1046
+ M - H     -9.693013 6.867934 37  -1.411  0.3456
+
+P value adjustment: tukey method for a family of 3 means 
+> 
+> # Test different ways of accessing data
+> ## ... using "with" ...
+> warp.lm2 <- with(warp, lm(breaks ~ x1 + x2 + wool*tension))
+> lsmeans(warp.lm2, ~ tension)
+NOTE: Results may be misleading due to involvement in interactions
+ tension   lsmean       SE df lower.CL upper.CL
+ L       38.01851 3.027239 38 31.89018 44.14684
+ M       26.51562 2.358621 38 21.74084 31.29040
+ H       21.50623 2.379736 38 16.68871 26.32376
+
+Confidence level used: 0.95 
+> 
+> ## ... using "attach" ...
+> attach(warp)
+> warp.lm3 <- lm(breaks ~ x1 + x2 + wool*tension)
+> lsmeans(warp.lm3, "tension")
+NOTE: Results may be misleading due to involvement in interactions
+ tension   lsmean       SE df lower.CL upper.CL
+ L       38.01851 3.027239 38 31.89018 44.14684
+ M       26.51562 2.358621 38 21.74084 31.29040
+ H       21.50623 2.379736 38 16.68871 26.32376
+
+Confidence level used: 0.95 
+> 
+> detach("warp")
+> # won't work if detached
+> try(lsmeans(warp.lm3, "tension")) 
+Error in eval(expr, envir, enclos) : object 'x1' not found
+Error in ref.grid(object = structure(list(coefficients = structure(c(39.9798298407202,  : 
+  Possible remedy: Supply the data used in the 'data' argument
+> 
+> # However, we're OK again if we use 'data'
+> lsmeans(warp.lm3, "tension", data = warp)
+NOTE: Results may be misleading due to involvement in interactions
+ tension   lsmean       SE df lower.CL upper.CL
+ L       38.01851 3.027239 38 31.89018 44.14684
+ M       26.51562 2.358621 38 21.74084 31.29040
+ H       21.50623 2.379736 38 16.68871 26.32376
+
+Confidence level used: 0.95 
+> 
+> 
+> 
+> # --------------- Other stuff -------------------
+> # using cld
+> cld(warp.lsm)
+Loading required namespace: multcompView
+wool = A:
+ tension lsmean SE df asymp.LCL asymp.UCL .group
+ L       NA     NA NA        NA        NA  1    
+ M       NA     NA NA        NA        NA   2   
+ H       NA     NA NA        NA        NA   2   
+
+wool = B:
+ tension lsmean SE df asymp.LCL asymp.UCL .group
+ L       NA     NA NA        NA        NA  1    
+ M       NA     NA NA        NA        NA  1    
+ H       NA     NA NA        NA        NA  1    
+
+Confidence level used: 0.95 
+P value adjustment: tukey method for a family of 3 means 
+significance level used: alpha = 0.05 
+> 
+> # passing to glht
+> require(multcomp)
+Loading required package: multcomp
+Loading required package: mvtnorm
+Loading required package: survival
+Loading required package: splines
+Loading required package: TH.data
+> # This will fail because glht can't deal with rank deficiency
+> # Hope this changes.
+> try( as.glht(pairs(warp.lsm)) )
+Note: df set to 37
+Error in glht.matrix(model = structure(list(object = <S4 object of class structure("lsmobj", package = "lsmeans")>), .Names = "object", class = c("lsmwrap",  : 
+  'ncol(linfct)' is not equal to 'length(coef(model))'
+In addition: Warning message:
+In glht.matrix(model = list(object = <S4 object of class "lsmobj">),  :
+  1 out of 10 coefficients not estimable in 'model'
+> 
+> # However, warp.lm2 isn't rank-deficient
+> warp.lsm2 <- lsmeans(warp.lm2, ~ tension)
+NOTE: Results may be misleading due to involvement in interactions
+> warp.con <- contrast(warp.lsm2, "eff")
+> summary(warp.con, adjust = "sidak")
+ contrast  estimate       SE df t.ratio p.value
+ L effect  9.338389 2.332591 38   4.003  0.0008
+ M effect -2.164500 2.018477 38  -1.072  0.6426
+ H effect -7.173889 2.059398 38  -3.483  0.0038
+
+P value adjustment: sidak method for 3 tests 
+> summary(as.glht(warp.con))
+Note: df set to 38
+
+	 Simultaneous Tests for General Linear Hypotheses
+
+Linear Hypotheses:
+              Estimate Std. Error t value Pr(>|t|)    
+L effect == 0    9.338      2.333   4.003  < 0.001 ***
+M effect == 0   -2.165      2.018  -1.072  0.53536    
+H effect == 0   -7.174      2.059  -3.483  0.00357 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+(Adjusted p values reported -- single-step method)
+
+> 
+> summary(glht(warp.lm2, lsm(eff ~ tension | wool)))
+Note: df set to 38
+$`wool = A`
+
+	 Simultaneous Tests for General Linear Hypotheses
+
+Fit: lm(formula = breaks ~ x1 + x2 + wool * tension)
+
+Linear Hypotheses:
+              Estimate Std. Error t value Pr(>|t|)    
+L effect == 0   16.476      3.655   4.508   <0.001 ***
+M effect == 0   -8.132      3.023  -2.690   0.0274 *  
+H effect == 0   -8.344      3.047  -2.738   0.0245 *  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+(Adjusted p values reported -- single-step method)
+
+
+$`wool = B`
+
+	 Simultaneous Tests for General Linear Hypotheses
+
+Fit: lm(formula = breaks ~ x1 + x2 + wool * tension)
+
+Linear Hypotheses:
+              Estimate Std. Error t value Pr(>|t|)  
+L effect == 0    2.201      2.790   0.789   0.7121  
+M effect == 0    3.803      2.665   1.427   0.3373  
+H effect == 0   -6.004      2.701  -2.223   0.0801 .
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+(Adjusted p values reported -- single-step method)
+
+
+> 
+> # confint
+> confint(contrast(warp.lsm2, "trt.vs.ctrl1"))
+ contrast  estimate       SE df  lower.CL  upper.CL
+ M - L    -11.50289 3.845692 38 -19.28809 -3.717693
+ H - L    -16.51228 3.910237 38 -24.42814 -8.596417
+
+Confidence level used: 0.95 
+> 
+> # lstrends
+> warp.lm4 <- lm(breaks ~ tension*wool*x1, data = warp)
+> lstrends(warp.lm4, ~tension|wool, var = "x1")
+wool = A:
+ tension   x1.trend        SE df    lower.CL  upper.CL
+ L       -8.5838732 2.4676060 34 -13.5986519 -3.569095
+ M        1.9790186 1.0485628 34  -0.1519173  4.109955
+ H        0.8789257 0.8971595 34  -0.9443218  2.702173
+
+wool = B:
+ tension   x1.trend        SE df    lower.CL  upper.CL
+ L        1.5806866 1.2949710 34  -1.0510111  4.212384
+ M        1.0019960 0.7825624 34  -0.5883621  2.592354
+ H        0.3217596 0.6650664 34  -1.0298180  1.673337
+
+Confidence level used: 0.95 
+> 
+> # exotic chain rule example
+> lstrends(warp.lm4, ~tension|wool, var = "sqrt(x1-7)")
+wool = A:
+ tension sqrt(x1-7).trend        SE df    lower.CL  upper.CL
+ L             -55.891528 16.067137 34 -88.5438789 -23.23918
+ M              12.885835  6.827428 34  -0.9891679  26.76084
+ H               5.722883  5.841607 34  -6.1486912  17.59446
+
+wool = B:
+ tension sqrt(x1-7).trend        SE df    lower.CL  upper.CL
+ L              10.292206  8.431847 34  -6.8433695  27.42778
+ M               6.524221  5.095440 34  -3.8309581  16.87940
+ H               2.095049  4.330397 34  -6.7053764  10.89547
+
+Confidence level used: 0.95 
+> 
+> 
+> 
+> # -------- Transformations -------------
+> ## ... of response ...
+> warp.lm5 <- lm(log(breaks) ~ x1 + x2 + tension*wool, data = warp)
+> warp.lsm5 <- lsmeans(warp.lm5, ~tension | wool)
+> summary(warp.lsm5)
+wool = A:
+ tension   lsmean        SE df lower.CL upper.CL
+ L       3.813803 0.1826369 38 3.444074 4.183532
+ M       3.099011 0.1300119 38 2.835816 3.362206
+ H       3.056508 0.1297036 38 2.793937 3.319079
+
+wool = B:
+ tension   lsmean        SE df lower.CL upper.CL
+ L       3.282384 0.1301689 38 3.018870 3.545897
+ M       3.332706 0.1206070 38 3.088550 3.576862
+ H       2.933453 0.1229958 38 2.684461 3.182445
+
+Confidence level used: 0.95 
+> summary(warp.lsm5, type = "resp")
+wool = A:
+ tension lsresponse       SE df lower.CL upper.CL
+ L         45.32245 8.277551 38 31.31426 65.59711
+ M         22.17601 2.883144 38 17.04430 28.85278
+ H         21.25321 2.756618 38 16.34524 27.63489
+
+wool = B:
+ tension lsresponse       SE df lower.CL upper.CL
+ L         26.63919 3.467596 38 20.46816 34.67077
+ M         28.01405 3.378691 38 21.94524 35.76116
+ H         18.79240 2.311387 38 14.65030 24.10561
+
+Confidence level used: 0.95 
+> 
+> ## In a GLM
+> # One of the glm examples...
+> d.AD <- data.frame(treatment = gl(3,3), outcome = gl(3,1,9), 
++     counts = c(18,17,15,20,10,20,25,13,12))
+> glm.D93 <- glm(counts ~ outcome + treatment, family = poisson(), data = d.AD)
+> 
+> ( lsm.D93 <- lsmeans(glm.D93, ~ outcome) )
+ outcome   lsmean        SE df asymp.LCL asymp.UCL
+ 1       3.044522 0.1259882 NA  2.797590  3.291455
+ 2       2.590267 0.1581139 NA  2.280370  2.900165
+ 3       2.751535 0.1458650 NA  2.465645  3.037425
+
+Confidence level used: 0.95 
+> # un-log the results to obtain rates
+> summary(lsm.D93, type = "resp")
+ outcome     rate       SE df asymp.LCL asymp.UCL
+ 1       21.00000 2.645751 NA 16.405066  26.88194
+ 2       13.33333 2.108185 NA  9.780295  18.17714
+ 3       15.66667 2.285218 NA 11.771074  20.85149
+
+Confidence level used: 0.95 
+> 
+> # un-log some comparisons to obtain ratios
+> summary(contrast(lsm.D93, "trt.vs.ctrl", ref = 2), 
++ 	type = "resp", adjust = "none")
+ contrast rate.ratio        SE df   z.ratio p.value
+ 1 - 2         1.575 0.3184189 NA 2.2468891  0.0247
+ 3 - 2         1.175 0.2527659 NA 0.7496662  0.4535
+
+P values are asymptotic 
+Tests are performed on the linear-predictor scale 
+> 
+> proc.time()
+   user  system elapsed 
+   2.44    0.20    2.65 
