@@ -18,8 +18,8 @@ mo.lm <- lm (yield ~ Block + Variety, data = mo)
 lsmeans(mo.lm, "Variety")
 
 # Same as above, but use na.exclude
-## I hope this test FAILS soon! because there's a bug in estVar.mlm
-## that causes the vcov() result to be all NAs
+## In R 3.0.2, this will return NAs for the SEs and test stats
+## Reported as Bug 15693 - should be fixed in later versions
 mo.excl.lm <- lm (yield ~ Block + Variety, data = mo, na.action = na.exclude)
 lsmeans(mo.excl.lm, "Variety")
 

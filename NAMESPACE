@@ -5,23 +5,19 @@ import(Matrix)
 import(methods)
 
 # 'requireNamespace' block below allows me to put multcomp in
-# Imports instead of Depends. But it won't support glht
-# unless multcomp was installed BEFORE lsmeans was installed
-# There is corresponding requireNamespace calls in the code too. 
+# Imports instead of Depends. 
 if (requireNamespace("multcomp", quietly = TRUE)) {
     importFrom(multcomp, cld, glht, modelparm)
-    # I'll export multcomp's cld generic
-    # Maybe I don't need to? export(cld)
     
-    #S3method(cld, lsmobj) # This is outside this block
+    #S3method(cld, lsmobj) # Appears later outside this block
     S3method(glht, lsmlf)
     S3method(glht, lsmobj)
     S3method(modelparm, lsmwrap)
 }
-#else {
-    # I'll export my own cld generic'
+
+# Gotta have the generic for cld, whether or not multcomp is attacjed
     export(cld)
-#}
+
 if (requireNamespace("plyr", quietly = TRUE)) {
     importFrom(plyr, alply)
 }
@@ -45,7 +41,8 @@ export(
 
 
 # S3 methods - 
-# For clarity, I'm showing them all and commenting out the ones I'll keep to myself
+# For clarity, I'm showing them all 
+# but commenting out the ones used only interally
 
 S3method(as.glht, lsmobj)
 

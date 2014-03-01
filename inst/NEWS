@@ -1,49 +1,16 @@
 Changelog for 'lsmeans' package
 
-1.99-7
-    Added fix for na.actions that can cause errors
-    if an entire factor level is dropped due to NAs
-
-1.99-6
-    Added 'data' argument to ref.grid to help with cases
-    where the dataset cannot be reconstructed.
-
-1.99-5
-    Changed plyr and multcomp to "Imports" dependency
-    Changed default 'contrast' method
-
-1.99-4
-    Detection of link functions and transformations, and
-        provision for inverse transformation in summary
-    Added predict method
-
-
-1.99-3
-    Support for more models -- coxme, polr
-    replacing lsm.basis.R, recover.data.R, survival-supp.R
-        with helpers.R
-    new exported function nonest.basis
-
-1.99-2
-    Added as.glht function and modelparm.lsmwrap method
-    Added informative message on supported objects
-
-1.99-1 
-    Added .find.coerced function to definitively identify coerced covariates
-    Included delete.response() for model types where I can get away with it
-    Added support for 'survreg' objects
-    Replaced as.formula constructs with reformulate calls - cleaner!
-
-
-1.99 (pre-2.00)
+2.00-0
     This is a major redesign of the package. Single function 'lsmeans'
     is replaced by methods for different types of models and 
     specifications, and returns an 'lsmobj' rather than a 'data.frame'.
     New functions 'ref.grid', 'contrast', 'lstrends', and new 'summary',
     'confint', 'test', 'glht', 'cld' methods for 'ref.grid' and 'lsmobj'
     objects. See the vignette "lsmeans-changes" for more details.
-    Also this version is easiloy extensible. To prove it, I added
-    support for 'survival' package objects.
+    This version is easily extensible to various types of model objects, 
+    and several more are supported such as survreg, coxph, polr.
+    There is also full support for na.actions, and for back-transforming
+    results when a response is transformed or a link function is used.
 
 1.10-4
     Fixed bug in cld spec that caused multiple letter columns
