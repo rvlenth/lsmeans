@@ -103,7 +103,7 @@ recover.data.call <- function(object, trms, na.action, data, ...) {
         fcall$data = tbl[complete.cases(data), , drop=FALSE]
     
     
-    attr(tbl, "call") = fcall
+    attr(tbl, "call") = object # the original call
     attr(tbl, "terms") = trms
     attr(tbl, "predictors") = all.vars(delete.response(trms))
     attr(tbl, "responses") = setdiff(vars, attr(tbl, "predictors"))
@@ -234,9 +234,19 @@ lsm.basis.lme <- function(object, trms, xlev, grid) {
     X = model.matrix(trms, m, contrasts.arg = contrasts)
     bhat = fixef(object)
     V = vcov(object)
+    misc = list()
+    if (!is.null(object$family)) {
+        fam = object$family
+        misc$tran = fam$link
+        misc$inv.lbl = "response"
+        if (length(grep("binomial", fam$family)) == 1)
+            misc$inv.lbl = "prob"
+        else if (length(grep("poisson", fam$family)) == 1)
+            misc$inv.lbl = "rate"
+    }
     nbasis = matrix(NA)
     dffun = function(...) NA
-    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=list(), misc=list())
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=list(), misc=misc)
 }
 
 

@@ -92,8 +92,9 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs, data) {
     basis = lsm.basis(object, attr(data, "terms"), xlev, grid)
     
     misc = basis$misc
-    if (is.null(misc$tran)) { # No link fcn, but response may be transformed
-        lhs = terms(object)[[2]]
+    form = attr(data, "call")$formula
+    if (is.null(misc$tran) && (length(form) > 2)) { # No link fcn, but response may be transformed
+        lhs = form[[2]]
         tran = setdiff(all.names(lhs), c(all.vars(lhs), "~"))
         if(length(tran) == 1)
             misc$tran = tran
