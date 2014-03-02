@@ -1,5 +1,9 @@
 \documentclass{article}
-\usepackage[margin=1in, fancyvrb,unnumbered]{rvl}
+\usepackage[margin=1in]{geometry}
+\usepackage{mathpazo}
+\usepackage{fancyvrb}
+
+\DefineShortVerb{\"}
 
 \def\pkg#1{\textsf{#1}}
 \def\lsm{\pkg{lsmeans}}
