@@ -2,7 +2,7 @@ Changelog for 'lsmeans' package
 
 2.00-2
     Minor bug fix to make recover.data work with more gls models
-###    Fewer unneeded packages are loaded
+    Fewer unneeded packages are loaded
 
 2.00-1
     Fixed a minor formatting issue in a vignette
