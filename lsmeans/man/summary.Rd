@@ -17,6 +17,7 @@ Use these methods to summarize, print, or examine objects of class \code{"ref.gr
 \usage{
 \method{summary}{ref.grid}(object, infer, level, adjust, by, 
     type = c("link","response","lp","linear"), ...)
+
 \method{predict}{ref.grid}(object, type = c("link","response","lp","linear"), ...)
 
 \method{str}{ref.grid}(object, ...)
@@ -36,15 +37,7 @@ A vector of two logical values. The first determines whether confidence interval
 Confidence level for confidence intervals, if \code{infer[1]} is \code{TRUE}.
 }
   \item{adjust}{
-Character value naming the method used to adjust \emph{P} values, if \code{infer[2]} is \code{TRUE}. 
-\code{"tukey"} computes p values using the Studentized range distribution with the number of means in the family;
-\code{"sidak"} replaces each p value by \eqn{1 - (1 - p)^c}, where \eqn{c} is the number of contrasts;
-\code{"scheffe"} computes p values from the F distribution, according to the Scheffe criterion;
-\code{"none"} makes no adjustments to the p values.
-In some cases, these adjustments are only approximate, especially when the degrees of freedom or standard errors vary
-greatly within the family of tests. For more accurate adjustments, use the \code{\link[lsmeans]{glht}} method for \pkg{multcomp}.
-
-In addition, the Bonferroni-inequality-based adjustment methods in \code{\link{p.adjust}} are available.
+Character value naming the method used to adjust \eqn{p} values or confidence limits. See Details.
 }
   \item{by}{
 Character name(s) of variables to use for grouping. This affects the family of tests considered in adjusted \emph{P} values. The printed display of the summary is grouped by the \code{by} variables.
@@ -58,12 +51,24 @@ The object to be printed.
   \item{\dots, digits, quote, right}{Additional arguments passed to \code{\link{print.data.frame}}.}
 }
 \details{
-The \code{misc} slot in \code{object} contains default values for several parameters such as \code{by} and \code{infer}. The defaults vary depending on the code that created the object.
+The \code{misc} slot in \code{object} contains default values for \code{by}, \code{infer}, \code{level}, and \code{adjust}. These defaults vary depending on the code that created the object.
 
 With \code{type="response"}, the transformation assumed can be found in \samp{object@misc$tran}, and its label, for the summary is in \samp{object@misc$inv.lbl}. At this time, \code{tran} must be one of the named transformations valid for \code{\link{make.link}}. Any \eqn{t} or \eqn{z} tests are still performed on the scale of the linear predictor, not the inverse-transformed one. Similarly, confidence intervals are computed on the linear-predictor scale, then inverse-transformed.
+
+As applied to \eqn{p} values, \code{adjust} has the following effects:
+\code{"tukey"} computes \eqn{p} values using the Studentized range distribution with the number of means in the family;
+\code{"sidak"} replaces each \eqn{p} value by \eqn{1 - (1 - p)^c}, where \eqn{c} is the number of contrasts;
+\code{"scheffe"} computes \eqn{p} values from the \eqn{F} distribution, according to the Scheffe criterion;
+\code{"none"} makes no adjustments to the \eqn{p} values.
+In addition, the Bonferroni-inequality-based adjustment methods in \code{\link{p.adjust}} are available.
+
+Adjustments for confidence limits are available only for \code{adjust} equal to \code{"tukey"}, \code{"sidak"}, \code{"bonferroni"}, and \code{"none"}. For any other \code{adjust}, confidence limits are left unadjusted and a message is displayed to that effect.
+
+In some cases, confidence and \eqn{p}-value adjustments are only approximate -- especially when the degrees of freedom or standard errors vary
+greatly within the family of tests. For more accurate adjustments, use the \code{\link[lsmeans]{glht}} method for \pkg{multcomp}.
 }
 \value{
-The \code{summary} method for \code{"ref.grid"} objects returns An object of class \code{"summary.ref.grid"}, which extends \code{"data.frame"}.
+The \code{summary} method for \code{"ref.grid"} objects returns an object of class \code{"summary.ref.grid"}, which extends \code{"data.frame"}.
 }
 %%\references{}
 \author{
@@ -83,7 +88,7 @@ str(warp.rg)
 summary(warp.rg)
 
 summary(warp.rg, by = "wool", 
-        infer = c(TRUE, FALSE), level = .90)
+        infer = c(TRUE, FALSE), level = .90, adjust = "sidak")
 
 # Transformed response
 sqwarp.rg <- ref.grid(update(warp.lm, sqrt(breaks) ~ .))

@@ -310,6 +310,42 @@ str.ref.grid <- function(object, ...) {
     list(pval=pval, mesg=mesg, adjust=adjust)
 }
 
+# Code needed for an adjusted critical value
+# returns a list similar to .adj.p.value
+.adj.critval = function(level, df, adjust, fam.info) {
+    mesg = NULL
+    adj.meths = c("tukey", "sidak", "bonferroni", "none")
+    k = pmatch(tolower(adjust), adj.meths)
+    if(is.na(k)) {
+        k = which(adj.meths == "none")
+        mesg = "Confidence levels are NOT adjusted for multiplicity"
+    }
+    adjust = adj.meths[k]
+    
+    # pseudo-asymptotic results when df is NA
+    df[is.na(df)] = 10000
+    
+    fam.size = fam.info[1]
+    n.contr = fam.info[2]
+    
+    chk.adj = match(adjust, c("none", "tukey"), nomatch = 99)
+    do.msg = (chk.adj > 1) && (n.contr > 1) && 
+        !((fam.size == 2) && (chk.adj < 10)) 
+    if (do.msg) {
+        xtra = if(chk.adj < 10) paste("a family of", fam.size, "means")
+        else             paste(n.contr, "tests")
+        mesg = paste("Confidence-level adjustment:", adjust, "method for", xtra)
+    }
+    
+    cv = switch(adjust,
+        none = -qt((1-level)/2, df),
+        sidak = -qt((1 - level^(1/n.contr))/2, df),
+        bonferroni = -qt((1-level)/n.contr/2, df),
+        tukey = qtukey(level, fam.size, df)
+    )
+    list(cv = cv, mesg = mesg, adjust = adjust)
+}
+
 
 # S3 predict method
 predict.ref.grid <- function(object, type = c("link","response","lp","linear"), ...) {
@@ -359,9 +395,19 @@ summary.ref.grid <- function(object, infer, level, adjust, by,
     attr(result, "link") = NULL
 
     mesg = NULL
+    
+    by.size = nrow(object@grid)
+    if (!is.null(by))
+        for (nm in by)
+            by.size = by.size / length(unique(object@levels[[nm]]))
+    fam.info = c(object@misc$famSize, by.size)
+    
     if(infer[1]) { # add CIs
         quant = 1 - (1 - level)/2
-        cv = if(zFlag) qnorm(quant) else qt(quant, result$df)
+        ###cv = if(zFlag) qnorm(quant) else qt(quant, result$df)
+        acv = .adj.critval(level, result$df, adjust, fam.info)
+        adjust = acv$adjust
+        cv = acv$cv
         cnm = if (zFlag) c("asymp.LCL", "asymp.UCL") else c("lower.CL","upper.CL")
         result[[cnm[1]]] = result[[1]] - cv*result$SE
         result[[cnm[2]]] = result[[1]] + cv*result$SE
@@ -369,16 +415,11 @@ summary.ref.grid <- function(object, infer, level, adjust, by,
             result[[cnm[1]]] = link$linkinv(result[[cnm[1]]])
             result[[cnm[2]]] = link$linkinv(result[[cnm[2]]])
         }
-        mesg = paste("Confidence level used:", level)
+        mesg = c(paste("Confidence level used:", level), acv$mesg)
     }
     if(infer[2]) { # add tests
-        by.size = nrow(object@grid)
-        if (!is.null(by))
-            for (nm in by)
-                by.size = by.size / length(unique(object@levels[[nm]]))
         cnm = ifelse (zFlag, "z.ratio", "t.ratio")
         t.ratio = result[[cnm]] = result[[1]] / result$SE
-        fam.info = c(object@misc$famSize, by.size)
         apv = .adj.p.value(t.ratio, result$df, adjust, fam.info)
         adjust = apv$adjust   # in case it was abbreviated
         result$p.value = apv$pval
