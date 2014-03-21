@@ -1,6 +1,7 @@
 Changelog for 'lsmeans' package
 
 2.00-2
+    Added some support for adjusted confidence limits
     Minor bug fix to make recover.data work with more gls models
     Fewer unneeded packages are loaded
 
