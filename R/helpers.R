@@ -189,8 +189,8 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
     dfargs = misc = list()
     if (isLMM(object)) {
         if (requireNamespace("pbkrtest")) {
-            on.exit(detach("pbkr.ns"))
             attach(getNamespace("pbkrtest"), pos = 2, name = "pbkr.ns", warn.conflicts = FALSE)
+            on.exit(detach("pbkr.ns"))
             dfargs = list(unadjV = V, 
                 adjV = vcovAdj(object, 0))
             V = as.matrix(dfargs$adjV)

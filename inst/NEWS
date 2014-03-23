@@ -1,5 +1,8 @@
 Changelog for 'lsmeans' package
 
+2.00-3
+    Slight change in use of attach() in lsm.basis.merMod
+
 2.00-2
     Added some support for adjusted confidence limits
     Minor bug fix to make recover.data work with more gls models
