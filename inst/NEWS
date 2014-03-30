@@ -1,8 +1,12 @@
 Changelog for 'lsmeans' package
 
+2.00-5
+    Fixed minor bug in summary() - a try() call should have been 
+        with silent=TRUE
+
 2.00-4
     Reverted to code that just loads pbkrtest and its required 
-(but unneeded) packages when pbkrtest is needed
+        (but unneeded) packages when pbkrtest is needed
 
 2.00-3
     Slight change in use of attach() in lsm.basis.merMod
