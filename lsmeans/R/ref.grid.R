@@ -229,7 +229,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs, data) {
     result = as.data.frame(t(result))
     names(result) = c(misc$estName, "SE", "df")
     if (!is.null(misc$tran) && (misc$tran != "none")) {
-        link = try(make.link(misc$tran))
+        link = try(make.link(misc$tran), silent=TRUE)
         if (!inherits(link, "try-error"))
             attr(result, "link") = link
     }
