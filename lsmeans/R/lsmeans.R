@@ -154,6 +154,10 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     if(.some.term.contains(union(facs, RG@roles$trend), RG@model.info$terms))
         message("NOTE: Results may be misleading due to involvement in interactions")
     
+    # Figure out which factors have been averaged over
+    nlev = sapply(RG@levels, length)
+    avgd.over = setdiff(names(nlev[nlev > 1]), facs)
+    
     RG@roles$responses = character()
     RG@misc$famSize = nrow(linfct)
     RG@misc$estName = "lsmean"
@@ -161,6 +165,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     RG@misc$infer = c(TRUE,FALSE)
     RG@misc$pri.vars = setdiff(facs, by)
     RG@misc$by.vars = by
+    RG@misc$avgd.over = union(RG@misc$avgd.over, avgd.over)
     RG@misc$methDesc = "lsmeans"
     RG@roles$predictors = names(levs)
     result = new("lsmobj", RG, linfct = linfct, levels = levs, grid = combs)
