@@ -92,6 +92,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs, data) {
     basis = lsm.basis(object, attr(data, "terms"), xlev, grid)
     
     misc = basis$misc
+    
     form = attr(data, "call")$formula
     if (is.null(misc$tran) && (length(form) > 2)) { # No link fcn, but response may be transformed
         lhs = form[[2]]
@@ -151,13 +152,13 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs, data) {
         basis$X = basis$X[incl.flags, , drop=FALSE]
     }
 
-
-    ### using result from basis instead. misc = list()
+    misc$ylevs = NULL # No longer needed
     misc$estName = "prediction"
     misc$infer = c(FALSE,FALSE)
     misc$level = .95
     misc$adjust = "none"
     misc$famSize = nrow(grid)
+    misc$avgd.over = character(0)
 
     
     new ("ref.grid",
@@ -433,6 +434,10 @@ summary.ref.grid <- function(object, infer, level, adjust, by,
         result[["SE"]] = link$mu.eta(result[[1]]) * result[["SE"]]
         result[[1]] = link$linkinv(result[[1]])
     }
+    
+    if (length(object@misc$avgd.over) > 0)
+        mesg = c(paste("Results are averaged over the levels of:",
+                 paste(object@misc$avgd.over, collapse = ", ")), mesg)
 
     summ = cbind(lbls, result)
     attr(summ, "pri.vars") = setdiff(union(object@misc$pri.vars, object@misc$by.vars), by)
