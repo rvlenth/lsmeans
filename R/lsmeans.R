@@ -147,16 +147,25 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     K = plyr::alply(row.idx, match(facs, names(RG@levels)), function(idx) {
         fac.reduce(RG@linfct[idx, , drop=FALSE])
     })
-    
+        
     linfct = t(as.matrix(as.data.frame(K)))
     row.names(linfct) = NULL
     
     if(.some.term.contains(union(facs, RG@roles$trend), RG@model.info$terms))
         message("NOTE: Results may be misleading due to involvement in interactions")
     
+    # Figure offset, if any
+    if (".offset." %in% names(RG@grid)) {
+        offset = plyr::alply(row.idx, match(facs, names(RG@levels)), function(idx) {
+            fac.reduce(RG@grid[idx, ".offset.", drop=FALSE])
+        })
+        combs[[".offset."]] = unlist(offset)
+    }
+    
     # Figure out which factors have been averaged over
     nlev = sapply(RG@levels, length)
     avgd.over = setdiff(names(nlev[nlev > 1]), facs)
+    
     
     RG@roles$responses = character()
     RG@misc$famSize = nrow(linfct)
@@ -209,6 +218,7 @@ contrast = function(object, ...)
               
 contrast.lsmobj = function(object, method = "eff", by, adjust, ...) {
     args = object@grid
+    args[[".offset."]] = NULL # ignore the offset in labels, etc.
     if(missing(by)) 
         by = object@misc$by.vars
     if (!is.null(by)) {
@@ -246,6 +256,8 @@ contrast.lsmobj = function(object, method = "eff", by, adjust, ...) {
     if (is.null(by)) {
         linfct = t(cmat) %*% object@linfct
         grid = data.frame(.contrast.=names(cmat))
+        if (".offset." %in% names(object@grid))
+            grid[[".offset."]] = t(cmat) %*% object@grid[[".offset."]]
     }
     
     # NOTE: The kronecker thing here is nice and efficient but depends
@@ -263,6 +275,8 @@ contrast.lsmobj = function(object, method = "eff", by, adjust, ...) {
         for (v in by)
             xlevs[[v]] = rep(bylevs[row.1st, v], each=n.each)
         grid = cbind(grid, as.data.frame(xlevs))
+        if (".offset." %in% names(object@grid))
+            grid[[".offset."]] = tcmat %*% object@grid[unlist(by.rows), ".offset."]
     }
     
     # Rename the .contrast. column -- ordinarily to "contrast",
@@ -300,7 +314,7 @@ contrast.lsmobj = function(object, method = "eff", by, adjust, ...) {
     
     object@roles$predictors = "contrast"
     levels = list()
-    for (nm in names(grid))
+    for (nm in setdiff(names(grid), ".offset."))
         levels[[nm]] = unique(grid[[nm]])
         
     new("lsmobj", object, linfct=linfct, levels=levels, grid=grid, misc=misc)

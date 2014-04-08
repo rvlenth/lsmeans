@@ -104,7 +104,6 @@ recover.data.call <- function(object, trms, na.action, data, ...) {
     else
         fcall$data = tbl[complete.cases(data), , drop=FALSE]
     
-    
     attr(tbl, "call") = object # the original call
     attr(tbl, "terms") = trms
     attr(tbl, "predictors") = all.vars(delete.response(trms))

@@ -96,6 +96,7 @@ S3method(summary, lsm.list)
 
 S3method(test, lsmobj)
 
+S3method(update, ref.grid)
 
 # interim support for .old.lsmeans
 export(.old.lsmeans)

@@ -2,6 +2,9 @@ Changelog for 'lsmeans' package
 
 2.00-5
     Additional message showing what factors have been averaged over
+    Now adds offsets to predictions when model contains
+        offset() terms (but not for an 'offset' argument)
+    New 'update' method for ref.grid and lsmobj
     Removed unneeded misc$ylevs element in ref.grid objects
     Fixed minor bug in summary() - a try() call should have been 
         with silent=TRUE
