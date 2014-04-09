@@ -216,7 +216,7 @@ print.lsm.list <- function(x, ...)
 contrast = function(object, ...)
     UseMethod("contrast")
               
-contrast.lsmobj = function(object, method = "eff", by, adjust, ...) {
+contrast.ref.grid = function(object, method = "eff", by, adjust, ...) {
     args = object@grid
     args[[".offset."]] = NULL # ignore the offset in labels, etc.
     if(missing(by)) 
@@ -333,7 +333,7 @@ contrast.lsmobj = function(object, method = "eff", by, adjust, ...) {
 
 
 # confint method
-confint.lsmobj = function(object, parm, level=.95, ...) {
+confint.ref.grid = function(object, parm, level=.95, ...) {
     summary(object, infer=c(TRUE,FALSE), level=level, ...)
 }
 
@@ -341,12 +341,12 @@ confint.lsmobj = function(object, parm, level=.95, ...) {
 test = function(object, parm, ...) {
     UseMethod("test")
 }
-test.lsmobj = function(object, parm, ...) {
+test.ref.grid = function(object, parm, ...) {
     summary(object, infer=c(FALSE,TRUE), ...)
 }
 
 # pairs method
-pairs.lsmobj = function(x, ...) {
+pairs.ref.grid = function(x, ...) {
     object = x # for my sanity
     contrast(object, method = "pairwise", ...)
 }

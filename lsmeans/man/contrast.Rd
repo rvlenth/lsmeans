@@ -1,34 +1,34 @@
 \name{contrast}
 \alias{contrast}
-\alias{contrast.lsmobj}
+\alias{contrast.ref.grid}
 \alias{test}
-\alias{test.lsmobj}
+\alias{test.ref.grid}
 \alias{confint}
-\alias{confint.lsmobj}
+\alias{confint.ref.grid}
 \alias{pairs}
-\alias{pairs.lsmobj}
+\alias{pairs.ref.grid}
 
 
 
 \title{
-Methods for \code{lsmobj} objects
+Methods for obtaining analyses \code{ref.grid} and \code{lsmobj} objects
 }
 \description{
-These methods provide for follow-up analyses of \code{lsmobj} objects: Contrasts, pairwise comparisons, tests, and confidence intervals.
+These methods provide for analyses of \code{ref.grid} objects, or follow-up analyses of \code{lsmobj} objects: Contrasts, pairwise comparisons, tests, and confidence intervals.
 }
 \usage{
-\method{contrast}{lsmobj}(object, method = "eff", by, adjust, ...)
+\method{contrast}{ref.grid}(object, method = "eff", by, adjust, ...)
 
-\method{test}{lsmobj}(object, parm, ...)
+\method{test}{ref.grid}(object, parm, ...)
 
-\method{confint}{lsmobj}(object, parm, level = 0.95, ...)
+\method{confint}{ref.grid}(object, parm, level = 0.95, ...)
 
-\method{pairs}{lsmobj}(x, ...)
+\method{pairs}{ref.grid}(x, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object, x}{
-An object of class \code{"lsmobj"}.
+An object of class \code{"ref.grid"} or its extension, \code{"lsmobj"}.
 }
   \item{method}{
 Character value giving the root name of a contast method (e.g. \code{"pairwise"}). Alternatively, a named list of contrast coefficients that must each conform to the number of least-squares means in each \code{by} group. This is just like the \code{contr} argument in \code{\link{lsmeans}}. To identify the available methods, see \preformatted{ls("package:lsmeans", pat=".lsmc")} You may define your own \code{.lsmc} function and use its root name as \code{method}. 

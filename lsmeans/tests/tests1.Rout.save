@@ -69,9 +69,9 @@ Confidence level used: 0.95
 > ## Reported as Bug 15693 - should be fixed in later versions
 > mo.excl.lm <- lm (yield ~ Block + Variety, data = mo, na.action = na.exclude)
 > lsmeans(mo.excl.lm, "Variety")
- Variety      lsmean SE df lower.CL upper.CL
- Golden Rain 107.825 NA  4       NA       NA
- Victory      97.625 NA  4       NA       NA
+ Variety      lsmean       SE df lower.CL upper.CL
+ Golden Rain 107.825 3.658594  4 97.66711 117.9829
+ Victory      97.625 3.092077  4 89.04002 106.2100
 
 Results are averaged over the levels of: Block, rep.meas 
 Confidence level used: 0.95 
