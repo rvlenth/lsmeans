@@ -241,9 +241,13 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs, data) {
     result = as.data.frame(t(result))
     names(result) = c(misc$estName, "SE", "df")
     if (!is.null(misc$tran) && (misc$tran != "none")) {
-        link = try(make.link(misc$tran), silent=TRUE)
-        if (!inherits(link, "try-error"))
-            attr(result, "link") = link
+        if(is.character(misc$tran)) {
+            link = try(make.link(misc$tran), silent=TRUE)
+            if (!inherits(link, "try-error"))
+                attr(result, "link") = link
+        }
+        else if (is.list(misc$tran))
+            attr(result, "link") = misc$tran
     }
     result
 }
@@ -279,8 +283,10 @@ str.ref.grid <- function(object, ...) {
             showlevs(levs[[nm]])
         cat("\n")
     }
-    if(!is.null(object@misc$tran))
-        cat(paste("Transformation:", dQuote(object@misc$tran), "\n"))
+    if(!is.null(tran <- object@misc$tran)) {
+        if (is.list(tran)) tran = "custom - see slot(, \"misc\")$tran"
+        cat(paste("Transformation:", dQuote(tran), "\n"))
+    }
 }
 
 
@@ -531,9 +537,16 @@ print.ref.grid = function(x,...)
 # Method to alter contents of misc slot
 update.ref.grid = function(object, ...) {
     args = list(...)
+    valid.choices = c("adjust","avgd.over","by.vars","estName","famSize","infer","inv.lbl",
+        "level","methdesc","pri.vars","tran")
     misc = object@misc
-    for (nm in names(args))
-        misc[[nm]] = args[[nm]]
+    for (nm in names(args)) {
+        fullname = try(match.arg(nm, valid.choices), silent=TRUE)
+        if(inherits(fullname, "try-error"))
+            message("Argument ", sQuote(nm), " was ignored. Valid choices are:\n",
+                    paste(valid.choices, collapse=", "))
+            misc[[fullname]] = args[[nm]]
+    }
     object@misc = misc
     object
 }

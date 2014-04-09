@@ -4,7 +4,8 @@ Changelog for 'lsmeans' package
     Additional message showing what factors have been averaged over
     Now adds offsets to predictions when model contains
         offset() terms (but not for an 'offset' argument)
-    New 'update' method for ref.grid and lsmobj
+    New 'update' method for ref.grid and lsmobj objects
+    Broader support for transformations (see ?update.ref.grid)
     Removed unneeded misc$ylevs element in ref.grid objects
     Fixed minor bug in summary() - a try() call should have been 
         with silent=TRUE

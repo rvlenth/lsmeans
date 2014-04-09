@@ -303,7 +303,7 @@ contrast.lsmobj = function(object, method = "eff", by, adjust, ...) {
         # anything other than (-1,0,1)?
         non.comp = setdiff(zapsmall(unique(as.matrix(cmat))), c(-1,0,1)) 
         if(length(non.comp) == 0 && (misc$tran %in% c("log", "logit"))) {
-            misc$orig.inv.label = misc$inv.label
+            misc$orig.inv.lbl = misc$inv.lbl
             misc$inv.lbl = ifelse(misc$tran == "logit", "odds.ratio", 
                                   paste(misc$inv.lbl,"ratio",sep="."))
             misc$tran = "log"
