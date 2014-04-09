@@ -1,9 +1,9 @@
 \name{glht}
 \alias{glht}
 \alias{lsm}
-\alias{glht.lsmobj}
+\alias{glht.ref.grid}
 \alias{as.glht}
-\alias{as.glht.lsmobj}
+\alias{as.glht.ref.grid}
 \alias{summary.glht.list}
 
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -14,7 +14,7 @@
 These functions and methods provide an interface between \pkg{lsmeans} and the \code{\link[multcomp]{glht}} function for simultaneous inference in the \pkg{multcomp} package.
 }
 \usage{
-\method{as.glht}{lsmobj}(object, ...)
+\method{as.glht}{ref.grid}(object, ...)
 
 \method{summary}{glht.list}(object, ...)
 
@@ -41,7 +41,7 @@ When there is a non-\code{NULL} \code{by} variable (either explicitly or implici
 Russell V. Lenth
 }
 \note{
-There is also a \code{glht} method for class \code{lsmobj}, but it is far preferable to use \code{as.glht} instead, as \code{model} is redundant. 
+There is also a \code{glht} method for class \code{ref.grid}, but it is far preferable to use \code{as.glht} instead, as \code{model} is redundant. 
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~

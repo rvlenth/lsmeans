@@ -51,7 +51,7 @@ The object to be printed.
   \item{\dots, digits, quote, right}{Additional arguments passed to \code{\link{print.data.frame}}.}
 }
 \details{
-The \code{misc} slot in \code{object} contains default values for \code{by}, \code{infer}, \code{level}, and \code{adjust}. These defaults vary depending on the code that created the object.
+The \code{misc} slot in \code{object} contains default values for \code{by}, \code{infer}, \code{level}, and \code{adjust}. These defaults vary depending on the code that created the object. The \code{\link{update}} method may be used to change these defaults.
 
 With \code{type="response"}, the transformation assumed can be found in \samp{object@misc$tran}, and its label, for the summary is in \samp{object@misc$inv.lbl}. At this time, \code{tran} must be one of the named transformations valid for \code{\link{make.link}}. Any \eqn{t} or \eqn{z} tests are still performed on the scale of the linear predictor, not the inverse-transformed one. Similarly, confidence intervals are computed on the linear-predictor scale, then inverse-transformed.
 

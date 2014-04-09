@@ -125,6 +125,17 @@ Oatsq.lme <- update(Oats.lme, . ~ nitro + I(nitro^2) + Variety)
 # Predictions at each unique 'nitro' value in the dataset
 lsmeans(Oatsq.lme, ~ nitro, cov.reduce = FALSE)
 
+# Trends
+fiber.lm <- lm(strength ~ diameter*machine, data=fiber)
+# Obtain slopes for each machine ...
+( fiber.lst <- lstrends(fiber.lm, "machine", var="diameter") )
+# ... and pairwise comparisons thereof
+pairs(fiber.lst)
+
+# Suppose we want trends relative to sqrt(diameter)...
+lstrends(fiber.lm, ~ machine | diameter, var = "sqrt(diameter)", 
+    at = list(diameter = c(20,30)))
+    
 # See also many other examples in documentation for 
 # 'contrast', 'cld', 'glht', 'lsmip', 'ref.grid', 'MOats',
 # 'nutrition', etc., and in the vignettes

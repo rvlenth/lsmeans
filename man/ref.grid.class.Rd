@@ -30,11 +30,11 @@ Objects of class \code{"lsmobj"} are created by calling \code{\link{lsmeans}} or
     \item{\code{nbasis}:}{Object of class \code{"matrix"} with the basis for the non-estimable functions of the regression coefficients. Every LS mean will correspond to a linear combination of rows of \code{linfct}, and that result must be orthogonal to all the columns of \code{nbasis} in order to be estimable. This will be \code{NULL} if everything is estimable}
     \item{\code{V}:}{Object of class \code{"matrix"}, the symmetric variance-covariance matrix of \code{bhat} }
     \item{\code{dffun, dfargs:}}{Objects of class \code{"function"} and \code{"list"} respectively. \code{dffun(k,dfargs)} should return the degrees of freedom for the linear function \code{sum(k*bhat)}, or \code{NA} if unavailable}
-    \item{\code{misc}:}{Object of class \code{"list"} passed to \code{ddfm} in case additional arguments are needed. It also serves as a repository of additional information used by methods. These include at least the following: \code{estName} (the label for the estimates of linear functions), and the default values of \code{infer}, \code{level}, and \code{adjust} to be used in the \code{\link{summary}} method.}
+    \item{\code{misc}:}{A \code{list} containing additional information used by methods. These include at least the following: \code{estName} (the label for the estimates of linear functions), and the default values of \code{infer}, \code{level}, and \code{adjust} to be used in the \code{\link{summary}} method. Elements in this slot may be modified if desired using the \code{\link{update}} method.}
 }} % end of describe and slots section
 
 \section{Extends}{
-\code{Class "lsmobj"} extends \code{Class "ref.grid"}, directly. There is hardly a difference between these classes except for how the slots \code{linfct} and \code{grid} are obtained.}
+\code{Class "lsmobj"} extends \code{Class "ref.grid"}, directly. There is hardly a difference between these classes except for how the slots \code{linfct} and \code{grid} are obtained, and their \code{show} methods.}
 
 \section{Methods}{
   All methods for these objects are S3 methods except for \code{show}.

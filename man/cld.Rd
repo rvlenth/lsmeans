@@ -1,6 +1,6 @@
 \name{cld}
 \alias{cld}
-\alias{cld.lsmobj}
+\alias{cld.ref.grid}
 
 \title{Compact letter display of pairwise comparisons}
 
@@ -8,12 +8,12 @@
 Extract and display information on all pairwise comparisons of least-squares means.}
 
 \usage{
-\method{cld}{lsmobj}(object, details = FALSE, sort = TRUE, by, alpha = 0.05, 
+\method{cld}{ref.grid}(object, details = FALSE, sort = TRUE, by, alpha = 0.05, 
     Letters = c("1234567890", LETTERS, letters), ...)
 }
 
 \arguments{
-  \item{object}{An object of class \code{lsmobj}}
+  \item{object}{An object of class \code{ref.grid}}
   \item{details}{Logical value determining whether detailed
   information on tests of pairwise comparisons is displayed}
   \item{sort}{Logical value determining whether the LS means are 

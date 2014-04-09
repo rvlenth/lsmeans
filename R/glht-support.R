@@ -23,9 +23,9 @@ glht.lsmlf <- function(model, linfct, ...) {
 }
 
 
-# S3 method for an lsmobj
+# S3 method for an lsmobj or ref.grid
 # Note: model is redundant, really, so can be omitted
-glht.lsmobj <- function(model, linfct, by, ...) {
+glht.ref.grid <- function(model, linfct, by, ...) {
     if (!requireNamespace("multcomp"))
         stop(sQuote("glht")," requires ", dQuote("multcomp"), " to be installed")
     object = linfct # so I don't get confused
@@ -75,7 +75,7 @@ as.glht.default <- function(object, ...)
     stop("Cannot convert an object of class ", sQuote(class(object)[1]),
          " to a ", sQuote("glht"), " object")
 
-as.glht.lsmobj <- function(object, ...)
+as.glht.ref.grid <- function(object, ...)
     glht( , object, ...)
 
 

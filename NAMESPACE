@@ -9,9 +9,9 @@ import(methods)
 if (requireNamespace("multcomp", quietly = TRUE)) {
     importFrom(multcomp, cld, glht, modelparm)
     
-    #S3method(cld, lsmobj) # Appears later outside this block
+    #S3method(cld, ref.grid) # Appears later outside this block
     S3method(glht, lsmlf)
-    S3method(glht, lsmobj)
+    S3method(glht, ref.grid)
     S3method(modelparm, lsmwrap)
 }
 
@@ -44,16 +44,16 @@ export(
 # For clarity, I'm showing them all 
 # but commenting out the ones used only interally
 
-S3method(as.glht, lsmobj)
+S3method(as.glht, ref.grid)
 
-S3method(cld, lsmobj)
+S3method(cld, ref.grid)
 
-S3method(confint, lsmobj)
+S3method(confint, ref.grid)
 
-S3method(contrast, lsmobj)
+S3method(contrast, ref.grid)
 
 #S3method(glht, lsmlf)   # in namespace block above
-#S3method(glht, lsmobj)
+#S3method(glht, ref.grid)
 
 #S3method(lsm.basis, gls)
 #S3method(lsm.basis, lm)
@@ -73,7 +73,7 @@ S3method(lsmip, default)
 
 #S3method(modelparm, lsmwrap) # in namespace block above
 
-S3method(pairs, lsmobj)
+S3method(pairs, ref.grid)
 
 S3method(predict, ref.grid)
 
@@ -94,11 +94,11 @@ S3method(summary, ref.grid)
 S3method(summary, glht.list)
 S3method(summary, lsm.list)
 
-S3method(test, lsmobj)
+S3method(test, ref.grid)
 
 S3method(update, ref.grid)
 
-# interim support for .old.lsmeans
+# interim support for old lsmeans function
 export(.old.lsmeans)
 S3method(print, lsm)
 S3method(print, data.frame.lsm)
