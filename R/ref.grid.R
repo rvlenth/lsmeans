@@ -361,7 +361,7 @@ str.ref.grid <- function(object, ...) {
         none = -qt((1-level)/2, df),
         sidak = -qt((1 - level^(1/n.contr))/2, df),
         bonferroni = -qt((1-level)/n.contr/2, df),
-        tukey = qtukey(level, fam.size, df)
+        tukey = qtukey(level, fam.size, df) / sqrt(2)
     )
     list(cv = cv, mesg = mesg, adjust = adjust)
 }
