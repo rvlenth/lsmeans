@@ -5,6 +5,7 @@
 \usepackage{natbib}
 \usepackage{hyperref}
 
+\let\dq="
 \DefineShortVerb{\"}
 
 \def\pkg#1{\textsf{#1}}
@@ -12,8 +13,17 @@
 \def\code{\texttt}
 \def\proglang{\textsf}
 
+% double-quoted text
+\def\dqt#1{\code{\dq{}#1\dq{}}}
+
+% The objects I want to talk about
+\def\rg{\dqt{ref.grid}}
+\def\lsmo{\dqt{lsmobj}}
+
 \def\R{\proglang{R}}
 \def\SAS{\proglang{SAS}}
+
+
 \def\Fig#1{Figure~\ref{#1}}
 \def\bottomfraction{.5}
 
@@ -34,6 +44,7 @@ options(show.signif.stars=FALSE, prompt="R> ", continue="   ")
 
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 %\SweaveOpts{concordance=TRUE}
 \maketitle{}
 
@@ -55,7 +66,7 @@ Since the reference grid is fundamental, it is our starting point. For each pred
 \item For each predictor that is a factor, its reference levels are the unique levels of that factor.
 \item Each numeric predictor has just one reference level---its mean over the dataset. 
 \end{itemize}
-So the reference grid depends on botgh the model and the dataset.
+So the reference grid depends on both the model and the dataset.
 
 \subsection{Example: The \code{oranges} data}
 To illustrate, consider the "oranges" data provided with \lsm{}.  This dataset has sales of two varieties of oranges (response variables "sales1" and "sales2") at 6 stores (factor "store"), over a period of 6 days (factor "day"). The prices of the oranges (covariates "price1" and "price2") fluctuate in the different stores and the different days. There is just one observation on each store on each day.
@@ -82,7 +93,7 @@ These results, as indicated in the annotation in the output, are in fact the ave
 <<>>=
 with(oranges, tapply(sales1, day, mean))
 @
-These unadjusted means are biased by having different "price1" and "price2" values on each day, whereas the LS~means adhust for bias by using predictions at uniform "price1" and "price2" values.
+These unadjusted means are biased by having different "price1" and "price2" values on each day, whereas the LS~means adjust for bias by using predictions at uniform "price1" and "price2" values.
 
 Note that you may call "lsmeans" with either the reference grid or the model. If the model is given, then the first thing it does is create the reference grid; so if you already have the reference grid, as in this example, it's more efficient to make use of it.
 
@@ -102,7 +113,35 @@ lsmeans(oranges.lm1, c("day","price2"), at = list(price1 = 50,
 @
 
 
+\section{Working with the results}
+The "ref.grid" function produces an object of class \rg{}, and the "lsmeans" function produces an object of class \lsmo{}, which is a subclass of \rg. There is really no practical difference between these two classes except for their "show" methods---what is displayed if you just call the functions---and the fact that an \lsmo{} is not (necessarily) a true reference grid as defined earlier in this tutorial. Consider one of the previous examples:
+<<>>=
+days.lsm = lsmeans(oranges.rg1, "day")
+class(days.lsm)
+@
+If you print "days.lsm", you get the table of LS~means, standard errors, and confidence intervals shown earlier. To get the type of display you saw earlier for "oranges.tg1", use the "str" function:
+<<>>=
+str(days.lsm)
+@
+We no longer see the reference levels for all predictors in the model---only the levels of "day".
 
+There are several methods for \rg{} (and hence also for \lsmo{}) objects. One you have seen already is "summary". It has a number of arguments: see its help page. In the following call, we summarize "days.lsm" differently than before. We will also save the object produced by "summary" for further discussion.
+<<>>=
+( days.sum = summary(days.lsm, infer=c(TRUE,TRUE), level=.90, adjust="bon") )
+@
+The "infer" argument caused both confidence intervals and tests to be produced. The default confidence level of $.95$ was overridden, and a Bonferroni adjustment was applied to both the intervals and the $P$~values.
+
+What kind of object was produced by "summary"? Let's see:
+<<>>=
+class(days.sum)
+@
+The \dqt{summary.ref.grid} class is an extension of \dqt{data.frame}. It includes some attributes that, among other things, cause the messages seen in the example to appear when the object is displayed. But it can also be used as a \dqt{data.frame} if you just want to use the results computationally. For example, we could sort the results in order of their LS~means:
+<<fig=TRUE, height=4>>=
+days.sum = within(days.sum, Day <- as.numeric(day))
+plot(lsmean ~ Day, ylim = range(c(lower.CL, upper.CL)), data=days.sum)
+title("LS means and Bonferroni-adjusted 90% confidence intervals")
+with(days.sum, segments(Day, y0=lower.CL, y1=upper.CL))
+@
 
 
 \bibliography{lsmeans}\bibliographystyle{jss}

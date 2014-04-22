@@ -31,8 +31,7 @@ Yates, F. (1935) Complex experiments, \emph{Journal of the Royal Statistical Soc
 \examples{
 require(lsmeans)
 MOats.lm <- lm (yield ~ Block + Variety, data = MOats)
-MOats.rg <- ref.grid (MOats.lm, 
-                mult.levs = list(nitro = c(0,.2,.4,.6)))
+MOats.rg <- ref.grid (MOats.lm, mult.name = "nitro")
 lsmeans(MOats.rg, ~ nitro | Variety)
 }
 \keyword{datasets}
