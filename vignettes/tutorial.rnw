@@ -135,7 +135,7 @@ What kind of object was produced by "summary"? Let's see:
 <<>>=
 class(days.sum)
 @
-The \dqt{summary.ref.grid} class is an extension of \dqt{data.frame}. It includes some attributes that, among other things, cause the messages seen in the example to appear when the object is displayed. But it can also be used as a \dqt{data.frame} if you just want to use the results computationally. For example, we could sort the results in order of their LS~means:
+The \dqt{summary.ref.grid} class is an extension of \dqt{data.frame}. It includes some attributes that, among other things, cause the messages seen in the example to appear when the object is displayed. But it can also be used as a \dqt{data.frame} if you just want to use the results computationally. For example, we could use it as a dataset to create a plot:
 <<fig=TRUE, height=4>>=
 days.sum = within(days.sum, Day <- as.numeric(day))
 plot(lsmean ~ Day, ylim = range(c(lower.CL, upper.CL)), data=days.sum)
