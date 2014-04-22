@@ -2,6 +2,10 @@ Changelog for 'lsmeans' package
 
 2.00-6
     Corrected error in Tukey-adjusted confidence intervals
+    New dataset 'oranges'
+    New vignette 'lsmeans tutorial' replaces 'using-lsmeans'
+    New 'mult.name' argument in 'ref.grid'
+    Miscellaneous small improvements to code and datasets
 
 2.00-5
     Additional message showing what factors have been averaged over

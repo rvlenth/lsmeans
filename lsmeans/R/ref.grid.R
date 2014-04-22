@@ -7,7 +7,7 @@
 #     TRUE - same as mean
 #     FALSE - same as function(x) sort(unique(x))
 
-ref.grid <- function(object, at, cov.reduce = mean, mult.levs, data) {
+ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, data) {
     # recover the data
     if (missing(data)) {
         data = try(recover.data (object, data = NULL))
@@ -98,18 +98,20 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.levs, data) {
     form = attr(data, "call")$formula
     if (is.null(misc$tran) && (length(form) > 2)) { # No link fcn, but response may be transformed
         lhs = form[[2]]
-        tran = setdiff(all.names(lhs), c(all.vars(lhs), "~"))
+        tran = setdiff(all.names(lhs), c(all.vars(lhs), "~", "cbind"))
         if(length(tran) == 1)
             misc$tran = tran
     }
     
     # Take care of multivariate response
-    multresp = list()
+    multresp = character(0) ### ??? was list()
     ylevs = misc$ylevs
     if(!is.null(ylevs)) { # have a multivariate situation
         if (missing(mult.levs)) {
-            yname = multresp = names(ylevs)[1]
-            ref.levels[[yname]] = ylevs[[1]]
+            if (missing(mult.name))
+                mult.name = names(ylevs)[1]
+            ref.levels[[mult.name]] = ylevs[[1]]
+            multresp = mult.name
         }
         else {
             k = prod(sapply(mult.levs, length))
@@ -260,7 +262,7 @@ str.ref.grid <- function(object, ...) {
     #cat("responses: ")
     #showlevs(object@roles$responses)
     levs = object@levels
-    cat("'ref.grid' object with variables:\n")
+    cat(paste("'", class(object)[1], "' object with variables:\n", sep=""))
     for (nm in union(object@roles$predictors, union(object@roles$multresp, object@roles$responses))) {
         cat(paste("    ", nm, " = ", sep = ""))
         if (nm %in% names(object@matlevs)) {

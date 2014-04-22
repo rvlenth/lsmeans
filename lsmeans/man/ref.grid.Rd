@@ -13,7 +13,7 @@ Create a reference grid from a fitted model
 Using a fitted model object, determine a reference grid for which least-squares means are defined. The resulting \code{ref.grid} object encapsulates all the information needed to calculate LS means and make inferences on them.
 }
 \usage{
-ref.grid(object, at, cov.reduce = mean, mult.levs, data)
+ref.grid(object, at, cov.reduce = mean, mult.name, mult.levs, data)
 }
 
 \arguments{
@@ -25,7 +25,8 @@ ref.grid(object, at, cov.reduce = mean, mult.levs, data)
   
   If a logical value, \code{TRUE} is equivalent to  \samp{cov.reduce=mean}, and \code{FALSE} is equivalent to \samp{cov.reduce = function(x) sort(unique(x))}.
 } % end of \item{cov.reduce}
-  \item{mult.levs}{A named list of levels for the dimensions of a multivariate response. If there is more than one element, the combinations of levels are used, in \code{\link{expand.grid}} order. The (total) number of levels must match the number of dimensions. If there is a multivariate response and \code{mult.levs} is missing, the default name is \code{rep.meas} with levels \code{1,2,...}}
+  \item{mult.name}{Character, the name to give to the \dQuote{factor} whose levels delineate the elements of a multivariate response. If this is provided, it overrides the default name, e.g., \code{"rep.meas"} for an \code{\link[=lm]{mlm}} object or \code{"cut"} for a \code{\link[MASS]{polr}} object.}
+  \item{mult.levs}{A named list of levels for the dimensions of a multivariate response. If there is more than one element, the combinations of levels are used, in \code{\link{expand.grid}} order. The (total) number of levels must match the number of dimensions. If \code{mult.name} is specified, this argument is ignored.}
   \item{data}{A \code{data.frame} to use to obtain information about the predictors (e.g. factor levels). If missing, then \code{\link{recover.data}} is used to attempt to reconstruct the data.}
 } %--- end of \arguments
 
@@ -66,7 +67,9 @@ summary(ref.grid(fiber.lm, at = list(diameter = c(15,25))))
 
 # Multivariate example
 MOats.lm = lm(yield ~ Block + Variety, data = MOats)
-ref.grid(MOats.lm, mult.levs = list(nitro = c(0,.2,.4,.6)))
+ref.grid(MOats.lm, mult.name = "nitro")
+# silly illustration of how to use 'mult.levs'
+ref.grid(MOats.lm, mult.levs = list(T=LETTERS[1:2], U=letters[1:2]))
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
