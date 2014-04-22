@@ -1,0 +1,110 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{mathpazo}
+\usepackage{fancyvrb}
+\usepackage{natbib}
+\usepackage{hyperref}
+
+\DefineShortVerb{\"}
+
+\def\pkg#1{\textsf{#1}}
+\def\lsm{\pkg{lsmeans}}
+\def\code{\texttt}
+\def\proglang{\textsf}
+
+\def\R{\proglang{R}}
+\def\SAS{\proglang{SAS}}
+\def\Fig#1{Figure~\ref{#1}}
+\def\bottomfraction{.5}
+
+\title{\lsm{} tutorial}
+\author{Russell V.~Lenth}
+
+%\VignetteIndexEntry{lsmeans tutorial}
+%\VignetteDepends{lsmeans}
+%\VignetteKeywords{least-squares means}
+%\VignettePackage{lsmeans}
+
+
+% Initialization
+<<echo=FALSE>>=
+options(show.signif.stars=FALSE, prompt="R> ", continue="   ")
+@
+
+
+
+\begin{document}
+%\SweaveOpts{concordance=TRUE}
+\maketitle{}
+
+\section{Introduction}
+Least-squares means (LS~means for short)  for a linear model are simply predictions---or marginal averages thereof---over a regular grid of predictor settings which I call the \emph{reference grid}. They date back at least to 1976 when LS~means were incorporated in the contributed \SAS{} procedure named \code{HARVEY} \citep{Har76}. Later, they were incorporated via \code{LSMEANS} statements in the regular \SAS{} releases. 
+
+In simple analysis-of-covariance models, LS~means are the same as covariate-adjusted means. In unbalanced factorial experiments, LS~means for each factor mimic the marginal means but are adjusted to bias due to imbalance. The latter interpretation is quite similar to the ``unweighted means'' method for unbalanced data, as presented in old design books.
+
+In any case, the most important things to remember are:
+\begin{itemize}
+\item LS~means are computed relative to a \emph{reference grid}.
+\item Once the reference grid is understood, LS~means are simply predictions on this grid, or marginal averages of these predictions.
+\end{itemize}
+If you understand these points, then you will know what you are getting, and can judge whether or not LS~means are appropriate for your analysis.
+
+\section{The reference grid}
+Since the reference grid is fundamental, it is our starting point. For each predictor in the model, we define a set of one or more \emph{reference levels}. The reference grid is then the set of all combinations of reference levels. If not specified explicitly, the default reference levels are obtained as follows:
+\begin{itemize}
+\item For each predictor that is a factor, its reference levels are the unique levels of that factor.
+\item Each numeric predictor has just one reference level---its mean over the dataset. 
+\end{itemize}
+So the reference grid depends on botgh the model and the dataset.
+
+\subsection{Example: The \code{oranges} data}
+To illustrate, consider the "oranges" data provided with \lsm{}.  This dataset has sales of two varieties of oranges (response variables "sales1" and "sales2") at 6 stores (factor "store"), over a period of 6 days (factor "day"). The prices of the oranges (covariates "price1" and "price2") fluctuate in the different stores and the different days. There is just one observation on each store on each day.
+
+For starters, let's consider an additive covariance model for sales of the first variety, with the two factors and both "price1" and "price2" as covariates (since the price of the other variety could also affect sales).
+<<>>=
+library(lsmeans)
+oranges.lm1 = lm(sales1 ~ price1 + price2 + day + store, data = oranges)
+anova(oranges.lm1)
+@
+The "ref.grid" function in \lsm{} may be used to establish the reference grid. Here is the default one:
+<<>>=
+( oranges.rg1 = ref.grid(oranges.lm1) )
+@
+As outlined above, the two covariates "price1" and "price2" have their means as their sole reference level; and the two factors have their levels as reference levels. The reference grid thus consists of the $1\times1\times6\times6=36$ combinations of these reference levels. LS~means are based on predictions on this reference grid, which we can obtain using "predict" or "summary":
+<<>>=
+summary(oranges.rg1)
+@
+The ANOVA indicates there is a significant "day" effect after adjusting for the covariates, so we might want to compare the days. The "lsmeans" function can do this:
+<<>>=
+lsmeans(oranges.rg1, "day")   ## or lsmeans(oranges.lm1, "day")
+@
+These results, as indicated in the annotation in the output, are in fact the averages of the predictions shown earlier, for each day, over the 6 stores. The above LS~means are not the same as the marginal means of the data:
+<<>>=
+with(oranges, tapply(sales1, day, mean))
+@
+These unadjusted means are biased by having different "price1" and "price2" values on each day, whereas the LS~means adhust for bias by using predictions at uniform "price1" and "price2" values.
+
+Note that you may call "lsmeans" with either the reference grid or the model. If the model is given, then the first thing it does is create the reference grid; so if you already have the reference grid, as in this example, it's more efficient to make use of it.
+
+\subsection{Altering the reference grid}
+The "at" argument may be used to override defaults in the reference grid. You may specify this argument either in a "ref.grid" call or an "lsmeans" call; and you should specify "list" with named sets of reference levels. Here is a silly example:
+<<>>=
+lsmeans(oranges.lm1, "day", at = list(price1 = 50, 
+    price2 = c(40,60), day = c("2","3","4")) )
+@
+Here, we restricted the results to three of the days, and used different prices.
+One possible surprise is to note that the predictions are averaged over the two "price2"
+values. That is because "price2" is no longer a single reference level, and we average over the levels of all factors not used to split-out the LS~means. This is probably not what we want. To get separate sets of predictions for each "price2", you need to specify it as another factor in
+the "lsmeans" call:
+<<>>=
+lsmeans(oranges.lm1, c("day","price2"), at = list(price1 = 50, 
+    price2 = c(40,60), day = c("2","3","4")) )
+@
+
+
+
+
+
+\bibliography{lsmeans}\bibliographystyle{jss}
+
+\end{document}
