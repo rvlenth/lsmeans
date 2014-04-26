@@ -45,7 +45,6 @@ options(show.signif.stars=FALSE, prompt="R> ", continue="   ")
 
 \begin{document}
 \SweaveOpts{concordance=TRUE}
-%\SweaveOpts{concordance=TRUE}
 \maketitle{}
 
 \section{Introduction}
@@ -68,7 +67,7 @@ Since the reference grid is fundamental, it is our starting point. For each pred
 \end{itemize}
 So the reference grid depends on both the model and the dataset.
 
-\subsection{Example: The \code{oranges} data}
+\subsection{Example: Orange sales}
 To illustrate, consider the "oranges" data provided with \lsm{}.  This dataset has sales of two varieties of oranges (response variables "sales1" and "sales2") at 6 stores (factor "store"), over a period of 6 days (factor "day"). The prices of the oranges (covariates "price1" and "price2") fluctuate in the different stores and the different days. There is just one observation on each store on each day.
 
 For starters, let's consider an additive covariance model for sales of the first variety, with the two factors and both "price1" and "price2" as covariates (since the price of the other variety could also affect sales).
@@ -105,42 +104,61 @@ lsmeans(oranges.lm1, "day", at = list(price1 = 50,
 @
 Here, we restricted the results to three of the days, and used different prices.
 One possible surprise is to note that the predictions are averaged over the two "price2"
-values. That is because "price2" is no longer a single reference level, and we average over the levels of all factors not used to split-out the LS~means. This is probably not what we want. To get separate sets of predictions for each "price2", you need to specify it as another factor in
-the "lsmeans" call:
+values. That is because "price2" is no longer a single reference level, and we average over the levels of all factors not used to split-out the LS~means. This is probably not what we want. To get separate sets of predictions for each "price2", you need to specify it as another factor or as a "by" factor in the "lsmeans" call (we will save the result for later discussion):
 <<>>=
-lsmeans(oranges.lm1, c("day","price2"), at = list(price1 = 50, 
-    price2 = c(40,60), day = c("2","3","4")) )
+org.lsm = lsmeans(oranges.lm1, "day", by ="price2", 
+    at = list(price1 = 50, price2 = c(40,60), day = c("2","3","4")) )
+org.lsm
 @
-
+Note: We could have obtained the same results using any of these:
+<<eval=FALSE>>=
+lsmeans(oranges.lm1, ~ day | price, at = ... )         # Ex 1
+lsmeans(oranges.lm1, c("day","price2"), at = ... )     # Ex 2
+lsmeans(oranges.lm1, ~ day * price, at = ... )         # Ex 3
+@
+Ex~1 illustrates the formula method for specifying factors, which is more compact. The "|" character replaces the "by" specification. Ex~2 and Ex~3 produce the same results, but their results are displayed as one table (with columns for "day" and "price") rather than as two separate tables.
 
 \section{Working with the results}
-The "ref.grid" function produces an object of class \rg{}, and the "lsmeans" function produces an object of class \lsmo{}, which is a subclass of \rg. There is really no practical difference between these two classes except for their "show" methods---what is displayed if you just call the functions---and the fact that an \lsmo{} is not (necessarily) a true reference grid as defined earlier in this tutorial. Consider one of the previous examples:
+The "ref.grid" function produces an object of class \rg{}, and the "lsmeans" function produces an object of class \lsmo{}, which is a subclass of \rg. There is really no practical difference between these two classes except for their "show" methods---what is displayed if you just call the functions---and the fact that an \lsmo{} is not (necessarily) a true reference grid as defined earlier in this tutorial. Let's use the "str" function to examine the \lsmo{} object produced just above:
 <<>>=
-days.lsm = lsmeans(oranges.rg1, "day")
-class(days.lsm)
+str(org.lsm)
 @
-If you print "days.lsm", you get the table of LS~means, standard errors, and confidence intervals shown earlier. To get the type of display you saw earlier for "oranges.tg1", use the "str" function:
-<<>>=
-str(days.lsm)
-@
-We no longer see the reference levels for all predictors in the model---only the levels of "day".
+We no longer see the reference levels for all predictors in the model---only the levels of "day" and "price2". These \emph{act} like reference levels, but they do not define the reference grid upon which the predictions are based.
 
 There are several methods for \rg{} (and hence also for \lsmo{}) objects. One you have seen already is "summary". It has a number of arguments: see its help page. In the following call, we summarize "days.lsm" differently than before. We will also save the object produced by "summary" for further discussion.
 <<>>=
-( days.sum = summary(days.lsm, infer=c(TRUE,TRUE), level=.90, adjust="bon") )
+( org.sum = summary(org.lsm, infer=c(TRUE,TRUE), 
+                    level=.90, adjust="bon", by = "day") )
 @
-The "infer" argument caused both confidence intervals and tests to be produced. The default confidence level of $.95$ was overridden, and a Bonferroni adjustment was applied to both the intervals and the $P$~values.
+The "infer" argument caused both confidence intervals and tests to be produced. The default confidence level of $.95$ was overridden; a Bonferroni adjustment was applied to both the intervals and the $P$~values; and the tables are organized the opposite way from what we saw before.
 
 What kind of object was produced by "summary"? Let's see:
 <<>>=
-class(days.sum)
+class(org.sum)
 @
-The \dqt{summary.ref.grid} class is an extension of \dqt{data.frame}. It includes some attributes that, among other things, cause the messages seen in the example to appear when the object is displayed. But it can also be used as a \dqt{data.frame} if you just want to use the results computationally. For example, we could use it as a dataset to create a plot:
-<<fig=TRUE, height=4>>=
-days.sum = within(days.sum, Day <- as.numeric(day))
-plot(lsmean ~ Day, ylim = range(c(lower.CL, upper.CL)), data=days.sum)
-title("LS means and Bonferroni-adjusted 90% confidence intervals")
-with(days.sum, segments(Day, y0=lower.CL, y1=upper.CL))
+The \dqt{summary.ref.grid} class is an extension of \dqt{data.frame}. It includes some attributes that, among other things, cause the messages seen in the example to appear when the object is displayed. But it can also be used as a \dqt{data.frame} if you just want to use the results computationally. For example, suppose we want to convert the LS~means from dollars to Russian rubles:
+<<>>=
+cbind(org.sum[, 1:2], lsrubles = org.sum$lsmean * 35.7) # as of April 22, 2014
+@
+Observe that, as a data~frame, the summary is just one table with six rows, rather than a collection of three tables, and it contains a column for all reference variables, including any "by" variables.
+
+Besides "str" and "summary", there is also a "confint" method (same is "summary" with "infer=c(TRUE,FALSE)") and a "test" method (same as "summary" with "infer=c(FALSE,TRUE)"). There is also an "update" method which may be used for changing the default display settings. For example:
+<<>>=
+org.lsm2 = update(org.lsm, by.vars = NULL, level = .99)
+org.lsm2
+@
+
+
+
+\subsection{Example: Oat yields}
+The "Oats" dataset in the \pkg{nlme} has the results of a split-plot experiment. The experiment was conducted on six blocks (factor "Block"). Each block was divided into three plots, which were randomized to three varieties (factor "Variety") of oats. Each plot was divided into subplots and randomized to four levels of nitrogen (variable "nitro"). The response, "yield", was measured once on each subplot after a suitable growing period. 
+
+We will fit a model using the "lmer" function in the \pkg{lme4} package. This will be a mixed model with random intercepts for "Block" and "Block:Variety" (which identifies the plots).
+<<>>=
+data("Oats", package = "nlme")
+library("lme4")
+Oats.lmer = lmer(yield ~ Variety*factor(nitro) + (1|Block/Variety), data = Oats)
+anova(Oats.lmer)
 @
 
 

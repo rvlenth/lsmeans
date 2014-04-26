@@ -54,7 +54,9 @@ A copy of \code{object} with its \code{"misc"} slot modified.
 \author{
 Russell V. Lenth
 }
-\note{Unlike the \code{update} method for model classes (\code{lm}, \code{glm}, etc.), this does not re-fit or re-estimate anything; but it does affect how \code{object} is treated by other methods for its class.}
+\note{If a call to \code{\link{lsmeans}}, \code{\link{contrast}}, or \code{\link{ref.grid}} contains a non-\code{NULL} \code{options} list, those options are passed in a call to \code{update} on the constructed object before it is returned. This allows you, for example, to override the defaults used by \code{\link{summary}}. In addition, user defaults may be set using an \code{link{options}} setting for \code{"lsmeans"}. It should be a list with one or more named elements \code{lsmeans}, \code{contrast}, or \code{ref.grid}, used for setting the defaults for objects constructed by functions of these same names. Note that options can get \dQuote{inherited}. See the examples.
+
+Unlike the \code{update} method for model classes (\code{lm}, \code{glm}, etc.), this does not re-fit or re-estimate anything; but it does affect how \code{object} is treated by other methods for its class.}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
@@ -70,7 +72,18 @@ rg1 <- update(ref.grid(warp.lm1),
                     mu.eta = function(eta) exp(eta)),
         inv.lbl = "pred.breaks")
         
-summary(rg1, type = "response")        
+summary(rg1, type = "response")
+
+\dontrun{
+options(lsmeans = list(
+            ref.grid = list(level = .90),
+            contrast = list(infer = c(TRUE,FALSE))
+            ))
+# Sets default confidence level to .90 for objects created by ref.grid
+# AS WELL AS lsmeans called with a model object (since it creates a 
+# reference grid). In addition, when we call 'contrast', 'pairs', etc.,
+# confidence intervals rather than tests are displayed by default.
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
