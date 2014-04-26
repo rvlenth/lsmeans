@@ -120,9 +120,8 @@ recover.data.lm <- function(object, ...) {
 }
 
 lsm.basis.lm <- function(object, trms, xlev, grid) {
-    contrasts = attr(model.matrix(object), "contrasts")
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
-    X = model.matrix(trms, m, contrasts.arg = contrasts)
+    X = model.matrix(trms, m, contrasts.arg = object$contrasts)
     # coef() works right for lm but coef.aov tosses out NAs
     bhat = as.numeric(object$coefficients) 
     # stretches it out if multivariate - see mlm method
@@ -183,7 +182,7 @@ recover.data.merMod <- function(object, ...) {
 
 lsm.basis.merMod <- function(object, trms, xlev, grid) {
     bhat = fixef(object)
-    contrasts = attr(model.matrix(object), "contrasts")
+    contrasts = attr(object@pp$X, "contrasts")
     V = as.matrix(vcov(object))
     dfargs = misc = list()
     if (isLMM(object)) {
