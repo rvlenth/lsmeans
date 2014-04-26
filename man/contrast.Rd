@@ -17,7 +17,8 @@ Methods for obtaining analyses \code{ref.grid} and \code{lsmobj} objects
 These methods provide for analyses of \code{ref.grid} objects, or follow-up analyses of \code{lsmobj} objects: Contrasts, pairwise comparisons, tests, and confidence intervals.
 }
 \usage{
-\method{contrast}{ref.grid}(object, method = "eff", by, adjust, ...)
+\method{contrast}{ref.grid}(object, method = "eff", by, adjust, 
+    options = getOption("lsmeans")$contrast, ...)
 
 \method{test}{ref.grid}(object, parm, ...)
 
@@ -39,6 +40,7 @@ Character names of variable(s) to be used for ``by'' groups. The contrasts will 
   \item{adjust}{
 Method to use for adjusting \emph{P} values. This is passed to \code{\link[lsmeans]{summary}}.
 }
+  \item{options}{If non-\code{NULL}, a named \code{list} of arguments to pass to \code{\link{update}}, just after the object is constructed.}
   \item{parm}{
 (This is a required argument for the generic \code{\link[stats]{confint}}) and \code{test} methods, but is ignored by the methods for \code{lsmobj}.)
   }

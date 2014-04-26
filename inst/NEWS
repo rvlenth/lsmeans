@@ -5,6 +5,8 @@ Changelog for 'lsmeans' package
     New dataset 'oranges'
     New vignette 'lsmeans tutorial' replaces 'using-lsmeans'
     New 'mult.name' argument in 'ref.grid'
+    New 'options' argument for 'ref.grid', 'lsmeans', and 'contrast',
+        and support for options(lsmeans = ...)
     Miscellaneous small improvements to code and datasets
 
 2.00-5

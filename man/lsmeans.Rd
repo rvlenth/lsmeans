@@ -16,7 +16,8 @@ and optionally comparisons or contrasts among them.
 ## (used when 'specs' is 'character')
 
 \method{lsmeans}{character.ref.grid}(object, specs, by = NULL, 
-    fac.reduce = function(coefs) apply(coefs, 2, mean), contr, ...)
+    fac.reduce = function(coefs) apply(coefs, 2, mean), contr, 
+    options = getOption("lsmeans")$lsmeans, ...)
 ## (used when 'object' is a 'ref.grid' and 'specs' is 'character')
     
 \method{lsmeans}{list}(object, specs, ...)
@@ -42,6 +43,7 @@ A \code{list} of contrast coefficients to apply to the least-squares means -- or
 \item{contr.list}{
 A named \code{list} of \code{list}s of contrast coefficients, as for \code{contr}. This is used only in the formula method; see Details below. 
 }
+\item{options}{If non-\code{NULL}, a named \code{list} of arguments to pass to \code{\link{update}}, just after the object is constructed.}
 \item{trend}{
 Including this argument is an alternative way of calling \code{lstrends} with it as its \code{var} argument.
 }
@@ -103,11 +105,15 @@ require(lsmeans)
 fiber.lm <- lm(strength ~ diameter + machine, data = fiber)
 
 # adjusted means and comparisons, treating machine C as control
-lsmeans (fiber.lm, "machine", contr = "trt.vs.ctrlk")
+( fiber.lsm <- lsmeans (fiber.lm, "machine") )
+contrast(fiber.lsm, "trt.vs.ctrlk")
+# Or get both at once using
+#     lsmeans (fiber.lm, "machine", contr = "trt.vs.ctrlk")
 
 ### Factorial experiment
 warp.lm <- lm(breaks ~ wool * tension, data = warpbreaks)
-( warp.lsm <- lsmeans (warp.lm,  ~ wool | tension) )
+( warp.lsm <- lsmeans (warp.lm,  ~ wool | tension,
+    options = list(estName = "pred.breaks")) )
 pairs(warp.lsm) # remembers 'by' structure
 contrast(warp.lsm, method = "poly", by = "wool")
 

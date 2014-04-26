@@ -7,7 +7,8 @@
 #     TRUE - same as mean
 #     FALSE - same as function(x) sort(unique(x))
 
-ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, data) {
+ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, 
+                     options = getOption("lsmeans")$ref.grid, data) {
     # recover the data
     if (missing(data)) {
         data = try(recover.data (object, data = NULL))
@@ -174,7 +175,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, data) 
     misc$avgd.over = character(0)
 
     
-    new ("ref.grid",
+    result = new ("ref.grid",
          model.info = list(call = attr(data,"call"), terms = trms, xlev = xlev),
          roles = list(predictors = attr(data, "predictors"), 
                       responses = attr(data, "responses"), 
@@ -182,6 +183,13 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, data) 
          grid = grid, levels = ref.levels, matlevs = matlevs,
          linfct = basis$X, bhat = basis$bhat, nbasis = basis$nbasis, V = basis$V,
          dffun = basis$dffun, dfargs = basis$dfargs, misc = misc)
+
+    if(!is.null(options)) {
+        options$object = result
+        result = do.call("update.ref.grid", options)
+    }
+
+    result
 }
 
 # This function figures out which covariates in a model 
@@ -547,7 +555,9 @@ update.ref.grid = function(object, ...) {
         if(inherits(fullname, "try-error"))
             message("Argument ", sQuote(nm), " was ignored. Valid choices are:\n",
                     paste(valid.choices, collapse=", "))
+        else {
             misc[[fullname]] = args[[nm]]
+        }
     }
     object@misc = misc
     object
