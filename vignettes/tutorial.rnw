@@ -4,6 +4,7 @@
 \usepackage{fancyvrb}
 \usepackage{natbib}
 \usepackage{hyperref}
+%\usepackage{multicol}
 
 \let\dq="
 \DefineShortVerb{\"}
@@ -148,16 +149,98 @@ org.lsm2 = update(org.lsm, by.vars = NULL, level = .99)
 org.lsm2
 @
 
+\section{Contrasts and comparisons}
+Often, people want to do pairwise comparisons of LS~means, or compute other contrasts among them. This is the purpose of the "contrast" function, which uses an \dqt{lsmobj} object as input. There are several standard contrast families such as \dqt{pairwise}, \dqt{trt.vs.ctrl}, and \dqt{poly}. In the following command, we request \dqt{eff} contrasts, which are differences between each mean and the overall mean:
+<<>>=
+contrast(org.lsm, "eff")
+@
+Note that this remembers the "by" specification from before, and obtains the effects for each group. In this example, since it is an additive model, we obtain the same results in each group. This isn't wrong, it's just redundant.
+
+Another popular method is Dunnett-style contrasts, where a particular LS~mean is compared with each of the others. This is done using \dqt{trt.vs.ctrl}. In the following, we obtain (again) the LS~means for days, and compare each with the average of the LS~means on day~5 and~6.
+<<>>=
+days.lsm = lsmeans(oranges.rg1, "day")
+contrast(days.lsm, "trt.vs.ctrl", ref = c(5,6))
+@
+For convenience, \dqt{trt.vs.ctrl1} or \dqt{trt.vs.ctrlk} methods are provided for use in lieu of "ref" for comparing with the first and the last LS~means.
+
+You may have noticed that by default, "lsmeans" results are displayed with confidence intervals while "contrast" results are displayed with $t$ tests. You can easily override this; for example,
+<<eval=FALSE>>=
+confint(contrast(days.lsm, "trt.vs.ctrlk"))
+@
+(Results not shown.)
+
+In the above examples, a default multiplicity adjustment is determined from the contrast method. This may be overridden by additing an "adjust" argument. 
+
+\subsection{Pairwise comparisons}
+Often, users want pairwise comparisons among the LS~means. These may be obtained by specifying \dqt{pairwise} or \dqt{revpairwise} in the call to "contrast". For group labels $A,B,C$, \dqt{pairwise} generates the comparisons $A-B, A-C, B-C$ while \dqt{revpairwise} generates $B-A, C-A, C-B$. As a convenience, the "pairs" method works just like "contrasts" with \dqt{pairwise}:
+<<>>=
+pairs(org.lsm)
+@
+There is also a "cld" (compact letter display) method that lists the LS~means along with grouping symbols for pairwise contrasts. It requires the \pkg{multcompView} package to be installed.
+<<>>=
+cld(days.lsm, alpha = .10)
+@
+Two LS~means that share one or more of the same grouping symbols are not significantly different at the stated value of "alpha", after applying the multiplicity adjustment (in this case Tukey's HSD).
+By default, the LS~means are ordered in this display, but this may be overridden with the argument "sort=FALSE". "cld" returns a \dqt{summary.ref.grid} object, not an "lsmobj".
+
+\section{Multivariate models}
+The "oranges" data has two response variables. Let's try a multivariate model for predicting the sales of the two varieties of oranges, and see what we get if we call "ref.grid":
+<<>>=
+oranges.mlm = lm(cbind(sales1,sales2) ~ price1 + price2 + day + store, 
+                 data = oranges)
+ref.grid(oranges.mlm)
+@
+What happens is that the multivariate response is treated like an additional factor, by default named "rep.meas". In turn, it can be used, to specify levels for LS~means. Here we rename the multivariate response to \dqt{variety} and obtain "day" means (and a compact letter display for comparisons thereof)  for each "variety":
+<<>>=
+org.mlsm = lsmeans(oranges.mlm, ~ day | variety, mult.name="variety")
+cld(org.mlsm, sort = FALSE)
+@
+
+\subsection{Contrasts of contrasts}
+With the preceding model, we might want to compare the two varieties on each day:
+<<>>=
+org.vardiff = pairs(org.mlsm, by = "day")
+@
+The results (not yet shown) will comprise the six "sales1-sales2" differences, one for each day. We might want to compare these differences to see if they vary from day to day.
+<<>>=
+cld(org.vardiff, by = NULL)
+@
 
 
-\subsection{Example: Oat yields}
+\section{Interfacing with \pkg{multcomp}}
+The \pkg{multcomp} package supports more exacting corrections for simultaneous inference than are available in \lsm{}. Its "glht" (general linear hypothesis testing) function and associated \dqt{glht} class are similar in some ways to "lsmeans" and \dqt{lsmobj} objects, respectively. So we provide methods such as "as.glht" for working with "glht" so as to obtain ``exact'' inferences. To illustrate, I'll compare some simultaneous confidence intervals using the two packages. 
+%%%\begin{multicols}{2}\small
+First, using a Bonferroni correction on the LS~means for "day" in the "oranges" model:
+<<>>=
+confint(days.lsm, adjust = "bon")
+@
+%%%\columnbreak
+And now using \pkg{multcomp}:
+<<>>=
+library(multcomp)
+confint(as.glht(days.lsm))
+@
+%%%\end{multicols}
+The latter intervals are somewhat narrower, which is expected since the Bonferroni bethod is conservative.
+
+The \lsm{} package also provides an "lsm" function that can be called as the second argument of "glht":
+<<>>=
+summary(glht(oranges.lm1, lsm("day", contr="eff")), test = adjusted("free"))
+@
+
+
+
+
+
+\section{Example: Oat yields}
 The "Oats" dataset in the \pkg{nlme} has the results of a split-plot experiment. The experiment was conducted on six blocks (factor "Block"). Each block was divided into three plots, which were randomized to three varieties (factor "Variety") of oats. Each plot was divided into subplots and randomized to four levels of nitrogen (variable "nitro"). The response, "yield", was measured once on each subplot after a suitable growing period. 
 
-We will fit a model using the "lmer" function in the \pkg{lme4} package. This will be a mixed model with random intercepts for "Block" and "Block:Variety" (which identifies the plots).
+We will fit a model using the "lmer" function in the \pkg{lme4} package. This will be a mixed model with random intercepts for "Block" and "Block:Variety" (which identifies the plots). I have elected to apply a logarithmic transformation to the response variable, mostly for illustration purposes.
 <<>>=
 data("Oats", package = "nlme")
 library("lme4")
-Oats.lmer = lmer(yield ~ Variety*factor(nitro) + (1|Block/Variety), data = Oats)
+Oats.lmer = lmer(log(yield) ~ Variety*factor(nitro) + (1|Block/Variety), 
+                 data = Oats)
 anova(Oats.lmer)
 @
 
