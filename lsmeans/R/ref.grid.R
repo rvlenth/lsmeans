@@ -478,7 +478,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by,
     summ = cbind(lbls, result)
     attr(summ, "pri.vars") = setdiff(union(object@misc$pri.vars, object@misc$by.vars), by)
     attr(summ, "by.vars") = by
-    attr(summ, "mesg") = mesg
+    attr(summ, "mesg") = unique(mesg)
     class(summ) = c("summary.ref.grid", "data.frame")
     summ
 }
@@ -532,7 +532,7 @@ print.summary.ref.grid = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) 
         }
     }
     
-    msg = attr(x, "mesg")
+    msg = unique(attr(x, "mesg"))
     if (!is.null(msg))
         for (j in seq_len(length(msg))) cat(paste(msg[j], "\n"))
     
