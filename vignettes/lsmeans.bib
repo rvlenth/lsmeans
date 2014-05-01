@@ -29,7 +29,6 @@
   publisher = "Van Nostrand", isbn = "0-534-02713-7"
 }
 
-
 @book{Oeh00,
   author = "Oehlert, G.", year = 2000,
   title = "A First Course in Design and Analysis of Experiments",
@@ -55,38 +54,27 @@
 
 ;;; R packages...
 
-  @Manual{lsmea,
-    title = {lsmeans: Least-Squares Means},
-    author = {Russell V. Lenth},
+  @Manual{latti,
+    title = {\pkg{lattice}: Lattice Graphics},
+    author = {Deepayan Sarkar},
     year = {2014},
-    note = {R package version 2.00},
+    note = {\R{} package version 0.20-29},
+    url = {http://CRAN.R-project.org/package=lattice},
   }
 
   @Manual{lme4,
     title = {\pkg{lme4}: Linear Mixed-effects Models Using \pkg{Eigen} and \proglang{S4}},
     author = {Douglas Bates and Martin Maechler and Ben Bolker and Steven Walker},
-    year = {2013},
-    note = {\R{} package version 1.1-0},
+    year = {2014},
+    note = {\R{} package version 1.1-6},
     url = {http://lme4.r-forge.r-project.org/},
   }
   
-
-
-  @Manual{pbkrt,
-    title = {\pkg{pbkrtest}: Parametric Bootstrap and Kenward Roger Based Methods for Mixed
-Model Comparison},
-    author = {Ulrich Halekoh and Søren Højsgaard},
-    year = {2013},
-    note = {\R{} package version 0.3-8},
-    url = {http://CRAN.R-project.org/package=pbkrtest},
-  }
-
-  @Manual{multc,
-    title = {\pkg{multcomp}: Simultaneous Inference in General Parametric Models},
-    author = {Torsten Hothorn and Frank Bretz and Peter Westfall},
-    year = {2013},
-    note = {\R{} package version 1.3-1},
-    url = {http://CRAN.R-project.org/package=multcomp},
+  @Manual{lsmea,
+    title = {lsmeans: Least-Squares Means},
+    author = {Russell V. Lenth},
+    year = {2014},
+    note = {R package version 2.05},
   }
 
     @Manual{mcview,
@@ -97,18 +85,27 @@ Model Comparison},
       url = {http://CRAN.R-project.org/package=multcompView},
     }
 
-  @Manual{latti,
-    title = {\pkg{lattice}: Lattice Graphics},
-    author = {Deepayan Sarkar},
-    year = {2013},
-    note = {\R{} package version 0.20-24},
-    url = {http://CRAN.R-project.org/package=lattice},
+  @Manual{multc,
+    title = {\pkg{multcomp}: Simultaneous Inference in General Parametric Models},
+    author = {Torsten Hothorn and Frank Bretz and Peter Westfall},
+    year = {2014},
+    note = {\R{} package version 1.3-2},
+    url = {http://CRAN.R-project.org/package=multcomp},
   }
 
-  @Manual{nlme,
+@Manual{nlme,
     title = {\pkg{nlme}: Linear and Nonlinear Mixed Effects Models},
-    author = {José Pinheiro and Douglas Bates and {R-core}},
-    year = {2013},
-    note = {\R{} package version 3.1-113},
+    author = {Jose Pinheiro and Douglas Bates and Saikat DebRoy and Deepayan Sarkar and {R Core Team}},
+    year = {2014},
+    note = {R package version 3.1-117},
     url = {http://CRAN.R-project.org/package=nlme},
+  }
+
+  @Manual{pbkrt,
+    title = {\pkg{pbkrtest}: Parametric Bootstrap and Kenward Roger Based Methods for Mixed
+Model Comparison},
+    author = "Ulrich Halekoh and {S\o ren} {H\o jsgaard}",
+    year = {2013},
+    note = {\R{} package version 0.3-8},
+    url = {http://CRAN.R-project.org/package=pbkrtest},
   }
