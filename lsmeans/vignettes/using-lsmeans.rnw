@@ -231,6 +231,19 @@ The \lsm{} package also provides an "lsm" function that can be called as the sec
 summary(glht(oranges.lm1, lsm("day", contr="eff")), test = adjusted("free"))
 @
 
+An additional detail: If there is a "by" variable in effect, "glht" or "as.glht" returns a "list" of "glht" objects---one for each "by" level. There is a courtesy "summary" method for this \dqt{glht.list} class to make things a bit more user-friendly. Recall the earlier example result "org.lsm", which contains informations for LS~means for three "day"s at each of two values of "price2". Suppose we are interested in pairwise comparisons of these LS~means, by "price2". If we call
+<<eval=FALSE>>=
+summary(as.glht(pairs(org.lsm)))
+@
+(results not displayed) we will obtain two "glht" objects with three contrasts each, so that the results shown will incorporate multiplicity adjustments for each family of three contrasts. If, on the other hand, we want to consider those six contrasts as one family, use
+<<eval=FALSE>>=
+summary(as.glht(pairs(org.lsm), by = NULL))
+@
+\ldots{} and note (look carefully at the parentheses) that this is \emph{not} the same as
+<<eval=FALSE>>=
+summary(as.glht(pairs(org.lsm, by = NULL)))
+@
+which removes the "by" grouping \emph{before} the pairwise comparisons are generated, thus yielding ${6 \choose 2}=15$ contrasts instead of just six.
 
 \section{A new example: Oat yields}
 You've probably seen enough about sales of oranges by now. To illustrate some new features, let's turn to a new example.
