@@ -225,16 +225,22 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
 # utility fcn to get est's, std errors, and df
 # new arg: do.se -- if FALSE, just do the estimates and return 0 for se and df
 # returns a data.frame with an add'l "link" attribute if misc$tran is non-null
-.est.se.df = function(linfct, bhat, nbasis, V, dffun, dfargs, misc, do.se=TRUE) {
+.est.se.df = function(linfct, bhat, nbasis, V, dffun, dfargs, misc, do.se=TRUE, 
+                      tol=getOption("lsmeans")$estble.tol) {
     active = which(!is.na(bhat))
     bhat = bhat[active]
+    if (is.null(tol)) 
+        tol = 1e-8
     result = apply(linfct, 1, function(x) {
         estble = if(is.na(nbasis[1]))
             TRUE
         else {
             chk = t(nbasis) %*% x
+            ssqx = sum(x*x) # BEFORE subsetting x
+            # If x really small, don't scale chk'chk
+            if (ssqx < tol) ssqx = 1
             x = x[active]
-            all(abs(chk) <= 1e-6)      
+            sum(chk*chk) < tol * ssqx
         }
         if (estble) {
             est = sum(bhat * x)
@@ -561,6 +567,17 @@ update.ref.grid = function(object, ...) {
     }
     object@misc = misc
     object
+}
+
+### set or change lsmeans options
+lsmeans.options = function(...) {
+    opts = getOption("lsmeans")
+    if (is.null(opts)) opts = list()
+    newopts = list(...)
+    for (nm in names(newopts))
+        opts[[nm]] = newopts[[nm]]
+    options(lsmeans = opts)
+    opts
 }
 
 

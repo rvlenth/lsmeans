@@ -372,24 +372,24 @@ lsm.basis.coxme <- function(object, trms, xlev, grid) {
 #--------------------------------------------------------------
 #--------------------------------------------------------------
 #--------------------------------------------------------------
-### Public utility to use for obtaining a basis nor nonestimable functions
-# Call with its QR decomp (LAPACK=FALSE!), if available
+### Public utility to use for obtaining an orthonormal basis nor nonestimable functions
+# Call with its QR decomp (LAPACK=FALSE), if available
 nonest.basis <- function(qrX) {
     if (!is.qr(qrX))
         qrX = qr(qrX, LAPACK=FALSE)
     rank = qrX$rank
     tR = t(qr.R(qrX))
-    if (rank == nrow(tR))
+    p = nrow(tR)
+    if (rank == p)
         return (matrix(NA))
     # null space of X is same as null space of R in QR decomp
-    if (ncol(tR) < nrow(tR)) # add columns if not square
-        tR = cbind(tR, matrix(0, nrow=nrow(tR), ncol=nrow(tR)-ncol(tR)))
+    if (ncol(tR) < p) # add columns if not square
+        tR = cbind(tR, matrix(0, nrow=p, ncol=p-ncol(tR)))
     # last few rows are zero -- add a diagonal
     for (i in (rank+1):nrow(tR)) 
         tR[i,i] = 1
-    nbasis = qr.resid(qr(tR[, seq_len(rank)]), tR[, -seq_len(rank)])
-    if (!is.matrix(nbasis)) 
-        nbasis = matrix(nbasis, ncol=1)
+    # nbasis is last p - rank cols of Q in QR decomp of tR
+    nbasis = qr.Q(qr(tR))[ , -(1:rank), drop = FALSE]
     # permute the rows via pivot
     nbasis[qrX$pivot, ] = nbasis
     nbasis
