@@ -4,10 +4,12 @@ Changelog for 'lsmeans' package
     Corrected error in Tukey-adjusted confidence intervals
     New dataset 'oranges'
     Completely revised, improved vignette 'using-lsmeans'
-    New vignette on extending lsmeans
+    New vignette 'extending lsmeans'
     New 'mult.name' argument in 'ref.grid'
-    New 'options' argument for 'ref.grid', 'lsmeans', and 'contrast',
-        and support for options(lsmeans = ...)
+    New 'lsmeans.options' function and associated support for 
+        setting display defaults for various objects
+    Improved estimability checking and ability to set the 
+        tolerance via lsmeans.options(estble.tol = ...)
     Miscellaneous small improvements to code and datasets
 
 2.00-5
