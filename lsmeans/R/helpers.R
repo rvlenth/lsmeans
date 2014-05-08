@@ -181,8 +181,6 @@ recover.data.merMod <- function(object, ...) {
 }
 
 lsm.basis.merMod <- function(object, trms, xlev, grid) {
-    bhat = fixef(object)
-    contrasts = attr(object@pp$X, "contrasts")
     V = as.matrix(vcov(object))
     dfargs = misc = list()
     if (isLMM(object)) {
@@ -210,9 +208,30 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
     else 
         stop("Can't handle a nonlinear mixed model")
     
+    mm = model.matrix(object)
+    contrasts = attr(mm, "contrasts")
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
-    list(X=X, bhat=bhat, nbasis=matrix(NA), V=V, dffun=dffun, dfargs=dfargs, misc=misc)
+    bhat = fixef(object)
+    
+    if (length(bhat) < ncol(X)) {
+        # Newer versions of lmer can handle rank deficiency, but we need to do a couple of
+        # backflips to put the pieces together right,
+        # First, figure out which columns were retained
+        kept = match(names(bhat), dimnames(X)[[2]])
+        # Now re-do bhat with NAs in the right places
+        bhat = NA * X[1, ]
+        bhat[kept] = fixef(object)
+        # Similarly reconstruct the model matrix but add zero
+        # columns in places where variables were dropped
+        modmat = matrix(0, nrow = nrow(mm), ncol = length(bhat))
+        modmat[, kept] = mm
+        nbasis = nonest.basis(modmat)
+    }
+    else
+        nbasis=matrix(NA)
+    
+    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=misc)
 }
 
 

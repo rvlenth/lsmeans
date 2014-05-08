@@ -10,6 +10,8 @@ Changelog for 'lsmeans' package
         setting display defaults for various objects
     Improved estimability checking and ability to set the 
         tolerance via lsmeans.options(estble.tol = ...)
+    Added estimability support for merMod, now that lme4
+        supports rank-deficient models
     Miscellaneous small improvements to code and datasets
 
 2.00-5
