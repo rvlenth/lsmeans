@@ -570,14 +570,14 @@ update.ref.grid = function(object, ...) {
 }
 
 ### set or change lsmeans options
-lsmeans.options = function(...) {
+lsm.options = function(...) {
     opts = getOption("lsmeans")
     if (is.null(opts)) opts = list()
     newopts = list(...)
     for (nm in names(newopts))
         opts[[nm]] = newopts[[nm]]
     options(lsmeans = opts)
-    opts
+    invisible(opts)
 }
 
 

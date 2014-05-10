@@ -350,13 +350,11 @@ According to the Tukey~HSD comparisons (with default significance level of $.05$
 Note: "lstrends" computes a difference quotient from two slightly different reference grids. Thus, you must call it with a model object, not a "ref.grid" object.
 
 \section{User preferences}
-\lsm{} sets certain defaults, such as using $.95$ for the confidence coefficient, displaying intervals for "lsmeans" output and test statistics for "contrast" results, etc. As discussed before, you may use arguments in "summary" to change what's displayed, or "update" to change the defaults for a given object. But suppose you want different defaults to begin with? These can be set using the "options" statement with "lsmeans" as the key. For example:
+\lsm{} sets certain defaults, such as using $.95$ for the confidence coefficient, displaying intervals for "lsmeans" output and test statistics for "contrast" results, etc. As discussed before, you may use arguments in "summary" to change what's displayed, or "update" to change the defaults for a given object. But suppose you want different defaults to begin with? These can be set using the "lsm.options" statement. For example:
 <<>>=
-options(lsmeans = list(
-            ref.grid = list(level = .90),
+lsm.options(ref.grid = list(level = .90),
             lsmeans = list(),
-            contrast = list(infer = c(TRUE,TRUE))
-        ))
+            contrast = list(infer = c(TRUE,TRUE)))
 @
 This requests that any object created by "ref.grid" be set to have confidence intervals default to $90$\%, and that "contrast" results are displayed with both intervals and tests. No new options are set for "lsmeans" results, and the "lsmeans" part have been omitted. But even though no new defaults are set for "lsmeans", future calls to "lsmeans" \emph{on a model object} will be affected by this since it calls "ref.grid"; and also any contrasts from such results will ``inherit'' the 90\% confidence level. However, calling "lsmeans" on an existing \dqt{ref.grid} object will inherit whatever "level" setting is stored there.
 
@@ -368,9 +366,9 @@ I'll present an example where, with one command, we obtain both the LS~means and
 <<>>=
 lsmeans(Oats.lmer2, pairwise ~ Variety)
 @
-This also illustrates the effect of the preceding "options" settings. I'll return to the defaults now.
+This also illustrates the effect of the preceding "lsm.options" settings. I'll return to the defaults now.
 <<>>=
-options(lsmeans = NULL)
+lsm.options(NULL)
 @
 
 \section{Messy data}
