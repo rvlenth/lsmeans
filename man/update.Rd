@@ -1,7 +1,7 @@
-\name{update.ref.grid}
-\alias{update.ref.grid}
-\alias{lsmeans.options}
+\name{update}
 \alias{update}
+\alias{update.ref.grid}
+\alias{lsm.options}
 
 \title{
 Set options for \code{ref.grid} or \code{lsmobj} objects
@@ -10,12 +10,12 @@ Set options for \code{ref.grid} or \code{lsmobj} objects
 Objects of class \code{ref.grid} or \code{lsmobj} contain several settings in their \code{"misc"} slot that affect primarily the 
 defaults used by \code{\link{summary}}. This \code{update} method allows them to be changed more safely than by modifying this slot directly. 
 
-In addition, the user may set defaults for all objects using \samp{options(lsmeans = ...)}, or more conveniently using the \code{lsmeans.options} function documented here.
+In addition, the user may set defaults for all objects using \samp{options(lsmeans = ...)}, or more conveniently using the \code{lsm.options} function documented here.
 }
 \usage{
 \S3method{update}{ref.grid}(object, ...)
 
-lsmeans.options(...)
+lsm.options(...)
 }
 \arguments{
   \item{object}{An object of class \code{ref.grid} (or its extension, \code{lsmobj})
@@ -28,40 +28,40 @@ Arguments specifying elements' names and their new values.
 In \code{update}, the names in \code{\dots} are partially matched against those that are valid, and if a match is found, it adds or replaces the current setting. The valid names are
 
 \describe{
-\item{tran}{(\code{list} or \code{character}) specifies the transformation which, when inverted, determines the results displayed by \code{\link{summary}}, \code{\link{predict}}, or \code{\link{lsmip}} when \code{type="response"}. The value may be the name of a standard transformation from \code{\link{make.link}}, or, for a custom transformation, a \code{list} containing at least the functions \code{linkinv} (the inverse of the transformation) and \code{mu.eta} (the derivative thereof). See the Examples. }
+\item{\code{tran}}{(\code{list} or \code{character}) specifies the transformation which, when inverted, determines the results displayed by \code{\link{summary}}, \code{\link{predict}}, or \code{\link{lsmip}} when \code{type="response"}. The value may be the name of a standard transformation from \code{\link{make.link}}, or, for a custom transformation, a \code{list} containing at least the functions \code{linkinv} (the inverse of the transformation) and \code{mu.eta} (the derivative thereof). See the Examples. }
 
-\item{estName}{(\code{character}) is the column label used for displaying predictions or LS means.}
+\item{\code{estName}}{(\code{character}) is the column label used for displaying predictions or LS means.}
 
-\item{inv.label}{(\code{character)}) is the column label to use for predictions or LS means when \code{type="response"}.}
+\item{\code{inv.label}}{(\code{character)}) is the column label to use for predictions or LS means when \code{type="response"}.}
 
-\item{by.vars}{(\code{character)} vector or \code{NULL}) the variables used for grouping in the summary, and also for defining subfamilies in a call to \code{\link{contrast}}.}
+\item{\code{by.vars}}{(\code{character)} vector or \code{NULL}) the variables used for grouping in the summary, and also for defining subfamilies in a call to \code{\link{contrast}}.}
 
-\item{pri.vars}{(\code{character} vector) are the names of the grid variables that are not in \code{by.vars}. Thus, the combinations of their levels are used as columns in each table produced by \code{\link{summary}}.}
+\item{\code{pri.vars}}{(\code{character} vector) are the names of the grid variables that are not in \code{by.vars}. Thus, the combinations of their levels are used as columns in each table produced by \code{\link{summary}}.}
 
-\item{adjust}{(\code{character)}) is the default for the \code{adjust} argument in \code{\link{summary}}.}
+\item{\code{adjust}}{(\code{character)}) is the default for the \code{adjust} argument in \code{\link{summary}}.}
 
-\item{famSize}{(integer) is the \code{nmeans} parameter for \code{\link{ptukey}} when \code{adjust="tukey"}. }
+\item{\code{famSize}}{(integer) is the \code{nmeans} parameter for \code{\link{ptukey}} when \code{adjust="tukey"}. }
 
-\item{infer}{(\code{logical} vector of length 2) is the default value of \code{infer} in \code{\link{summary}}.}
+\item{\code{infer}}{(\code{logical} vector of length 2) is the default value of \code{infer} in \code{\link{summary}}.}
 
-\item{level}{(numeric) is the default confidence level, \code{level}, in \code{\link{summary}}}
+\item{\code{level}}{(numeric) is the default confidence level, \code{level}, in \code{\link{summary}}}
 
-\item{avgd.over}{(\code{character)} vector) are the names of the variables whose levels are averaged over in obtaining marginal averages of predictions, i.e., LS means. Changing this might produce a misleading printout, but setting it to \code{character(0)} will suppress the \dQuote{averaged over} message in the summary.}
+\item{\code{avgd.over}}{(\code{character)} vector) are the names of the variables whose levels are averaged over in obtaining marginal averages of predictions, i.e., LS means. Changing this might produce a misleading printout, but setting it to \code{character(0)} will suppress the \dQuote{averaged over} message in the summary.}
 
-\item{methDesc}{(\code{character}) is a string that may used for creating names for a list of \code{lsmobj} objects. }
+\item{\code{methDesc}}{(\code{character}) is a string that may used for creating names for a list of \code{lsmobj} objects. }
 
 } % end \describe
 
-In \code{lsmeans.options}, we may set or change the default values for the above attributes in the \code{lsmeans} option list(see \code{\link{options}}). Currently, the following elements of this list are used if specified:
+In \code{lsm.options}, we may set or change the default values for the above attributes in the \code{lsmeans} option list(see \code{\link{options}}). Currently, the following elements of this list are used if specified:
 \describe{
-\item{ref.grid}{A named \code{list} of defaults for objects created by \code{\link{ref.grid}}. This could affect other iobjects as well. For example, if \code{lsmeans} is called with a fitted model object, it calls \code{ref.grid} and this option will affect the resulting \code{lsmobj} object.}
-\item{lsmeans}{A named \code{list} of defaults for objects created by \code{\link{lsmeans}} (or \code{\link{lstrends}}).}
-\item{contrast}{A named \code{list} of defaults for objects created by \code{\link{contrast}} (or \code{\link{pairs}}).}
-\item{estble.tol}{Tolerance for determining estimability in rank-deficient cases. If absent, \code{1e-8} is used.}
+\item{\code{ref.grid}}{A named \code{list} of defaults for objects created by \code{\link{ref.grid}}. This could affect other iobjects as well. For example, if \code{lsmeans} is called with a fitted model object, it calls \code{ref.grid} and this option will affect the resulting \code{lsmobj} object.}
+\item{\code{lsmeans}}{A named \code{list} of defaults for objects created by \code{\link{lsmeans}} (or \code{\link{lstrends}}).}
+\item{\code{contrast}}{A named \code{list} of defaults for objects created by \code{\link{contrast}} (or \code{\link{pairs}}).}
+\item{\code{estble.tol}}{Tolerance for determining estimability in rank-deficient cases. If absent, \code{1e-8} is used.}
 } % end \describe
 } % end details
 \value{
-\code{update} returns a copy of \code{object} with its \code{"misc"} slot modified. \code{lsmeans.options} returns the current options (same as the result of \samp{getOption("lsmeans")}).
+\code{update} returns a copy of \code{object} with its \code{"misc"} slot modified. \code{lsm.options} returns the current options (same as the result of \samp{getOption("lsmeans")}).
 }
 
 \author{
@@ -88,7 +88,7 @@ rg1 <- update(ref.grid(warp.lm1),
 summary(rg1, type = "response")
 
 \dontrun{
-lsmeans.options(ref.grid = list(level = .90),
+lsm.options(ref.grid = list(level = .90),
             contrast = list(infer = c(TRUE,FALSE)),
             estble.tol = 1e-6)
 # Sets default confidence level to .90 for objects created by ref.grid
@@ -96,7 +96,7 @@ lsmeans.options(ref.grid = list(level = .90),
 # reference grid). In addition, when we call 'contrast', 'pairs', etc.,
 # confidence intervals rather than tests are displayed by default.
 
-lsmeans.options() # displays the current settings
+lsm.options() # displays the current settings
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

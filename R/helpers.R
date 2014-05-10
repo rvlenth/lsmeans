@@ -208,8 +208,7 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
     else 
         stop("Can't handle a nonlinear mixed model")
     
-    mm = model.matrix(object)
-    contrasts = attr(mm, "contrasts")
+    contrasts = attr(object@pp$X, "contrasts")
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
     bhat = fixef(object)
@@ -222,10 +221,8 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
         # Now re-do bhat with NAs in the right places
         bhat = NA * X[1, ]
         bhat[kept] = fixef(object)
-        # Similarly reconstruct the model matrix but add zero
-        # columns in places where variables were dropped
-        modmat = matrix(0, nrow = nrow(mm), ncol = length(bhat))
-        modmat[, kept] = mm
+        # we have to reconstruct the model matrix
+        modmat = model.matrix(trms, object@frame, contrasts.arg=contrasts)
         nbasis = nonest.basis(modmat)
     }
     else

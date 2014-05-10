@@ -32,7 +32,7 @@ export(
     lsmeans, 
     lsmeans.character,  # because it is a generic
     lsmip,
-    lsmeans.options,
+    lsm.options,
     lstrends,
     nonest.basis,
     recover.data,
