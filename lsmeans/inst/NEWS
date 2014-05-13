@@ -6,7 +6,7 @@ Changelog for 'lsmeans' package
     Completely revised, improved vignette 'using-lsmeans'
     New vignette 'extending lsmeans'
     New 'mult.name' argument in 'ref.grid'
-    New 'lsmeans.options' function and associated support for 
+    New 'lsm.options' function and associated support for 
         setting display defaults for various objects
     Improved estimability checking and ability to set the 
         tolerance via lsmeans.options(estble.tol = ...)
