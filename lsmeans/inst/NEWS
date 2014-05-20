@@ -1,5 +1,8 @@
 Changelog for 'lsmeans' package
 
+2.1
+    Support for 'aovlist' objects (requires balance, orthogonal contrasts)
+
 2.05
     Corrected error in Tukey-adjusted confidence intervals
     New dataset 'oranges'
