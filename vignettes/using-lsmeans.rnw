@@ -395,7 +395,7 @@ Subsequent analyses might examine LS~means and contrasts thereof on restricted p
 The \lsm{} package comes with built-in support for several types of models, including these model classes for the packages:
 \begin{quote}
 \begin{description}
-\item[stats]: \dqt{lm}, \dqt{mlm}, \dqt{aov} (if no "Error" term), \dqt{glm}
+\item[stats]: \dqt{lm}, \dqt{mlm}, \dqt{aov}, \dqt{aovlist} (balanced cases only), \dqt{glm}
 \item[nlme]: \dqt{lme}, \dqt{gls}
 \item[lme4]: \dqt{lmerMod}, \dqt{glmerMod}
 \item[survival]: \dqt{survreg}, \dqt{coxph}

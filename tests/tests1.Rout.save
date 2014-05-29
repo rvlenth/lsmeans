@@ -1,5 +1,5 @@
 
-R version 3.0.3 (2014-03-06) -- "Warm Puppy"
+R version 3.1.0 (2014-04-10) -- "Spring Dance"
 Copyright (C) 2014 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
@@ -187,21 +187,124 @@ Results are averaged over the levels of: wool
 Confidence level used: 0.95 
 > 
 > 
+> # --- aovlist objects ----
+> # dataset borrowed from pbkrtest
+> beets <- data.frame (
++     harvest = factor(rep(rep(c("h1","h2"), each=5) , 3)),
++     block = factor(rep(rep(c("blk1","blk2","blk3"), each=5), 2)),
++     sow = factor(letters[c(3,4,5,2,1,3,2,4,5,1,5,2,3,4,1,
++                            2,1,5,4,3,4,1,3,2,5,1,4,3,2,5)]),
++     yield = c(128,118,95,131,136.5,136.5,150,140,99.5,156,
++               99,128,126,120.5,137.5,147,153.5,100,139,141,
++               115.5,135,130,134,91.5,155,140.5,142,151,102) )
+> # Use true contrasts for coding...
+> old.opt <- options(contrasts = c("contr.helmert","contr.poly"))
+> beets.aov <- aov(yield ~ harvest*sow + Error(block/harvest), data=beets)
+> lsmeans(beets.aov, eff ~ sow | harvest)
+NOTE: 'aovlist' support is experimental.
+$lsmeans
+harvest = h1:
+ sow    lsmean       SE    df  lower.CL  upper.CL
+ a   136.33333 1.313393 18.89 133.58327 139.08340
+ b   131.00000 1.313393 18.89 128.24993 133.75007
+ c   128.00000 1.313393 18.89 125.24993 130.75007
+ d   118.00000 1.313393 18.89 115.24993 120.75007
+ e    95.16667 1.313393 18.89  92.41660  97.91673
+
+harvest = h2:
+ sow    lsmean       SE    df  lower.CL  upper.CL
+ a   154.83333 1.313393 18.89 152.08327 157.58340
+ b   149.33333 1.313393 18.89 146.58327 152.08340
+ c   139.83333 1.313393 18.89 137.08327 142.58340
+ d   139.83333 1.313393 18.89 137.08327 142.58340
+ e   100.50000 1.313393 18.89  97.74993 103.25007
+
+Confidence level used: 0.95 
+
+$contrasts
+harvest = h1:
+ contrast   estimate       SE df t.ratio p.value
+ a effect  14.633333 1.220428 16  11.990  <.0001
+ b effect   9.300000 1.220428 16   7.620  <.0001
+ c effect   6.300000 1.220428 16   5.162  0.0001
+ d effect  -3.700000 1.220428 16  -3.032  0.0079
+ e effect -26.533333 1.220428 16 -21.741  <.0001
+
+harvest = h2:
+ contrast   estimate       SE df t.ratio p.value
+ a effect  17.966667 1.220428 16  14.722  <.0001
+ b effect  12.466667 1.220428 16  10.215  <.0001
+ c effect   2.966667 1.220428 16   2.431  0.0272
+ d effect   2.966667 1.220428 16   2.431  0.0272
+ e effect -36.366667 1.220428 16 -29.798  <.0001
+
+P value adjustment: fdr method for 5 tests 
+
+> 
+> # restore old 'contrasts' that confound the intercept
+> options(old.opt)
+> beets.aov2 <- aov(yield ~ harvest*sow + Error(block/harvest), data=beets)
+> # following generates a warning. lsmeans will be wrong, but effects will be right
+> try(lsmeans(beets.aov2, eff ~ sow | harvest))
+NOTE: 'aovlist' support is experimental.
+$lsmeans
+harvest = h1:
+ sow    lsmean        SE    df  lower.CL  upper.CL
+ a   129.28333 0.4342938  2.00 127.41472 131.15195
+ b   123.95000 1.9779338 17.31 119.78255 128.11745
+ c   120.95000 1.9779338 17.31 116.78255 125.11745
+ d   110.95000 1.9779338 17.31 106.78255 115.11745
+ e    88.11667 1.9779338 17.31  83.94922  92.28412
+
+harvest = h2:
+ sow    lsmean        SE    df  lower.CL  upper.CL
+ a   144.45000 0.6135054  4.00 142.74663 146.15337
+ b   138.95000 2.0248457 18.64 134.70635 143.19365
+ c   129.45000 2.0248457 18.64 125.20635 133.69365
+ d   129.45000 2.0248457 18.64 125.20635 133.69365
+ e    90.11667 2.0248457 18.64  85.87301  94.36032
+
+Confidence level used: 0.95 
+
+$contrasts
+harvest = h1:
+ contrast   estimate       SE df t.ratio p.value
+ a effect  14.633333 1.220428 16  11.990  <.0001
+ b effect   9.300000 1.220428 16   7.620  <.0001
+ c effect   6.300000 1.220428 16   5.162  0.0001
+ d effect  -3.700000 1.220428 16  -3.032  0.0079
+ e effect -26.533333 1.220428 16 -21.741  <.0001
+
+harvest = h2:
+ contrast   estimate       SE df t.ratio p.value
+ a effect  17.966667 1.220428 16  14.722  <.0001
+ b effect  12.466667 1.220428 16  10.215  <.0001
+ c effect   2.966667 1.220428 16   2.431  0.0272
+ d effect   2.966667 1.220428 16   2.431  0.0272
+ e effect -36.366667 1.220428 16 -29.798  <.0001
+
+P value adjustment: fdr method for 5 tests 
+
+Warning message:
+In lsm.basis.aovlist(object, trms, xlev, grid) :
+  Model uses non-orthogonal contrasts - lsmeans results probably incorrect
+Contrast results probably OK if on one stratum (integer df)
+> 
 > 
 > # --------------- Other stuff -------------------
 > # using cld
-> cld(warp.lsm)
+> cld(lsmeans(warp.lm2, ~ tension | wool))
 wool = A:
- tension lsmean SE df asymp.LCL asymp.UCL .group
- L       NA     NA NA        NA        NA  1    
- M       NA     NA NA        NA        NA   2   
- H       NA     NA NA        NA        NA   2   
+ tension   lsmean       SE df lower.CL upper.CL .group
+ H       23.53324 3.489132 38 16.46986 30.59662  1    
+ M       23.74441 3.497424 38 16.66424 30.82457  1    
+ L       48.35296 4.913079 38 38.40695 58.29897   2   
 
 wool = B:
- tension lsmean SE df asymp.LCL asymp.UCL .group
- L       NA     NA NA        NA        NA  1    
- M       NA     NA NA        NA        NA  1    
- H       NA     NA NA        NA        NA  1    
+ tension   lsmean       SE df lower.CL upper.CL .group
+ H       19.47922 3.308686 38 12.78114 26.17731  1    
+ L       27.68406 3.501649 38 20.59534 34.77278  1    
+ M       29.28683 3.244426 38 22.71884 35.85483  1    
 
 Confidence level used: 0.95 
 P value adjustment: tukey method for a family of 3 means 
@@ -401,4 +504,4 @@ Tests are performed on the linear-predictor scale
 > 
 > proc.time()
    user  system elapsed 
-   2.66    0.14    2.90 
+   2.62    0.15    2.90 
