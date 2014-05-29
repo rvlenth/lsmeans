@@ -62,10 +62,31 @@ try(lsmeans(warp.lm3, "tension"))
 lsmeans(warp.lm3, "tension", data = warp)
 
 
+# --- aovlist objects ----
+# dataset borrowed from pbkrtest
+beets <- data.frame (
+    harvest = factor(rep(rep(c("h1","h2"), each=5) , 3)),
+    block = factor(rep(rep(c("blk1","blk2","blk3"), each=5), 2)),
+    sow = factor(letters[c(3,4,5,2,1,3,2,4,5,1,5,2,3,4,1,
+                           2,1,5,4,3,4,1,3,2,5,1,4,3,2,5)]),
+    yield = c(128,118,95,131,136.5,136.5,150,140,99.5,156,
+              99,128,126,120.5,137.5,147,153.5,100,139,141,
+              115.5,135,130,134,91.5,155,140.5,142,151,102) )
+# Use true contrasts for coding...
+old.opt <- options(contrasts = c("contr.helmert","contr.poly"))
+beets.aov <- aov(yield ~ harvest*sow + Error(block/harvest), data=beets)
+lsmeans(beets.aov, eff ~ sow | harvest)
+
+# restore old 'contrasts' that confound the intercept
+options(old.opt)
+beets.aov2 <- aov(yield ~ harvest*sow + Error(block/harvest), data=beets)
+# following generates a warning. lsmeans will be wrong, but effects will be right
+try(lsmeans(beets.aov2, eff ~ sow | harvest))
+
 
 # --------------- Other stuff -------------------
 # using cld
-cld(warp.lsm)
+cld(lsmeans(warp.lm2, ~ tension | wool))
 
 # passing to glht
 require(multcomp)
