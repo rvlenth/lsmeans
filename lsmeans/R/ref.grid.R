@@ -580,6 +580,14 @@ lsm.options = function(...) {
     invisible(opts)
 }
 
+# Utility that returns TRUE if getOption("lsmeans")[[opt]] is TRUE
+.lsm.is.true = function(opt) {
+    x = getOption("lsmeans")[[opt]]
+    if (is.null(x))  FALSE
+    else if (is.logical(x))  x
+    else FALSE
+}
+
 
 ### S4 methods
 ## use S3 for this setMethod("summary", "ref.grid", summary.ref.grid)

@@ -96,7 +96,11 @@ lsm.options(ref.grid = list(level = .90),
 # reference grid). In addition, when we call 'contrast', 'pairs', etc.,
 # confidence intervals rather than tests are displayed by default.
 
-lsm.options() # displays the current settings
+lsm.options(disable.pbkrtest = TRUE)
+# This forces use of asymptotic methods for lmerMod objects.
+# Set to FALSE or NULL to re-enable using pbkrtest.
+
+print(lsm.options())    # see the current settings
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

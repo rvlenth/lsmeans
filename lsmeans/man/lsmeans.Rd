@@ -70,7 +70,7 @@ If \code{specs} is a \code{formula}, it should be of the form \code{contr ~ spec
 
 A number of standard contrast families are provided. They can be identified as functions having names ending in \code{.lsmc} -- use \preformatted{ls("package:lsmeans", pat=".lsmc")} to list them. See the documentation for \code{\link{pairwise.lsmc}} and its siblings for details. You may write your own \code{.lsmc} function for custom contrasts.
 
-For models fitted using the \pkg{lme4} package, degrees of freedom are obtained using the Kenward-Roger (1997) method as implemented in the package \pkg{pbkrtest}, if it is installed. If \pkg{pbkrtest} is not installed, the degrees of freedom are set to \code{NA} and asymptotic results are displayed.
+For models fitted using the \pkg{lme4} package, degrees of freedom are obtained using the Kenward-Roger (1997) method as implemented in the package \pkg{pbkrtest}, if it is installed. If \pkg{pbkrtest} is not installed, the degrees of freedom are set to \code{NA} and asymptotic results are displayed. You may also, if you like, disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbkrtest=TRUE)} (this does not disable the \pkg{pbkrtest} package entirely, just its use in \pkg{lsmeans}).
 }
 
 \value{
