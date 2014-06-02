@@ -184,14 +184,15 @@ lsm.basis.merMod <- function(object, trms, xlev, grid) {
     V = as.matrix(vcov(object))
     dfargs = misc = list()
     if (isLMM(object)) {
-        if (requireNamespace("pbkrtest")) {
+        pbdis = .lsm.is.true("disable.pbkrtest")
+        if (!pbdis && requireNamespace("pbkrtest")) {
             dfargs = list(unadjV = V, 
                 adjV = pbkrtest::vcovAdj.lmerMod(object, 0))
             V = as.matrix(dfargs$adjV)
             dffun = function(k, dfargs) .KRdf.mer (dfargs$adjV, dfargs$unadjV, k)
         }
         else {
-            warning("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
+            if(!pbdis) message("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
             dffun = function(k, dfargs) NA
         }
     }

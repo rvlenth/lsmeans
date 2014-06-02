@@ -2,6 +2,8 @@ Changelog for 'lsmeans' package
 
 2.1
     Support for 'aovlist' objects (requires balance, orthogonal contrasts)
+    Added 'disable.pbkrtest' option (via lsm.options) if you don't want
+        bias correction and K-R degrees of freedom with lmerMod objects
 
 2.05
     Corrected error in Tukey-adjusted confidence intervals
