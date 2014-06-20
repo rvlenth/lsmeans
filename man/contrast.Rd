@@ -1,6 +1,7 @@
 \name{contrast}
 \alias{contrast}
 \alias{contrast.ref.grid}
+\alias{contrast.lsm.list}
 \alias{test}
 \alias{test.ref.grid}
 \alias{confint}
@@ -19,6 +20,7 @@ These methods provide for analyses of \code{ref.grid} objects, or follow-up anal
 \usage{
 \method{contrast}{ref.grid}(object, method = "eff", by, adjust, 
     options = getOption("lsmeans")$contrast, ...)
+\method{contrast}{lsm.list}(object, ..., which = 1)
 
 \method{test}{ref.grid}(object, parm, ...)
 
@@ -50,6 +52,7 @@ Numeric value of the desired confidence level.
   \item{\dots}{
 Additional arguments passed to \code{\link[lsmeans]{summary}} or to a contrast function.
 }
+  \item{which}{When \code{object} is a list of \code{lsmobj} objects, this specifies which member of the list is analyzed.}
 }
 \details{
 \code{pairs} is equivalent to \code{contrast} with \code{method = "pairwise"}.

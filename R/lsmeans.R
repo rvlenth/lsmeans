@@ -332,6 +332,7 @@ contrast.ref.grid = function(object, method = "eff", by, adjust,
     result
 }
 
+
 # return list of row indexes in tbl for each combination of by
 # tbl should be a data.frame
 .find.by.rows = function(tbl, by) {
@@ -362,6 +363,25 @@ pairs.ref.grid = function(x, ...) {
     object = x # for my sanity
     contrast(object, method = "pairwise", ...)
 }
+
+
+# Methods for lsm.list - just use contrast on specified member
+contrast.lsm.list = function(object, ..., which = 1) {
+    contrast(object[[which]], ...)
+}
+
+pairs.lsm.list = function(object, ..., which = 1) {
+    pairs(object[[which]], ...)
+}
+
+test.lsm.list = function(object, ..., which = 1) {
+    test(object[[which]], ...)
+}
+
+confint.lsm.list = function(object, ..., which = 1) {
+    confint(object[[which]], ...)
+}
+
 
 
 ### lstrends function
