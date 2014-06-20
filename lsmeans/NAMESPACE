@@ -50,8 +50,10 @@ S3method(as.glht, ref.grid)
 S3method(cld, ref.grid)
 
 S3method(confint, ref.grid)
+S3method(confint, lsm.list)
 
 S3method(contrast, ref.grid)
+S3method(contrast,lsm.list)
 
 #S3method(glht, lsmlf)   # in namespace block above
 #S3method(glht, ref.grid)
@@ -75,6 +77,7 @@ S3method(lsmip, default)
 #S3method(modelparm, lsmwrap) # in namespace block above
 
 S3method(pairs, ref.grid)
+S3method(pairs, lsm.list)
 
 S3method(predict, ref.grid)
 
@@ -96,6 +99,7 @@ S3method(summary, glht.list)
 S3method(summary, lsm.list)
 
 S3method(test, ref.grid)
+S3method(test, lsm.list)
 
 S3method(update, ref.grid)
 
