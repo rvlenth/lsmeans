@@ -79,9 +79,6 @@ lsmeans(beets.aov, eff ~ sow | harvest)
 
 # restore old 'contrasts' that confound the intercept
 options(old.opt)
-beets.aov2 <- aov(yield ~ harvest*sow + Error(block/harvest), data=beets)
-# following generates a warning. lsmeans will be wrong, but effects will be right
-try(lsmeans(beets.aov2, eff ~ sow | harvest))
 
 
 # --------------- Other stuff -------------------

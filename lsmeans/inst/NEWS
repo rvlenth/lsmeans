@@ -2,8 +2,11 @@ Changelog for 'lsmeans' package
 
 2.1
     Support for 'aovlist' objects (requires balance, orthogonal contrasts)
+  # TO DO: More capabilities. Also check contrasts by summing linfct columns
     Added 'disable.pbkrtest' option (via lsm.options) if you don't want
         bias correction and K-R degrees of freedom with lmerMod objects
+  # TO DO: Add contrast method for lsmlist, with 'which' argument defaulting to 1
+  # TO DO: Add dffun and dfargs args to constructors to override defaults
 
 2.05
     Corrected error in Tukey-adjusted confidence intervals

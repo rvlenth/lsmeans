@@ -395,7 +395,7 @@ Subsequent analyses might examine LS~means and contrasts thereof on restricted p
 The \lsm{} package comes with built-in support for several types of models, including these model classes for the packages:
 \begin{quote}
 \begin{description}
-\item[stats]: \dqt{lm}, \dqt{mlm}, \dqt{aov}, \dqt{aovlist} (balanced cases only), \dqt{glm}
+\item[stats]: \dqt{lm}, \dqt{mlm}, \dqt{aov}, \dqt{aovlist}, \dqt{glm}
 \item[nlme]: \dqt{lme}, \dqt{gls}
 \item[lme4]: \dqt{lmerMod}, \dqt{glmerMod}
 \item[survival]: \dqt{survreg}, \dqt{coxph}
@@ -403,7 +403,7 @@ The \lsm{} package comes with built-in support for several types of models, incl
 \item[MASS]: \dqt{polr}
 \end{description}
 \end{quote}
-\lsm{} support for all these models works similarly to the examples we have presented. Note that generalized linear or mixed models, and several others such as survival models, typically employ link functions such as "log" or "logit". In all such cases, the LS~means displayed are on the scale of the linear predictor, and any marginal averaging over the reference grid is performed on the linear-predictor scale. 
+\lsm{} support for all these models works similarly to the examples we have presented. Note that generalized linear or mixed models, and several others such as survival models, typically employ link functions such as "log" or "logit". In all such cases, the LS~means displayed are on the scale of the linear predictor, and any marginal averaging over the reference grid is performed on the linear-predictor scale. Results for \code{aovlist} objects are based on intra-block estimates, and should be used with caution.
 
 \subsection{Proportional-odds example}
 There is an interesting twist in \dqt{polr} objects (polytomous regression for Likert-scale data), in that an extra factor (named \dqt{cut} by default) is created to identify which boundary between scale positions we wish to use in predictions. An example is based on the "housing" data in the \pkg{MASS} package, where the response variable is satisfaction ("Sat") on a three-point scale of low, medium, high; and predictors include "Type" (type of rental unit, four levels), "Infl" (influence on management of the unit, three levels), and "Cont" (contact with other residents, two levels). Here, we fit a (not necessarily good) model and obtain LS~means for "Infl"
