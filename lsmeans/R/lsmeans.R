@@ -199,16 +199,6 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
 }
 
 
-# Summary method for an lsm.list
-summary.lsm.list <- function(object, ...)
-    lapply(object, function(x) {
-        if (inherits(x, "summary.ref.grid"))  x
-        else summary(x, ...)
-    })
-
-print.lsm.list <- function(x, ...) 
-    print(summary(x, ...))
-
 
 # utility to parse 'by' part of a formula
 .find.by = function(rhs) {
@@ -362,24 +352,6 @@ test.ref.grid = function(object, parm, ...) {
 pairs.ref.grid = function(x, ...) {
     object = x # for my sanity
     contrast(object, method = "pairwise", ...)
-}
-
-
-# Methods for lsm.list - just use contrast on specified member
-contrast.lsm.list = function(object, ..., which = 1) {
-    contrast(object[[which]], ...)
-}
-
-pairs.lsm.list = function(object, ..., which = 1) {
-    pairs(object[[which]], ...)
-}
-
-test.lsm.list = function(object, ..., which = 1) {
-    test(object[[which]], ...)
-}
-
-confint.lsm.list = function(object, ..., which = 1) {
-    confint(object[[which]], ...)
 }
 
 

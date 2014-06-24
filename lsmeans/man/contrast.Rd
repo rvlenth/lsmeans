@@ -44,14 +44,11 @@ Method to use for adjusting \emph{P} values. This is passed to \code{\link[lsmea
 }
   \item{options}{If non-\code{NULL}, a named \code{list} of arguments to pass to \code{\link{update}}, just after the object is constructed.}
   \item{parm}{
-(This is a required argument for the generic \code{\link[stats]{confint}}) and \code{test} methods, but is ignored by the methods for \code{lsmobj}.)
-  }
+(This is a required argument for the generic \code{\link[stats]{confint}}) and \code{test} methods, but is ignored by the methods for \code{lsmobj}.)}
   \item{level}{
-Numeric value of the desired confidence level.
-}
+Numeric value of the desired confidence level.}
   \item{\dots}{
-Additional arguments passed to \code{\link[lsmeans]{summary}} or to a contrast function.
-}
+Additional arguments passed to \code{\link[lsmeans]{summary}} or to a contrast function.}
   \item{which}{When \code{object} is a list of \code{lsmobj} objects, this specifies which member of the list is analyzed.}
 }
 \details{

@@ -16,7 +16,7 @@ Use these methods to summarize, print, or examine objects of class \code{"ref.gr
 }
 \usage{
 \method{summary}{ref.grid}(object, infer, level, adjust, by, 
-    type = c("link","response","lp","linear"), ...)
+    type = c("link","response","lp","linear"), df, ...)
 
 \method{predict}{ref.grid}(object, type = c("link","response","lp","linear"), ...)
 
@@ -44,6 +44,9 @@ Character name(s) of variables to use for grouping. This affects the family of t
 }
   \item{type}{
 Type of prediction desired. This only has an effect if there is a known transformation or link function. \code{"response"} specifies that the inverse transformation be applied. All others are equivalent, and request that results be shown for the linear predictor.
+}
+  \item{df}{
+If non-missing a constant number of degrees of freedom to use in constructing confidence intervals and \emph{P} values (\code{NA} specifies asymptotic results).
 }
   \item{x}{
 The object to be printed.

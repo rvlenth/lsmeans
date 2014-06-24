@@ -118,7 +118,7 @@ wool = B:
 P value adjustment: tukey method for a family of 3 means 
 > 
 > #switcheroo of by variables:
-> pairs(warp.lsm, by = "tension")
+> (tmp = pairs(warp.lsm, by = "tension"))
 tension = L:
  contrast  estimate       SE df t.ratio p.value
  A - B    20.604585 6.155409 37   3.347  0.0019
@@ -133,7 +133,7 @@ tension = H:
 
 > 
 > # compare these contrasts
-> pairs(.Last.value, by = "contrast")
+> pairs(tmp, by = "contrast")
 contrast = A - B:
  contrast1  estimate       SE df t.ratio p.value
  L - M     26.178913 7.679004 37   3.409  0.0044
@@ -201,7 +201,6 @@ Confidence level used: 0.95
 > old.opt <- options(contrasts = c("contr.helmert","contr.poly"))
 > beets.aov <- aov(yield ~ harvest*sow + Error(block/harvest), data=beets)
 > lsmeans(beets.aov, eff ~ sow | harvest)
-NOTE: 'aovlist' support is experimental.
 $lsmeans
 harvest = h1:
  sow    lsmean       SE    df  lower.CL  upper.CL
@@ -243,52 +242,6 @@ P value adjustment: fdr method for 5 tests
 > 
 > # restore old 'contrasts' that confound the intercept
 > options(old.opt)
-> beets.aov2 <- aov(yield ~ harvest*sow + Error(block/harvest), data=beets)
-> # following generates a warning. lsmeans will be wrong, but effects will be right
-> try(lsmeans(beets.aov2, eff ~ sow | harvest))
-NOTE: 'aovlist' support is experimental.
-$lsmeans
-harvest = h1:
- sow    lsmean        SE    df  lower.CL  upper.CL
- a   129.28333 0.4342938  2.00 127.41472 131.15195
- b   123.95000 1.9779338 17.31 119.78255 128.11745
- c   120.95000 1.9779338 17.31 116.78255 125.11745
- d   110.95000 1.9779338 17.31 106.78255 115.11745
- e    88.11667 1.9779338 17.31  83.94922  92.28412
-
-harvest = h2:
- sow    lsmean        SE    df  lower.CL  upper.CL
- a   144.45000 0.6135054  4.00 142.74663 146.15337
- b   138.95000 2.0248457 18.64 134.70635 143.19365
- c   129.45000 2.0248457 18.64 125.20635 133.69365
- d   129.45000 2.0248457 18.64 125.20635 133.69365
- e    90.11667 2.0248457 18.64  85.87301  94.36032
-
-Confidence level used: 0.95 
-
-$contrasts
-harvest = h1:
- contrast   estimate       SE df t.ratio p.value
- a effect  14.633333 1.220428 16  11.990  <.0001
- b effect   9.300000 1.220428 16   7.620  <.0001
- c effect   6.300000 1.220428 16   5.162  0.0001
- d effect  -3.700000 1.220428 16  -3.032  0.0079
- e effect -26.533333 1.220428 16 -21.741  <.0001
-
-harvest = h2:
- contrast   estimate       SE df t.ratio p.value
- a effect  17.966667 1.220428 16  14.722  <.0001
- b effect  12.466667 1.220428 16  10.215  <.0001
- c effect   2.966667 1.220428 16   2.431  0.0272
- d effect   2.966667 1.220428 16   2.431  0.0272
- e effect -36.366667 1.220428 16 -29.798  <.0001
-
-P value adjustment: fdr method for 5 tests 
-
-Warning message:
-In lsm.basis.aovlist(object, trms, xlev, grid) :
-  Model uses non-orthogonal contrasts - lsmeans results probably incorrect
-Contrast results probably OK if on one stratum (integer df)
 > 
 > 
 > # --------------- Other stuff -------------------
@@ -504,4 +457,4 @@ Tests are performed on the linear-predictor scale
 > 
 > proc.time()
    user  system elapsed 
-   2.62    0.15    2.90 
+   2.55    0.15    2.82 

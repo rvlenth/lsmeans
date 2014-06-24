@@ -68,9 +68,12 @@ Least-squares means are predictions from a linear model over a \emph{reference g
 
 If \code{specs} is a \code{formula}, it should be of the form \code{contr ~ specs | by}. The formula is parsed and then used as the arguments \code{contr}, \code{specs}, and \code{by} as indicated. The left-hand side is optional, but if specified it should be the name of a contrast family (e.g., \code{pairwise}) or of a sub-list of \code{contr.list}. Operators like \code{*} or \code{:} are necessary to delineate names in the formulas, but otherwise are ignored.
 
-A number of standard contrast families are provided. They can be identified as functions having names ending in \code{.lsmc} -- use \preformatted{ls("package:lsmeans", pat=".lsmc")} to list them. See the documentation for \code{\link{pairwise.lsmc}} and its siblings for details. You may write your own \code{.lsmc} function for custom contrasts.
+A number of standard contrast families are provided. They can be identified as functions having names ending in \code{.lsmc} -- use 
+\preformatted{ls("package:lsmeans", pat=".lsmc")} 
+to list them. See the documentation for \code{\link{pairwise.lsmc}} and its siblings for details. You may write your own \code{.lsmc} function for custom contrasts.
 
-For models fitted using the \pkg{lme4} package, degrees of freedom are obtained using the Kenward-Roger (1997) method as implemented in the package \pkg{pbkrtest}, if it is installed. If \pkg{pbkrtest} is not installed, the degrees of freedom are set to \code{NA} and asymptotic results are displayed. You may also, if you like, disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbkrtest=TRUE)} (this does not disable the \pkg{pbkrtest} package entirely, just its use in \pkg{lsmeans}).
+
+For models fitted using the \pkg{lme4} package, degrees of freedom are obtained using the Kenward-Roger (1997) method as implemented in the package \pkg{pbkrtest}, if it is installed. If \pkg{pbkrtest} is not installed, the degrees of freedom are set to \code{NA} and asymptotic results are displayed. You may also, if you like, disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbkrtest=TRUE)} (this does not disable the \pkg{pbkrtest} package entirely, just its use in \pkg{lsmeans}). The \code{df} argument in the \code{lsmeans} or \code{ref.grid} call (or later in \code{\link{update}} or \code{\link{summary}}) may be used to specify some other degrees of freedom. Specifying \code{df} is \emph{not} equivalent to disabling \pkg{pbkrtest}, because if not disabled, it also makes a bias adjustment to the covariance matrix.
 }
 
 \value{

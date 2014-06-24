@@ -46,6 +46,8 @@ In \code{update}, the names in \code{\dots} are partially matched against those 
 
 \item{\code{level}}{(numeric) is the default confidence level, \code{level}, in \code{\link{summary}}}
 
+\item{\code{df}}{(numeric) overrides the default degrees of freedom with a specified single value.}
+
 \item{\code{avgd.over}}{(\code{character)} vector) are the names of the variables whose levels are averaged over in obtaining marginal averages of predictions, i.e., LS means. Changing this might produce a misleading printout, but setting it to \code{character(0)} will suppress the \dQuote{averaged over} message in the summary.}
 
 \item{\code{methDesc}}{(\code{character}) is a string that may used for creating names for a list of \code{lsmobj} objects. }
