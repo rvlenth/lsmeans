@@ -1,6 +1,7 @@
 \name{cld}
 \alias{cld}
 \alias{cld.ref.grid}
+\alias{cld.lsm.list}
 
 \title{Compact letter display of pairwise comparisons}
 
@@ -10,6 +11,7 @@ Extract and display information on all pairwise comparisons of least-squares mea
 \usage{
 \method{cld}{ref.grid}(object, details = FALSE, sort = TRUE, by, alpha = 0.05, 
     Letters = c("1234567890", LETTERS, letters), ...)
+\method{cld}{lsm.list}(object, ..., which = 1)    
 }
 
 \arguments{
@@ -25,6 +27,7 @@ Extract and display information on all pairwise comparisons of least-squares mea
   \item{Letters}{Character vector of letters to use in the display.
   Any strings of length greater than 1 are expanded into individual characters}
   \item{\dots}{Arguments passed to \code{\link{contrast}} (for example, an \code{adjust} method)}
+  \item{which}{When \code{object} is a list, this determines which element is analyzed.}
 }
 \details{
 This function uses the Piepho (2004) algorithm (as implemented in the \pkg{multcompView} package) to generate a compact letter display of all pairwise comparisons of least-squares means. The function obtains (possibly adjusted) \emph{P} values for all pairwise comparisons of means, using the \code{\link{contrast}} function with \code{method = "pairwise"}. When a \code{P} value exceeds \code{alpha}, then the two means have at least one letter in common.

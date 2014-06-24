@@ -14,7 +14,7 @@ Using a fitted model object, determine a reference grid for which least-squares 
 }
 \usage{
 ref.grid(object, at, cov.reduce = mean, mult.name, mult.levs, 
-    options = getOption("lsmeans")$ref.grid, data)
+    options = getOption("lsmeans")$ref.grid, df, data)
 }
 
 \arguments{
@@ -29,6 +29,7 @@ ref.grid(object, at, cov.reduce = mean, mult.name, mult.levs,
   \item{mult.name}{Character, the name to give to the \dQuote{factor} whose levels delineate the elements of a multivariate response. If this is provided, it overrides the default name, e.g., \code{"rep.meas"} for an \code{\link[=lm]{mlm}} object or \code{"cut"} for a \code{\link[MASS]{polr}} object.}
   \item{mult.levs}{A named list of levels for the dimensions of a multivariate response. If there is more than one element, the combinations of levels are used, in \code{\link{expand.grid}} order. The (total) number of levels must match the number of dimensions. If \code{mult.name} is specified, this argument is ignored.}
   \item{options}{If non-\code{NULL}, a named \code{list} of arguments to pass to \code{\link{update}}, just after the object is constructed.}
+  \item{df}{A numeric value that, if supplied, overrides the default method for determining degrees of freedom}
   \item{data}{A \code{data.frame} to use to obtain information about the predictors (e.g. factor levels). If missing, then \code{\link{recover.data}} is used to attempt to reconstruct the data.}
 } %--- end of \arguments
 

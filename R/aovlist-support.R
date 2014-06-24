@@ -24,10 +24,8 @@ lsm.basis.aovlist = function (object, trms, xlev, grid) {
     if (any(round(colsums,3) != 0))
         warning("Some predictors are correlated with the intercept - results are biased.\n",
                 "May help to re-fit with different contrasts, e.g. 'contr.sum'")
-    message("NOTE: 'aovlist' results use intra-block analyses and are sometimes flaky")
-    #     if(!all(unlist(contr) %in% c("contr.sum","contr.helmert","contr.poly")))
-    #         warning("Model uses non-orthogonal contrasts - lsmeans results probably incorrect\n",
-    #             "Contrast results probably OK if on one stratum (integer df)")
+    if (length(unlist(lapply(object, function(x) names(coef(x))))) > length(xnms))
+        message("NOTE: Results are based on intra-block estimates.")
     
     # initialize arrays
     nonint = setdiff(names(object), "(Intercept)")
@@ -43,8 +41,6 @@ lsm.basis.aovlist = function (object, trms, xlev, grid) {
     wts = matrix(0, nrow = length(nonint), ncol = k)
     dimnames(wts) = list(nonint, xnms)
     # NOTE: At present, I just do intra-block analysis: wts are all 0 and 1
-    # Some earlier experimental code is commented-out using '#--'
-    #--bmat = wts
     btemp = bhat #++ temp for tracking indexes
     #++Work thru strata in reverse order
     for (nm in rev(nonint)) {
@@ -52,32 +48,22 @@ lsm.basis.aovlist = function (object, trms, xlev, grid) {
         bi = coef(x)
         bi = bi[!is.na(bi)]
         ii = match(names(bi), xnms)
-        #--bmat[nm,ii] = bi
-        #++ stmts for intra-block analysis
         Vidx[[nm]] = use = setdiff(ii, which(!is.na(bhat))) #++ omit elts already filled
         if(length(use) > 0) {
             ii.left = seq_along(ii)[!is.na(match(ii,use))]
             wts[nm, use] = 1
             bhat[use] = bi[ii.left]
-            Vi = vcov(x)[ii.left,ii.left]
-            Vi[is.nan(Vi)] = 0 # replace NaNs with 0 - no est of error
+            Vi = vcov(x)[ii.left, ii.left, drop=FALSE]
             Vmats[[nm]] = Vi
             V[use,use] = Vi
         }
         else {
             Vmats[[nm]] = matrix(0, nrow=0, ncol=0)
         }
-        #++ end stmts for intra-block analysis
-        Vdf[[nm]] = x$df
-        #--piv = x$qr$pivot[1L:x$rank]
-        #--wts[nm,ii[piv]] = diag(x$qr$qr)[seq_along(ii)]^2
+        # Any cases with 0 df will have NaN for covariances. I make df = -1 
+        # in those cases so I don't divide by 0 later in Satterthwaite calcs
+        Vdf[[nm]] = ifelse(x$df > 0, x$df, -1)
     }
-    #--colsums = apply(wts,2,sum)
-    #--colsums[zapsmall(colsums) == 0] = 1
-    #--for (i in seq_along(nonint))
-    #--     wts[i, ] = wts[i, ] / colsums ## These are efficiencies, not weights
-    #--bmat = bmat * wts
-    #--bhat = apply(bmat, 2, sum)
     
     x <- object[["(Intercept)"]]
     if (!is.null(x)) {
@@ -101,7 +87,7 @@ lsm.basis.aovlist = function (object, trms, xlev, grid) {
         v = sapply(seq_along(dfargs$Vdf), function(j) {
             ii = dfargs$Vidx[[j]]
             kk = (k * dfargs$wts[j, ])[ii]            
-            sum(kk * dfargs$Vmats[[j]] %*% kk)
+            sum(kk * .mat.times.vec(dfargs$Vmats[[j]], kk))
         })
         sum(v)^2 / sum(v^2 / dfargs$Vdf) # Good ole Satterthwaite
     }

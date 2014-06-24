@@ -39,10 +39,10 @@ warp.lm <- lm(breaks ~ poly(x1,3) + x2 + wool*tension, data=warp)
 pairs(warp.lsm)
 
 #switcheroo of by variables:
-pairs(warp.lsm, by = "tension")
+(tmp = pairs(warp.lsm, by = "tension"))
 
 # compare these contrasts
-pairs(.Last.value, by = "contrast")
+pairs(tmp, by = "contrast")
 
 # Test different ways of accessing data
 ## ... using "with" ...

@@ -1,12 +1,14 @@
 Changelog for 'lsmeans' package
 
-2.1
-    Support for 'aovlist' objects (requires balance, orthogonal contrasts)
+2.10
+    Support for 'aovlist' objects (does intra-block analysis)
+        To use, avoid contr.treatment; use contr.sum or other that sums to 0
+    Added 'contrast', 'test', 'pairs', 'confint', 'cld' methods for
+        lsmlist, with 'which' argument defaulting to 1
     Added 'disable.pbkrtest' option (via lsm.options) if you don't want
         bias correction and K-R degrees of freedom with lmerMod objects
-    Add contrast, test, pairs, confint methods for lsmlist, 
-        with 'which' argument defaulting to 1
-  # TO DO: Add dffun and dfargs args to constructors to override defaults
+    Added 'df' argument to 'ref.grid' constructor, also 'summary' and 
+        'update'.
 
 2.05
     Corrected error in Tukey-adjusted confidence intervals

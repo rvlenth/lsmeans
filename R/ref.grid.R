@@ -8,7 +8,7 @@
 #     FALSE - same as function(x) sort(unique(x))
 
 ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, 
-                     options = getOption("lsmeans")$ref.grid, data) {
+                     options = getOption("lsmeans")$ref.grid, df, data) {
     # recover the data
     if (missing(data)) {
         data = try(recover.data (object, data = NULL))
@@ -173,6 +173,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     misc$adjust = "none"
     misc$famSize = nrow(grid)
     misc$avgd.over = character(0)
+    if(!missing(df)) misc$df = df
 
     
     result = new ("ref.grid",
@@ -222,6 +223,16 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     intersect(unique(unlist(cvars)), covs.d)
 }
 
+# Matrix times vector function that ignores NAs, NaNs, Infs
+# when given weight 0
+.mat.times.vec = function(X, y) {
+    ii = (zapsmall(y) != 0)
+    result = rep(0, length(y))
+    if (any(ii))
+        result[ii] = X[ii, ii, drop = FALSE] %*% y[ii]
+    result
+}
+
 # utility fcn to get est's, std errors, and df
 # new arg: do.se -- if FALSE, just do the estimates and return 0 for se and df
 # returns a data.frame with an add'l "link" attribute if misc$tran is non-null
@@ -245,7 +256,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         if (estble) {
             est = sum(bhat * x)
             if(do.se) {
-                se = sqrt(sum(x * V %*% x))
+                se = sqrt(sum(x * .mat.times.vec(V, x)))
                 df = dffun(x, dfargs)
             }
             else # if these unasked-for results are used, we're bound to get an error!
@@ -400,7 +411,12 @@ predict.ref.grid <- function(object, type = c("link","response","lp","linear"), 
 
 # S3 summary method
 summary.ref.grid <- function(object, infer, level, adjust, by, 
-        type = c("link","response","lp","linear"), ...) {
+        type = c("link","response","lp","linear"), df, ...) {
+    
+    if(missing(df)) df = object@misc$df
+    if(!is.null(df))
+        object@dffun = function(k, dfargs) df
+    
     result = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@dffun, object@dfargs, object@misc)
     
     lblnms = setdiff(names(object@grid), object@roles$responses)
@@ -553,7 +569,7 @@ print.ref.grid = function(x,...)
 # Method to alter contents of misc slot
 update.ref.grid = function(object, ...) {
     args = list(...)
-    valid.choices = c("adjust","avgd.over","by.vars","estName","famSize","infer","inv.lbl",
+    valid.choices = c("adjust","avgd.over","by.vars","df","estName","famSize","infer","inv.lbl",
         "level","methdesc","pri.vars","tran")
     misc = object@misc
     for (nm in names(args)) {
