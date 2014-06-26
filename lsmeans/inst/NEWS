@@ -1,5 +1,8 @@
 Changelog for 'lsmeans' package
 
+2.11
+    Minor coding/efficiency improvements
+
 2.10
     Support for 'aovlist' objects (does intra-block analysis)
         To use, avoid contr.treatment; use contr.sum or other that sums to 0

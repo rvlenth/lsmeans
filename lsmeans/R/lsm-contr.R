@@ -9,8 +9,8 @@
 pairwise.lsmc = function(levs,...) {
     k = length(levs)
     M = data.frame(levs=levs)
-    for (i in 1:(k-1)) {
-        for (j in (i+1):k) {
+    for (i in seq_len(k-1)) {
+        for (j in (i + seq_len(k-i))) { ###for (j in (i+1):k) {
             con = rep(0,k)
             con[i] = 1
             con[j] = -1
@@ -30,7 +30,7 @@ revpairwise.lsmc = function(levs,...) {
     k = length(levs)
     M = data.frame(levs=levs)
     for (i in 2:k) {
-        for (j in 1:(i-1)) {
+        for (j in seq_len(i-1)) {
             con = rep(0,k)
             con[i] = 1
             con[j] = -1
@@ -50,8 +50,8 @@ revpairwise.lsmc = function(levs,...) {
 poly.lsmc = function(levs, max.degree=min(6,k-1)) {
     nm = c("linear", "quadratic", "cubic", "quartic", paste("degree",5:20))
     k = length(levs)
-    M = as.data.frame(poly(1:k, min(20,max.degree)))
-    for (j in 1:ncol(M)) {
+    M = as.data.frame(poly(seq_len(k), min(20,max.degree)))
+    for (j in seq_len(ncol(M))) {
         con = M[ ,j]
         pos = which(con > .01)
         con = con / min(con[pos])
@@ -63,7 +63,7 @@ poly.lsmc = function(levs, max.degree=min(6,k-1)) {
         M[ ,j] = round(con)
     }
     row.names(M) = levs
-    names(M) = nm[1:ncol(M)]
+    names(M) = nm[seq_len(ncol(M))]
     attr(M, "desc") = "polynomial contrasts"
     attr(M, "adjust") = "none"
     M
@@ -81,7 +81,7 @@ trt.vs.ctrl.lsmc = function(levs, ref=1) {
     templ = rep(0, length(levs))
     templ[ref] = -1 / length(ref)
     M = data.frame(levs=levs)
-    for (i in 1:k) {
+    for (i in seq_len(k)) {
         if (i %in% ref) next
         con = templ
         con[i] = 1
@@ -109,7 +109,7 @@ trt.vs.ctrlk.lsmc = function(levs, ...) {
 eff.lsmc = function(levs, ...) {
     k = length(levs)
     M = data.frame(levs=levs)
-    for (i in 1:k) {
+    for (i in seq_len(k)) {
         con = rep(-1/k, k)
         con[i] = (k-1)/k
         nm = paste(levs[i], "effect")

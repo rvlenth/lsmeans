@@ -163,7 +163,7 @@ lsm.basis.mlm <- function(object, trms, xlev, grid) {
     bas$X = kronecker(diag(rep(1,k)), bas$X)
     bas$nbasis = kronecker(rep(1,k), bas$nbasis)
     ylevs = dimnames(bhat)[[2]]
-    if (is.null(ylevs)) ylevs = 1:k
+    if (is.null(ylevs)) ylevs = seq_len(k)
     bas$misc$ylevs = list(rep.meas = ylevs)
     bas
 }
@@ -336,7 +336,7 @@ lsm.basis.survreg <- function(object, trms, xlev, grid) {
     # Much of this code is adapted from predict.survreg
     bhat = object$coefficients
     k = length(bhat)
-    V = vcov(object)[1:k, 1:k, drop=FALSE]
+    V = vcov(object)[seq_len(k), seq_len(k), drop=FALSE]
     is.fixeds = (k == ncol(object$var))
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)    
     # Hmmm, differs from my lm method using model.matrix(trms, m, contrasts)
@@ -402,11 +402,11 @@ nonest.basis <- function(qrX) {
     # null space of X is same as null space of R in QR decomp
     if (ncol(tR) < p) # add columns if not square
         tR = cbind(tR, matrix(0, nrow=p, ncol=p-ncol(tR)))
-    # last few rows are zero -- add a diagonal
-    for (i in (rank+1):nrow(tR)) 
-        tR[i,i] = 1
+    # last few rows are zero -- add a diagonal of 1s
+    extras = rank + seq_len(p - rank)
+    for (j in extras) tR[j,j] = 1
     # nbasis is last p - rank cols of Q in QR decomp of tR
-    nbasis = qr.Q(qr(tR))[ , -(1:rank), drop = FALSE]
+    nbasis = qr.Q(qr(tR))[ , extras, drop = FALSE]
     # permute the rows via pivot
     nbasis[qrX$pivot, ] = nbasis
     nbasis

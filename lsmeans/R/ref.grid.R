@@ -223,14 +223,22 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     intersect(unique(unlist(cvars)), covs.d)
 }
 
-# Matrix times vector function that ignores NAs, NaNs, Infs
-# when given weight 0
-.mat.times.vec = function(X, y) {
+# # Matrix times vector function that ignores NAs, NaNs, Infs
+# # when given weight 0
+# .mat.times.vec = function(X, y) {
+#     ii = (zapsmall(y) != 0)
+#     result = rep(0, length(y))
+#     if (any(ii))
+#         result[ii] = X[ii, ii, drop = FALSE] %*% y[ii]
+#     result
+# }
+
+# Computes the quadratic form y'Xy after subsetting for the nonzero elements of y
+.qf.non0 = function(X, y) {
     ii = (zapsmall(y) != 0)
-    result = rep(0, length(y))
     if (any(ii))
-        result[ii] = X[ii, ii, drop = FALSE] %*% y[ii]
-    result
+        sum(y[ii] * (X[ii, ii, drop = FALSE] %*% y[ii]))
+    else 0
 }
 
 # utility fcn to get est's, std errors, and df
@@ -256,7 +264,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         if (estble) {
             est = sum(bhat * x)
             if(do.se) {
-                se = sqrt(sum(x * .mat.times.vec(V, x)))
+                se = sqrt(.qf.non0(V, x)) ###sqrt(sum(x * .mat.times.vec(V, x)))
                 df = dffun(x, dfargs)
             }
             else # if these unasked-for results are used, we're bound to get an error!
@@ -530,8 +538,8 @@ print.summary.ref.grid = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) 
     xc = as.matrix(format.data.frame(x, digits=digits, na.encode=FALSE))
     m = apply(rbind(just, names(x), xc), 2, function(x) {
         w = max(sapply(x, nchar))
-        if (x[1] == "R") format(x[-(1:2)], width = w, justify="right")
-        else format(x[-(1:2)], width = w, justify="left")
+        if (x[1] == "R") format(x[-seq_len(2)], width = w, justify="right")
+        else format(x[-seq_len(2)], width = w, justify="left")
     })
     if(!is.matrix(m)) m = t(as.matrix(m))
     by.vars = attr(x, "by.vars")

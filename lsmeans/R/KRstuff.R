@@ -14,7 +14,6 @@
 
 ### Returns denom d.f. for testing lcoefs'beta = 0 where lcoefs is a vector
 # PhiA is result of call to PhiA = vcovAdj(object, 0) in pbkrtest package
-# Phi is vcov(object) ## May not now be needed
 # lcoefs is contrast of interest
 .KRdf.mer = function(PhiA, Phi, lcoefs) {
       vlb = sum(lcoefs * (Phi %*% lcoefs)) # unadjusted variance of l'beta
