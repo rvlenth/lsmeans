@@ -87,7 +87,8 @@ lsm.basis.aovlist = function (object, trms, xlev, grid) {
         v = sapply(seq_along(dfargs$Vdf), function(j) {
             ii = dfargs$Vidx[[j]]
             kk = (k * dfargs$wts[j, ])[ii]            
-            sum(kk * .mat.times.vec(dfargs$Vmats[[j]], kk))
+            #sum(kk * .mat.times.vec(dfargs$Vmats[[j]], kk))
+            .qf.non0(dfargs$Vmats[[j]], kk)
         })
         sum(v)^2 / sum(v^2 / dfargs$Vdf) # Good ole Satterthwaite
     }
