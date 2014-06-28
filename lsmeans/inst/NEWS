@@ -1,7 +1,11 @@
 Changelog for 'lsmeans' package
 
 2.11
+    Added vcov method for ref.grid
+    Corrections to embarrassing errors in the vignettes
     Minor coding/efficiency improvements
+    Removed 'df' arg for ref.grid, stupidly added in 2.10 
+        (we can set df as part of 'options' arg)
 
 2.10
     Support for 'aovlist' objects (does intra-block analysis)

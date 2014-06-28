@@ -8,7 +8,7 @@
 #     FALSE - same as function(x) sort(unique(x))
 
 ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, 
-                     options = getOption("lsmeans")$ref.grid, df, data) {
+                     options = getOption("lsmeans")$ref.grid, data) {
     # recover the data
     if (missing(data)) {
         data = try(recover.data (object, data = NULL))
@@ -173,8 +173,6 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     misc$adjust = "none"
     misc$famSize = nrow(grid)
     misc$avgd.over = character(0)
-    if(!missing(df)) misc$df = df
-
     
     result = new ("ref.grid",
          model.info = list(call = attr(data,"call"), terms = trms, xlev = xlev),
@@ -572,6 +570,13 @@ print.summary.ref.grid = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) 
 
 print.ref.grid = function(x,...)
     print(summary.ref.grid(x, ...))
+
+
+
+# vcov method
+vcov.ref.grid = function(object, ...) {
+    object@linfct %*% object@V %*% t(object@linfct)
+}
 
 
 # Method to alter contents of misc slot

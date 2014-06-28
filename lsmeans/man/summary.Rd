@@ -5,6 +5,7 @@
 \alias{predict.ref.grid}
 \alias{print.ref.grid}
 \alias{print.summary.ref.grid}
+\alias{vcov.ref.grid}
 
 
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -24,6 +25,8 @@ Use these methods to summarize, print, or examine objects of class \code{"ref.gr
 
 \method{print}{ref.grid}(x, ...)
 \method{print}{summary.ref.grid}(x, ..., digits = NULL, quote = FALSE, right = TRUE)
+
+\method{vcov}{ref.grid}(object, ...)
 }
 
 \arguments{
@@ -73,7 +76,7 @@ greatly within the family of tests. For more accurate adjustments, use the \code
 When the model is rank-deficient, each row \code{x} of \code{object}'s \code{linfct} slot is each checked for estimability. If \code{sum(x*bhat)} is found to be non-estimable, then an \code{NA} is displayed for the estimate (as well as any associated statistics). This check is performed using the orthonormal basis \code{N} in the \code{nbasis} slot for the null space of the rows of the model matrix. Estimability fails when \eqn{||Nx||^2 / ||x||^2} exceeds \code{tol}, which by default is \code{1e-8}. You may change it via \code{\link{lsm.options}} by setting \code{estble.tol} to the desired value.
 }
 \value{
-The \code{summary} method for \code{"ref.grid"} objects returns an object of class \code{"summary.ref.grid"}, which extends \code{"data.frame"}.
+The \code{summary} method for \code{"ref.grid"} objects returns an object of class \code{"summary.ref.grid"}, which extends \code{"data.frame"}. \code{vcov} returns the covariance matrix of the object's \code{linfct} slot.
 }
 %%\references{}
 \author{

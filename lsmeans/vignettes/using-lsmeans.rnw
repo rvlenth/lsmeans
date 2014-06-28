@@ -51,7 +51,7 @@ options(show.signif.stars=FALSE, prompt="R> ", continue="   ", width=100)
 \section{Introduction}
 Least-squares means (LS~means for short)  for a linear model are simply predictions---or marginal averages thereof---over a regular grid of predictor settings which I call the \emph{reference grid}. They date back at least to 1976 when LS~means were incorporated in the contributed \SAS{} procedure named \code{HARVEY} \citep{Har76}. Later, they were incorporated via \code{LSMEANS} statements in the regular \SAS{} releases. 
 
-In simple analysis-of-covariance models, LS~means are the same as covariate-adjusted means. In unbalanced factorial experiments, LS~means for each factor mimic the marginal means but are adjusted to bias due to imbalance. The latter interpretation is quite similar to the ``unweighted means'' method for unbalanced data, as presented in old design books.
+In simple analysis-of-covariance models, LS~means are the same as covariate-adjusted means. In unbalanced factorial experiments, LS~means for each factor mimic the marginal means but are adjusted for bias due to imbalance. The latter interpretation is quite similar to the ``unweighted means'' method for unbalanced data, as presented in old design books.
 
 In any case, the most important things to remember are:
 \begin{itemize}
@@ -95,7 +95,7 @@ These results, as indicated in the annotation in the output, are in fact the ave
 <<>>=
 with(oranges, tapply(sales1, day, mean))
 @
-These unadjusted means are biased by having different "price1" and "price2" values on each day, whereas the LS~means adjust for bias by using predictions at uniform "price1" and "price2" values.
+These unadjusted means are not comparable with one another because they are affected by the differing "price1" and "price2" values on each day, whereas the LS~means are comparable because they use predictions at uniform "price1" and "price2" values.
 
 Note that you may call "lsmeans" with either the reference grid or the model. If the model is given, then the first thing it does is create the reference grid; so if you already have the reference grid, as in this example, it's more efficient to make use of it.
 
@@ -231,7 +231,7 @@ The \lsm{} package also provides an "lsm" function that can be called as the sec
 summary(glht(oranges.lm1, lsm("day", contr="eff")), test = adjusted("free"))
 @
 
-An additional detail: If there is a "by" variable in effect, "glht" or "as.glht" returns a "list" of "glht" objects---one for each "by" level. There is a courtesy "summary" method for this \dqt{glht.list} class to make things a bit more user-friendly. Recall the earlier example result "org.lsm", which contains informations for LS~means for three "day"s at each of two values of "price2". Suppose we are interested in pairwise comparisons of these LS~means, by "price2". If we call
+An additional detail: If there is a "by" variable in effect, "glht" or "as.glht" returns a "list" of "glht" objects---one for each "by" level. There is a courtesy "summary" method for this \dqt{glht.list} class to make things a bit more user-friendly. Recall the earlier example result "org.lsm", which contains information for LS~means for three "day"s at each of two values of "price2". Suppose we are interested in pairwise comparisons of these LS~means, by "price2". If we call
 <<eval=FALSE>>=
 summary(as.glht(pairs(org.lsm)))
 @
@@ -247,7 +247,7 @@ which removes the "by" grouping \emph{before} the pairwise comparisons are gener
 
 \section{A new example: Oat yields}
 You've probably seen enough about sales of oranges by now. To illustrate some new features, let's turn to a new example.
-The "Oats" dataset in the \pkg{nlme} \citep{nlme} has the results of a split-plot experiment discussed in \citet{Yat35}. The experiment was conducted on six blocks (factor "Block"). Each block was divided into three plots, which were randomized to three varieties (factor "Variety") of oats. Each plot was divided into subplots and randomized to four levels of nitrogen (variable "nitro"). The response, "yield", was measured once on each subplot after a suitable growing period.
+The "Oats" dataset in the \pkg{nlme} package \citep{nlme} has the results of a split-plot experiment discussed in \citet{Yat35}. The experiment was conducted on six blocks (factor "Block"). Each block was divided into three plots, which were randomized to three varieties (factor "Variety") of oats. Each plot was divided into subplots and randomized to four levels of nitrogen (variable "nitro"). The response, "yield", was measured once on each subplot after a suitable growing period.
 
 We will fit a model using the "lmer" function in the \pkg{lme4} package \citep{lme4}. This will be a mixed model with random intercepts for "Block" and "Block:Variety" (which identifies the plots). I have elected to apply a logarithmic transformation to the response variable (mostly for illustration purposes, though it does produce a good fit to the data). Note that "nitro" is stored as a numeric variable, but we want to consider it as a factor in this initial model.
 <<>>=
