@@ -105,6 +105,8 @@ S3method(test, lsm.list)
 
 S3method(update, ref.grid)
 
+S3method(vcov, ref.grid)
+
 # interim support for old lsmeans function
 export(.old.lsmeans)
 S3method(print, lsm)
