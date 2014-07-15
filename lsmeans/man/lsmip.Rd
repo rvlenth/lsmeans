@@ -9,8 +9,7 @@ Least-squares means interaction plot
 This function creates an interaction plot of the least-squares means based on a fitted model and a simple formula specification.
 }
 \usage{
-\method{lsmip}{default}(object, formula, 
-    type = c("link","response","lp","linear"),
+\method{lsmip}{default}(object, formula, type,
     pch = c(1,2,6,7,9,10,15:20), 
     lty = 1, col = NULL, ...)
 }
@@ -23,7 +22,7 @@ An object of class \code{lsmobj}, or a fitted model of a class supported by \cod
 Formula of the form \code{trace.factors ~ x.factors | by.factors}. The least-squares means are plotted against \code{x.factor} for each level of \code{trace.factors}. \code{by.factors} is optional, but if present, it determines separate panels. Each element of this formula may be a single factor in the model, or a combination of factors using the \code{*} operator.
 }
 \item{type}{
-As in \code{\link[=predict.ref.grid]{predict}}, this determines whether we want to inverse-transform the predictions (\samp{type="response"}) or not (any other choice).
+As in \code{\link[=predict.ref.grid]{predict}}, this determines whether we want to inverse-transform the predictions (\samp{type="response"}) or not (any other choice). The default is \code{"link"}, unless the \code{"predict.type"} option is in force; see \code{\link{lsm.options}}.
 }
   \item{pch}{
 The plotting characters to use for each group (i.e., levels of \code{trace.factors}). They are recycled as needed.

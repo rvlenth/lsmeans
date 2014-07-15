@@ -2,7 +2,9 @@ Changelog for 'lsmeans' package
 
 2.11
     Added vcov method for ref.grid
-    Corrections to embarrassing errors in the vignettes
+    Added possi8bility of 'summary=' spec for lsm.options, which
+        sets defaults for summary, predict, and lsmip
+    Changes to vignettes
     Minor coding/efficiency improvements
     Removed 'df' arg for ref.grid, stupidly added in 2.10 
         (we can set df as part of 'options' arg)

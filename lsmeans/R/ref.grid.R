@@ -8,7 +8,7 @@
 #     FALSE - same as function(x) sort(unique(x))
 
 ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, 
-                     options = getOption("lsmeans")$ref.grid, data) {
+                     options = lsm.options()$ref.grid, data) {
     # recover the data
     if (missing(data)) {
         data = try(recover.data (object, data = NULL))
@@ -399,10 +399,39 @@ str.ref.grid <- function(object, ...) {
     list(cv = cv, mesg = mesg, adjust = adjust)
 }
 
+### Support for different prediction types ###
+
+# Valid values for type arg or predict.type option
+.valid.types = c("link","response","lp","linear")
+
+# get "predict.type" option from misc, and make sure it's legal
+.get.predict.type = function(misc) {
+    type = misc$predict.type
+    if (is.null(type))
+        .valid.types[1]
+    else
+        .validate.type(type)
+}
+
+# check a "type" arg to make it legal
+.validate.type = function (type) {
+    .valid.types[pmatch(type, .valid.types, 1)]
+}
 
 # S3 predict method
-predict.ref.grid <- function(object, type = c("link","response","lp","linear"), ...) {
-    type <- match.arg(type)
+predict.ref.grid <- function(object, type, ...) {
+    # update with any "summary" options
+    opt = lsm.options()$summary
+    if(!is.null(opt)) {
+        opt$object = object
+        object = do.call("update.ref.grid", opt)
+    }
+    
+    if (missing(type))
+        type = .get.predict.type(object@misc)
+    else
+        type = .validate.type(type)
+    
     pred = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@dffun, object@dfargs, object@misc, do.se=FALSE)
     result = pred[[1]]
     if (".offset." %in% names(object@grid))
@@ -416,8 +445,13 @@ predict.ref.grid <- function(object, type = c("link","response","lp","linear"), 
 }
 
 # S3 summary method
-summary.ref.grid <- function(object, infer, level, adjust, by, 
-        type = c("link","response","lp","linear"), df, ...) {
+summary.ref.grid <- function(object, infer, level, adjust, by, type, df, ...) {
+    # update with any "summary" options
+    opt = lsm.options()$summary
+    if(!is.null(opt)) {
+        opt$object = object
+        object = do.call("update.ref.grid", opt)
+    }
     
     if(missing(df)) df = object@misc$df
     if(!is.null(df))
@@ -433,15 +467,19 @@ summary.ref.grid <- function(object, infer, level, adjust, by,
     }
     lbls = object@grid[lblnms]
 
-    zFlag = (all(is.na(result$df)))
-    type = match.arg(type)
-    inv = (type == "response") # flag to inverse-transform
-    
     ### implement my 'variable defaults' scheme    
     if(missing(infer)) infer = object@misc$infer
     if(missing(level)) level = object@misc$level
     if(missing(adjust)) adjust = object@misc$adjust
     if(missing(by)) by = object@misc$by.vars
+    
+    if (missing(type))
+        type = .get.predict.type(object@misc)
+    else
+        type = .validate.type(type)
+
+    zFlag = (all(is.na(result$df)))
+    inv = (type == "response") # flag to inverse-transform
     
     if ((length(infer) == 0) || !is.logical(infer)) 
         infer = c(FALSE, FALSE)
@@ -583,7 +621,7 @@ vcov.ref.grid = function(object, ...) {
 update.ref.grid = function(object, ...) {
     args = list(...)
     valid.choices = c("adjust","avgd.over","by.vars","df","estName","famSize","infer","inv.lbl",
-        "level","methdesc","pri.vars","tran")
+        "level","methdesc","predict.type","pri.vars","tran")
     misc = object@misc
     for (nm in names(args)) {
         fullname = try(match.arg(nm, valid.choices), silent=TRUE)
