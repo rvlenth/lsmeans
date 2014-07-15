@@ -16,10 +16,9 @@ Methods for \code{ref.grid} objects
 Use these methods to summarize, print, or examine objects of class \code{"ref.grid"}. They also apply to the class \code{"lsmobj"}, which is an extension of \code{"ref.grid"}.
 }
 \usage{
-\method{summary}{ref.grid}(object, infer, level, adjust, by, 
-    type = c("link","response","lp","linear"), df, ...)
+\method{summary}{ref.grid}(object, infer, level, adjust, by, type, df, ...)
 
-\method{predict}{ref.grid}(object, type = c("link","response","lp","linear"), ...)
+\method{predict}{ref.grid}(object, type, ...)
 
 \method{str}{ref.grid}(object, ...)
 
@@ -46,7 +45,7 @@ Character value naming the method used to adjust \eqn{p} values or confidence li
 Character name(s) of variables to use for grouping. This affects the family of tests considered in adjusted \emph{P} values. The printed display of the summary is grouped by the \code{by} variables.
 }
   \item{type}{
-Type of prediction desired. This only has an effect if there is a known transformation or link function. \code{"response"} specifies that the inverse transformation be applied. All others are equivalent, and request that results be shown for the linear predictor.
+Type of prediction desired. This only has an effect if there is a known transformation or link function. \code{"response"} specifies that the inverse transformation be applied. Other valid values are \code{"link"}, \code{"lp"}, and \code{"linear"}; these are equivalent, and request that results be shown for the linear predictor. The default is \code{"link"}, unless the \code{"predict.type"} option is in force; see \code{\link{lsm.options}}.
 }
   \item{df}{
 If non-missing a constant number of degrees of freedom to use in constructing confidence intervals and \emph{P} values (\code{NA} specifies asymptotic results).
@@ -57,7 +56,7 @@ The object to be printed.
   \item{\dots, digits, quote, right}{Additional arguments passed to \code{\link{print.data.frame}}.}
 }
 \details{
-The \code{misc} slot in \code{object} contains default values for \code{by}, \code{infer}, \code{level}, and \code{adjust}. These defaults vary depending on the code that created the object. The \code{\link{update}} method may be used to change these defaults.
+The \code{misc} slot in \code{object} contains default values for \code{by}, \code{infer}, \code{level}, \code{adjust}, and \code{type}. These defaults vary depending on the code that created the object. The \code{\link{update}} method may be used to change these defaults. In addition, any options set using \samp{lsm.options(summary=...)} will trump those stored in the object's \code{misc} slot.
 
 With \code{type="response"}, the transformation assumed can be found in \samp{object@misc$tran}, and its label, for the summary is in \samp{object@misc$inv.lbl}. At this time, \code{tran} must be one of the named transformations valid for \code{\link{make.link}}. Any \eqn{t} or \eqn{z} tests are still performed on the scale of the linear predictor, not the inverse-transformed one. Similarly, confidence intervals are computed on the linear-predictor scale, then inverse-transformed.
 

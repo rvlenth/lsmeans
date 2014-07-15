@@ -48,6 +48,8 @@ In \code{update}, the names in \code{\dots} are partially matched against those 
 
 \item{\code{df}}{(numeric) overrides the default degrees of freedom with a specified single value.}
 
+\item{\code{predict.method}}{(character) sets the default method of displaying predictions in \code{\link{summary}}, \code{\link{predict}}, and \code{\link{lsmip}}. Valid values are \code{"link"} (with synonyms \code{"lp"} and \code{"linear"}), or \code{"response"}.}
+
 \item{\code{avgd.over}}{(\code{character)} vector) are the names of the variables whose levels are averaged over in obtaining marginal averages of predictions, i.e., LS means. Changing this might produce a misleading printout, but setting it to \code{character(0)} will suppress the \dQuote{averaged over} message in the summary.}
 
 \item{\code{methDesc}}{(\code{character}) is a string that may used for creating names for a list of \code{lsmobj} objects. }
@@ -59,6 +61,7 @@ In \code{lsm.options}, we may set or change the default values for the above att
 \item{\code{ref.grid}}{A named \code{list} of defaults for objects created by \code{\link{ref.grid}}. This could affect other iobjects as well. For example, if \code{lsmeans} is called with a fitted model object, it calls \code{ref.grid} and this option will affect the resulting \code{lsmobj} object.}
 \item{\code{lsmeans}}{A named \code{list} of defaults for objects created by \code{\link{lsmeans}} (or \code{\link{lstrends}}).}
 \item{\code{contrast}}{A named \code{list} of defaults for objects created by \code{\link{contrast}} (or \code{\link{pairs}}).}
+\item{\code{summary}}{A named \code{list} of defaults used by the methods \code{\link{summary}}, \code{\link{predict}}, and \code{\link{lsmip}}. The only option that can affect the latter two is \code{"predict.method"}.}
 \item{\code{estble.tol}}{Tolerance for determining estimability in rank-deficient cases. If absent, \code{1e-8} is used.}
 } % end \describe
 } % end details

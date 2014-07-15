@@ -5,7 +5,7 @@ lsmip = function(object, formula, ...)
 
 # object - a model object supported by lsmeans
 # formula - a formula of the form  x.factors ~ trace.factors | panel.factors
-lsmip.default = function(object, formula, type = c("link","response","lp","linear"),  
+lsmip.default = function(object, formula, type,  
         pch=c(1,2,6,7,9,10,15:20), lty=1, col=NULL, ...) {
     if (!require("lattice"))
         stop("This function requires the 'lattice' package be installed.")
@@ -13,8 +13,6 @@ lsmip.default = function(object, formula, type = c("link","response","lp","linea
         formula = reformulate(as.character(formula)[[2]], response = ".single.")
         ###stop("'formula' must be two-sided, e.g. trace.factor ~ x.factor")
         ### NEW: Allow lhs to be empty, so then we get a single trace
-    
-    type = match.arg(type)
     
     # Glean the parts of ... to use in lsmeans call
     # arguments allowed to be passed
@@ -34,7 +32,15 @@ lsmip.default = function(object, formula, type = c("link","response","lp","linea
     lsmopts$object = object
     lsmopts$specs = reformulate(allvars)
     lsmo = do.call("lsmeans", lsmopts)
-    lsms = cbind(lsmo@grid, lsmean = predict(lsmo, type=type))
+    if(missing(type)) {
+        type = lsm.options()$summary$predict.type
+        if (is.null(type))
+            type = .get.predict.type(lsmo@misc)
+    }
+    type = .validate.type(type)
+
+    lsm = predict(lsmo, type = type)
+    lsms = cbind(lsmo@grid, lsmean = lsm)
 
     # Set up trace vars and key
     tvars = all.vars(formula[[2]])
