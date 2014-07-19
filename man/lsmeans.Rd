@@ -17,7 +17,7 @@ and optionally comparisons or contrasts among them.
 
 \method{lsmeans}{character.ref.grid}(object, specs, by = NULL, 
     fac.reduce = function(coefs) apply(coefs, 2, mean), contr, 
-    options = getOption("lsmeans")$lsmeans, ...)
+    options = getOption("lsmeans")$lsmeans, weights, ...)
 ## (used when 'object' is a 'ref.grid' and 'specs' is 'character')
     
 \method{lsmeans}{list}(object, specs, ...)
@@ -36,7 +36,7 @@ A \code{character} vector specifying the names of the predictors over which LS-m
 \item{by}{
 A character vector specifying the names of predictors to condition on.}
 \item{fac.reduce}{
-A function that combines the rows of a matrix into a single vector. This implements the ``marginal averaging'' aspect of least-squares means. The default is the mean of the rows. Typically if it is overridden, it would be some kind of weighted mean of the rows. If \code{fac.reduce} is nonlinear, bizarre results are likely, and LS means will not be interpretable.}
+A function that combines the rows of a matrix into a single vector. This implements the ``marginal averaging'' aspect of least-squares means. The default is the mean of the rows. Typically if it is overridden, it would be some kind of weighted mean of the rows. If \code{fac.reduce} is nonlinear, bizarre results are likely, and LS means will not be interpretable. If the \code{weights} argument is non-missing, \code{fac.reduce} is ignored.}
 \item{contr}{
 A \code{list} of contrast coefficients to apply to the least-squares means -- or the root name of an \code{.lsmc} function that returns such coefficients. In addition, \code{contr = "cld"} is an alternative way to invoke the \code{\link[lsmeans]{cld}} function. See \code{\link{contrast}} for more details on contrasts.
 }
@@ -44,6 +44,17 @@ A \code{list} of contrast coefficients to apply to the least-squares means -- or
 A named \code{list} of \code{list}s of contrast coefficients, as for \code{contr}. This is used only in the formula method; see Details below. 
 }
 \item{options}{If non-\code{NULL}, a named \code{list} of arguments to pass to \code{\link{update}}, just after the object is constructed.}
+\item{weights}{
+Numeric vector of weights to use in averaging predictions (must equal the number of predictions to be averaged). Alternatively, the user may specify a string that partially matches one of the following:
+\describe{
+\item{\code{"equal"}}{Use an equally weighted average.}
+\item{\code{"proportional"}}{Weight in proportion to the frequencies (in the original data) of the factor combinations that are averaged over.}
+\item{\code{"outer"}}{Weight in proportion to each individual factor's marginal frequencies. Thus, the weights for a combination of factors are the outer product of the one-factor margins}
+}
+Outer weights are like the 'expected' counts in a chi-square test of independence, and will yield the same results as those obtained by proportional averaging with one factor at a time.
+
+If \code{weights} is used, \code{fac.reduce} is ignored. 
+}
 \item{trend}{
 Including this argument is an alternative way of calling \code{lstrends} with it as its \code{var} argument.
 }
@@ -80,7 +91,7 @@ For models fitted using the \pkg{lme4} package, degrees of freedom are obtained 
 An object of class \code{\link[=lsmobj-class]{lsmobj}} -- except when \code{specs} is a \code{list} or a \code{formula} having a left-hand side, a \code{list} of \code{slmobj} objects. A number of methods are provided for further analysis, including \code{\link[lsmeans]{summary}}, \code{\link[lsmeans]{confint}}, \code{\link[lsmeans]{test}}, \code{\link[lsmeans]{contrast}}, \code{\link[lsmeans]{pairs}}, and \code{\link[lsmeans]{cld}}.
 }
 
-%\note{}
+\note{For a \code{ref.grid} or \code{lsmobj} object created in \pkg{lsmeans} version 2.10 or earlier, the frequency information needed by the \code{weights} argument is not present; so a message is displayed and averaging is done using \code{fac.reduce}.}
 
 \references{
 Kenward, M.G. and Roger, J.H. (1997)

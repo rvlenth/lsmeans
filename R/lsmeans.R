@@ -129,13 +129,51 @@ lsmeans.character.default = function(object, specs, ...)
 #setMethod("lsmeans", signature(object="ref.grid", specs="character"), 
 lsmeans.character.ref.grid = function(object, specs, by = NULL, 
          fac.reduce = function(coefs) apply(coefs, 2, mean), 
-         contr, options = getOption("lsmeans")$lsmeans, ...) {
+         contr, options = getOption("lsmeans")$lsmeans, weights, ...) {
     RG = object
     facs = union(specs, by)
     
     # Figure out the structure of the grid
+    freq = RG@grid[[".freq."]]
     dims = sapply(RG@levels, length)
     row.idx = array(seq_len(nrow(RG@linfct)), dims)
+    use.mars = match(facs, names(RG@levels)) # which margins to use
+    avgd.mars = setdiff(seq_along(dims)[dims>1], use.mars) # margins that we average over
+    
+    # Reconcile weights, if there are any margins left
+    if ((length(avgd.mars) > 0) && !missing(weights)) {
+        if (is.character(weights)) {
+            if (is.null(freq))
+                message("Frequency information not available -- deferring to fac.reduce")
+            else {
+                wopts = c("equal","proportional","outer","invalid")
+                weights = switch(wopts[pmatch(weights, wopts, 4)],
+                    equal = rep(1, prod(dims[avgd.mars])),
+                    proportional = as.numeric(plyr::aaply(row.idx, avgd.mars,
+                                                          function(idx) sum(freq[idx]))),
+                    outer = {
+                        ftbl = plyr::aaply(row.idx, avgd.mars,
+                                           function(idx) sum(freq[idx]), .drop = FALSE)
+                        w = N = sum(ftbl)
+                        for (d in seq_along(dim(ftbl)))
+                            w = outer(w, plyr::aaply(ftbl, d, sum) / N)
+                        as.numeric(w)
+                    },
+                    invalid = stop("Invalid 'weights' option: '", weights, "'")
+                )
+            }
+        }
+        if (is.numeric(weights)) {
+            wtmat = diag(weights)
+            wtsum = sum(weights)
+            if (wtsum <= 1e-8) wtsum = NA
+            fac.reduce = function(coefs) {
+                if (nrow(coefs) != nrow(wtmat))
+                    stop("Nonconforming number of weights -- need ", nrow(coefs))
+                apply(wtmat %*% coefs, 2, sum) / wtsum
+            }
+        }
+    }
     
     # Get the required factor combs
     levs = list()
@@ -145,7 +183,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
             stop(paste("No variable named", f, "in the reference grid"))
     }
     combs = do.call("expand.grid", levs)
-    K = plyr::alply(row.idx, match(facs, names(RG@levels)), function(idx) {
+    K = plyr::alply(row.idx, use.mars, function(idx) {
         fac.reduce(RG@linfct[idx, , drop=FALSE])
     })
         
@@ -157,16 +195,20 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     
     # Figure offset, if any
     if (".offset." %in% names(RG@grid)) {
-        offset = plyr::alply(row.idx, match(facs, names(RG@levels)), function(idx) {
-            fac.reduce(RG@grid[idx, ".offset.", drop=FALSE])
-        })
-        combs[[".offset."]] = unlist(offset)
+        combs[[".offset."]] = as.numeric(plyr::aaply(row.idx, use.mars, function(idx)
+            fac.reduce(as.matrix(RG@grid[idx, ".offset.", drop=FALSE]))))
     }
     
     # Figure out which factors have been averaged over
-    nlev = sapply(RG@levels, length)
-    avgd.over = setdiff(names(nlev[nlev > 1]), facs)
+    #old code... nlev = sapply(RG@levels, length)
+    #avgd.over = setdiff(names(nlev[nlev > 1]), facs)
+    avgd.over = names(RG@levels[avgd.mars])
     
+    # Update .freq column of grid, if it exists
+    if (!is.null(freq)) {
+        combs[[".freq."]] = as.numeric(plyr::aaply(row.idx, use.mars, 
+            function(idx) sum(freq[idx])))
+    }
     
     RG@roles$responses = character()
     RG@misc$famSize = nrow(linfct)
@@ -215,7 +257,8 @@ contrast = function(object, ...)
 contrast.ref.grid = function(object, method = "eff", by, adjust, 
         options = getOption("lsmeans")$contrast, ...) {
     args = object@grid
-    args[[".offset."]] = NULL # ignore the offset in labels, etc.
+    args[[".offset."]] = NULL 
+    args[[".freq."]] = NULL # ignore auxiliary stuff in labels, etc.
     if(missing(by)) 
         by = object@misc$by.vars
     if (!is.null(by)) {
