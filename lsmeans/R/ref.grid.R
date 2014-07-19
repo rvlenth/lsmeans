@@ -166,6 +166,18 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         grid[[".offset."]] = offset
     }
 
+    ### --- Determine frequencies --- (added ver.2.11)
+    nms = union(names(xlev), coerced) # only factors, no covariates or mult.resp
+    # originally, I used 'plyr::count', but there are probs when there is a 'freq' variable
+    id = plyr::id(data[, nms], drop = TRUE)
+    key = do.call(paste, data[!duplicated(id), nms, drop = FALSE])
+    frq = tabulate(id, attr(id, "n"))
+    tgt = do.call(paste, grid[, nms, drop = FALSE])
+    freq = rep(0, nrow(grid))
+    for (i in 1:length(key))
+        freq[tgt == key[i]] = frq[i] ###ftbl[i, "freq"]
+    grid[[".freq."]] = freq
+
     misc$ylevs = NULL # No longer needed
     misc$estName = "prediction"
     misc$infer = c(FALSE,FALSE)
@@ -239,6 +251,19 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     else 0
 }
 
+# utility to check estimability of x'beta, given nonest.basis
+.is.estble = function(x, nbasis, tol) {
+    if(is.na(nbasis[1]))
+        TRUE
+    else {
+        chk = as.numeric(crossprod(nbasis, x))
+        ssqx = sum(x*x) # BEFORE subsetting x
+        # If x really small, don't scale chk'chk
+        if (ssqx < tol) ssqx = 1
+        sum(chk*chk) < tol * ssqx
+    }
+}
+
 # utility fcn to get est's, std errors, and df
 # new arg: do.se -- if FALSE, just do the estimates and return 0 for se and df
 # returns a data.frame with an add'l "link" attribute if misc$tran is non-null
@@ -249,17 +274,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     if (is.null(tol)) 
         tol = 1e-8
     result = apply(linfct, 1, function(x) {
-        estble = if(is.na(nbasis[1]))
-            TRUE
-        else {
-            chk = t(nbasis) %*% x
-            ssqx = sum(x*x) # BEFORE subsetting x
-            # If x really small, don't scale chk'chk
-            if (ssqx < tol) ssqx = 1
+        if (.is.estble(x, nbasis, tol)) {
             x = x[active]
-            sum(chk*chk) < tol * ssqx
-        }
-        if (estble) {
             est = sum(bhat * x)
             if(do.se) {
                 se = sqrt(.qf.non0(V, x)) ###sqrt(sum(x * .mat.times.vec(V, x)))
@@ -459,12 +475,12 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df, ...) {
     
     result = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@dffun, object@dfargs, object@misc)
     
-    lblnms = setdiff(names(object@grid), object@roles$responses)
     
-    if(".offset." %in% lblnms) {
+    if(".offset." %in% names(object@grid))
         result[[1]] = result[[1]] + object@grid[[".offset."]]
-        lblnms = setdiff(lblnms, ".offset.")
-    }
+    
+    lblnms = setdiff(names(object@grid), 
+                     c(object@roles$responses, ".offset.", ".freq."))
     lbls = object@grid[lblnms]
 
     ### implement my 'variable defaults' scheme    
@@ -613,7 +629,14 @@ print.ref.grid = function(x,...)
 
 # vcov method
 vcov.ref.grid = function(object, ...) {
-    object@linfct %*% object@V %*% t(object@linfct)
+    tol = lsm.options("estble.tol")
+    if(is.null(tol)) 
+        tol = 1e-8
+    X = object@linfct
+    estble = apply(X, 1, .is.estble, object@nbasis, tol)
+    X[!estble, ] = NA
+    X = X[, !is.na(object@bhat)]
+    X %*% tcrossprod(object@V, X)
 }
 
 

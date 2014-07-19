@@ -2,7 +2,9 @@ Changelog for 'lsmeans' package
 
 2.11
     Added vcov method for ref.grid
-    Added possi8bility of 'summary=' spec for lsm.options, which
+    Added 'weights' argument for lsmeans - may be numeric, or 
+        the string "equal", "proportional", or "outer"
+    Added possibility of 'summary=' spec for lsm.options, which
         sets defaults for summary, predict, and lsmip
     Changes to vignettes
     Minor coding/efficiency improvements
