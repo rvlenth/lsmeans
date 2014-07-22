@@ -36,18 +36,6 @@ lsmeans.default = function(object, specs, ...) {
     do.call("lsmeans", lsargs)###lsmeans(RG, specs, ...)
 }
 
-# signature = (ALL, ALL) <==> (some model object, ALL)
-# Look for args: at, cov.reduce = mean, mult.levs
-# lsmeans = function(object, specs, ...) {
-#     rgargs = .args.for.fcn(ref.grid, list(object=object, ...))
-#     RG = do.call("ref.grid", rgargs)
-#     lsargs = list(object = RG, specs = specs, ...)
-#     for (nm in names(rgargs)[-1]) lsargs[[nm]] = NULL
-#     do.call("lsmeans", lsargs)###lsmeans(RG, specs, ...)
-# }
-# setGeneric("lsmeans")
-
-#setMethod("lsmeans", signature(object="ANY", specs="formula"),
 lsmeans.formula =
 function(object, specs, contr.list, trend, ...) {
     if (!missing(trend))
@@ -73,7 +61,6 @@ function(object, specs, contr.list, trend, ...) {
 }
 
 # List of specs
-#setMethod("lsmeans", signature(object="ANY", specs="list"),
 lsmeans.list = function(object, specs, ...) {
     result = list()
     nms = names(specs)
@@ -126,7 +113,6 @@ lsmeans.character.default = function(object, specs, ...)
     lsmeans.default(object, specs, ...)
 
 # Method for a ref.grid -- all methods will get us here eventually
-#setMethod("lsmeans", signature(object="ref.grid", specs="character"), 
 lsmeans.character.ref.grid = function(object, specs, by = NULL, 
          fac.reduce = function(coefs) apply(coefs, 2, mean), 
          contr, options = getOption("lsmeans")$lsmeans, weights, ...) {
@@ -146,8 +132,8 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
             if (is.null(freq))
                 message("Frequency information not available -- deferring to fac.reduce")
             else {
-                wopts = c("equal","proportional","outer","invalid")
-                weights = switch(wopts[pmatch(weights, wopts, 4)],
+                wopts = c("equal","proportional","outer","actual","invalid")
+                weights = switch(wopts[pmatch(weights, wopts, 5)],
                     equal = rep(1, prod(dims[avgd.mars])),
                     proportional = as.numeric(plyr::aaply(row.idx, avgd.mars,
                                                           function(idx) sum(freq[idx]))),
@@ -159,6 +145,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
                             w = outer(w, plyr::aaply(ftbl, d, sum) / N)
                         as.numeric(w)
                     },
+                    actual = "fq",
                     invalid = stop("Invalid 'weights' option: '", weights, "'")
                 )
             }
@@ -183,9 +170,15 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
             stop(paste("No variable named", f, "in the reference grid"))
     }
     combs = do.call("expand.grid", levs)
-    K = plyr::alply(row.idx, use.mars, function(idx) {
-        fac.reduce(RG@linfct[idx, , drop=FALSE])
-    })
+    if (!missing(weights) && (weights == "fq"))
+        K = plyr::alply(row.idx, use.mars, function(idx) {
+            fq = RG@grid[[".freq."]][idx]
+            apply(diag(fq) %*% RG@linfct[idx, , drop=FALSE], 2, sum) / sum(fq)
+        })
+    else
+        K = plyr::alply(row.idx, use.mars, function(idx) {
+            fac.reduce(RG@linfct[idx, , drop=FALSE])
+        })
         
     linfct = t(as.matrix(as.data.frame(K)))
     row.names(linfct) = NULL
@@ -199,9 +192,6 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
             fac.reduce(as.matrix(RG@grid[idx, ".offset.", drop=FALSE]))))
     }
     
-    # Figure out which factors have been averaged over
-    #old code... nlev = sapply(RG@levels, length)
-    #avgd.over = setdiff(names(nlev[nlev > 1]), facs)
     avgd.over = names(RG@levels[avgd.mars])
     
     # Update .freq column of grid, if it exists
