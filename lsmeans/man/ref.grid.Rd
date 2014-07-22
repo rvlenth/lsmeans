@@ -20,11 +20,15 @@ ref.grid(object, at, cov.reduce = mean, mult.name, mult.levs,
 \arguments{
   \item{object}{An object produced by a supported model-fitting function, such as \code{lm}. }
   \item{at}{Optional named list of levels for the corresponding variables}
-  \item{cov.reduce}{A function, logical value, or a named list of functions, applied to covariates in the underlying data. If a single function, it applies to all covariates. 
+  \item{cov.reduce}{A function, logical value, or formula; or a named list of these. Each covariate not specified in \code{at} is reduced according to these specifications. 
   
-  If \code{cov.reduce} is a list, then the names of its entries determine which function is used. If no entry is found, the default is \code{mean}. 
+  If a single function, it is applied to each covariate. 
   
-  If a logical value, \code{TRUE} is equivalent to  \samp{cov.reduce=mean}, and \code{FALSE} is equivalent to \samp{cov.reduce = function(x) sort(unique(x))}.
+  If logical and \code{TRUE}, \code{mean} is used. If logical and \code{FALSE}, it is equivalent to specifying \samp{function(x) sort(unique(x))}, and these values are considered part of the reference grid; thus, it is a handy alternative to specifying these same values in \code{at}.
+  
+  If a formula (which must be two-sided), then \emph{after} the reference grid is determined, a model is fitted to that formula using \code{\link{lm}} and the response variable in the reference grid is set to the results of \code{\link{predict}} for that model, with the reference grid as \code{newdata}. This is appropriate for cases where you think experimental conditions affect the covariate as well as the response.
+  
+  If \code{cov.reduce} is a named list, then the above criteria are used to determine what to do with covariates named in the list. (However, formula elements do not need to be named, as those names are determined from the formulas' left-hand sides.) Any unresolved covariates are reduced using \code{"mean"}.
 } % end of \item{cov.reduce}
   \item{mult.name}{Character, the name to give to the \dQuote{factor} whose levels delineate the elements of a multivariate response. If this is provided, it overrides the default name, e.g., \code{"rep.meas"} for an \code{\link[=lm]{mlm}} object or \code{"cut"} for a \code{\link[MASS]{polr}} object.}
   \item{mult.levs}{A named list of levels for the dimensions of a multivariate response. If there is more than one element, the combinations of levels are used, in \code{\link{expand.grid}} order. The (total) number of levels must match the number of dimensions. If \code{mult.name} is specified, this argument is ignored.}
@@ -66,6 +70,10 @@ require(lsmeans)
 fiber.lm <- lm(strength ~ machine*diameter, data = fiber)
 ref.grid(fiber.lm)
 summary(ref.grid(fiber.lm, at = list(diameter = c(15,25))))
+
+# If we thought that the machines affect the diameters
+# (admittedly not plausible in this example), then we should use:
+ref.grid(fiber.lm, cov.reduce = diameter~machine)
 
 # Multivariate example
 MOats.lm = lm(yield ~ Block + Variety, data = MOats)

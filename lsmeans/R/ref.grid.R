@@ -25,11 +25,35 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     ###              coerced = anm[1 + grep("factor|ordered", anm)]
     coerced = .find.coerced(trms, data)
     
-    # convenience functions
+    # convenience function
     sort.unique = function(x) sort(unique(x))
-    if(is.logical(cov.reduce)) 
-        if(cov.reduce[1]) cov.reduce = mean
-        else              cov.reduce = sort.unique
+    
+    # Ensure cov.reduce is a function or list thereof
+    dep.x = list() # list of formuklas to fit later
+    fix.cr = function(cvr) {
+        # cvr is TRUE or FALSE
+        if(is.logical(cvr)) 
+            if(cvr[1]) cvr = mean
+        else              cvr = sort.unique
+        else if (inherits(cvr, "formula")) {
+            if (length(cvr) < 3)
+                stop("Formulas in 'cov.reduce' must be two-sided")
+            lhs = all.vars(cvr)[1]
+            dep.x[[lhs]] <<- cvr
+            cvr = mean 
+        }
+        else if (!inherits(cvr, c("function","list")))
+            stop("Invalid 'cov.reduce' argument")
+        cvr
+    }
+    
+    
+    if (is.list(cov.reduce))
+        cov.reduce = lapply(cov.reduce, fix.cr)
+    else
+        cov.reduce = fix.cr(cov.reduce)
+    
+    # local cov.reduce function that works with function or named list
     cr = function(x, nm) {
         if (is.function(cov.reduce))
             cov.reduce(x)
@@ -169,14 +193,23 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     ### --- Determine frequencies --- (added ver.2.11)
     nms = union(names(xlev), coerced) # only factors, no covariates or mult.resp
     # originally, I used 'plyr::count', but there are probs when there is a 'freq' variable
-    id = plyr::id(data[, nms], drop = TRUE)
-    key = do.call(paste, data[!duplicated(id), nms, drop = FALSE])
+    id = plyr::id(data[, nms, drop = FALSE], drop = TRUE)
+    uid = !duplicated(id)
+    key = do.call(paste, data[uid, nms, drop = FALSE])
+    key = key[order(id[uid])]
     frq = tabulate(id, attr(id, "n"))
     tgt = do.call(paste, grid[, nms, drop = FALSE])
     freq = rep(0, nrow(grid))
-    for (i in 1:length(key))
+    for (i in seq_along(key))
         freq[tgt == key[i]] = frq[i] ###ftbl[i, "freq"]
     grid[[".freq."]] = freq
+
+    # resolve any covariate formulas
+    for (xnm in names(dep.x)) {
+        xmod = lm(dep.x[[xnm]], data = data)
+        grid[[xnm]] = basis$X[, xnm] = predict(xmod, newdata = grid)
+        ref.levels[[xnm]] = NULL
+    }
 
     misc$ylevs = NULL # No longer needed
     misc$estName = "prediction"
@@ -202,6 +235,12 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
 
     result
 }
+
+
+#### End of ref.grid ------------------------------------------
+
+
+
 
 # This function figures out which covariates in a model 
 # have been coerced to factors. Does NOT rely on the names of
@@ -233,15 +272,6 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     intersect(unique(unlist(cvars)), covs.d)
 }
 
-# # Matrix times vector function that ignores NAs, NaNs, Infs
-# # when given weight 0
-# .mat.times.vec = function(X, y) {
-#     ii = (zapsmall(y) != 0)
-#     result = rep(0, length(y))
-#     if (any(ii))
-#         result[ii] = X[ii, ii, drop = FALSE] %*% y[ii]
-#     result
-# }
 
 # Computes the quadratic form y'Xy after subsetting for the nonzero elements of y
 .qf.non0 = function(X, y) {
@@ -304,8 +334,10 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
 ### =========== Methods for ref.grid class =============================
 
 str.ref.grid <- function(object, ...) {
-    showlevs = function(x) # internal convenience function
-        cat(paste(format(x, digits = 5, justify = "none"), collapse=", "))
+    showlevs = function(x) { # internal convenience function
+        if (is.null(x)) cat("(predicted by other variables)")
+        else cat(paste(format(x, digits = 5, justify = "none"), collapse=", "))
+    }
     #cat("responses: ")
     #showlevs(object@roles$responses)
     levs = object@levels
