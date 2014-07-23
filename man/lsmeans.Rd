@@ -50,8 +50,9 @@ Numeric vector of weights to use in averaging predictions (must equal the number
 \item{\code{"equal"}}{Use an equally weighted average.}
 \item{\code{"proportional"}}{Weight in proportion to the frequencies (in the original data) of the factor combinations that are averaged over.}
 \item{\code{"outer"}}{Weight in proportion to each individual factor's marginal frequencies. Thus, the weights for a combination of factors are the outer product of the one-factor margins}
+\item{\code{"cells""}}{Weight according to the frequencies of the cells being averaged.}
 }
-Outer weights are like the 'expected' counts in a chi-square test of independence, and will yield the same results as those obtained by proportional averaging with one factor at a time.
+Outer weights are like the 'expected' counts in a chi-square test of independence, and will yield the same results as those obtained by proportional averaging with one factor at a time. All except \code{"cells"} uses the same set of weights for each mean. In a model where the predicted values are the cell means, cell weights will yield the raw averages of the data for the factors involved.
 
 If \code{weights} is used, \code{fac.reduce} is ignored. 
 }
