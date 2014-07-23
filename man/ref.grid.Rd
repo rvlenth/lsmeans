@@ -20,15 +20,17 @@ ref.grid(object, at, cov.reduce = mean, mult.name, mult.levs,
 \arguments{
   \item{object}{An object produced by a supported model-fitting function, such as \code{lm}. }
   \item{at}{Optional named list of levels for the corresponding variables}
-  \item{cov.reduce}{A function, logical value, or formula; or a named list of these. Each covariate not specified in \code{at} is reduced according to these specifications. 
+  \item{cov.reduce}{A function, logical value, or formula; or a named list of these. Each covariate \emph{not specified in} \code{at} is reduced according to these specifications. 
   
   If a single function, it is applied to each covariate. 
   
   If logical and \code{TRUE}, \code{mean} is used. If logical and \code{FALSE}, it is equivalent to specifying \samp{function(x) sort(unique(x))}, and these values are considered part of the reference grid; thus, it is a handy alternative to specifying these same values in \code{at}.
   
-  If a formula (which must be two-sided), then \emph{after} the reference grid is determined, a model is fitted to that formula using \code{\link{lm}} and the response variable in the reference grid is set to the results of \code{\link{predict}} for that model, with the reference grid as \code{newdata}. This is appropriate for cases where you think experimental conditions affect the covariate as well as the response.
+  If a formula (which must be two-sided), then a model is fitted to that formula using \code{\link{lm}}; then in the reference grid, its response variable is set to the results of \code{\link{predict}} for that model, with the reference grid as \code{newdata}. (This is done \emph{after} the reference grid is determined.) A formula is appropriate here when you think experimental conditions affect the covariate as well as the response.
   
   If \code{cov.reduce} is a named list, then the above criteria are used to determine what to do with covariates named in the list. (However, formula elements do not need to be named, as those names are determined from the formulas' left-hand sides.) Any unresolved covariates are reduced using \code{"mean"}.
+  
+Any \code{cov.reduce} specification for a covariate also named in \code{at} is ignored.
 } % end of \item{cov.reduce}
   \item{mult.name}{Character, the name to give to the \dQuote{factor} whose levels delineate the elements of a multivariate response. If this is provided, it overrides the default name, e.g., \code{"rep.meas"} for an \code{\link[=lm]{mlm}} object or \code{"cut"} for a \code{\link[MASS]{polr}} object.}
   \item{mult.levs}{A named list of levels for the dimensions of a multivariate response. If there is more than one element, the combinations of levels are used, in \code{\link{expand.grid}} order. The (total) number of levels must match the number of dimensions. If \code{mult.name} is specified, this argument is ignored.}

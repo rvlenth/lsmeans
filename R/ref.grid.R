@@ -29,7 +29,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     sort.unique = function(x) sort(unique(x))
     
     # Ensure cov.reduce is a function or list thereof
-    dep.x = list() # list of formuklas to fit later
+    dep.x = list() # list of formulas to fit later
     fix.cr = function(cvr) {
         # cvr is TRUE or FALSE
         if(is.logical(cvr)) 
@@ -47,11 +47,16 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         cvr
     }
     
-    
+    # IMPORTANT: following stmts may also affect x.dep
     if (is.list(cov.reduce))
         cov.reduce = lapply(cov.reduce, fix.cr)
     else
         cov.reduce = fix.cr(cov.reduce)
+    
+    # zap any formulas that are also in 'at'
+    if (!missing(at))
+        for (xnm in names(at)) dep.x[[xnm]] = NULL
+    
     
     # local cov.reduce function that works with function or named list
     cr = function(x, nm) {
@@ -206,6 +211,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
 
     # resolve any covariate formulas
     for (xnm in names(dep.x)) {
+        if (!(xnm %in% dimnames(basis$X)[[2]]))
+            stop("Formulas in 'cov.reduce' must predict covariates actually used in the model")
         xmod = lm(dep.x[[xnm]], data = data)
         grid[[xnm]] = basis$X[, xnm] = predict(xmod, newdata = grid)
         ref.levels[[xnm]] = NULL
