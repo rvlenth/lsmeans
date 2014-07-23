@@ -3,14 +3,14 @@ Changelog for 'lsmeans' package
 2.11
     Added vcov method for ref.grid
     Added 'weights' argument for lsmeans - may be numeric, or 
-        the string "equal", "proportional", or "outer"
+        the string "equal", "proportional", "outer", or "cells"
     Enhanced 'cov.reduce' argument in 'ref.grid' to allow formulas,
         useful when you think covariates depend on other variables.
         Also, when cov.reduce is a list, it may now include 
         anything -- function, logical, or formula
     Added possibility of 'summary=' spec for lsm.options, which
         sets defaults for summary, predict, and lsmip
-    Changes to vignettes
+    Improvements/updates to vignettes
     Minor coding/efficiency improvements
     Removed 'df' arg for ref.grid, stupidly added in 2.10 
         (we can set df as part of 'options' arg)

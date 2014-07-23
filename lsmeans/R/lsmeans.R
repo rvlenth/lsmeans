@@ -132,7 +132,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
             if (is.null(freq))
                 message("Frequency information not available -- deferring to fac.reduce")
             else {
-                wopts = c("equal","proportional","outer","actual","invalid")
+                wopts = c("equal","proportional","outer","cells","invalid")
                 weights = switch(wopts[pmatch(weights, wopts, 5)],
                     equal = rep(1, prod(dims[avgd.mars])),
                     proportional = as.numeric(plyr::aaply(row.idx, avgd.mars,
@@ -145,7 +145,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
                             w = outer(w, plyr::aaply(ftbl, d, sum) / N)
                         as.numeric(w)
                     },
-                    actual = "fq",
+                    cells = "fq",
                     invalid = stop("Invalid 'weights' option: '", weights, "'")
                 )
             }
