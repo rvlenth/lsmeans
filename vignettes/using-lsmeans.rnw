@@ -1,18 +1,12 @@
-\documentclass[11pt]{article}
-\usepackage[margin=1in]{geometry}
-\usepackage{mathpazo}
+\documentclass[article,nojss]{jss}
+
 \usepackage{fancyvrb}
-\usepackage{natbib}
-\usepackage[colorlinks=true,allcolors=black,urlcolor=blue]{hyperref}
-%\usepackage{multicol}
+\usepackage{multicol}
 
 \let\dq="
 \DefineShortVerb{\"}
 
-\def\pkg#1{\textsf{#1}}
 \def\lsm{\pkg{lsmeans}}
-\def\code{\texttt}
-\def\proglang{\textsf}
 
 % double-quoted text
 \def\dqt#1{\code{\dq{}#1\dq{}}}
@@ -21,6 +15,10 @@
 \def\rg{\dqt{ref.grid}}
 \def\lsmo{\dqt{lsmobj}}
 
+% for use in place of \item in a description env where packages are listed
+\def\pitem#1{\item[\pkg{#1}]}
+
+
 \def\R{\proglang{R}}
 \def\SAS{\proglang{SAS}}
 
@@ -28,10 +26,7 @@
 \def\Fig#1{Figure~\ref{#1}}
 \def\bottomfraction{.5}
 
-\title{Using \lsm{}}
-\author{Russell V.~Lenth}
-
-%\VignetteIndexEntry{Using lsmeans}
+%\VignetteIndexEntry{Least-squares Means: The R Package lsmeans}
 %\VignetteDepends{lsmeans}
 %\VignetteKeywords{least-squares means}
 %\VignettePackage{lsmeans}
@@ -39,26 +34,77 @@
 
 % Initialization
 <<echo=FALSE>>=
-options(show.signif.stars=FALSE, prompt="R> ", continue="   ", width=100)
+options(show.signif.stars=FALSE, prompt="R> ", continue="   ", 
+    useFancyQuotes=FALSE, width=100, digits=6)
 @
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% declarations for jss.cls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% almost as usual
+\author{Russell V.~Lenth\\The University of Iowa}
+\title{Least-squares Means: The R Package \lsm{}} %% without formatting
+
+
+%% for pretty printing and a nice hypersummary also set:
+\Plainauthor{Russell V.~Lenth} %% comma-separated
+\Plaintitle{Least-squares Means: The R Package lsmeans} %% without formatting
+\Shorttitle{The R Package lsmeans} %% a short title (if necessary)
+
+%% an abstract and keywords
+\Abstract{
+  Least-squares means are predictions from a linear model, or averages thereof. They are useful in the
+  analysis of experimental data for summarizing the effects of factors, and for testing linear contrasts among predictions. The \lsm{} package provides a simple way of obtaining least-squares means and contrasts thereof. It supports many models fitted by \R{} core packages (as well as a few key contributed ones) that fit linear or mixed models, and provides a simple way of extending it to cover more model classes.
+}
+\Keywords{least-squares means, linear models, experimental design}
+\Plainkeywords{least-squares means, linear models, experimental design} %% without formatting
+%% at least one keyword must be supplied
+
+%% publication information
+%% NOTE: Typically, this can be left commented and will be filled out by the technical editor
+%% \Volume{13}
+%% \Issue{9}
+%% \Month{September}
+%% \Year{2004}
+%% \Submitdate{2004-09-29}
+%% \Acceptdate{2004-09-29}
+
+%% The address of (at least) one author should be given
+%% in the following format:
+\Address{
+  Russell V.~Lenth,  Professor Emeritus\\
+  Department of Statistics and Actuarial Science\\
+%  241 Schaeffer Hall\\
+  The University of Iowa\\
+  Iowa City, IA 52242 ~ USA\\
+  E-mail: \email{russell-lenth@uiowa.edu} %\\
+%  URL: \url{http://www.stat.uiowa.edu/~rlenth/}
+}
+%% It is also possible to add a telephone and fax number
+%% before the e-mail in the following format:
+%% Telephone: +43/1/31336-5053
+%% Fax: +43/1/31336-734
+
+%% for those who use Sweave please include the following line (with % symbols):
+%% need no \usepackage{Sweave.sty}
+
+%% end of declarations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \begin{document}
-\SweaveOpts{concordance=TRUE}
-\maketitle{}
 
 \section{Introduction}
-Least-squares means (LS~means for short)  for a linear model are simply predictions---or marginal averages thereof---over a regular grid of predictor settings which I call the \emph{reference grid}. They date back at least to 1976 when LS~means were incorporated in the contributed \SAS{} procedure named \code{HARVEY} \citep{Har76}. Later, they were incorporated via \code{LSMEANS} statements in the regular \SAS{} releases. 
+Least-squares means (LS~means for short)  for a linear model are simply predictions---or averages thereof---over a regular grid of predictor settings which I call the \emph{reference grid}. They date back at least to 1976 when LS~means were incorporated in the contributed \SAS{} procedure named \code{HARVEY} \citep{Har76}. Later, they were incorporated via \code{LSMEANS} statements in the regular \SAS{} releases. 
 
-In simple analysis-of-covariance models, LS~means are the same as covariate-adjusted means. In unbalanced factorial experiments, LS~means for each factor mimic the marginal means but are adjusted for bias due to imbalance. The latter interpretation is quite similar to the ``unweighted means'' method for unbalanced data, as presented in old design books.
+In simple analysis-of-covariance models, LS~means are the same as covariate-adjusted means. In unbalanced factorial experiments, LS~means for each factor mimic the main-effects means but are adjusted for imbalance. The latter interpretation is quite similar to the ``unweighted means'' method for unbalanced data, as presented in old design books.
 
-In any case, the most important things to remember are:
+LS~means are not always well understood, in part because the term itself is confusing. The most important things to remember are:
 \begin{itemize}
 \item LS~means are computed relative to a \emph{reference grid}.
-\item Once the reference grid is understood, LS~means are simply predictions on this grid, or marginal averages of these predictions.
+\item Once the reference grid is established, LS~means are simply predictions on this grid, or marginal averages of a table of these predictions.
 \end{itemize}
-If you understand these points, then you will know what you are getting, and can judge whether or not LS~means are appropriate for your analysis.
+A user who understands these points will know what is being computed, and thus can judge whether or not LS~means are appropriate for the analysis.
 
 \section{The reference grid}
 Since the reference grid is fundamental, it is our starting point. For each predictor in the model, we define a set of one or more \emph{reference levels}. The reference grid is then the set of all combinations of reference levels. If not specified explicitly, the default reference levels are obtained as follows:
@@ -73,43 +119,43 @@ To illustrate, consider the "oranges" data provided with \lsm{}.  This dataset h
 
 For starters, let's consider an additive covariance model for sales of the first variety, with the two factors and both "price1" and "price2" as covariates (since the price of the other variety could also affect sales).
 <<>>=
-library(lsmeans)
-oranges.lm1 = lm(sales1 ~ price1 + price2 + day + store, data = oranges)
+library("lsmeans")
+oranges.lm1 <- lm(sales1 ~ price1 + price2 + day + store, data = oranges)
 anova(oranges.lm1)
 @
 The "ref.grid" function in \lsm{} may be used to establish the reference grid. Here is the default one:
 <<>>=
-( oranges.rg1 = ref.grid(oranges.lm1) )
+( oranges.rg1 <- ref.grid(oranges.lm1) )
 @
 As outlined above, the two covariates "price1" and "price2" have their means as their sole reference level; and the two factors have their levels as reference levels. The reference grid thus consists of the $1\times1\times6\times6=36$ combinations of these reference levels. LS~means are based on predictions on this reference grid, which we can obtain using "predict" or "summary":
 <<>>=
 summary(oranges.rg1)
 @
 
-\subsection{LS~means as marginal averages}
-The ANOVA indicates there is a significant "day" effect after adjusting for the covariates, so we might want to compare the days. The "lsmeans" function can do this:
+\subsection{LS means as marginal averages over the reference grid}
+The ANOVA indicates there is a significant "day" effect after adjusting for the covariates, so we might want to do a follow-up analysis that involves comparing the days. The "lsmeans" function provides a starting point:
 <<>>=
 lsmeans(oranges.rg1, "day")   ## or lsmeans(oranges.lm1, "day")
 @
-These results, as indicated in the annotation in the output, are in fact the averages of the predictions shown earlier, for each day, over the 6 stores. The above LS~means are not the same as the marginal means of the data:
+These results, as indicated in the annotation in the output, are in fact the averages of the predictions shown earlier, for each day, over the 6 stores. The above LS~means are not the same as the overall means for each day:
 <<>>=
 with(oranges, tapply(sales1, day, mean))
 @
 These unadjusted means are not comparable with one another because they are affected by the differing "price1" and "price2" values on each day, whereas the LS~means are comparable because they use predictions at uniform "price1" and "price2" values.
 
-Note that you may call "lsmeans" with either the reference grid or the model. If the model is given, then the first thing it does is create the reference grid; so if you already have the reference grid, as in this example, it's more efficient to make use of it.
+Note that one may call "lsmeans" with either the reference grid or the model. If the model is given, then the first thing it does is create the reference grid; so if the reference grid is already available, as in this example, it's more efficient to make use of it.
 
 \subsection{Altering the reference grid}
-The "at" argument may be used to override defaults in the reference grid. You may specify this argument either in a "ref.grid" call or an "lsmeans" call; and you should specify "list" with named sets of reference levels. Here is a silly example:
+The "at" argument may be used to override defaults in the reference grid. The user may specify this argument either in a "ref.grid" call or an "lsmeans" call; and should specify a "list" with named sets of reference levels. Here is a silly example:
 <<>>=
 lsmeans(oranges.lm1, "day", at = list(price1 = 50, 
     price2 = c(40,60), day = c("2","3","4")) )
 @
 Here, we restricted the results to three of the days, and used different prices.
-One possible surprise is to note that the predictions are averaged over the two "price2"
-values. That is because "price2" is no longer a single reference level, and we average over the levels of all factors not used to split-out the LS~means. This is probably not what we want. To get separate sets of predictions for each "price2", you need to specify it as another factor or as a "by" factor in the "lsmeans" call (we will save the result for later discussion):
+One possible surprise is that the predictions are averaged over the two "price2"
+values. That is because "price2" is no longer a single reference level, and we average over the levels of all factors not used to split-out the LS~means. This is probably not what we want. To get separate sets of predictions for each "price2", one must specify it as another factor or as a "by" factor in the "lsmeans" call (we will save the result for later discussion):
 <<>>=
-org.lsm = lsmeans(oranges.lm1, "day", by ="price2", 
+org.lsm <- lsmeans(oranges.lm1, "day", by = "price2", 
     at = list(price1 = 50, price2 = c(40,60), day = c("2","3","4")) )
 org.lsm
 @
@@ -122,51 +168,53 @@ lsmeans(oranges.lm1, ~ day * price, at = ... )         # Ex 3
 Ex~1 illustrates the formula method for specifying factors, which is more compact. The "|" character replaces the "by" specification. Ex~2 and Ex~3 produce the same results, but their results are displayed as one table (with columns for "day" and "price") rather than as two separate tables.
 
 \section{Working with the results}
-The "ref.grid" function produces an object of class \rg{}, and the "lsmeans" function produces an object of class \lsmo{}, which is a subclass of \rg. There is really no practical difference between these two classes except for their "show" methods---what is displayed if you just call the functions---and the fact that an \lsmo{} is not (necessarily) a true reference grid as defined earlier in this tutorial. Let's use the "str" function to examine the \lsmo{} object produced just above:
+The "ref.grid" function produces an object of class \rg{}, and the "lsmeans" function produces an object of class \lsmo{}, which is a subclass of \rg. There is really no practical difference between these two classes except for their "show" methods---what is displayed by default---and the fact that an \lsmo{} is not (necessarily) a true reference grid as defined earlier in this article. Let's use the "str" function to examine the \lsmo{} object just produced:
 <<>>=
 str(org.lsm)
 @
 We no longer see the reference levels for all predictors in the model---only the levels of "day" and "price2". These \emph{act} like reference levels, but they do not define the reference grid upon which the predictions are based.
 
-There are several methods for \rg{} (and hence also for \lsmo{}) objects. One you have seen already is "summary". It has a number of arguments: see its help page. In the following call, we summarize "days.lsm" differently than before. We will also save the object produced by "summary" for further discussion.
+There are several methods for \rg{} (and hence also for \lsmo{}) objects. One already seen is "summary". It has a number of arguments---see its help page. In the following call, we summarize "days.lsm" differently than before. We will also save the object produced by "summary" for further discussion.
 <<>>=
-( org.sum = summary(org.lsm, infer=c(TRUE,TRUE), 
-                    level=.90, adjust="bon", by = "day") )
+( org.sum <- summary(org.lsm, infer = c(TRUE,TRUE), 
+                    level = .90, adjust = "bon", by = "day") )
 @
-The "infer" argument caused both confidence intervals and tests to be produced. The default confidence level of $.95$ was overridden; a Bonferroni adjustment was applied to both the intervals and the $P$~values; and the tables are organized the opposite way from what we saw before.
+The "infer" argument causes both confidence intervals and tests to be produced; the default confidence level of $.95$ was overridden; a Bonferroni adjustment was applied to both the intervals and the $P$~values; and the tables are organized the opposite way from what we saw before.
 
 What kind of object was produced by "summary"? Let's see:
 <<>>=
 class(org.sum)
 @
-The \dqt{summary.ref.grid} class is an extension of \dqt{data.frame}. It includes some attributes that, among other things, cause the messages seen in the example to appear when the object is displayed. But it can also be used as a \dqt{data.frame} if you just want to use the results computationally. For example, suppose we want to convert the LS~means from dollars to Russian rubles:
+The \dqt{summary.ref.grid} class is an extension of \dqt{data.frame}. It includes some attributes that, among other things, cause additional messages to appear when the object is displayed. But it can also be used as a \dqt{data.frame} if the user just wants to use the results computationally. For example, suppose we want to convert the LS~means from dollars to Russian rubles (at the July 13, 2014 exchange rate):
+{\small
 <<>>=
-cbind(org.sum[, 1:2], lsrubles = org.sum$lsmean * 35.7) # as of April 22, 2014
+transform(org.sum, lsrubles = lsmean * 34.2)
 @
-Observe that, as a data~frame, the summary is just one table with six rows, rather than a collection of three tables, and it contains a column for all reference variables, including any "by" variables.
+}
+Observe also that the summary is just one data frame with six rows, rather than a collection of three data frames; and it contains a column for all reference variables, including any "by" variables.
 
-Besides "str" and "summary", there is also a "confint" method (same is "summary" with "infer=c(TRUE,FALSE)") and a "test" method (same as "summary" with "infer=c(FALSE,TRUE)"). There is also an "update" method which may be used for changing the default display settings. For example:
+Besides "str" and "summary", there is also a "confint" method, which is the same as "summary" with "infer=c(TRUE,FALSE)", and a "test" method (same as "summary" with "infer=c(FALSE,TRUE)"). There is also an "update" method which may be used for changing the object's display settings. For example:
 <<>>=
-org.lsm2 = update(org.lsm, by.vars = NULL, level = .99)
+org.lsm2 <- update(org.lsm, by.vars = NULL, level = .99)
 org.lsm2
 @
 
 \section{Contrasts and comparisons}
 \subsection{Contrasts in general}
-Often, people want to do pairwise comparisons of LS~means, or compute other contrasts among them. This is the purpose of the "contrast" function, which uses an \dqt{lsmobj} object as input. There are several standard contrast families such as \dqt{pairwise}, \dqt{trt.vs.ctrl}, and \dqt{poly}. In the following command, we request \dqt{eff} contrasts, which are differences between each mean and the overall mean:
+Often, people want to do pairwise comparisons of LS~means, or compute other contrasts among them. This is the purpose of the "contrast" function, which uses a \dqt{ref.grid} or \dqt{lsmobj} object as input. There are several standard contrast families such as \dqt{pairwise}, \dqt{trt.vs.ctrl}, and \dqt{poly}. In the following command, we request \dqt{eff} contrasts, which are differences between each mean and the overall mean:
 <<>>=
-contrast(org.lsm, "eff")
+contrast(org.lsm, method = "eff")
 @
-Note that this remembers the "by" specification from before, and obtains the effects for each group. In this example, since it is an additive model, we obtain the same results in each group. This isn't wrong, it's just redundant.
+Note that this preserves the "by" specification from before, and obtains the effects for each group. In this example, since it is an additive model, we obtain exactly the same results in each group. This isn't wrong, it's just redundant.
 
 Another popular method is Dunnett-style contrasts, where a particular LS~mean is compared with each of the others. This is done using \dqt{trt.vs.ctrl}. In the following, we obtain (again) the LS~means for days, and compare each with the average of the LS~means on day~5 and~6.
 <<>>=
-days.lsm = lsmeans(oranges.rg1, "day")
+days.lsm <- lsmeans(oranges.rg1, "day")
 contrast(days.lsm, "trt.vs.ctrl", ref = c(5,6))
 @
-For convenience, \dqt{trt.vs.ctrl1} or \dqt{trt.vs.ctrlk} methods are provided for use in lieu of "ref" for comparing with the first and the last LS~means.
+For convenience, \dqt{trt.vs.ctrl1} and \dqt{trt.vs.ctrlk} methods are provided for use in lieu of "ref" for comparing with the first and the last LS~means.
 
-You may have noticed that by default, "lsmeans" results are displayed with confidence intervals while "contrast" results are displayed with $t$ tests. You can easily override this; for example,
+Note that by default, "lsmeans" results are displayed with confidence intervals while "contrast" results are displayed with $t$ tests. One can easily override this; for example,
 <<eval=FALSE>>=
 confint(contrast(days.lsm, "trt.vs.ctrlk"))
 @
@@ -175,7 +223,7 @@ confint(contrast(days.lsm, "trt.vs.ctrlk"))
 In the above examples, a default multiplicity adjustment is determined from the contrast method. This may be overridden by adding an "adjust" argument. 
 
 \subsection{Pairwise comparisons}
-Often, users want pairwise comparisons among the LS~means. These may be obtained by specifying \dqt{pairwise} or \dqt{revpairwise} in the call to "contrast". For group labels $A,B,C$, \dqt{pairwise} generates the comparisons $A-B, A-C, B-C$ while \dqt{revpairwise} generates $B-A, C-A, C-B$. As a convenience, the "pairs" method works just like "contrasts" with \dqt{pairwise}:
+Often, users want pairwise comparisons among the LS~means. These may be obtained by specifying \dqt{pairwise} or \dqt{revpairwise} as the "method" argument in the call to "contrast". For group labels $A,B,C$, \dqt{pairwise} generates the comparisons $A-B, A-C, B-C$ while \dqt{revpairwise} generates $B-A, C-A, C-B$. As a convenience, a "pairs" method is provided that calls "contrast" with "method="\dqt{pairwise}:
 <<>>=
 pairs(org.lsm)
 @
@@ -189,29 +237,29 @@ By default, the LS~means are ordered in this display, but this may be overridden
 \section{Multivariate models}
 The "oranges" data has two response variables. Let's try a multivariate model for predicting the sales of the two varieties of oranges, and see what we get if we call "ref.grid":
 <<>>=
-oranges.mlm = lm(cbind(sales1,sales2) ~ price1 + price2 + day + store, 
+oranges.mlm <- lm(cbind(sales1,sales2) ~ price1 + price2 + day + store, 
                  data = oranges)
 ref.grid(oranges.mlm)
 @
-What happens is that the multivariate response is treated like an additional factor, by default named "rep.meas". In turn, it can be used, to specify levels for LS~means. Here we rename the multivariate response to \dqt{variety} and obtain "day" means (and a compact letter display for comparisons thereof)  for each "variety":
+What happens is that the multivariate response is treated like an additional factor, by default named "rep.meas". In turn, it can be used to specify levels for LS~means. Here we rename the multivariate response to \dqt{variety} and obtain "day" means (and a compact letter display for comparisons thereof)  for each "variety":
 <<>>=
-org.mlsm = lsmeans(oranges.mlm, ~ day | variety, mult.name="variety")
+org.mlsm <- lsmeans(oranges.mlm, ~ day | variety, mult.name = "variety")
 cld(org.mlsm, sort = FALSE)
 @
 
 \section{Contrasts of contrasts}
 With the preceding model, we might want to compare the two varieties on each day:
 <<>>=
-org.vardiff = update(pairs(org.mlsm, by = "day"), by = NULL)
+org.vardiff <- update(pairs(org.mlsm, by = "day"), by = NULL)
 @
 The results (not yet shown) will comprise the six "sales1-sales2" differences, one for each day. The two "by" specifications seems odd, but the one in "pairs" specifies doing a separate comparison for each day, and the one in "update" asks that we convert it to one table with six rows, rather than 6 tables with one row each.  Now, let's compare these differences to see if they vary from day to day.
 <<>>=
 cld(org.vardiff)
 @
+There is little evidence of variety differences, nor that these differences vary from day to day.
 
-
-\section{Interfacing with \pkg{multcomp}}
-The \pkg{multcomp} package \citep{multc} supports more exacting corrections for simultaneous inference than are available in \lsm{}. Its "glht" (general linear hypothesis testing) function and associated \dqt{glht} class are similar in some ways to "lsmeans" and \dqt{lsmobj} objects, respectively. So we provide methods such as "as.glht" for working with "glht" so as to obtain ``exact'' inferences. To illustrate, I'll compare some simultaneous confidence intervals using the two packages. 
+\section[Interfacing with multcomp]{Interfacing with \pkg{multcomp}}
+The \pkg{multcomp} package \citep{multc} supports more exacting corrections for simultaneous inference than are available in \lsm{}. Its "glht" (general linear hypothesis testing) function and associated \dqt{glht} class are similar in some ways to "lsmeans" and \dqt{lsmobj} objects, respectively. So we provide methods such as "as.glht" for working with "glht" so as to obtain ``exact'' inferences. To illustrate, let's compare some simultaneous confidence intervals using the two packages. 
 %%%\begin{multicols}{2}\small
 First, using a Bonferroni correction on the LS~means for "day" in the "oranges" model:
 <<>>=
@@ -220,7 +268,7 @@ confint(days.lsm, adjust = "bon")
 %%%\columnbreak
 And now using \pkg{multcomp}:
 <<>>=
-library(multcomp)
+library("multcomp")
 confint(as.glht(days.lsm))
 @
 %%%\end{multicols}
@@ -228,7 +276,8 @@ The latter intervals are somewhat narrower, which is expected since the Bonferro
 
 The \lsm{} package also provides an "lsm" function that can be called as the second argument of "glht":
 <<>>=
-summary(glht(oranges.lm1, lsm("day", contr="eff")), test = adjusted("free"))
+summary(glht(oranges.lm1, lsm("day", contr="eff")), 
+        test = adjusted("free"))
 @
 
 An additional detail: If there is a "by" variable in effect, "glht" or "as.glht" returns a "list" of "glht" objects---one for each "by" level. There is a courtesy "summary" method for this \dqt{glht.list} class to make things a bit more user-friendly. Recall the earlier example result "org.lsm", which contains information for LS~means for three "day"s at each of two values of "price2". Suppose we are interested in pairwise comparisons of these LS~means, by "price2". If we call
@@ -246,18 +295,18 @@ summary(as.glht(pairs(org.lsm, by = NULL)))
 which removes the "by" grouping \emph{before} the pairwise comparisons are generated, thus yielding ${6 \choose 2}=15$ contrasts instead of just six.
 
 \section{A new example: Oat yields}
-You've probably seen enough about sales of oranges by now. To illustrate some new features, let's turn to a new example.
+Orange-sales illustrations are probably getting tiresome. To illustrate some new features, let's turn to a new example.
 The "Oats" dataset in the \pkg{nlme} package \citep{nlme} has the results of a split-plot experiment discussed in \citet{Yat35}. The experiment was conducted on six blocks (factor "Block"). Each block was divided into three plots, which were randomized to three varieties (factor "Variety") of oats. Each plot was divided into subplots and randomized to four levels of nitrogen (variable "nitro"). The response, "yield", was measured once on each subplot after a suitable growing period.
 
-We will fit a model using the "lmer" function in the \pkg{lme4} package \citep{lme4}. This will be a mixed model with random intercepts for "Block" and "Block:Variety" (which identifies the plots). I have elected to apply a logarithmic transformation to the response variable (mostly for illustration purposes, though it does produce a good fit to the data). Note that "nitro" is stored as a numeric variable, but we want to consider it as a factor in this initial model.
+We will fit a model using the "lmer" function in the \pkg{lme4} package \citep{lme4}. This will be a mixed model with random intercepts for "Block" and "Block:Variety" (which identifies the plots). A logarithmic transformation is applied to the response variable (mostly for illustration purposes, though it does produce a good fit to the data). Note that "nitro" is stored as a numeric variable, but we want to consider it as a factor in this initial model.
 <<>>=
 data("Oats", package = "nlme")
 library("lme4")
-Oats.lmer = lmer(log(yield) ~ Variety*factor(nitro) + (1|Block/Variety), 
+Oats.lmer <- lmer(log(yield) ~ Variety*factor(nitro) + (1|Block/Variety), 
                  data = Oats)
 anova(Oats.lmer)
 @
-Apparently, the interaction is not needed. But perhaps we can simplify it further by using only a linear or quadratic trend in "nitro". We can find out by looking at polynomial contrasts:
+Apparently, the interaction is not needed. But perhaps we can further simplify the model by using only a linear or quadratic trend in "nitro". We can find out by looking at polynomial contrasts:
 <<oatcontr, eval=FALSE>>=
 contrast(lsmeans(Oats.lmer, "nitro"), "poly")
 @
@@ -270,26 +319,26 @@ cat("NOTE: Results may be misleading due to involvement in interactions")
 @
 (A message is issued when we average over predictors that interact with those that delineate the LS~means. In this case, it is not a serious problem because the interaction is weak.) Both the linear and quadratic contrasts are pretty significant. All this suggests fitting an additive model where "nitro" is included as a numeric predictor with a quadratic trend.
 <<>>=
-Oats.lmer2 = lmer(log(yield) ~ Variety + poly(nitro,2) + (1|Block/Variety),
-                  data = Oats)
+Oats.lmer2 <- lmer(log(yield) ~ Variety + poly(nitro,2) 
+                                + (1|Block/Variety),  data = Oats)
 @
-The predictions from this model. Remember that "nitro" is now quantitative, and I want to see predictions at the four unique "nitro" values rather than at the average of "nitro". This may be done using "at" as illustrated earlier, or a shortcut is to specify "cov.reduce" as "FALSE" to tell "ref.grid" to use all the unique values of numeric predictors.
+Remember that "nitro" is now used as a quantitative predictor. But for comparing with the previous model, we want to see predictions at the four unique "nitro" values rather than at the average of "nitro". This may be done using "at" as illustrated earlier, or a shortcut is to specify "cov.reduce" as "FALSE", which tells "ref.grid" to use all the unique values of numeric predictors.
 <<>>=
-Oats.lsm2 = lsmeans(Oats.lmer2, ~ nitro | Variety, cov.reduce = FALSE)
+Oats.lsm2 <- lsmeans(Oats.lmer2, ~ nitro | Variety, cov.reduce = FALSE)
 Oats.lsm2
 @
 These LS~means follow the same quadratic trend for each variety, but with different intercepts.
 
-You may notice the fractional degrees of freedom in  these results. These are obtained from the \pkg{pbkrtest} package \citep{pbkrt}, if installed, and they use the Kenward-Rogers method. The degrees of freedom for the polynomial contrasts were also obtained in that way, but the results turn out to be integers.
+Fractional degrees of freedom are displayed in these results. These are obtained from the \pkg{pbkrtest} package \citep{pbkrt}, and they use the Kenward-Rogers method. (The degrees of freedom for the polynomial contrasts were also obtained from \pkg{pbkrtest}, but the results turn out to be integers.)
 
 
-\section{Displaying LS~means}
+\section{Displaying LS means graphically}
 The \lsm{} package includes a function "lsmip" that displays predictions in an interaction-plot-like manner. It uses a formula of the form
 \begin{Sinput}
-curve.factor(s) ~ x.factor(s) | by.factors
+curve.factors ~ x.factors | by.factors
 \end{Sinput}
 The function requires the \pkg{lattice} package \citep{latti} to be installed.
-Curve factors are those used to delineate one displayed curve from another (i.e., groups in \pkg{lattice}'s parlance). $x$~factors are those whose levels are plotted on the horizontal axis. And by~factors, if present, break the plots into panels.
+In the above formula, "curve.factors" specifies factor(s) used to delineate one displayed curve from another (i.e., groups in \pkg{lattice}'s parlance). "x.factors" are those whose levels are plotted on the horizontal axis. And "by.factors", if present, break the plots into panels.
 
 To illustrate, let's do a graphical comparison of the two models we have fitted to the "Oats" data. 
 <<oatslmer, fig=TRUE, height=4.5, include=FALSE>>=
@@ -308,25 +357,25 @@ Note that the first model fits the cell means perfectly, so its plot is truly an
 \caption{Interaction plots for the cell means and the fitted model, \code{Oats} example.}\label{intplots}
 \end{figure}
 
+The help page for "lsmip" gives examples involving several factors, showing the flexibility we have in combining factors or using them to create multi-panel plots.
+
 
 \section{Transformations}
-Here is an interesting thing: Look at
+When a transformation or link function is used in fitting a model, "ref.grid" (also called by "lsmeans") stores that information in the returned object, as seen in this example:
 <<>>=
 str(Oats.lsm2)
 @
-Part of the information stored with an "lsmobj" "ref.grid" is the transformation that was applied to the response variable. This allows us to conveniently unravel the transformation, via the "type" argument. Here are the predicted yields (as opposed to predicted log yields):
+This allows us to conveniently unravel the transformation, via the "type" argument in "summary" or related functions such as "lsmip" and "predict". Here are the predicted yields for (as opposed to predicted log yields) for the polynomial model:
 <<>>=
 summary(Oats.lsm2, type = "response")
 @
 It is important to realize that the statistical inferences are all done \emph{before} reversing the transformation. Thus, $t$ ratios are based on the linear predictors and will differ from those computed using the printed estimates and standard errors. Likewise, confidence intervals are computed on the linear-predictor scale, then the endpoints are back-transformed.
 
-By the way, you may use a "type" argument in "lsmip" as well.
-
 This kind of automatic support for transformations is available only for certain standard transformations, namely those supported by the "make.link" function in the \pkg{stats} package. Others require more work---see the documentation for "update" for details.
 
 \section{Trends}
 The \lsm{} package provides a function \code{lstrends} for estimating and comparing the slopes of fitted lines (or curves). To illustrate, consider the built-in R dataset \code{ChickWeight} which has data on the growths of newly hatched chicks under four different diets. The following code produces the display in \Fig{chick-plot}.
-<<fig=TRUE, include=FALSE, height=3.5, width=8, label=chick-plot>>=
+<<chick-plot, fig=TRUE, include=FALSE, height=3.5, width=8>>=
 xyplot(weight~Time | Diet, groups = ~ Chick, data=ChickWeight, type="o", 
        layout=c(4,1))
 @
@@ -340,97 +389,171 @@ Let us fit a model to these data using random slopes for each chick and allowing
 Chick.lmer <- lmer(weight ~ Diet * Time + (0 + Time | Chick), 
     data = ChickWeight)
 @
-We can then call "lstrends" to estimate and compare the average slopes for each diet. Let's show comparisons of slopes using a compact letter display.
+We can then call "lstrends" to estimate and compare the average slopes for each diet.
 <<>>=
-( Chick.lst = lstrends (Chick.lmer, ~ Diet, var = "Time") )
+( Chick.lst <- lstrends (Chick.lmer, ~ Diet, var = "Time") )
+@
+Here we obtain estimates and pairwise comparisons of the slopes using a compact letter display.
+<<>>=
 cld (Chick.lst)
 @
 According to the Tukey~HSD comparisons (with default significance level of $.05$), there are two groupings of slopes: Diet~1's mean slope is significantly less than $3$ or $4$'s, Diet~2's slope is not distinguished from any other.
 
-Note: "lstrends" computes a difference quotient from two slightly different reference grids. Thus, you must call it with a model object, not a "ref.grid" object.
+Note: "lstrends" computes a difference quotient based on two slightly different reference grids. Thus, it must be called with a model object, not a "ref.grid" object.
 
 \section{User preferences}
-\lsm{} sets certain defaults, such as using $.95$ for the confidence coefficient, displaying intervals for "lsmeans" output and test statistics for "contrast" results, etc. As discussed before, you may use arguments in "summary" to change what's displayed, or "update" to change the defaults for a given object. But suppose you want different defaults to begin with? These can be set using the "lsm.options" statement. For example:
+\lsm{} sets certain defaults for displaying results---for example, using $.95$ for the confidence coefficient, and showing intervals for "lsmeans" output and test statistics for "contrast" results. As discussed before, one may use arguments in "summary" to change what is displayed, or "update" to change the defaults for a given object. But suppose you want different defaults to begin with. These can be set using the "lsm.options" statement. For example:
 <<>>=
 lsm.options(ref.grid = list(level = .90),
             lsmeans = list(),
             contrast = list(infer = c(TRUE,TRUE)))
 @
-This requests that any object created by "ref.grid" be set to have confidence intervals default to $90$\%, and that "contrast" results are displayed with both intervals and tests. No new options are set for "lsmeans" results, and the "lsmeans" part have been omitted. But even though no new defaults are set for "lsmeans", future calls to "lsmeans" \emph{on a model object} will be affected by this since it calls "ref.grid"; and also any contrasts from such results will ``inherit'' the 90\% confidence level. However, calling "lsmeans" on an existing \dqt{ref.grid} object will inherit whatever "level" setting is stored there.
+This requests that any object created by "ref.grid" be set to have confidence levels default to $90$\%, and that "contrast" results are displayed with both intervals and tests. No new options are set for "lsmeans" results, and the "lsmeans" part could have been omitted. These options are stored with objects created by "ref.grid", "lsmeans", and "contrast". For example, even though no new defaults are set for "lsmeans", future calls to "lsmeans" \emph{on a model object} will be displayed with 90\% confidence intervals, because "lsmeans" calls "ref.grid". However, calling "lsmeans" on an existing \dqt{ref.grid} object will inherit that object's setting.
 
 
 \section{Two-sided formulas}
-In its original design, the only way to obtain contrasts and comparisons from "lsmeans" was to specify a two-sided formula, e.g., "pairwise ~ treatment". The result is then a list of "lsmobj" objects. In its newer versions, \lsm{} offers a richer family of objects that can be re-used, and dealing with a list of objects can be awkward or confusing, so I don't encourage its continued use. Nonetheless, it is still available for backward compatibility.
+In its original design, the only way to obtain contrasts and comparisons in \lsm{} was to specify a two-sided formula, e.g., "pairwise ~ treatment", in the "lsmeans" call. The result is then a list of "lsmobj" objects. In its newer versions, \lsm{} offers a richer family of objects that can be re-used, and dealing with a list of objects can be awkward or confusing, so its continued use is not encouraged. Nonetheless, it is still available for backward compatibility.
 
-I'll present an example where, with one command, we obtain both the LS~means and pairwise comparisons for "Variety" in the model "Oats.lmer2":
+Here is an example where, with one command, we obtain both the LS~means and pairwise comparisons for "Variety" in the model "Oats.lmer2":
+{\small
 <<>>=
 lsmeans(Oats.lmer2, pairwise ~ Variety)
 @
-This also illustrates the effect of the preceding "lsm.options" settings. I'll return to the defaults now.
+}
+This example also illustrates the effect of the preceding "lsm.options" settings. Let us now return to the default display for contrast results.
 <<>>=
-lsm.options(NULL)
+lsm.options(ref.grid = NULL, contrast = NULL)
 @
 
 \section{Messy data}
-To illustrate some more \code{lsmeans} capabilities, consider the dataset named \code{nutrition} that is provided with the \lsm{} package. These data come from \citet{Mil84}, and contain the results of an observational study on nutrition education. Low-income mothers are classified by race, age category, and whether or not they received food stamps (the \code{group} factor); and the response variable is a gain score (post minus pre scores) after completing a nutrition training program. 
+To illustrate some more \code{lsmeans} capabilities, consider the dataset named \code{nutrition} that is provided with the \lsm{} package. These data come from \citet{Mil92}, and contain the results of an observational study on nutrition education. Low-income mothers are classified by race, age category, and whether or not they received food stamps (the \code{group} factor); and the response variable is a gain score (post minus pre scores) after completing a nutrition training program. 
 
-Consider the model that includes all main effects and two-way interactions; and let us look at the \code{group} by \code{race} LS~means:
-<<fig=TRUE, include=FALSE, height=3.25, label=nutr-intplot>>=
+Consider the model that includes all main effects and two-way interactions. A Type-II (hierarchical) analysis-of-variance table is also shown.
+<<>>=
 nutr.lm <- lm(gain ~ (age + group + race)^2, data = nutrition)
+library("car")
+Anova(nutr.lm)
+@
+One main effect ("group") is quite significant, and there is possibly an interaction with "race". Let us look at the \code{group} by \code{race} LS~means:
+<<nutr-intplot, fig=TRUE, include=FALSE, height=3.25>>=
 lsmip(nutr.lm, race ~ age | group)
 lsmeans(nutr.lm, ~ group*race)
 @
-\Fig{nutr-intplot} shows the predictions from this model. One thing the output illustrates is that \code{lsmeans} incorporates an estimability check, and returns a missing value when a prediction cannot be made uniquely. In this example, we have very few Hispanic mothers in the dataset, resulting in empty cells. This creates a rank deficiency in the fitted model, and some predictors are thrown out.
-
-Subsequent analyses might examine LS~means and contrasts thereof on restricted portions of the reference grid (using "at" in the call).
-
 \begin{figure}
 \centerline{\includegraphics[scale=.75]{using-lsmeans-nutr-intplot}}
 \caption{Predictions for the nutrition data}\label{nutr-intplot}
 \end{figure}
 
+\Fig{nutr-intplot} shows the predictions from this model. One thing the output illustrates is that \code{lsmeans} incorporates an estimability check, and returns a missing value when a prediction cannot be made uniquely. In this example, we have very few Hispanic mothers in the dataset, resulting in empty cells. This creates a rank deficiency in the fitted model, and some predictors are thrown out.
+
+We can avoid non-estimable cases by using \code{at} to restrict the reference levels to a smaller set. A useful summary of the results might be obtained by narrowing the scope of the reference levels to two races and the two middle age groups, where most of the data lie. However, always keep in mind that whenever we change the reference grid, we also change the definition of the LS~means. Moreover, it may be more appropriate to average the two ages using weights proportional to their frequencies in the data set. The simplest way to do this is to add a "weights" argument.\footnote{
+It may also be done by specifying a custom function in the \code{fac.reduce} argument, but for simple weighting, \code{weights} is simpler.} 
+With those ideas in mind, here are the LS~means and comparisons within rows and columns:
+<<>>=
+nutr.lsm <- lsmeans(nutr.lm, ~ group * race, weights = "proportional",
+    at = list(age = c("2","3"), race = c("Black","White")))
+@
+So here are the results
+<<>>=
+nutr.lsm    
+summary(pairs(nutr.lsm, by = "race"), by = NULL)
+summary(pairs(nutr.lsm, by = "group"), by = NULL)
+@
+The general conclusion from these analyses is that for age groups 2 and~3, the expected gains from the training are higher among families receiving food stamps.
+Note that this analysis is somewhat different than the results we would obtain by subsetting the data before analysis, as we are borrowing information from the other observations in estimating and testing these LS~means.
+
+\subsection{More on weighting}
+The "weights" argument can be a vector of numerical weights (it has to be of the right length), or one of four text values: \dqt{equal} (weight the predictions equally when averaging them, the default), \dqt{proportional} (weight them proportionally to the observed frequencies of the factor combinations being averaged over), \dqt{outer} (weight according to the outer products of the one-factor marginal counts), or \dqt{cells} (weight each mean differently, according to the frequencies of the predictions being averaged). Compare the results with these schemes:
+\medskip
+
+\hspace{-.07\linewidth}
+\begin{minipage}{1.14\linewidth}
+\columnseprule=.2pt
+\begin{multicols}{2}\footnotesize
+<<>>=
+lsmeans(nutr.lm, "race", weights = "equal")
+lsmeans(nutr.lm, "race", weights = "prop")
+lsmeans(nutr.lm, "race", weights = "outer")
+lsmeans(nutr.lm, "race", weights = "cells")
+@
+\end{multicols}
+\end{minipage}
+
+\bigskip
+Note there are four different sets of answers. The \dqt{equal} weighting is self-explanatory. But what's the distinction between \dqt{proportional} and \dqt{outer}? To clarify, consider:
+<<>>=
+temp = lsmeans(nutr.lm, c("group","race"), weights = "prop")
+lsmeans(temp, "race", weights = "prop")
+@
+The previous results using \dqt{outer} weights are the same as those using  \dqt{proportional} weights on one factor at a time. Thus, if only one factor is being averaged over, \dqt{outer} and \dqt{proportional} are the same. Another way to look at it is that outer weights are like the expected counts in a chi-square test; each factor is weighted independently of the others.
+
+The results for \dqt{cells} weights stand out because everything is estimable---that's because the empty cells in the data were given weight zero. These results are the same as the unadjusted means:
+<<>>=
+with(nutrition, tapply(gain, race, mean))
+@
 
 \section{Other types of models}
-\subsection{Models supported by \lsm{}}
-The \lsm{} package comes with built-in support for several types of models, including these model classes for the packages:
-\begin{quote}
+\subsection[Models supported by lsmeans]{Models supported by \lsm{}}
+The \lsm{} package comes with built-in support for several packages and model classes: \begin{quote}
 \begin{description}
-\item[stats]: \dqt{lm}, \dqt{mlm}, \dqt{aov}, \dqt{aovlist}, \dqt{glm}
-\item[nlme]: \dqt{lme}, \dqt{gls}
-\item[lme4]: \dqt{lmerMod}, \dqt{glmerMod}
-\item[survival]: \dqt{survreg}, \dqt{coxph}
-\item[coxme]: \dqt{coxme}
-\item[MASS]: \dqt{polr}
+\pitem{stats}: \dqt{lm}, \dqt{mlm}, \dqt{aov}, \dqt{aovlist}, \dqt{glm}
+\pitem{nlme}: \dqt{lme}, \dqt{gls}
+\pitem{lme4}: \dqt{lmerMod}, \dqt{glmerMod}
+\pitem{survival}: \dqt{survreg}, \dqt{coxph}
+\pitem{coxme}: \dqt{coxme}
+\pitem{MASS}: \dqt{polr}
 \end{description}
 \end{quote}
-\lsm{} support for all these models works similarly to the examples we have presented. Note that generalized linear or mixed models, and several others such as survival models, typically employ link functions such as "log" or "logit". In all such cases, the LS~means displayed are on the scale of the linear predictor, and any marginal averaging over the reference grid is performed on the linear-predictor scale. Results for \code{aovlist} objects are based on intra-block estimates, and should be used with caution.
+\lsm{} support for all these models works similarly to the examples we have presented. Note that generalized linear or mixed models, and several others such as survival models, typically employ link functions such as "log" or "logit". In all such cases, the LS~means displayed are on the scale of the linear predictor, and any averaging over the reference grid is performed on the linear-predictor scale. Results for \code{aovlist} objects are based on intra-block estimates, and should be used with caution.
 
 \subsection{Proportional-odds example}
-There is an interesting twist in \dqt{polr} objects (polytomous regression for Likert-scale data), in that an extra factor (named \dqt{cut} by default) is created to identify which boundary between scale positions we wish to use in predictions. An example is based on the "housing" data in the \pkg{MASS} package, where the response variable is satisfaction ("Sat") on a three-point scale of low, medium, high; and predictors include "Type" (type of rental unit, four levels), "Infl" (influence on management of the unit, three levels), and "Cont" (contact with other residents, two levels). Here, we fit a (not necessarily good) model and obtain LS~means for "Infl"
+There is an interesting twist in \dqt{polr} objects (polytomous regression for Likert-scale data), in that an extra factor (named \dqt{cut} by default) is created to identify which boundary between scale positions we wish to use in predictions. The example here is based on the "housing" data in the \pkg{MASS} package, where the response variable is satisfaction ("Sat") on a three-point scale of low, medium, high; and predictors include "Type" (type of rental unit, four levels), "Infl" (influence on management of the unit, three levels), and "Cont" (contact with other residents, two levels). Here, we fit a (not necessarily good) model and obtain LS~means for "Infl"
 <<>>=
-library(MASS)
-housing.plr = polr(Sat ~ Infl + Type + Cont,
+library("MASS")
+housing.plr <- polr(Sat ~ Infl + Type + Cont,
                    data = housing, weights = Freq)
 ref.grid(housing.plr)
-housing.lsm = lsmeans(housing.plr, "Infl", at = list(cut = "Low|Medium"))
+housing.lsm <- lsmeans(housing.plr, ~ Infl | cut)
 @
-The default link function is "logit". Look at what happens when we transform the predictions and contrasts thereof to the response scale:
+The default link function is "logit". Now we transform the predictions and contrasts thereof to the response scale:
 <<>>=
-summary(housing.lsm, type="response")
-summary(pairs(housing.lsm), type="response")
+summary(housing.lsm, type = "response")
+summary(pairs(housing.lsm), type = "response") [1:3, ]
 @
-The logits are transformed to cumulative probabilities (note that a low probability means the satisfaction tends to be high, i.e., those having more influence tend to me more satisfied); and the pairwise comparisons transform to odds ratios.
+The logits are transformed to cumulative probabilities (note that a low cumulative probability means a low number of people are dissatisfied; thus, we find that those having more influence tend to me more satisfied).  Note also that the pairwise comparisons transform to odds ratios. Only the first three rows of the comparisons table are shown because the results for "cut = Medium|High" will be identical.
 
 Another point worth noting is that when only asymptotic tests and confidence intervals are available, degrees of freedom are set to "NA", and  test statistics and intervals are labeled differently.
 
 
 
 \subsection{Extending to more models}
-Developers of packages that fit models are invited and encouraged to include support for \lsm{}. The help page \dqt{extending-lsmeans} and the vignette by the same name are provided to help make this possible.
+The functions "ref.grid" and "lsmeans" work by first reconstructing the dataset (so that the reference grid can be identified) and extracting needed information about the model, such as the regression coefficients, covariance matrix, and the linear functions associated with each point in the reference grid. For a fitted model of class, say, \dqt{modelobj}, these tasks are accomplished by defining S3 methods "recover.data.modelobj" and "lsm.basis.modelobj". The help page \dqt{extending-lsmeans} and the vignette by the same name provide details and examples.
+
+Developers of packages that fit models are encouraged to include support for \lsm{} by incorporating (and exporting) "recover.data" and "lsm.basis" methods for their model classes. 
 
 
+\section{Discussion}
+The design goal of \lsm{} is primarily to provide the functionality of the "LSMEANS" statement in various \SAS{} procedures. Thus its emphasis is on tabular results which, of course, may also be used as data for further analysis or graphics. By design, it can be extended with relative ease to additional model classes.
+A unique capability of \lsm{} is its explicit reliance on the concept of a reference grid, which I feel is a useful approach for understanding what is being computed.
+
+Some \lsm{} capabilities exceed those of \SAS, including the "lstrends" capability, more flexibility in organizing the output, and more built-in contrast families. In addition, \SAS{} does not allow LS~means for factor combinations when the model does not include the interaction of those factors; or creating a grid of covariate values using "at". 
+
+There are a few other \R{} packages that provide capabilities that overlap with those of \lsm{}. The \pkg{effects} package \citep{effects,fox09} can compute LS~means. However, an important distinction is that for unbalanced dataset, it produces weighted averages of predictions. For example, with the nutrition example, consider
+<<>>=
+library("effects")
+nutr.eff <- Effect(c("race"), nutr.lm)
+as.data.frame(nutr.eff)
+@
+The results in the first and third rows are the same as those obtained previously in "lsmeans" with "weights="\dqt{outer}---not the equally weighted LS~means.
+However, "Effects" does not do an estimability check, and its results for Hispanics are suspect.
+
+The emphasis of \pkg{effects} is on graphical rather than tabular displays. 
+For a model with continuous predictors, \pkg{effects} automatically generates a grid of values of those predictors for use in its graphs, whereas one would have to use an "at" specification to do the same in \lsm{}. Thus, \pkg{effects} has special strengths for curve-fitting models such as splines. In contrast, \lsm{}'s strengths are more in the area of factorial models where one wants traditional summaries in the form of estimates, contrasts, and interaction plots.
+
+The \pkg{doBy} package \citep{doBy} provides an "LSmeans" function that has some of the capabilities of "lsmeans", but it produces a data frame rather than a reusable object. In earlier versions of the package, this function was named "popMeans". The package also has an "LSmatrix" function to obtain the linear functions needed to obtain LS~means.
 
 
-\bibliography{lsmeans}\bibliographystyle{jss}
+\bibliography{lsmeans}%%%\bibliographystyle{jss}
+
 
 \end{document}
