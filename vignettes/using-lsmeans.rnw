@@ -462,7 +462,7 @@ summary(pairs(nutr.lsm, by = "group"), by = NULL)
 The general conclusion from these analyses is that for age groups 2 and~3, the expected gains from the training are higher among families receiving food stamps.
 Note that this analysis is somewhat different than the results we would obtain by subsetting the data before analysis, as we are borrowing information from the other observations in estimating and testing these LS~means.
 
-\subsection{More on weighting}
+\subsection{More on weighting}\label{weights}
 The "weights" argument can be a vector of numerical weights (it has to be of the right length), or one of four text values: \dqt{equal} (weight the predictions equally when averaging them, the default), \dqt{proportional} (weight them proportionally to the observed frequencies of the factor combinations being averaged over), \dqt{outer} (weight according to the outer products of the one-factor marginal counts), or \dqt{cells} (weight each mean differently, according to the frequencies of the predictions being averaged). Compare the results with these schemes:
 \medskip
 
@@ -491,6 +491,36 @@ The results for \dqt{cells} weights stand out because everything is estimable---
 <<>>=
 with(nutrition, tapply(gain, race, mean))
 @
+
+\subsection{Alternative covariate adjustments}
+\cite{urq82} reports data on slaughter weights of animals that entered a feedlot as yearling calves. The animals came from 11 different herds, and each animal was randomized to one of three diets. In addition, the weight of each yearling at entry was recorded. The  "feedlot" dataset provided in \lsm{} contains these results. From the feedlot operator's perspective, both diets and herds are fixed effects. Let us fit a factorial model with slaughter weight "swt" as the response and entry weight "ewt" as a covariate.
+<<>>=
+feedlot.lm <- lm(swt ~ ewt + herd * diet, data = feedlot)
+Anova(feedlot.lm)
+@
+The interaction tesrm doesn't make much of a contribution here, so we will work with an additive model instead (which also ameliorates some non-estimability issues due to missing cells).
+<<>>=
+feedlot.add <- update(feedlot.lm, . ~ . - herd:diet)
+@
+Here are the "LS~means" for the herds, and a compact letter display for comparisons thereof:
+<<>>=
+cld(lsmeans(feedlot.add, "herd"))
+@
+No herds are found to be different---not a surprise given that the $P$~value for "herd" is about the same as for the original model.
+However, these predictions are made at the same entry weight for every herd. This is \emph{not} the right thing to do here, because the herds differ in genetic makeup, the way they were fed and managed, and so forth---which affect the yearlings' entry weights. This is an example where a treatment affects a covariate. Each herd should have its own reference value for entry weight. This is done in "lsmeans" by providing a formula in the "cov.reduce" argument. The formula "ewt ~ herd" indicates that the reference grid should be constructed using the predicted value of "ewt", based on a linear model with "herd" as the predictor. Here are the results:
+<<>>=
+cld(lsmeans(feedlot.add, "herd", cov.reduce = ewt ~ herd))
+@
+What a world of difference! We now see many significant differences in the comparisons. By the way, another approach would be to simply omit "ewt" from the model, to prevent making inappropriate adjustments in the traditional analysis. With such a model (not shown), the predictions are similar to those above; however, their standard errors are substantially higher, because---as seen in the ANOVA table---the covariate explains a lot of the variation.
+
+Another use of formulas in "cov.reduce" is to create representative values of some covariates when others are specified in "at". For example, suppose there are three covariates $x_1,x_2,x_3$ in a model, and we want to see predictions at a few different values of $x_1$. We might use
+<<eval=FALSE>>=
+rg <- ref.grid(my.model, at = list(x1 = c(5,10,15)),
+               cov.reduce = list(x2 ~ x1,  x3 ~ x1 + x2))
+@
+(When more than one formula is given, they are processed in the order given.)
+The values used for $x_2$ and $x_3$ will depend on $x_1$ and should in some sense be more realistic values of those covariates as $x_1$ varies than would be the overall means of $x_2$ and $x_3$. Of course, it would be important to display the values used---available as "rg@grid"---when reporting the analysis.
+
 
 \section{Other types of models}
 \subsection[Models supported by lsmeans]{Models supported by \lsm{}}
@@ -538,17 +568,9 @@ A unique capability of \lsm{} is its explicit reliance on the concept of a refer
 
 Some \lsm{} capabilities exceed those of \SAS, including the "lstrends" capability, more flexibility in organizing the output, and more built-in contrast families. In addition, \SAS{} does not allow LS~means for factor combinations when the model does not include the interaction of those factors; or creating a grid of covariate values using "at". 
 
-There are a few other \R{} packages that provide capabilities that overlap with those of \lsm{}. The \pkg{effects} package \citep{effects,fox09} can compute LS~means. However, an important distinction is that for unbalanced dataset, it produces weighted averages of predictions. For example, with the nutrition example, consider
-<<>>=
-library("effects")
-nutr.eff <- Effect(c("race"), nutr.lm)
-as.data.frame(nutr.eff)
-@
-The results in the first and third rows are the same as those obtained previously in "lsmeans" with "weights="\dqt{outer}---not the equally weighted LS~means.
-However, "Effects" does not do an estimability check, and its results for Hispanics are suspect.
-
+There are a few other \R{} packages that provide capabilities that overlap with those of \lsm{}. The \pkg{effects} package \citep{effects,fox09} can compute LS~means. However, for an unbalanced dataset, it does not use equal weights, but rather it appears to use ``outer'' weights, as described in Section~\ref{weights}. Also, it does not check estimability, so some results could be questionable.
 The emphasis of \pkg{effects} is on graphical rather than tabular displays. 
-For a model with continuous predictors, \pkg{effects} automatically generates a grid of values of those predictors for use in its graphs, whereas one would have to use an "at" specification to do the same in \lsm{}. Thus, \pkg{effects} has special strengths for curve-fitting models such as splines. In contrast, \lsm{}'s strengths are more in the area of factorial models where one wants traditional summaries in the form of estimates, contrasts, and interaction plots.
+It has special strengths for curve-fitting models such as splines. In contrast, \lsm{}'s strengths are more in the area of factorial models where one wants traditional summaries in the form of estimates, contrasts, and interaction plots.
 
 The \pkg{doBy} package \citep{doBy} provides an "LSmeans" function that has some of the capabilities of "lsmeans", but it produces a data frame rather than a reusable object. In earlier versions of the package, this function was named "popMeans". The package also has an "LSmatrix" function to obtain the linear functions needed to obtain LS~means.
 

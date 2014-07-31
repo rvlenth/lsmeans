@@ -44,12 +44,16 @@ lsm.basis = function(object, trms, xlev, grid)
 
 #--------------------------------------------------------------
 ### DEFAULT METHODS (we hit these when a model is NOT supported)
-recover.data.default <- function(object, ...)
-    stop("Can't handle an object of class ", dQuote(class(object)[1]), "\n",
-         .show_supported())
+# I'll have it return the message if we caught the error in this way
+# Then caller can use try() to check for other types of errors,
+# and just print this message otherwise 
+recover.data.default <- function(object, ...) {
+    paste("Can't handle an object of class ", dQuote(class(object)[1]), "\n",
+         paste(.show_supported(), collapse=""))
+}
 
 lsm.basis.default <- function(object, trms, xlev, grid) {
-    stop("Can't handle an object of class ", dQuote(class(object)[1]), "\n",
+    stop("Can't handle an object of class", dQuote(class(object)[1]), "\n",
          .show_supported())
 }
 

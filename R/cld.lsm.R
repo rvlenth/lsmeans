@@ -25,8 +25,9 @@ if(!requireNamespace("multcomp", quietly = TRUE)) {
 }
 
 # S3 method for ref.grid
-cld.ref.grid = function(object, details=FALSE, sort=TRUE, by, alpha=.05, 
-                      Letters = c("1234567890",LETTERS,letters), ...) {
+cld.ref.grid = function(object, details=FALSE, sort=TRUE, 
+                    by, alpha=.05, 
+                    Letters = c("1234567890",LETTERS,letters), ...) {
     lsmtbl = summary(object, ...)
     if(missing(by)) 
         by = object@misc$by.vars
@@ -62,14 +63,28 @@ cld.ref.grid = function(object, details=FALSE, sort=TRUE, by, alpha=.05,
         icol = c(icol, seq_len(i-1))
         jcol = c(jcol, rep(i, i-1))
     }
+    na.p = which(is.na(p.boo))
+    # Take care of non-est cases. This is surprisingly complicated,
+    # because it's possible we have some lsmeans that are non-est
+    # but comparisons are est'ble. So cases to exclude must be missing in
+    # the table of means, AND appar somewhere in the indexes of NA p values
+    # All that said, it still messes up because I didn't track the indexes correctly
+    # excl.rows = intersect(which(is.na(lsmtbl$SE)), union(icol[na.p], jcol[na.p]))
+    # So I'll just go with which est's are missing
+    excl.rows = which(is.na(lsmtbl$SE))
+    p.boo[na.p] = FALSE
+    
     labs = paste(icol,jcol,sep="-")
     ltrs = rep("", nrow(lsmtbl))
     for (i in seq_len(length(by.rows))) {
         pb = p.boo[by.rows[[i]]]
         names(pb) = labs
-        mcl = .mcletters(pb, Letters=Letters)
-        ltrs[by.out[[i]]] = paste(" ", mcl$monospacedLetters, sep="")
+        mcl = .mcletters(pb, Letters=Letters)$monospacedLetters
+        ltrs[by.out[[i]]] = paste(" ", mcl, sep="")
     }
+    # any missing estimates get blanks...
+    ltrs[excl.rows] = ""
+    
     lsmtbl[[".group"]] = ltrs
     
     attr(lsmtbl, "mesg") = c(attr(lsmtbl,"mesg"), attr(pwtbl, "mesg"), 

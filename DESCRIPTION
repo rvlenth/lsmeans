@@ -7,7 +7,7 @@ Encoding: latin1
 Author: Russell V. Lenth
 Maintainer: Russ Lenth <russell-lenth@uiowa.edu>
 Depends: methods, R (>= 3.0)
-Suggests: nlme, lme4, pbkrtest, lattice, multcompView
+Suggests: nlme, lme4, pbkrtest, lattice, multcompView, car
 Enhances: survival, MASS, coxme
 Imports: multcomp, plyr, Matrix
 LazyData: yes
