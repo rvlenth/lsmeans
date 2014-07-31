@@ -1,11 +1,13 @@
 
-R version 3.1.0 (2014-04-10) -- "Spring Dance"
+R version 3.1.1 (2014-07-10) -- "Sock it to Me"
 Copyright (C) 2014 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
 Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
 
 R is a collaborative project with many contributors.
 Type 'contributors()' for more information and
@@ -455,6 +457,70 @@ Results are averaged over the levels of: treatment
 P values are asymptotic 
 Tests are performed on the linear-predictor scale 
 > 
+> 
+> # weighting
+> nutr.lm <- lm(gain ~ (age + group + race)^2, data = nutrition)
+> lsmeans(nutr.lm, "race", weights = "equal")
+NOTE: Results may be misleading due to involvement in interactions
+ race       lsmean       SE df   lower.CL upper.CL
+ Black    1.258929 1.646003 92 -2.0101755 4.528033
+ Hispanic       NA       NA NA         NA       NA
+ White    2.932008 1.346612 92  0.2575192 5.606496
+
+Results are averaged over the levels of: age, group 
+Confidence level used: 0.95 
+> 
+> lsmeans(nutr.lm, "race", weights = "prop")
+NOTE: Results may be misleading due to involvement in interactions
+ race       lsmean        SE df   lower.CL upper.CL
+ Black    1.926554 1.3940313 92 -0.8421122 4.695221
+ Hispanic       NA        NA NA         NA       NA
+ White    2.522821 0.6044604 92  1.3223102 3.723331
+
+Results are averaged over the levels of: age, group 
+Confidence level used: 0.95 
+> 
+> lsmeans(nutr.lm, "race", weights = "outer")
+NOTE: Results may be misleading due to involvement in interactions
+ race       lsmean        SE df   lower.CL upper.CL
+ Black    2.546674 1.4313624 92 -0.2961356 5.389483
+ Hispanic       NA        NA NA         NA       NA
+ White    3.142940 0.7494154 92  1.6545363 4.631344
+
+Results are averaged over the levels of: age, group 
+Confidence level used: 0.95 
+> 
+> lsmeans(nutr.lm, "race", weights = "cells")
+NOTE: Results may be misleading due to involvement in interactions
+ race        lsmean       SE df  lower.CL upper.CL
+ Black    0.3809524 1.166180 92 -1.935181 2.697086
+ Hispanic 1.6666667 3.085422 92 -4.461247 7.794581
+ White    2.7951807 0.586592 92  1.630158 3.960203
+
+Results are averaged over the levels of: age, group 
+Confidence level used: 0.95 
+> 
+> 
+> # covariate predictions
+> feedlot.add <- lm(swt ~ ewt + herd + diet, data = feedlot)
+> lsmeans(feedlot.add, "herd", cov.reduce = ewt ~ herd)
+ herd    lsmean       SE df  lower.CL  upper.CL
+ 9     856.1375 26.66927 53  802.6457  909.6293
+ 16    943.2625 34.05583 53  874.9551 1011.5698
+ 3     993.4646 23.83657 53  945.6545 1041.2747
+ 32    959.9984 20.47652 53  918.9277 1001.0691
+ 24    984.5125 22.79846 53  938.7846 1030.2404
+ 31   1105.4646 23.83657 53 1057.6545 1153.2747
+ 19   1058.3821 22.24379 53 1013.7667 1102.9975
+ 36   1126.9800 25.97394 53 1074.8829 1179.0771
+ 34   1010.5553 21.88667 53  966.6562 1054.4544
+ 35   1092.9718 20.58269 53 1051.6882 1134.2555
+ 33   1072.0051 26.22250 53 1019.4094 1124.6007
+
+Results are averaged over the levels of: diet 
+Confidence level used: 0.95 
+> 
+> 
 > proc.time()
    user  system elapsed 
-   2.55    0.15    2.82 
+   3.22    0.14    3.40 

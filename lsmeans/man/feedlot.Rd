@@ -25,9 +25,7 @@ Note: There are some empty cells in the cross-classification of \code{herd} and 
 \source{
 Urquhart NS (1982) Adjustment in covariates when one factor affects the covariate. \emph{Biometrics} 38, 651-660.
 }
-\references{
-%%  ~~ possibly secondary sources and usages ~~
-}
+
 \examples{
 require(lsmeans)
 feedlot.lm <- lm(swt ~ ewt + herd*diet, data = feedlot)

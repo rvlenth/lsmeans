@@ -18,6 +18,10 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     else # attach needed attributes to given data
         data = recover.data(object, data = data)
     
+    if(is.character(data)) # 'data' is in fact an error message
+        stop(data)
+        
+    
     trms = attr(data, "terms")
     
     # find out if any variables are coerced to factors
@@ -117,10 +121,20 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     
     # Now create the reference grid
     grid = do.call(expand.grid, ref.levels)
+    
     # add any matrices
     for (nm in names(matlevs))
         grid[[nm]] = matrix(rep(matlevs[[nm]], each=nrow(grid)), nrow=nrow(grid))
 
+    # resolve any covariate formulas
+    for (xnm in names(dep.x)) {
+        if (!all(all.vars(dep.x[[xnm]]) %in% names(grid)))
+            stop("Formulas in 'cov.reduce' must predict covariates actually in the model")
+        xmod = lm(dep.x[[xnm]], data = data)
+        grid[[xnm]] = predict(xmod, newdata = grid)
+        ref.levels[[xnm]] = NULL
+    }
+    
     basis = lsm.basis(object, trms, xlev, grid)
     
     misc = basis$misc
@@ -208,15 +222,6 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     for (i in seq_along(key))
         freq[tgt == key[i]] = frq[i] ###ftbl[i, "freq"]
     grid[[".freq."]] = freq
-
-    # resolve any covariate formulas
-    for (xnm in names(dep.x)) {
-        if (!(xnm %in% dimnames(basis$X)[[2]]))
-            stop("Formulas in 'cov.reduce' must predict covariates actually used in the model")
-        xmod = lm(dep.x[[xnm]], data = data)
-        grid[[xnm]] = basis$X[, xnm] = predict(xmod, newdata = grid)
-        ref.levels[[xnm]] = NULL
-    }
 
     misc$ylevs = NULL # No longer needed
     misc$estName = "prediction"

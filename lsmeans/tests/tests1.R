@@ -131,3 +131,20 @@ summary(lsm.D93, type = "resp")
 # un-log some comparisons to obtain ratios
 summary(contrast(lsm.D93, "trt.vs.ctrl", ref = 2), 
 	type = "resp", adjust = "none")
+
+
+# weighting
+nutr.lm <- lm(gain ~ (age + group + race)^2, data = nutrition)
+lsmeans(nutr.lm, "race", weights = "equal")
+
+lsmeans(nutr.lm, "race", weights = "prop")
+
+lsmeans(nutr.lm, "race", weights = "outer")
+
+lsmeans(nutr.lm, "race", weights = "cells")
+
+
+# covariate predictions
+feedlot.add <- lm(swt ~ ewt + herd + diet, data = feedlot)
+lsmeans(feedlot.add, "herd", cov.reduce = ewt ~ herd)
+
