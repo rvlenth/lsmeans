@@ -1,5 +1,8 @@
 Changelog for 'lsmeans' package
 
+2.12
+    Added 'plot.lsmobj' method to display confidence intervals
+
 2.11
     Added vcov method for ref.grid
     Added 'weights' argument for lsmeans - may be numeric, or 

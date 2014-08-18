@@ -1,8 +1,8 @@
 Package: lsmeans
 Type: Package
 Title: Least-Squares Means
-Version: 2.11
-Date: 2014-07-31
+Version: 2.12
+Date: 2014-08-31
 Encoding: latin1
 Author: Russell V. Lenth
 Maintainer: Russ Lenth <russell-lenth@uiowa.edu>
@@ -11,5 +11,5 @@ Suggests: nlme, lme4, pbkrtest, lattice, multcompView, car
 Enhances: survival, MASS, coxme
 Imports: multcomp, plyr, Matrix
 LazyData: yes
-Description: This package provides methods for obtaining least-squares means for various linear models. It can also compute contrasts or linear combinations of these least-squares means, comparisons of slopes, interaction plots, and compact letter displays.
+Description: This package provides methods for obtaining least-squares means for various linear models. It can also compute contrasts or linear combinations of these least-squares means, comparisons of slopes, plots, and compact letter displays.
 License: GPL-2

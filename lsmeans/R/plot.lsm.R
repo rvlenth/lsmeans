@@ -2,12 +2,32 @@
 # ... are arguments sent to update()
 
 
-plot.lsmobj = function(x, y, ylab = x@misc$estName, ...) {
-    object = update(x, ..., silent = TRUE)
+plot.lsmobj = function(x, y, ylab = estName, type, ...) {
+    if(!missing(type))
+        object = update(x, predict.type = type, ..., silent = TRUE)
+    else
+        object = update(x, ..., silent = TRUE)
     summ = summary(object, infer = c(TRUE, FALSE))
-    
+    estName = attr(summ, "estName")
+    plot(summ, ylab=ylab, ...)
+}
+
+# May use in place of plot.lsmobj but no control over level etc.
+plot.summary.ref.grid = function(x, y, ylab = estName, ...) {
     if (!require("lattice"))
         stop("This function requires the 'lattice' package be installed.")
+    
+    summ = x # so I don't get confused
+    estName = attr(summ, "estName")
+    clNames = attr(summ, "clNames")
+    if (is.null(clNames)) {
+        message("No information available to display confidence limits")
+        lcl = ucl = summ[[estName]]
+    }
+    else {
+        lcl = summ[[clNames[1]]]
+        ucl = summ[[clNames[2]]]
+    }
     
     # Panel functions...
     prepanel.ci = function(x, y, lcl, ucl, subscripts, ...) {
@@ -26,13 +46,9 @@ plot.lsmobj = function(x, y, ylab = x@misc$estName, ...) {
         panel.xyplot(x, y, pch=16, ...)
     }
     
-    k = ncol(summ)
-    lcl = summ[, k-1]
-    ucl = summ[, k]
-    
     priv = attr(summ, "pri.vars")
     summ$pri.fac = as.factor(do.call(paste, summ[priv]))
-    chform = paste(object@misc$estName, "~", "pri.fac")
+    chform = paste(estName, "~", "pri.fac")
     
     byv = attr(summ, "by.vars")
     if (!is.null(byv)) {
@@ -47,3 +63,4 @@ plot.lsmobj = function(x, y, ylab = x@misc$estName, ...) {
            xlab = paste(priv, collapse=":"), ylab = ylab,
            data = summ, lcl=lcl, ucl=ucl, ...)
 }
+

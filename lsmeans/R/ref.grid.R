@@ -555,7 +555,9 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df, ...) {
     }
     else
         link = NULL
+    
     attr(result, "link") = NULL
+    estName = names(result)[1]
 
     mesg = NULL
     
@@ -564,6 +566,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df, ...) {
         for (nm in by)
             by.size = by.size / length(unique(object@levels[[nm]]))
     fam.info = c(object@misc$famSize, by.size)
+    cnm = NULL
     
     if(infer[1]) { # add CIs
         quant = 1 - (1 - level)/2
@@ -602,6 +605,8 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df, ...) {
                  paste(object@misc$avgd.over, collapse = ", ")), mesg)
 
     summ = cbind(lbls, result)
+    attr(summ, "estName") = estName
+    attr(summ, "clNames") = cnm  # will be NULL if infer[1] is FALSE
     attr(summ, "pri.vars") = setdiff(union(object@misc$pri.vars, object@misc$by.vars), by)
     attr(summ, "by.vars") = by
     attr(summ, "mesg") = unique(mesg)
