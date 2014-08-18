@@ -584,8 +584,8 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df, ...) {
         mesg = c(paste("Confidence level used:", level), acv$mesg)
     }
     if(infer[2]) { # add tests
-        cnm = ifelse (zFlag, "z.ratio", "t.ratio")
-        t.ratio = result[[cnm]] = result[[1]] / result$SE
+        tnm = ifelse (zFlag, "z.ratio", "t.ratio")
+        t.ratio = result[[tnm]] = result[[1]] / result$SE
         apv = .adj.p.value(t.ratio, result$df, adjust, fam.info)
         adjust = apv$adjust   # in case it was abbreviated
         result$p.value = apv$pval

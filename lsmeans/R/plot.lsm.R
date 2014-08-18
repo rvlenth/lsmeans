@@ -21,7 +21,7 @@ plot.summary.ref.grid = function(x, y, ylab = estName, ...) {
     estName = attr(summ, "estName")
     clNames = attr(summ, "clNames")
     if (is.null(clNames)) {
-        message("No information available to display confidence limits")
+        warning("No information available to display confidence limits")
         lcl = ucl = summ[[estName]]
     }
     else {
@@ -41,8 +41,8 @@ plot.summary.ref.grid = function(x, y, ylab = estName, ...) {
         y = as.numeric(y)
         lcl = as.numeric(lcl[subscripts])
         ucl = as.numeric(ucl[subscripts])
-        panel.arrows(x, lcl, x, ucl, length = .5, unit = "char",
-                     angle = 90, code = 3)
+        # panel.arrows(x, lcl, x, ucl, length = .5, unit = "char", angle = 90, code = 3)
+        panel.rect(x-.05, lcl, x+.05, ucl)
         panel.xyplot(x, y, pch=16, ...)
     }
     
