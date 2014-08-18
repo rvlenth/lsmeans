@@ -47,13 +47,12 @@ plot.summary.ref.grid = function(x, y, ylab = estName, ...) {
     }
     
     priv = attr(summ, "pri.vars")
-    summ$pri.fac = as.factor(do.call(paste, summ[priv]))
+    pf = do.call(paste, summ[priv])
+    summ$pri.fac = factor(pf, levels=unique(pf))
     chform = paste(estName, "~", "pri.fac")
     
     byv = attr(summ, "by.vars")
     if (!is.null(byv)) {
-        ##summ$by.fac = as.factor(do.call(paste, summ[byv]))
-        ##chform = paste(chform, "| by.fac")
         chform = paste(chform, "|", paste(byv, collapse="*"))
     }
     

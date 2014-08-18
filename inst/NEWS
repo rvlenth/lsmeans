@@ -2,6 +2,8 @@ Changelog for 'lsmeans' package
 
 2.12
     Added 'plot.lsmobj' method to display confidence intervals
+    Modified 'auto.noise' so 'side' has levels 'L' and 'R'
+        rather than 'R' and 'L' (so not in reverse position in plots!)
 
 2.11
     Added vcov method for ref.grid

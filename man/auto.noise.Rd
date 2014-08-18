@@ -11,7 +11,7 @@
     \item{\code{noise}}{Noise level in decibels - a numeric vector.}
     \item{\code{size}}{The size of the vehicle - an ordered factor with levels \code{S}, \code{M}, \code{L}.}
     \item{\code{type}}{Type of anti-pollution filter - a factor with levels \code{Std} and \code{Octel}}
-    \item{\code{side}}{The side of the car where measurement was taken -- a factor with levels \code{R} and \code{L}.}
+    \item{\code{side}}{The side of the car where measurement was taken -- a factor with levels \code{L} and \code{R}.}
   }
 }
 
@@ -41,6 +41,6 @@ noise.lm <- lm(noise ~ size * type * side, data = auto.noise)
 lsmip(noise.lm, type ~ size | side)
 
 # Confidence intervals
-plot(lsmeans(noise.lm, ~ size | type*side))
+plot(lsmeans(noise.lm, ~ size | side*type))
 }
 \keyword{datasets}
