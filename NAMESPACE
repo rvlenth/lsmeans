@@ -81,6 +81,7 @@ S3method(pairs, ref.grid)
 S3method(pairs, lsm.list)
 
 S3method(plot, lsmobj)
+S3method(plot, summary.ref.grid)
 
 S3method(predict, ref.grid)
 

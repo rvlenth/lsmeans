@@ -36,6 +36,11 @@ A.Y. Lewin and M.F. Shakun (1976) \emph{Policy Sciences: Methodology and Cases}.
 \examples{
 require(lsmeans)
 noise.lm <- lm(noise ~ size * type * side, data = auto.noise)
+
+# Interaction plot of predictions
 lsmip(noise.lm, type ~ size | side)
+
+# Confidence intervals
+plot(lsmeans(noise.lm, ~ size | type*side))
 }
 \keyword{datasets}

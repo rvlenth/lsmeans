@@ -93,6 +93,8 @@ options(show.signif.stars=FALSE, prompt="R> ", continue="   ",
 
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
+%%%\SweaveOpts{concordance=TRUE}
 
 \section{Introduction}
 Least-squares means (LS~means for short)  for a linear model are simply predictions---or averages thereof---over a regular grid of predictor settings which I call the \emph{reference grid}. They date back at least to 1976 when LS~means were incorporated in the contributed \SAS{} procedure named \code{HARVEY} \citep{Har76}. Later, they were incorporated via \code{LSMEANS} statements in the regular \SAS{} releases. 
@@ -333,14 +335,22 @@ Fractional degrees of freedom are displayed in these results. These are obtained
 
 
 \section{Displaying LS means graphically}
-The \lsm{} package includes a function "lsmip" that displays predictions in an interaction-plot-like manner. It uses a formula of the form
+The \lsm{} package provides a "plot" method for "lsmobj" objects that displays confidence intervals for the LS~means. Its use requires that the \pkg{lattice} package \citep{latti} to be installed. Optional arguments are passed to the "update" method for the object (allowing changes to confidence levels, adjustments, etc.) and to \pkg{lattice}'s "xyplot" function (allowing changes to colors, layout, etc.)
+
+The \lsm{} package also includes a function "lsmip" that displays predictions in an interaction-plot-like manner. It uses a formula of the form
 \begin{Sinput}
 curve.factors ~ x.factors | by.factors
 \end{Sinput}
-The function requires the \pkg{lattice} package \citep{latti} to be installed.
+This function also requires the \pkg{lattice} package.
 In the above formula, "curve.factors" specifies factor(s) used to delineate one displayed curve from another (i.e., groups in \pkg{lattice}'s parlance). "x.factors" are those whose levels are plotted on the horizontal axis. And "by.factors", if present, break the plots into panels.
 
-To illustrate, let's do a graphical comparison of the two models we have fitted to the "Oats" data. 
+To illustrate these capabilities, consider the first model we fitted to the "Oats" data. In the following code we include arguments that affect both the values displayed and the layout of the plot:
+<<OatsCIs, fig=TRUE, height=3.5>>=
+plot(lsmeans(Oats.lmer, ~ nitro | Variety), 
+     type="response", level=.90, layout = c(3,1))
+@
+
+In addition, let's do a graphical comparison of the two models we have fitted to the "Oats" data. 
 <<oatslmer, fig=TRUE, height=4.5, include=FALSE>>=
 lsmip(Oats.lmer, Variety ~ nitro, ylab = "Observed log(yield)")
 @
@@ -357,7 +367,6 @@ Note that the first model fits the cell means perfectly, so its plot is truly an
 \caption{Interaction plots for the cell means and the fitted model, \code{Oats} example.}\label{intplots}
 \end{figure}
 
-The help page for "lsmip" gives examples involving several factors, showing the flexibility we have in combining factors or using them to create multi-panel plots.
 
 
 \section{Transformations}
