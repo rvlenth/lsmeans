@@ -13,7 +13,7 @@
 Methods for \code{ref.grid} objects
 }
 \description{
-Use these methods to summarize, print, or examine objects of class \code{"ref.grid"}. They also apply to the class \code{"lsmobj"}, which is an extension of \code{"ref.grid"}.
+Use these methods to summarize, print, plot, or examine objects of class \code{"ref.grid"}. They also apply to the class \code{"lsmobj"}, which is an extension of \code{"ref.grid"}.
 }
 \usage{
 \method{summary}{ref.grid}(object, infer, level, adjust, by, type, df, ...)
@@ -24,6 +24,8 @@ Use these methods to summarize, print, or examine objects of class \code{"ref.gr
 
 \method{print}{ref.grid}(x, ...)
 \method{print}{summary.ref.grid}(x, ..., digits = NULL, quote = FALSE, right = TRUE)
+
+\method{plot}{lsmobj}(x, y, ylab = x@misc$estName, ...)
 
 \method{vcov}{ref.grid}(object, ...)
 }
@@ -51,9 +53,10 @@ Type of prediction desired. This only has an effect if there is a known transfor
 If non-missing a constant number of degrees of freedom to use in constructing confidence intervals and \emph{P} values (\code{NA} specifies asymptotic results).
 }
   \item{x}{
-The object to be printed.
+The object to be printed or plotted.
 }
-  \item{\dots, digits, quote, right}{Additional arguments passed to \code{\link{print.data.frame}}.}
+  \item{y}{This argument is ignored.}
+  \item{\dots, digits, quote, right, ylab}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, \code{\link{update}}, or \code{\link{xyplot}} as appropriate.}
 }
 \details{
 The \code{misc} slot in \code{object} contains default values for \code{by}, \code{infer}, \code{level}, \code{adjust}, and \code{type}. These defaults vary depending on the code that created the object. The \code{\link{update}} method may be used to change these defaults. In addition, any options set using \samp{lsm.options(summary=...)} will trump those stored in the object's \code{misc} slot.
@@ -73,9 +76,11 @@ In some cases, confidence and \eqn{p}-value adjustments are only approximate -- 
 greatly within the family of tests. For more accurate adjustments, use the \code{\link[lsmeans]{glht}} method for \pkg{multcomp}.
 
 When the model is rank-deficient, each row \code{x} of \code{object}'s \code{linfct} slot is each checked for estimability. If \code{sum(x*bhat)} is found to be non-estimable, then an \code{NA} is displayed for the estimate (as well as any associated statistics). This check is performed using the orthonormal basis \code{N} in the \code{nbasis} slot for the null space of the rows of the model matrix. Estimability fails when \eqn{||Nx||^2 / ||x||^2} exceeds \code{tol}, which by default is \code{1e-8}. You may change it via \code{\link{lsm.options}} by setting \code{estble.tol} to the desired value.
+
+The \code{plot} method for \code{"lsmobj"} (but not \code{"ref.grid"}) objects produces a plot displaying the same confidence intervals that would be displayed in \code{summary}. If any \code{by} variables are in force, the plot is divided into separate panels. This function uses the \code{\link[lattice]{xyplot}} function, and requires the suggested \pkg{lattice} package to be installed.
 }
 \value{
-The \code{summary} method for \code{"ref.grid"} objects returns an object of class \code{"summary.ref.grid"}, which extends \code{"data.frame"}. \code{vcov} returns the covariance matrix of the object's \code{linfct} slot.
+The \code{summary} method for \code{"ref.grid"} objects returns an object of class \code{"summary.ref.grid"}, which extends \code{"data.frame"}. \code{plot} returns an object of class \code{"trellis"}. \code{vcov} returns the covariance matrix of the object's \code{linfct} slot.
 }
 %%\references{}
 \author{

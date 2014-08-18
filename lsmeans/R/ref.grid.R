@@ -685,16 +685,18 @@ vcov.ref.grid = function(object, ...) {
 
 
 # Method to alter contents of misc slot
-update.ref.grid = function(object, ...) {
+update.ref.grid = function(object, ..., silent = FALSE) {
     args = list(...)
     valid.choices = c("adjust","avgd.over","by.vars","df","estName","famSize","infer","inv.lbl",
         "level","methdesc","predict.type","pri.vars","tran")
     misc = object@misc
     for (nm in names(args)) {
         fullname = try(match.arg(nm, valid.choices), silent=TRUE)
-        if(inherits(fullname, "try-error"))
-            message("Argument ", sQuote(nm), " was ignored. Valid choices are:\n",
+        if(inherits(fullname, "try-error")) {
+            if (!silent)
+                message("Argument ", sQuote(nm), " was ignored. Valid choices are:\n",
                     paste(valid.choices, collapse=", "))
+        }
         else {
             misc[[fullname]] = args[[nm]]
         }

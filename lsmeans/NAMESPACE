@@ -80,6 +80,8 @@ S3method(lsmip, default)
 S3method(pairs, ref.grid)
 S3method(pairs, lsm.list)
 
+S3method(plot, lsmobj)
+
 S3method(predict, ref.grid)
 
 S3method(print, ref.grid)
