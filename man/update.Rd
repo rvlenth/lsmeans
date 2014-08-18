@@ -13,7 +13,7 @@ defaults used by \code{\link{summary}}. This \code{update} method allows them to
 In addition, the user may set defaults for all objects using \samp{options(lsmeans = ...)}, or more conveniently using the \code{lsm.options} function documented here.
 }
 \usage{
-\S3method{update}{ref.grid}(object, ...)
+\S3method{update}{ref.grid}(object, ..., silent = FALSE)
 
 lsm.options(...)
 }
@@ -23,6 +23,7 @@ lsm.options(...)
   \item{\dots}{
 Arguments specifying elements' names and their new values.
 }
+  \item{silent}{If \code{FALSE}, a message is displayed for any unmatched names.}
 }
 \details{
 In \code{update}, the names in \code{\dots} are partially matched against those that are valid, and if a match is found, it adds or replaces the current setting. The valid names are
