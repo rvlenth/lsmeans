@@ -345,7 +345,7 @@ This function also requires the \pkg{lattice} package.
 In the above formula, "curve.factors" specifies factor(s) used to delineate one displayed curve from another (i.e., groups in \pkg{lattice}'s parlance). "x.factors" are those whose levels are plotted on the horizontal axis. And "by.factors", if present, break the plots into panels.
 
 To illustrate these capabilities, consider the first model we fitted to the "Oats" data. In the following code we include arguments that affect both the values displayed and the layout of the plot:
-<<OatsCIs, fig=TRUE, height=3.5>>=
+<<OatsCIs, fig=TRUE, height=2>>=
 plot(lsmeans(Oats.lmer, ~ nitro | Variety), 
      type="response", level=.90, layout = c(3,1))
 @
