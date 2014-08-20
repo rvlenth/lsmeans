@@ -74,8 +74,8 @@ lsmip.default = function(object, formula, type,
     }
 
     # The strips the way I want them
-    my.strip = function(...)
-        strip.default(..., strip.names = c(TRUE,TRUE), sep = " = ")
+    my.strip = strip.custom(strip.names = c(TRUE,TRUE), strip.levels = c(TRUE,TRUE), sep = " = ")
+    
     TP = TP.orig = trellis.par.get()
     TP$superpose.symbol$pch = pch
     TP$superpose.line$lty = lty

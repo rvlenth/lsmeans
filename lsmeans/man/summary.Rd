@@ -5,6 +5,8 @@
 \alias{predict.ref.grid}
 \alias{print.ref.grid}
 \alias{print.summary.ref.grid}
+\alias{plot.lsmobj}
+\alias{plot.summary.ref.grid}
 \alias{vcov.ref.grid}
 
 
@@ -25,8 +27,8 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 \method{print}{ref.grid}(x, ...)
 \method{print}{summary.ref.grid}(x, ..., digits = NULL, quote = FALSE, right = TRUE)
 
-\method{plot}{lsmobj}(x, y, ylab = estName, type, ...)
-\method{plot}{summary.ref.grid}(x, y, ylab = estName, ...)
+\method{plot}{lsmobj}(x, y, type, ...)
+\method{plot}{summary.ref.grid}(x, y, horizontal = TRUE, xlab, ylab, ...)
 
 \method{vcov}{ref.grid}(object, ...)
 }
@@ -57,7 +59,8 @@ If non-missing a constant number of degrees of freedom to use in constructing co
 The object to be printed or plotted.
 }
   \item{y}{This argument is ignored.}
-  \item{\dots, digits, quote, right, ylab}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, \code{\link{update}}, or \code{\link{xyplot}} as appropriate.}
+  \item{horizontal}{Determines orientatiion of plotted confidence intervals.}
+  \item{\dots, digits, quote, right, xlab, ylab}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, \code{\link{update}}, or \code{\link{dotplot}} as appropriate.}
 }
 \details{
 The \code{misc} slot in \code{object} contains default values for \code{by}, \code{infer}, \code{level}, \code{adjust}, and \code{type}. These defaults vary depending on the code that created the object. The \code{\link{update}} method may be used to change these defaults. In addition, any options set using \samp{lsm.options(summary=...)} will trump those stored in the object's \code{misc} slot.
@@ -78,8 +81,9 @@ greatly within the family of tests. For more accurate adjustments, use the \code
 
 When the model is rank-deficient, each row \code{x} of \code{object}'s \code{linfct} slot is each checked for estimability. If \code{sum(x*bhat)} is found to be non-estimable, then an \code{NA} is displayed for the estimate (as well as any associated statistics). This check is performed using the orthonormal basis \code{N} in the \code{nbasis} slot for the null space of the rows of the model matrix. Estimability fails when \eqn{||Nx||^2 / ||x||^2} exceeds \code{tol}, which by default is \code{1e-8}. You may change it via \code{\link{lsm.options}} by setting \code{estble.tol} to the desired value.
 
-The \code{plot} method for \code{"lsmobj"} or \code{"summary.ref.grid"} objects (but not \code{"ref.grid"} objects themselves) produces a plot displaying confidence intervals for the estimates. If any \code{by} variables are in force, the plot is divided into separate panels. This function uses the \code{\link[lattice]{xyplot}} function, and requires the suggested \pkg{lattice} package to be installed. Note that if \code{type} is provided, it is used as the prediction type, not passed to \code{xyplot} (otherwise, e.g., \samp{type="r"} would add a regression line!) For \code{"summary.ref.grid"} objects, the \code{\dots} arguments in \code{plot} are passed \emph{only} to \code{xyplot}: confidence levels and such must have already been set in the call to \code{summary} that produced this object.
+The \code{plot} method for \code{"lsmobj"} or \code{"summary.ref.grid"} objects (but not \code{"ref.grid"} objects themselves) produces a plot displaying confidence intervals for the estimates. If any \code{by} variables are in force, the plot is divided into separate panels. These functions use the \code{\link[lattice]{dotplot}} function, and thus require that the \pkg{lattice} package be installed. For \code{"summary.ref.grid"} objects, the \code{\dots} arguments in \code{plot} are passed \emph{only} to \code{dotplot}, whereas for \code{"lsmobj"} objects, the object is updated using \code{\dots} before summarizing and plotting.
 }
+
 \value{
 The \code{summary} method for \code{"ref.grid"} objects returns an object of class \code{"summary.ref.grid"}, which extends \code{"data.frame"}. \code{plot} returns an object of class \code{"trellis"}. \code{vcov} returns the covariance matrix of the object's \code{linfct} slot.
 }
@@ -122,7 +126,7 @@ summary(pairs(Titan.lsm), type="response")
 
 # Plot 90% CIs on the response scale
 plot(Titan.lsm, type = "response", level = .90, 
-     ylab = "Predicted probability of drowning")
+     xlab = "Predicted probability of drowning")
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
