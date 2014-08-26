@@ -164,8 +164,9 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, ...) {
             y = numeric(npairs)
             v1 = 1 - overlap[pbv == by]
             dif = diff[pbv == by]
-            for (i in 1:npairs) {
-                wgt = 4 * max(0, ifelse(v1[i] < 1, v1[i], 2-v1[i]))
+            for (i in seq_len(npairs)) {
+                #wgt = 6 * max(0, ifelse(v1[i] < 1, v1[i], 2-v1[i]))
+                wgt = 20 * max(0, .5 - (1 - v1[i])^2)
                 # really this is sqrt of weight
                 if (dif[i] > 0)   # id2  <----->  id1
                     lmat[i, id1[i]] = rmat[i, id2[i]] = wgt*v1[i]
@@ -176,10 +177,21 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, ...) {
             X = rbind(cbind(lmat, rmat),iden)
             y = c(y, rep(mind[rows], 2))
             soln = qr.coef(qr(X), y)
-            llen[rows] = soln[seq_len(neach)]
-            rlen[rows] = soln[neach + seq_len(neach)]
+            ll = llen[rows] = soln[seq_len(neach)]
+            rl = rlen[rows] = soln[neach + seq_len(neach)]
             
             # Perhaps put some kind of a check here?
+            for (i in seq_len(npairs)) {
+                v = 1 - v1[i]
+                obsv = 1 - abs(dif[i]) / ifelse(dif[i] > 0, 
+                                ll[id1[i]] + rl[id2[i]], 
+                                rl[id1[i]] + ll[id2[i]])
+                if (v*obsv < 0)
+                    message("Comparison discrepancy in group ", by, 
+                            ", ", psumm[i, 1], 
+                            ":\n    Target overlap = ", round(v, 4),
+                            ", overlap on graph = ", round(obsv, 4))
+            }
         }
         invtran = I
         if (typeid == 1) {
