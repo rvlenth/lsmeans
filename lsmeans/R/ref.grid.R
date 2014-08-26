@@ -678,7 +678,7 @@ print.ref.grid = function(x,...)
 
 # vcov method
 vcov.ref.grid = function(object, ...) {
-    tol = lsm.options("estble.tol")
+    tol = lsm.options()$estble.tol
     if(is.null(tol)) 
         tol = 1e-8
     X = object@linfct
@@ -703,6 +703,14 @@ update.ref.grid = function(object, ..., silent = FALSE) {
                     paste(valid.choices, collapse=", "))
         }
         else {
+            if (fullname == "by.vars") {
+                allvars = union(misc$pri.vars, misc$by.vars)
+                misc$pri.vars = setdiff(allvars, args[[nm]])
+            }
+            if (fullname == "pri.vars") {
+                allvars = union(misc$pri.vars, misc$by.vars)
+                misc$by.vars = setdiff(allvars, args[[nm]])
+            }
             misc[[fullname]] = args[[nm]]
         }
     }

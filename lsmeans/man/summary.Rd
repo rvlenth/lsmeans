@@ -27,7 +27,8 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 \method{print}{ref.grid}(x, ...)
 \method{print}{summary.ref.grid}(x, ..., digits = NULL, quote = FALSE, right = TRUE)
 
-\method{plot}{lsmobj}(x, y, type, ...)
+\method{plot}{lsmobj}(x, y, type, intervals = TRUE, comparisons = FALSE,
+    c.alpha = 0.05, c.adjust = "tukey", ...)
 \method{plot}{summary.ref.grid}(x, y, horizontal = TRUE, xlab, ylab, ...)
 
 \method{vcov}{ref.grid}(object, ...)
@@ -60,6 +61,9 @@ The object to be printed or plotted.
 }
   \item{y}{This argument is ignored.}
   \item{horizontal}{Determines orientatiion of plotted confidence intervals.}
+  \item{intervals}{If \code{TRUE}, confidence intervals are plotted for each estimate}
+  \item{comparisons}{If \code{TRUE}, \dQuote{comparison arrows} are added to the plot, in such a way that the degree to which arrows overlap reflects as much as possible the significance of the comparison of the two estimates.}
+  \item{c.alpha, c.adjust}{The \code{alpha} and \code{adjust} arguments to use in constructing comparison arrows.}
   \item{\dots, digits, quote, right, xlab, ylab}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, \code{\link{update}}, or \code{\link{dotplot}} as appropriate.}
 }
 \details{
@@ -82,6 +86,8 @@ greatly within the family of tests. For more accurate adjustments, use the \code
 When the model is rank-deficient, each row \code{x} of \code{object}'s \code{linfct} slot is each checked for estimability. If \code{sum(x*bhat)} is found to be non-estimable, then an \code{NA} is displayed for the estimate (as well as any associated statistics). This check is performed using the orthonormal basis \code{N} in the \code{nbasis} slot for the null space of the rows of the model matrix. Estimability fails when \eqn{||Nx||^2 / ||x||^2} exceeds \code{tol}, which by default is \code{1e-8}. You may change it via \code{\link{lsm.options}} by setting \code{estble.tol} to the desired value.
 
 The \code{plot} method for \code{"lsmobj"} or \code{"summary.ref.grid"} objects (but not \code{"ref.grid"} objects themselves) produces a plot displaying confidence intervals for the estimates. If any \code{by} variables are in force, the plot is divided into separate panels. These functions use the \code{\link[lattice]{dotplot}} function, and thus require that the \pkg{lattice} package be installed. For \code{"summary.ref.grid"} objects, the \code{\dots} arguments in \code{plot} are passed \emph{only} to \code{dotplot}, whereas for \code{"lsmobj"} objects, the object is updated using \code{\dots} before summarizing and plotting.
+
+In plots with \code{comparisons = TRUE}, the resulting arrows are only approximate, and in some cases may fail to accurately reflect the pairwise comparisons of the estimates -- especially when estimates having large and small standard errors are intermingled in just the wrong way.
 }
 
 \value{
