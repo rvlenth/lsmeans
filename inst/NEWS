@@ -2,6 +2,10 @@ Changelog for 'lsmeans' package
 
 2.12
     Added 'plot.lsmobj' method to display confidence intervals
+    These plots also optionally can display comparison arrows
+        that attempt to display significance of pairwise comparisons
+        according to their degree of overlap
+    Fixed a bug in vcov
     Modified 'auto.noise' so 'side' has levels 'L' and 'R'
         rather than 'R' and 'L' (so not in reverse position in plots!)
 

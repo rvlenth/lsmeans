@@ -2,7 +2,7 @@
 # ... are arguments sent to update()
 
 
-plot.lsmobj = function(x, y, type, comparisons = FALSE, 
+plot.lsmobj = function(x, y, type, intervals = TRUE, comparisons = FALSE, 
                        c.alpha = .05, c.adjust = "tukey", ...) {
     if(!missing(type))
         object = update(x, predict.type = type, ..., silent = TRUE)
@@ -16,12 +16,18 @@ plot.lsmobj = function(x, y, type, comparisons = FALSE,
         extra@misc$comp.alpha = c.alpha
         extra@misc$comp.adjust = c.adjust
     }
-    plot(summ, extra = extra, ...)
+    .plot.srg(x=summ, intervals = intervals, extra = extra, ...)
 }
 
 # May use in place of plot.lsmobj but no control over level etc.
 # extra is a placeholder for comparison-interval stuff
-plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, extra = NULL, ...) {
+plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, ...) {
+    .plot.srg (x, y, horizontal, xlab, ylab, ...)
+}
+
+# Workhorse for plot.summary.ref.grid
+.plot.srg = function(x, y, horizontal = TRUE, xlab, ylab, intervals = TRUE, extra = NULL, ...) {
+        
     if (!require("lattice"))
         stop("This function requires the 'lattice' package be installed.")
     
@@ -38,17 +44,20 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, extra = NU
     }
     
     # Panel functions...
-    prepanel.ci = function(x, y, horizontal=TRUE, lcl, ucl, subscripts, ...) {
+    prepanel.ci = function(x, y, horizontal=TRUE, intervals=TRUE,
+                           lcl, ucl, subscripts, ...) {
         x = as.numeric(x)
         lcl = as.numeric(lcl[subscripts])
         ucl = as.numeric(ucl[subscripts])
-        if (horizontal)
+        if (!intervals) # no special scaling needed
+            list()
+        else if (horizontal)
             list(xlim = range(x, ucl, lcl, finite = TRUE)) 
         else
             list(ylim = range(y, ucl, lcl, finite = TRUE)) 
     }
-    panel.ci <- function(x, y, horizontal=TRUE, lcl, ucl, locl, licl, ricl, rocl,
-                         subscripts, pch = 16, 
+    panel.ci <- function(x, y, horizontal=TRUE, intervals=TRUE,
+                         lcl, ucl, lcmpl, rcmpl,                          subscripts, pch = 16, 
                          lty = dot.line$lty, lwd = dot.line$lwd, 
                          col = dot.symbol$col, col.line = dot.line$col, ...) {
         dot.line <- trellis.par.get("dot.line")
@@ -57,35 +66,31 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, extra = NU
         y = as.numeric(y)
         lcl = as.numeric(lcl[subscripts])
         ucl = as.numeric(ucl[subscripts])
-        compare = !is.null(locl)
+        compare = !is.null(lcmpl)
         if(compare) {
-            locl = as.numeric(locl[subscripts])
-            licl = as.numeric(licl[subscripts])
-            ricl = as.numeric(ricl[subscripts])
-            rocl = as.numeric(rocl[subscripts])
+            lcmpl = as.numeric(lcmpl[subscripts])
+            rcmpl = as.numeric(rcmpl[subscripts])
         }
         if(horizontal) {
             panel.abline(h = unique(y), col = col.line, lty = lty, lwd = lwd)
-            panel.arrows(lcl, y, ucl, y, col = col, length = .6, unit = "char", angle = 90, code = 3)
+            if(intervals) 
+                panel.arrows(lcl, y, ucl, y, col = col, length = .6, unit = "char", angle = 90, code = 3)
             if(compare) {
                 s = (x > min(x))
-                panel.arrows(locl[s], y[s], x[s], y[s], length = .75, unit = "char", code = 1, col = "gray", type = "closed", fill="gray")
-                panel.arrows(licl[s], y[s], x[s], y[s], length = .75, unit = "char", code = 1, col = "red", type = "closed", fill="red")
+                panel.arrows(lcmpl[s], y[s], x[s], y[s], length = .5, unit = "char", code = 1, col = "red", type = "closed", fill="red")
                 s = (x < max(x))
-                panel.arrows(rocl[s], y[s], x[s], y[s], length = .75, unit = "char", code = 1, col = "gray", type = "closed", fill="gray")
-                panel.arrows(ricl[s], y[s], x[s], y[s], length = .75, unit = "char", code = 1, col = "red", type = "closed", fill="red")
+                panel.arrows(rcmpl[s], y[s], x[s], y[s], length = .5, unit = "char", code = 1, col = "red", type = "closed", fill="red")
             }
         }
         else {
             panel.abline(v = unique(x), col = col.line, lty = lty, lwd = lwd)
-            panel.arrows(x, lcl, x, ucl, col=col, length = .6, unit = "char", angle = 90, code = 3)
+            if(intervals)
+                panel.arrows(x, lcl, x, ucl, col=col, length = .6, unit = "char", angle = 90, code = 3)
             if(compare) {
                 s = (y > min(y))
-                panel.arrows(x[s], locl[s], x[s], y[s], length = .75, unit = "char", code = 1, col = "gray", type = "closed", fill="gray")
-                panel.arrows(x[s], licl[s], x[s], y[s], length = .75, unit = "char", code = 1, col = "red", type = "closed", fill="red")
+                panel.arrows(x[s], lcmpl[s], x[s], y[s], length = .5, unit = "char", code = 1, col = "red", type = "closed", fill="red")
                 s = (y < max(y))
-                panel.arrows(x[s], rocl[s], x[s], y[s], length = .75, unit = "char", code = 1, col = "gray", type = "closed", fill="gray")
-                panel.arrows(x[s], ricl[s], x[s], y[s], length = .75, unit = "char", code = 1, col = "red", type = "closed", fill="red")
+                panel.arrows(x[s], rcmpl[s], x[s], y[s], length = .5, unit = "char", code = 1, col = "red", type = "closed", fill="red")
             }
         }
         panel.xyplot(x, y, pch=16, ...)
@@ -104,7 +109,7 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, extra = NU
         chform = paste(chform, "|", paste(byv, collapse="*"))
     }
     
-    # Obtain comparison limits - locl is left outer comparison limit, etc.
+    # Obtain comparison limits
     if (!is.null(extra)) {
         # we need to work on the linear predictor scale
         # typeid = 1 -> response, 2 -> other
@@ -120,7 +125,8 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, extra = NU
         psumm = confint(pairs(extra), level = 1 - alpha, type = "lp", adjust = adjust)
         k = ncol(psumm)
         del = (psumm[[k]] - psumm[[k-1]]) / 4 # half the halfwidth, on lp scale
-        
+        diff = psumm[[attr(psumm, "estName")]]
+        overlap = apply(psumm[ ,(k-1):k], 1, function(x) 2*min(-x[1],x[2])/(x[2]-x[1]))
         
         # figure out by variables and indexes
         if(is.null(byv)) {
@@ -137,16 +143,43 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, extra = NU
         # indexes for pairs results -- est[id1] - est[id2]
         id1 = rep(seq_len(neach-1), rev(seq_len(neach-1)))
         id2 = unlist(sapply(seq_len(neach-1), function(x) x + seq_len(neach-x)))
+        # list of psumm row numbers involved in each summ row
         involved = lapply(seq_len(neach), function(x) union(which(id2==x), which(id1==x)))
-        mind = maxd = numeric(length(lbv))
+        
+        # initialize arrays
+        mind = numeric(length(lbv))   # for minima of del
+        llen = rlen = numeric(neach)  # for left and right arrow lengths
+        npairs = length(id1)
+        iden = diag(rep(1, 2*neach))
+        
         for (by in ubv) {
             d = del[pbv == by]
             rows = which(lbv == by)
-            for(i in seq_len(neach)) {
-                r = range(d[involved[[i]]])
-                mind[rows[i]] = r[1]
-                maxd[rows[i]] = r[2]
+            for(i in seq_len(neach)) 
+                mind[rows[i]] = min(d[involved[[i]]])
+            
+            # Set up regression equations to match arrow overlaps with interval overlaps
+            # We'll add rows later (with weights 1) to match with mind values
+            lmat = rmat = matrix(0, nrow = npairs, ncol = neach)
+            y = numeric(npairs)
+            v1 = 1 - overlap[pbv == by]
+            dif = diff[pbv == by]
+            for (i in 1:npairs) {
+                wgt = 4 * max(0, ifelse(v1[i] < 1, v1[i], 2-v1[i]))
+                # really this is sqrt of weight
+                if (dif[i] > 0)   # id2  <----->  id1
+                    lmat[i, id1[i]] = rmat[i, id2[i]] = wgt*v1[i]
+                else  # id1  <----->  id2
+                    rmat[i, id1[i]] = lmat[i, id2[i]] = wgt*v1[i]
+                y[i] = wgt * abs(dif[i])
             }
+            X = rbind(cbind(lmat, rmat),iden)
+            y = c(y, rep(mind[rows], 2))
+            soln = qr.coef(qr(X), y)
+            llen[rows] = soln[seq_len(neach)]
+            rlen[rows] = soln[neach + seq_len(neach)]
+            
+            # Perhaps put some kind of a check here?
         }
         invtran = I
         if (typeid == 1) {
@@ -160,12 +193,10 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, extra = NU
                 invtran = tran$linkinv
         }
         
-        locl = invtran(est - maxd)
-        licl = invtran(est - mind)
-        ricl = invtran(est + mind)
-        rocl = invtran(est + maxd)
+        lcmpl = invtran(est - llen)
+        rcmpl = invtran(est + rlen)
     }
-    else locl = licl = ricl = rocl = NULL
+    else lcmpl = rcmpl = NULL
     
     
     
@@ -177,8 +208,8 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, extra = NU
         dotplot(form, prepanel=prepanel.ci, panel=panel.ci, 
                 strip = my.strip, horizontal = TRUE,
                 ylab = ylab, xlab = xlab,
-                data = summ, lcl=lcl, ucl=ucl, 
-                locl=locl, licl=licl, ricl=ricl, rocl=rocl, ...)
+                data = summ, intervals = intervals, lcl=lcl, ucl=ucl, 
+                lcmpl=lcmpl, rcmpl=rcmpl, ...)
     }
     else {
         if (missing(xlab)) xlab = facName
@@ -186,9 +217,7 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, extra = NU
         dotplot(form, prepanel=prepanel.ci, panel=panel.ci, 
                 strip = my.strip, horizontal = FALSE,
                 xlab = paste(priv, collapse=":"), ylab = ylab,
-                data = summ, lcl=lcl, ucl=ucl, 
-                locl=locl, licl=licl, ricl=ricl, rocl=rocl, ...)
+                data = summ, intervals = intervals, lcl=lcl, ucl=ucl, 
+                lcmpl=lcmpl, rcmpl=rcmpl, ...)
     }
-    
-    
 }
