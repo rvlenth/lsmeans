@@ -166,7 +166,7 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, ...) {
             dif = diff[pbv == by]
             for (i in seq_len(npairs)) {
                 #wgt = 6 * max(0, ifelse(v1[i] < 1, v1[i], 2-v1[i]))
-                wgt = 20 * max(0, .5 - (1 - v1[i])^2)
+                wgt = 3 + 20 * max(0, .5 - (1 - v1[i])^2)
                 # really this is sqrt of weight
                 if (dif[i] > 0)   # id2  <----->  id1
                     lmat[i, id1[i]] = rmat[i, id2[i]] = wgt*v1[i]
