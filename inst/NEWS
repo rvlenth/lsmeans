@@ -5,6 +5,7 @@ Changelog for 'lsmeans' package
     These plots also optionally can display comparison arrows
         that attempt to display significance of pairwise comparisons
         according to their degree of overlap
+    Added 'joint' argument to 'test'
     Fixed a bug in vcov
     Modified 'auto.noise' so 'side' has levels 'L' and 'R'
         rather than 'R' and 'L' (so not in reverse position in plots!)
