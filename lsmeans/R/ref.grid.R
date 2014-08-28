@@ -294,7 +294,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
 }
 
 # utility to check estimability of x'beta, given nonest.basis
-.is.estble = function(x, nbasis, tol) {
+.is.estble = function(x, nbasis, tol=1e-8) {
     if(is.na(nbasis[1]))
         TRUE
     else {

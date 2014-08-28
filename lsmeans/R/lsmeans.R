@@ -377,8 +377,46 @@ confint.ref.grid = function(object, parm, level=.95, ...) {
 test = function(object, parm, ...) {
     UseMethod("test")
 }
-test.ref.grid = function(object, parm, ...) {
-    summary(object, infer=c(FALSE,TRUE), ...)
+
+
+test.ref.grid = function(object, parm = 0, 
+    joint = FALSE, verbose = FALSE, rows, ...) {
+# if joint = FALSE, this is a courtesy method for 'contrast'
+# else it computes the F test or Wald test of H0: L*beta = parm
+# where L = object@linfct    
+    if (!joint)
+        summary(object, infer=c(FALSE,TRUE), ...)
+    else {
+        if(verbose) {
+            cat("Joint test of the following linear predictions\n")
+            print(cbind(object@grid, equals = parm))
+        } 
+        L = object@linfct
+        if (!missing(rows)) L = L[rows, , drop = FALSE]
+        if(!all(apply(L, 1, .is.estble, object@nbasis)))
+            stop("One or more linear functions is not estimable")
+        # Check rank
+        qrLt = qr(t(L))
+        r = qrLt$rank
+        if (r < nrow(L)) {
+            if(!all(parm==0))
+                stop("Rows are linearly dependent - cannot do the test when 'parm' != 0")
+            else
+                message("Note: rows are linearly dependent - reducing the df")
+        }
+        tR = t(qr.R(qrLt))[1:r,1:r]
+        tQ = t(qr.Q(qrLt))[1:r, , drop = FALSE]
+        if(length(parm) < r) parm = rep(parm,r)
+        z = tQ %*% object@bhat - solve(tR, parm[1:r])
+        zcov = tQ %*% object@V %*% t(tQ)
+        F = sum(z * solve(zcov, z)) / r
+        df2 = object@dffun(tQ, object@dfargs)
+        if (is.na(df2))
+            result = c(chisq = F*r, df = r, p.value = pchisq(F*r, r, lower.tail = FALSE))
+        else
+            result = c(F = F, df1 = r, df2 = df2, p.value = pf(F, r, df2, lower.tail = FALSE))
+        round(result, 4)
+    }
 }
 
 # pairs method
