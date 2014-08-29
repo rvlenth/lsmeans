@@ -28,11 +28,11 @@ lsmeans = function(object, specs, ...)
 
 # 
 lsmeans.default = function(object, specs, ...) {
-    rgargs = .args.for.fcn(ref.grid, list(object=object, ...))
+    rgargs = list(object = object, ...) ####.args.for.fcn(ref.grid, list(object=object, ...))
     rgargs$options = NULL  # don't pass options to ref.grid
     RG = do.call("ref.grid", rgargs)
     lsargs = list(object = RG, specs = specs, ...)
-    for (nm in names(rgargs)[-1]) lsargs[[nm]] = NULL
+    #for (nm in names(rgargs)[-1]) lsargs[[nm]] = NULL
     do.call("lsmeans", lsargs)###lsmeans(RG, specs, ...)
 }
 
