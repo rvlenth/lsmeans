@@ -8,7 +8,7 @@
 #     FALSE - same as function(x) sort(unique(x))
 
 ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, 
-                     options = lsm.options()$ref.grid, data) {
+                     options = lsm.options()$ref.grid, data, ...) {
     # recover the data
     if (missing(data)) {
         data = try(recover.data (object, data = NULL))
@@ -135,7 +135,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         ref.levels[[xnm]] = NULL
     }
     
-    basis = lsm.basis(object, trms, xlev, grid)
+    basis = lsm.basis(object, trms, xlev, grid, ...)
     
     misc = basis$misc
     
