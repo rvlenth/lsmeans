@@ -3,30 +3,30 @@
 
 
 plot.lsmobj = function(x, y, type, intervals = TRUE, comparisons = FALSE, 
-                       c.alpha = .05, c.adjust = "tukey", ...) {
+                       alpha = .05, adjust = "tukey", int.adjust = "none", ...) {
     if(!missing(type))
         object = update(x, predict.type = type, ..., silent = TRUE)
     else
         object = update(x, ..., silent = TRUE)
-    summ = summary(object, infer = c(TRUE, FALSE))
+    summ = summary(object, infer = c(TRUE, FALSE), adjust = int.adjust)
     estName = attr(summ, "estName")
     extra = NULL
     if(comparisons) {
         extra = object
-        extra@misc$comp.alpha = c.alpha
-        extra@misc$comp.adjust = c.adjust
+        extra@misc$comp.alpha = alpha
+        extra@misc$comp.adjust = adjust
     }
     .plot.srg(x=summ, intervals = intervals, extra = extra, ...)
 }
 
 # May use in place of plot.lsmobj but no control over level etc.
 # extra is a placeholder for comparison-interval stuff
-plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, ...) {
-    .plot.srg (x, y, horizontal, xlab, ylab, ...)
+plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, layout, ...) {
+    .plot.srg (x, y, horizontal, xlab, ylab, layout, ...)
 }
 
 # Workhorse for plot.summary.ref.grid
-.plot.srg = function(x, y, horizontal = TRUE, xlab, ylab, intervals = TRUE, extra = NULL, ...) {
+.plot.srg = function(x, y, horizontal = TRUE, xlab, ylab, layout, intervals = TRUE, extra = NULL, ...) {
         
     if (!require("lattice"))
         stop("This function requires the 'lattice' package be installed.")
@@ -107,7 +107,14 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, ...) {
     byv = attr(summ, "by.vars")
     if (!is.null(byv)) {
         chform = paste(chform, "|", paste(byv, collapse="*"))
+        lbv = do.call("paste", summ[byv]) # strings for matching by variables
+        ubv = unique(lbv)
     }
+    else {
+        lbv = rep(1, nrow(summ))
+        ubv = 1
+    }
+    
     
     # Obtain comparison limits
     if (!is.null(extra)) {
@@ -128,17 +135,11 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, ...) {
         diff = psumm[[attr(psumm, "estName")]]
         overlap = apply(psumm[ ,(k-1):k], 1, function(x) 2*min(-x[1],x[2])/(x[2]-x[1]))
         
-        # figure out by variables and indexes
-        if(is.null(byv)) {
-            lbv = rep(1, nrow(summ))
+        # figure out by variables and indexes (lbv, ubv already defined)
+        if(is.null(byv))
             pbv = rep(1, nrow(psumm))
-            ubv = 1
-        }
-        else {
-            lbv = do.call("paste", summ[byv]) # strings for matching by variables
+        else
             pbv = do.call("paste", psumm[byv])
-            ubv = unique(lbv)
-        }
         neach = length(lbv) / length(ubv)
         # indexes for pairs results -- est[id1] - est[id2]
         id1 = rep(seq_len(neach-1), rev(seq_len(neach-1)))
@@ -211,6 +212,11 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, ...) {
     else lcmpl = rcmpl = NULL
     
     
+    if (missing(layout)) {
+        layout = c(1, length(ubv))
+        if(!horizontal) 
+            layout = rev(layout)
+    }
     
     facName = paste(priv, collapse=":")
     form = as.formula(chform)
@@ -221,7 +227,7 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, ...) {
                 strip = my.strip, horizontal = TRUE,
                 ylab = ylab, xlab = xlab,
                 data = summ, intervals = intervals, lcl=lcl, ucl=ucl, 
-                lcmpl=lcmpl, rcmpl=rcmpl, ...)
+                lcmpl=lcmpl, rcmpl=rcmpl, layout = layout, ...)
     }
     else {
         if (missing(xlab)) xlab = facName
@@ -230,6 +236,6 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, ...) {
                 strip = my.strip, horizontal = FALSE,
                 xlab = paste(priv, collapse=":"), ylab = ylab,
                 data = summ, intervals = intervals, lcl=lcl, ucl=ucl, 
-                lcmpl=lcmpl, rcmpl=rcmpl, ...)
+                lcmpl=lcmpl, rcmpl=rcmpl, layout = layout, ...)
     }
 }

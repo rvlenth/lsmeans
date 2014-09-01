@@ -1,5 +1,6 @@
 \name{recover.data}
 \alias{recover.data}
+\alias{recover.data.call}
 \alias{lsm.basis}
 \alias{nonest.basis}
 
@@ -13,8 +14,9 @@ This documents the methods used to create a \code{\link[=ref.grid-class]{ref.gri
 }
 \usage{
 recover.data(object, ...)
+\S3method{recover.data}{call}(object, trms, na.action, data, ...)
 
-lsm.basis(object, trms, xlev, grid)
+lsm.basis(object, trms, xlev, grid, ...)
 
 nonest.basis(qrX)
 }
@@ -27,7 +29,9 @@ An object returned from a model-fitting function, e.g., \code{\link{lm}} or \cod
   \item{grid}{A \code{data.frame} containing predictor values at which predictions are needed.}
   \item{qrX}{A model matrix, or the QR decomposition thereof (from \code{\link{qr}} with \samp{LAPACK=FALSE}). The latter is preferred if already available, as it saves computation.
   }
-  \item{\dots}{Additional arguments passed to other methods (though currently used only by the method for class \code{call}).}
+  \item{na.action}{Integer vector of indices of observations to ignore; or \code{NULL} if none}
+  \item{data}{Data frame. Usually, this is \code{NULL}. However, if non-null, this is used in place of the reconstructed dataset. It must have all of the predictors used in the model, and any factor levels must match those used in fitting the model.}
+  \item{\dots}{Additional arguments passed to other methods.}
 }
 
 \details{

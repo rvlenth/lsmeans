@@ -29,7 +29,8 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 
 \method{plot}{lsmobj}(x, y, type, intervals = TRUE, comparisons = FALSE,
     c.alpha = 0.05, c.adjust = "tukey", ...)
-\method{plot}{summary.ref.grid}(x, y, horizontal = TRUE, xlab, ylab, ...)
+\method{plot}{summary.ref.grid}(x, y, horizontal = TRUE, 
+    xlab, ylab, layout, ...)
 
 \method{vcov}{ref.grid}(object, ...)
 }
@@ -64,7 +65,7 @@ The object to be printed or plotted.
   \item{intervals}{If \code{TRUE}, confidence intervals are plotted for each estimate}
   \item{comparisons}{If \code{TRUE}, \dQuote{comparison arrows} are added to the plot, in such a way that the degree to which arrows overlap reflects as much as possible the significance of the comparison of the two estimates.}
   \item{c.alpha, c.adjust}{The \code{alpha} and \code{adjust} arguments to use in constructing comparison arrows.}
-  \item{\dots, digits, quote, right, xlab, ylab}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, \code{\link{update}}, or \code{\link{dotplot}} as appropriate.}
+  \item{\dots, digits, quote, right, xlab, ylab, layout}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, \code{\link{update}}, or \code{\link{dotplot}} as appropriate. If not specified, appropriate defaults are used. For example, the default \code{layout} is one column of horizontal panels or one row of vertical panels.}
 }
 \details{
 The \code{misc} slot in \code{object} contains default values for \code{by}, \code{infer}, \code{level}, \code{adjust}, and \code{type}. These defaults vary depending on the code that created the object. The \code{\link{update}} method may be used to change these defaults. In addition, any options set using \samp{lsm.options(summary=...)} will trump those stored in the object's \code{misc} slot.

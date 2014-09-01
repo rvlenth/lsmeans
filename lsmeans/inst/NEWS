@@ -9,8 +9,8 @@ Changelog for 'lsmeans' package
     Fixed a bug in vcov
     Modified 'auto.noise' so 'side' has levels 'L' and 'R'
         rather than 'R' and 'L' (so not in reverse position in plots!)
+    Added support for gee, geeglm, and geese objects
 *TODO* update vignette
-*TODO* add support for gee and geepack(geeglm, geese)
 
 2.11
     Added vcov method for ref.grid

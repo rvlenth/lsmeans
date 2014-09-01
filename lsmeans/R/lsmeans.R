@@ -458,7 +458,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
     grid = RG@grid
     grid[[var]] = grid[[var]] + delta.var
     
-    basis = lsm.basis(model, attr(data, "terms"), RG@roles$xlev, grid)
+    basis = lsm.basis(model, attr(data, "terms"), RG@roles$xlev, grid, ...)
     if (is.null(fcn))
         newlf = (basis$X - RG@linfct) / delta.var
     else {
