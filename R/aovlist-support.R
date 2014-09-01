@@ -13,7 +13,7 @@ recover.data.aovlist = function(object, ...) {
 
 # This works great for balanced experiments, and goes horribly wrong
 # even for slightly unbalanced ones. So I abort on these kinds of cases
-lsm.basis.aovlist = function (object, trms, xlev, grid) {
+lsm.basis.aovlist = function (object, trms, xlev, grid, ...) {
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     contr = attr(object, "contrasts")
     X = model.matrix(trms, m, contrasts.arg = contr)

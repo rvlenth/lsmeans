@@ -103,7 +103,7 @@ Our recovered data excludes the response variable "y" (owing to the "delete.resp
 By the way, the "data" argument is handed to "recover.data" if it is specified in the "ref.grid" or "lsmeans" call. It is needed to cover a desperate situation that occurs with certain kinds of models that are fitted by iteratively modifying the data. In those cases, the only way to recover the data is to for the user to give it explicitly, and "recover.data" just adds a few needed attributes to it.
 
 \subsection{The \code{lsm.basis} method}
-The "lsm.basis" method takes four arguments:
+The "lsm.basis" method has four required arguments:
 <<>>=
 args(lsmeans:::lsm.basis.lm)
 @
@@ -118,7 +118,7 @@ MASS:::predict.lqs
 \RecustomVerbatimEnvironment{Sinput}{Verbatim}{numbers=left}
 Based on this, here is a listing of an "lsm.basis" method for "lqs" objects:
 <<>>=
-lsm.basis.lqs = function(object, trms, xlev, grid) {
+lsm.basis.lqs = function(object, trms, xlev, grid, ...) {
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = object$contrasts)
     bhat = coef(object)
@@ -155,7 +155,7 @@ There is a subtlety you need to know, though. Suppose the model is rank-deficien
 \subsection{The ``honest'' version}
 Because of the inadequacies mentioned above for estimating the covariance matrix, then---lacking any better estimate---I think it's probably better to set it and the degrees of freedom to "NA"s. We will still be able to get the LS~means and contrasts thereof, but no standard errors or tests. With that in mind, here's a replacement version:
 <<>>=
-lsm.basis.lqs = function(object, trms, xlev, grid) {
+lsm.basis.lqs = function(object, trms, xlev, grid, ...) {
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = object$contrasts)
     bhat = coef(object)

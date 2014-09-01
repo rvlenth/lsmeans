@@ -1,10 +1,18 @@
-\documentclass[article,nojss]{jss}
-
+\documentclass[11pt]{article}
+\usepackage{rvl}
 \usepackage{fancyvrb}
 \usepackage{multicol}
+\usepackage{natbib}
+\usepackage{Sweave}
+
+\hypersetup{colorlinks=true,allcolors=black,urlcolor=blue}
+
 
 \let\dq="
 \DefineShortVerb{\"}
+
+\def\pkg{\textbf}
+\def\proglang{\textsf}
 
 \def\lsm{\pkg{lsmeans}}
 
@@ -26,7 +34,7 @@
 \def\Fig#1{Figure~\ref{#1}}
 \def\bottomfraction{.5}
 
-%\VignetteIndexEntry{Least-squares Means: The R Package lsmeans}
+%\VignetteIndexEntry{Using lsmeans}
 %\VignetteDepends{lsmeans}
 %\VignetteKeywords{least-squares means}
 %\VignettePackage{lsmeans}
@@ -44,32 +52,17 @@ options(show.signif.stars=FALSE, prompt="R> ", continue="   ",
 
 %% almost as usual
 \author{Russell V.~Lenth\\The University of Iowa}
-\title{Least-squares Means: The R Package \lsm{}} %% without formatting
+\title{Using \lsm{}} %% without formatting
 
-
+\ifx %xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 %% for pretty printing and a nice hypersummary also set:
 \Plainauthor{Russell V.~Lenth} %% comma-separated
 \Plaintitle{Least-squares Means: The R Package lsmeans} %% without formatting
 \Shorttitle{The R Package lsmeans} %% a short title (if necessary)
+\fi %xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-%% an abstract and keywords
-\Abstract{
-  Least-squares means are predictions from a linear model, or averages thereof. They are useful in the
-  analysis of experimental data for summarizing the effects of factors, and for testing linear contrasts among predictions. The \lsm{} package provides a simple way of obtaining least-squares means and contrasts thereof. It supports many models fitted by \R{} core packages (as well as a few key contributed ones) that fit linear or mixed models, and provides a simple way of extending it to cover more model classes.
-}
-\Keywords{least-squares means, linear models, experimental design}
-\Plainkeywords{least-squares means, linear models, experimental design} %% without formatting
-%% at least one keyword must be supplied
 
-%% publication information
-%% NOTE: Typically, this can be left commented and will be filled out by the technical editor
-%% \Volume{13}
-%% \Issue{9}
-%% \Month{September}
-%% \Year{2004}
-%% \Submitdate{2004-09-29}
-%% \Acceptdate{2004-09-29}
-
+\ifx % IGNORE xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 %% The address of (at least) one author should be given
 %% in the following format:
 \Address{
@@ -85,6 +78,7 @@ options(show.signif.stars=FALSE, prompt="R> ", continue="   ",
 %% before the e-mail in the following format:
 %% Telephone: +43/1/31336-5053
 %% Fax: +43/1/31336-734
+\fi %xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 %% for those who use Sweave please include the following line (with % symbols):
 %% need no \usepackage{Sweave.sty}
@@ -93,8 +87,12 @@ options(show.signif.stars=FALSE, prompt="R> ", continue="   ",
 
 
 \begin{document}
-\SweaveOpts{concordance=TRUE}
-%%%\SweaveOpts{concordance=TRUE}
+\maketitle{}
+
+\begin{abstract}
+  Least-squares means are predictions from a linear model, or averages thereof. They are useful in the
+  analysis of experimental data for summarizing the effects of factors, and for testing linear contrasts among predictions. The \lsm{} package provides a simple way of obtaining least-squares means and contrasts thereof. It supports many models fitted by \R{} core packages (as well as a few key contributed ones) that fit linear or mixed models, and provides a simple way of extending it to cover more model classes.
+\end{abstract}
 
 \section{Introduction}
 Least-squares means (LS~means for short)  for a linear model are simply predictions---or averages thereof---over a regular grid of predictor settings which I call the \emph{reference grid}. They date back at least to 1976 when LS~means were incorporated in the contributed \SAS{} procedure named \code{HARVEY} \citep{Har76}. Later, they were incorporated via \code{LSMEANS} statements in the regular \SAS{} releases. 
@@ -475,8 +473,8 @@ Note that this analysis is somewhat different than the results we would obtain b
 The "weights" argument can be a vector of numerical weights (it has to be of the right length), or one of four text values: \dqt{equal} (weight the predictions equally when averaging them, the default), \dqt{proportional} (weight them proportionally to the observed frequencies of the factor combinations being averaged over), \dqt{outer} (weight according to the outer products of the one-factor marginal counts), or \dqt{cells} (weight each mean differently, according to the frequencies of the predictions being averaged). Compare the results with these schemes:
 \medskip
 
-\hspace{-.07\linewidth}
-\begin{minipage}{1.14\linewidth}
+\hspace{-.1\linewidth}
+\begin{minipage}{1.2\linewidth}
 \columnseprule=.2pt
 \begin{multicols}{2}\footnotesize
 <<>>=
@@ -584,7 +582,7 @@ It has special strengths for curve-fitting models such as splines. In contrast, 
 The \pkg{doBy} package \citep{doBy} provides an "LSmeans" function that has some of the capabilities of "lsmeans", but it produces a data frame rather than a reusable object. In earlier versions of the package, this function was named "popMeans". The package also has an "LSmatrix" function to obtain the linear functions needed to obtain LS~means.
 
 
-\bibliography{lsmeans}%%%\bibliographystyle{jss}
+\bibliography{lsmeans}\bibliographystyle{jss}
 
 
 \end{document}

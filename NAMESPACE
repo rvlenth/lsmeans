@@ -59,13 +59,6 @@ S3method(contrast,lsm.list)
 #S3method(glht, lsmlf)   # in namespace block above
 #S3method(glht, ref.grid)
 
-#S3method(lsm.basis, gls)
-#S3method(lsm.basis, lm)
-#S3method(lsm.basis, lme)
-#S3method(lsm.basis, mer)
-#S3method(lsm.basis, merMod)
-#S3method(lsm.basis, mlm)
-
 S3method(lsmeans, character)
 S3method(lsmeans.character, default)
 S3method(lsmeans.character, ref.grid)
@@ -90,11 +83,6 @@ S3method(print, summary.ref.grid)
 S3method(print, lsm.list)
 
 S3method(recover.data, call)
-#S3method(recover.data, default)
-#S3method(recover.data, gls)
-#S3method(recover.data, lm)
-#S3method(recover.data, mer)
-#S3method(recover.data, merMod)
 
 S3method(str, ref.grid)
 S3method(str, lsm.list)
