@@ -28,7 +28,7 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 \method{print}{summary.ref.grid}(x, ..., digits = NULL, quote = FALSE, right = TRUE)
 
 \method{plot}{lsmobj}(x, y, type, intervals = TRUE, comparisons = FALSE,
-    c.alpha = 0.05, c.adjust = "tukey", ...)
+    alpha = 0.05, adjust = "tukey", int.adjust = "none", ...)
 \method{plot}{summary.ref.grid}(x, y, horizontal = TRUE, 
     xlab, ylab, layout, ...)
 
@@ -64,7 +64,7 @@ The object to be printed or plotted.
   \item{horizontal}{Determines orientatiion of plotted confidence intervals.}
   \item{intervals}{If \code{TRUE}, confidence intervals are plotted for each estimate}
   \item{comparisons}{If \code{TRUE}, \dQuote{comparison arrows} are added to the plot, in such a way that the degree to which arrows overlap reflects as much as possible the significance of the comparison of the two estimates.}
-  \item{c.alpha, c.adjust}{The \code{alpha} and \code{adjust} arguments to use in constructing comparison arrows.}
+  \item{alpha, adjust, int.adjust}{The \code{alpha} and \code{adjust} arguments to use in constructing comparison arrows. \code{int.adjust} may be used to set the \code{adjust} argument for the confidence intervals.}
   \item{\dots, digits, quote, right, xlab, ylab, layout}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, \code{\link{update}}, or \code{\link{dotplot}} as appropriate. If not specified, appropriate defaults are used. For example, the default \code{layout} is one column of horizontal panels or one row of vertical panels.}
 }
 \details{
