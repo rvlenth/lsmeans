@@ -1,9 +1,13 @@
 \documentclass[11pt]{article}
-\usepackage{rvl}
+\usepackage[margin=1in]{geometry}
+\usepackage{mathpazo}
+\usepackage{hyperref}
 \usepackage{fancyvrb}
 \usepackage{multicol}
 \usepackage{natbib}
 \usepackage{Sweave}
+
+
 
 \hypersetup{colorlinks=true,allcolors=black,urlcolor=blue}
 
@@ -29,6 +33,7 @@
 
 \def\R{\proglang{R}}
 \def\SAS{\proglang{SAS}}
+\def\code{\texttt}
 
 
 \def\Fig#1{Figure~\ref{#1}}
@@ -168,12 +173,14 @@ lsmeans(oranges.lm1, ~ day * price, at = ... )         # Ex 3
 Ex~1 illustrates the formula method for specifying factors, which is more compact. The "|" character replaces the "by" specification. Ex~2 and Ex~3 produce the same results, but their results are displayed as one table (with columns for "day" and "price") rather than as two separate tables.
 
 \section{Working with the results}
+\subsection{Objects}
 The "ref.grid" function produces an object of class \rg{}, and the "lsmeans" function produces an object of class \lsmo{}, which is a subclass of \rg. There is really no practical difference between these two classes except for their "show" methods---what is displayed by default---and the fact that an \lsmo{} is not (necessarily) a true reference grid as defined earlier in this article. Let's use the "str" function to examine the \lsmo{} object just produced:
 <<>>=
 str(org.lsm)
 @
 We no longer see the reference levels for all predictors in the model---only the levels of "day" and "price2". These \emph{act} like reference levels, but they do not define the reference grid upon which the predictions are based.
 
+\subsection{Summaries}
 There are several methods for \rg{} (and hence also for \lsmo{}) objects. One already seen is "summary". It has a number of arguments---see its help page. In the following call, we summarize "days.lsm" differently than before. We will also save the object produced by "summary" for further discussion.
 <<>>=
 ( org.sum <- summary(org.lsm, infer = c(TRUE,TRUE), 
@@ -193,11 +200,28 @@ transform(org.sum, lsrubles = lsmean * 34.2)
 }
 Observe also that the summary is just one data frame with six rows, rather than a collection of three data frames; and it contains a column for all reference variables, including any "by" variables.
 
-Besides "str" and "summary", there is also a "confint" method, which is the same as "summary" with "infer=c(TRUE,FALSE)", and a "test" method (same as "summary" with "infer=c(FALSE,TRUE)"). There is also an "update" method which may be used for changing the object's display settings. For example:
+Besides "str" and "summary", there is also a "confint" method, which is the same as "summary" with "infer=c(TRUE,FALSE)", and a "test" method (same as "summary" with "infer=c(FALSE,TRUE)", by default). The "test" method may in addition be called with "joint=TRUE" to obtain a joint test that all or some of the linear functions are equal to zero or some other value. 
+
+There is also an "update" method which may be used for changing the object's display settings. For example:
 <<>>=
 org.lsm2 <- update(org.lsm, by.vars = NULL, level = .99)
 org.lsm2
 @
+
+\subsection{Plots}
+Confidence intervals for LS~means may be displayed graphically, using the "plot" method. For example:
+<<org-plot, fig = TRUE, height=3, include=FALSE>>=
+plot(org.lsm, by = "price2")
+@
+The resulting display is shown in \Fig{org-plot}. This function requires that the \pkg{lattice} package be installed. 
+\begin{figure}
+\begin{center}
+\includegraphics{using-lsmeans-org-plot.pdf}
+\end{center}
+\caption{Confidence intervals for LS~means in the \code{oranges} example.}\label{org-plot}
+\end{figure}
+
+
 
 \section{Contrasts and comparisons}
 \subsection{Contrasts in general}
@@ -233,6 +257,20 @@ cld(days.lsm, alpha = .10)
 @
 Two LS~means that share one or more of the same grouping symbols are not significantly different at the stated value of "alpha", after applying the multiplicity adjustment (in this case Tukey's HSD).
 By default, the LS~means are ordered in this display, but this may be overridden with the argument "sort=FALSE". "cld" returns a \dqt{summary.ref.grid} object, not an "lsmobj".
+
+Another way to display pairwise comparisons is via the "comparisons" argument of "plot". When this is set to "TRUE", arrows are added to the plot, with lengths set so that the amount by which they overlap (or don't overlap) matches as closely as possible to the amounts by which corresponding confidence intervals for differences cover (or don't cover) the value zero. This does not always work, and if there are discrepancies, a message is printed. But it usually works.
+<<days-cmp, fig = TRUE, height=2.75, include = FALSE>>=
+plot(days.lsm, comparisons = TRUE, alpha = .10)
+@
+\Fig{days-cmp} shows the result. Note that the pairs of means having overlapping arrows are the same as those grouped together in the "cld" display. However, these comparison arrows show more about the degree of significance in the comparisons. The lowest and highest LS~mean have arrows pointing only inward, as the others are not needed. If the confidence intervals and arrows together look too cluttered, one can add the argument \code{intervals = FALSE}, then only the arrows will be displayed.
+\begin{figure}
+\begin{center}
+\includegraphics{using-lsmeans-days-cmp.pdf}
+\end{center}
+\caption{Graphical comparisons of the LS~means for \code{days}.}\label{days-cmp}
+\end{figure}
+
+
 
 \section{Multivariate models}
 The "oranges" data has two response variables. Let's try a multivariate model for predicting the sales of the two varieties of oranges, and see what we get if we call "ref.grid":
@@ -333,8 +371,7 @@ Fractional degrees of freedom are displayed in these results. These are obtained
 
 
 \section{Displaying LS means graphically}
-The \lsm{} package provides a "plot" method for "lsmobj" objects that displays confidence intervals for the LS~means. Its use requires that the \pkg{lattice} package \citep{latti} to be installed. Optional arguments are passed to the "update" method for the object (allowing changes to confidence levels, adjustments, etc.) and to \pkg{lattice}'s "xyplot" function (allowing changes to colors, layout, etc.)
-
+We have already seen the use of the "plot" function to display confidence intervals and/or comparison arrows.
 The \lsm{} package also includes a function "lsmip" that displays predictions in an interaction-plot-like manner. It uses a formula of the form
 \begin{Sinput}
 curve.factors ~ x.factors | by.factors
@@ -342,13 +379,7 @@ curve.factors ~ x.factors | by.factors
 This function also requires the \pkg{lattice} package.
 In the above formula, "curve.factors" specifies factor(s) used to delineate one displayed curve from another (i.e., groups in \pkg{lattice}'s parlance). "x.factors" are those whose levels are plotted on the horizontal axis. And "by.factors", if present, break the plots into panels.
 
-To illustrate these capabilities, consider the first model we fitted to the "Oats" data. In the following code we include arguments that affect both the values displayed and the layout of the plot:
-<<OatsCIs, fig=TRUE, height=2>>=
-plot(lsmeans(Oats.lmer, ~ nitro | Variety), 
-     type="response", level=.90, layout = c(3,1))
-@
-
-In addition, let's do a graphical comparison of the two models we have fitted to the "Oats" data. 
+To illustrate, consider the first model we fitted to the "Oats" data. Let's do a graphical comparison of the two models we have fitted to the "Oats" data. 
 <<oatslmer, fig=TRUE, height=4.5, include=FALSE>>=
 lsmip(Oats.lmer, Variety ~ nitro, ylab = "Observed log(yield)")
 @
@@ -470,11 +501,11 @@ The general conclusion from these analyses is that for age groups 2 and~3, the e
 Note that this analysis is somewhat different than the results we would obtain by subsetting the data before analysis, as we are borrowing information from the other observations in estimating and testing these LS~means.
 
 \subsection{More on weighting}\label{weights}
-The "weights" argument can be a vector of numerical weights (it has to be of the right length), or one of four text values: \dqt{equal} (weight the predictions equally when averaging them, the default), \dqt{proportional} (weight them proportionally to the observed frequencies of the factor combinations being averaged over), \dqt{outer} (weight according to the outer products of the one-factor marginal counts), or \dqt{cells} (weight each mean differently, according to the frequencies of the predictions being averaged). Compare the results with these schemes:
-\medskip
-
-\hspace{-.1\linewidth}
-\begin{minipage}{1.2\linewidth}
+The "weights" argument can be a vector of numerical weights (it has to be of the right length), or one of four text values: \dqt{equal} (weight the predictions equally when averaging them, the default), \dqt{proportional} (weight them proportionally to the observed frequencies of the factor combinations being averaged over), \dqt{outer} (weight according to the outer products of the one-factor marginal counts), or \dqt{cells} (weight each mean differently, according to the frequencies of the predictions being averaged). \Fig{wtcomp} shows the LS~means for "race" using the four different weighting schemees.
+\begin{figure}
+\hspace{-.06\linewidth}
+\begin{minipage}{1.12\linewidth}
+\hrule
 \columnseprule=.2pt
 \begin{multicols}{2}\footnotesize
 <<>>=
@@ -484,9 +515,11 @@ lsmeans(nutr.lm, "race", weights = "outer")
 lsmeans(nutr.lm, "race", weights = "cells")
 @
 \end{multicols}
+\hrule
 \end{minipage}
+\caption{Comparison of four different weighting methods}\label{wtcomp}
+\end{figure}
 
-\bigskip
 Note there are four different sets of answers. The \dqt{equal} weighting is self-explanatory. But what's the distinction between \dqt{proportional} and \dqt{outer}? To clarify, consider:
 <<>>=
 temp = lsmeans(nutr.lm, c("group","race"), weights = "prop")
@@ -500,25 +533,66 @@ with(nutrition, tapply(gain, race, mean))
 @
 
 \subsection{Alternative covariate adjustments}
-\cite{urq82} reports data on slaughter weights of animals that entered a feedlot as yearling calves. The animals came from 11 different herds, and each animal was randomized to one of three diets. In addition, the weight of each yearling at entry was recorded. The  "feedlot" dataset provided in \lsm{} contains these results. From the feedlot operator's perspective, both diets and herds are fixed effects. Let us fit a factorial model with slaughter weight "swt" as the response and entry weight "ewt" as a covariate.
+The "framing" data in the \pkg{mediation} package has the results of an experiment conducted by \cite{Bra08} where subjects were given the opportunity to send a message to Congress regarding immigration. However, before being offered this, some subjects ("treat=1") were first shown a news story that portrays Latinos in a negative way. Besides the binary response (whether or not they elected to send a message), we also measured "emp", the subjects' emotional state after the treatment was applied. There are various demographic variables as well.
+
+Before fitting a logistic regression model, I will change the labels for educ to shorter strings.
 <<>>=
+library("mediation")
+levels(framing$educ) = c("NA","Ref","< HS", "HS", "> HS","Coll +")
+framing.glm = glm(cong_mesg ~ age + income + educ + emo + gender * factor(treat),
+                  family = binomial, data = framing)
+@                  
+The left-hand plot in \Fig{framing} displays the conventional adjusted means, where predictions are made with the covariates "age", "income", and "emo" set to their mean values:
+<<framinga, fig=TRUE, height=5, include=FALSE>>=
+lsmip(framing.glm, treat ~ educ | gender, type = "response")
+@
+This plot is rather implausible because the displayed treatment effects are the opposite for females as for males, and the effect of education isn't monotone as one might expect.
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{c@{\qquad}c}
+(a) & (b) \\
+\includegraphics[width=3in]{using-lsmeans-framinga.pdf} &
+\includegraphics[width=3in]{using-lsmeans-framingb.pdf}
+\end{tabular}
+\end{center}
+\caption{Estimated responses for the \code{framing} data. (a)~Holding \code{emo} constant at its mean; (b)~Using predictions of \code{emo} for each \code{treat}.}\label{framing}
+\end{figure}
+
+However, "emo" is a post-treatment measurement. This means that the treatment could have affected it (it is a \emph{mediating} covariate). If it is indeed affected by "treat", then \Fig{framing}(a) would be misleading because "emo" is held constant.
+Instead, consider making the predictions where "emo" is set to its predicted value at each combination of "treat" and the demographic variables. This is easily done by setting "cov.reduce" to a formula for how to predict "emo":
+<<framingb, fig=TRUE, height=5, include=FALSE>>=
+lsmip(framing.glm, treat ~ educ | gender, type = "response",
+      cov.reduce = emo ~ treat*gender + age + educ + income)
+@
+This plot is shown in \Fig{framing}(b). It is quite different, suggesting that "emo" does indeed play a strong mediating role. (The \pkg{mediation} package has functions for estimating the strength of these effects.) The predictions suggest that, taking emotional response into account, male subjects exposed to the negative news story are more likely to send the message than are females or those not seeing the negative news story. Also, the effect of "educ" is (almost) monotone.
+
+
+
+
+\ifx %%% Old covariate example is commented-out %%%%%%%%%%%%%%%%%%
+
+\cite{urq82} reports data on slaughter weights of animals that entered a feedlot as yearling calves. The animals came from 11 different herds, and each animal was randomized to one of three diets. In addition, the weight of each yearling at entry was recorded. The  "feedlot" dataset provided in \lsm{} contains these results. From the feedlot operator's perspective, both diets and herds are fixed effects. Let us fit a factorial model with slaughter weight "swt" as the response and entry weight "ewt" as a covariate.
+%<<>>=
 feedlot.lm <- lm(swt ~ ewt + herd * diet, data = feedlot)
 Anova(feedlot.lm)
 @
 The interaction tesrm doesn't make much of a contribution here, so we will work with an additive model instead (which also ameliorates some non-estimability issues due to missing cells).
-<<>>=
+%<<>>=
 feedlot.add <- update(feedlot.lm, . ~ . - herd:diet)
 @
 Here are the "LS~means" for the herds, and a compact letter display for comparisons thereof:
-<<>>=
+%<<>>=
 cld(lsmeans(feedlot.add, "herd"))
 @
 No herds are found to be different---not a surprise given that the $P$~value for "herd" is about the same as for the original model.
 However, these predictions are made at the same entry weight for every herd. This is \emph{not} the right thing to do here, because the herds differ in genetic makeup, the way they were fed and managed, and so forth---which affect the yearlings' entry weights. This is an example where a treatment affects a covariate. Each herd should have its own reference value for entry weight. This is done in "lsmeans" by providing a formula in the "cov.reduce" argument. The formula "ewt ~ herd" indicates that the reference grid should be constructed using the predicted value of "ewt", based on a linear model with "herd" as the predictor. Here are the results:
-<<>>=
+%<<>>=
 cld(lsmeans(feedlot.add, "herd", cov.reduce = ewt ~ herd))
 @
 What a world of difference! We now see many significant differences in the comparisons. By the way, another approach would be to simply omit "ewt" from the model, to prevent making inappropriate adjustments in the traditional analysis. With such a model (not shown), the predictions are similar to those above; however, their standard errors are substantially higher, because---as seen in the ANOVA table---the covariate explains a lot of the variation.
+
+\fi %%%%%%%%%%%%% end of commented-out section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Another use of formulas in "cov.reduce" is to create representative values of some covariates when others are specified in "at". For example, suppose there are three covariates $x_1,x_2,x_3$ in a model, and we want to see predictions at a few different values of $x_1$. We might use
 <<eval=FALSE>>=
@@ -539,6 +613,7 @@ The \lsm{} package comes with built-in support for several packages and model cl
 \pitem{survival}: \dqt{survreg}, \dqt{coxph}
 \pitem{coxme}: \dqt{coxme}
 \pitem{MASS}: \dqt{polr}
+\pitem{gee, geepack}: \dqt{gee}, \dqt{geeglm}, \dqt{geese}
 \end{description}
 \end{quote}
 \lsm{} support for all these models works similarly to the examples we have presented. Note that generalized linear or mixed models, and several others such as survival models, typically employ link functions such as "log" or "logit". In all such cases, the LS~means displayed are on the scale of the linear predictor, and any averaging over the reference grid is performed on the linear-predictor scale. Results for \code{aovlist} objects are based on intra-block estimates, and should be used with caution.
