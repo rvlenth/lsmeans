@@ -395,6 +395,10 @@ test.ref.grid = function(object, parm = 0,
         if (!missing(rows)) L = L[rows, , drop = FALSE]
         if(!all(apply(L, 1, .is.estble, object@nbasis)))
             stop("One or more linear functions is not estimable")
+        
+        estble.idx = which(!is.na(object@bhat))
+        bhat = object@bhat[estble.idx]
+        L = L[, estble.idx, drop = FALSE]
         # Check rank
         qrLt = qr(t(L))
         r = qrLt$rank
@@ -407,7 +411,7 @@ test.ref.grid = function(object, parm = 0,
         tR = t(qr.R(qrLt))[1:r,1:r]
         tQ = t(qr.Q(qrLt))[1:r, , drop = FALSE]
         if(length(parm) < r) parm = rep(parm,r)
-        z = tQ %*% object@bhat - solve(tR, parm[1:r])
+        z = tQ %*% bhat - solve(tR, parm[1:r])
         zcov = tQ %*% object@V %*% t(tQ)
         F = sum(z * solve(zcov, z)) / r
         df2 = object@dffun(tQ, object@dfargs)

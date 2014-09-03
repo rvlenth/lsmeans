@@ -36,13 +36,24 @@ warp.lm <- lm(breaks ~ poly(x1,3) + x2 + wool*tension, data=warp)
 # (Nothing is estimable)
 
 # However, contrasts ARE estimable:
-pairs(warp.lsm)
+(warp.pairs <- pairs(warp.lsm))
 
 #switcheroo of by variables:
 (tmp = pairs(warp.lsm, by = "tension"))
 
 # compare these contrasts
 pairs(tmp, by = "contrast")
+
+# Joint tests
+test(warp.pairs, joint = TRUE)  # all 6 but reduces to 4
+
+test(warp.pairs, joint = TRUE, rows = 1:3)  # just wool A
+
+test(warp.pairs, joint = TRUE, rows = 2:3)  # just wool A but not lin dep
+                                            # should be identical result
+
+test(warp.pairs, joint = TRUE, rows = 4:5)  # just wool B
+
 
 # Test different ways of accessing data
 ## ... using "with" ...
