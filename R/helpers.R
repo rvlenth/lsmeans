@@ -61,11 +61,12 @@ lsm.basis.default <- function(object, trms, xlev, grid, ...) {
 # does this by looking in namespace [ns] and methods [meth]
 # then strips that off leaving extensions
 .show_supported = function(ns = "lsmeans", meth = "lsm.basis") {
-    pat = paste(meth, ".", sep="")
-    objs = ls(envir = getNamespace(ns), pattern = pat)
-    clss = gsub(pat, "", objs)
-    c("Objects of the following classes are supported:\n",
-      paste(dQuote(setdiff(clss, "default")), collapse = ", "))
+    "Use help(\"models\", package = \"lsmeans\") for information on supported models."
+#     pat = paste(meth, ".", sep="")
+#     objs = ls(envir = getNamespace(ns), pattern = pat)
+#     clss = gsub(pat, "", objs)
+#     c("Objects of the following classes are supported:\n",
+#       paste(dQuote(setdiff(clss, "default")), collapse = ", "))
 }
 
 
@@ -384,7 +385,10 @@ lsm.basis.coxme <- function(object, trms, xlev, grid, ...) {
 # nonmatches revert to 1st elt.
 .named.vcov.default = function(object, method, valid, idx = seq_along(valid), ...) {
     i = pmatch(method, valid, 1)
-    object[[valid[idx[i]]]]
+    method = valid[idx[i]]
+    V = object[[method]]
+    attr(V, "methMesg") = paste("Covariance estimate used: \"", method, "\"", sep = "")
+    V
 }
 
 # general-purpose lsm.basis function
@@ -400,6 +404,7 @@ lsm.basis.coxme <- function(object, trms, xlev, grid, ...) {
         nbasis = matrix(NA)
     
     misc = .std.link.labels(object$family, list())
+    misc$initMesg = attr(V, "methMesg")
     dffun = function(k, dfargs) NA
     dfargs = list()
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=misc)
@@ -432,6 +437,7 @@ lsm.basis.geeglm = function(object, trms, xlev, grid, vcov.method = "vbeta", ...
         nbasis = matrix(NA)
     
     misc = .std.link.labels(object$family, list())
+    misc$initMesg = attr(V, "methMesg")
     dffun = function(k, dfargs) NA
     dfargs = list()
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=misc)
@@ -469,6 +475,7 @@ lsm.basis.geese = function(object, trms, xlev, grid, vcov.method = "vbeta", ...)
         nbasis = matrix(NA)
     
     misc = .std.link.labels(eval(object$call$family)(), list())
+    misc$initMesg = attr(V, "methMesg")
     dffun = function(k, dfargs) NA
     dfargs = list()
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=misc)

@@ -566,7 +566,12 @@ lsmip(framing.glm, treat ~ educ | gender, type = "response",
       cov.reduce = emo ~ treat*gender + age + educ + income)
 @
 This plot is shown in \Fig{framing}(b). It is quite different, suggesting that "emo" does indeed play a strong mediating role. (The \pkg{mediation} package has functions for estimating the strength of these effects.) The predictions suggest that, taking emotional response into account, male subjects exposed to the negative news story are more likely to send the message than are females or those not seeing the negative news story. Also, the effect of "educ" is (almost) monotone.
-
+You can see what values of "emo" are used in these predictions by looking at the "grid" slot in the reference grid:
+<<>>=
+ref.grid(framing.glm, 
+    cov.reduce = emo ~ treat*gender + age + educ + income)@grid
+@
+whereas the overall mean of \Sexpr{round(mean(framing$emo), 3)} is used as the value of "emo" in \Fig{framing}(a).
 
 
 

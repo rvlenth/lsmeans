@@ -559,7 +559,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df, ...) {
     attr(result, "link") = NULL
     estName = names(result)[1]
 
-    mesg = NULL
+    mesg = object@misc$initMesg
     
     by.size = nrow(object@grid)
     if (!is.null(by))
@@ -581,7 +581,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df, ...) {
             result[[cnm[1]]] = link$linkinv(result[[cnm[1]]])
             result[[cnm[2]]] = link$linkinv(result[[cnm[2]]])
         }
-        mesg = c(paste("Confidence level used:", level), acv$mesg)
+        mesg = c(mesg, paste("Confidence level used:", level), acv$mesg)
     }
     if(infer[2]) { # add tests
         tnm = ifelse (zFlag, "z.ratio", "t.ratio")
@@ -692,7 +692,8 @@ vcov.ref.grid = function(object, ...) {
 # Method to alter contents of misc slot
 update.ref.grid = function(object, ..., silent = FALSE) {
     args = list(...)
-    valid.choices = c("adjust","alpha","avgd.over","by.vars","df","estName","famSize","infer","inv.lbl",
+    valid.choices = c("adjust","alpha","avgd.over","by.vars","df",
+        "initMesg","estName","famSize","infer","inv.lbl",
         "level","methdesc","predict.type","pri.vars","tran")
     misc = object@misc
     for (nm in names(args)) {

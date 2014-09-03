@@ -194,6 +194,13 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, layout, ..
                             ", overlap on graph = ", round(obsv, 4))
             }
         }
+        # shorten arrows that go past the data range
+        rng = range(est)
+        ii = which(est - llen < rng[1])
+        llen[ii] = est[ii] - rng[1]
+        ii = which(est + rlen > rng[2])
+        rlen[ii] = rng[2] - est[ii]
+        
         invtran = I
         if (typeid == 1) {
             tran = extra@misc$tran

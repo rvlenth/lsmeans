@@ -23,7 +23,7 @@ nonest.basis(qrX)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{
-An object returned from a model-fitting function, e.g., \code{\link{lm}} or \code{\link[lme4]{lmer}}.}
+An object returned from a model-fitting function.}
   \item{trms}{The \code{\link{terms}} component of \code{object}}
   \item{xlev}{Named list of levels of factors in the model frame. This should \emph{not} include levels of factors created in the model itself, e.g., by including a \code{factor} call in the mdoel formula.}
   \item{grid}{A \code{data.frame} containing predictor values at which predictions are needed.}
@@ -42,6 +42,8 @@ To extend \pkg{lsmeans}'s support to additional model types, one need only write
 If the model has a multivariate response, \code{bhat} needs to be \dQuote{flattened} into a single vector, and \code{X} and \code{V} must be constructed consistently. 
 
 In models where a non-full-rank result is possible (often you can tell by seeing if there is a \code{singular.ok} argument in the model-fitting function), \code{summary} and \code{predict} check the estimability of each prediction, and for this, a basis for the non-estimable functions is required. The \code{nonest.basis} function provides an easy way to obtain this.
+
+The models already supported are detailed in \code{\link{models}}. Some packages may provide additional \pkg{lsmeans} support for its object classes. 
 }
 \value{
 A \code{list} with the following elements:
@@ -61,7 +63,7 @@ Russell V. Lenth
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{ref.grid}}, \code{\link{ref.grid-class}}
+\code{\link{models}}, \code{\link{ref.grid}}, \code{\link{ref.grid-class}}
 }
 \examples{
 require(lsmeans)
