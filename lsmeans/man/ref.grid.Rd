@@ -18,7 +18,7 @@ ref.grid(object, at, cov.reduce = mean, mult.name, mult.levs,
 }
 
 \arguments{
-  \item{object}{An object produced by a supported model-fitting function, such as \code{lm}. }
+  \item{object}{An object produced by a supported model-fitting function, such as \code{lm}. Many models are supported. See \code{\link{models}}.}
   \item{at}{Optional named list of levels for the corresponding variables}
   \item{cov.reduce}{A function, logical value, or formula; or a named list of these. Each covariate \emph{not specified in} \code{at} is reduced according to these specifications. 
   
@@ -64,7 +64,7 @@ Russell V. Lenth
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-See also \code{\link[lsmeans]{summary}} and other methods for the returned objcts. Reference grids are fundamental to \code{\link{lsmeans}}. Click here for more on the \code{\link[=ref.grid-class]{ref.grid}} class. 
+See also \code{\link[lsmeans]{summary}} and other methods for the returned objects. Reference grids are fundamental to \code{\link{lsmeans}}. Click here for more on the \code{\link[=ref.grid-class]{ref.grid}} class. Supported models are detailed in \code{\link{models}}.
 }
 
 \examples{

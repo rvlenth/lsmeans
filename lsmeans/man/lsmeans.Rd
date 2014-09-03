@@ -5,6 +5,7 @@
 \alias{lsmeans.character}
 \alias{lsmeans.character.ref.grid}
 \alias{lstrends}
+\alias{lsmobj}
 
 \title{Least-squares means}
 \description{
@@ -27,10 +28,12 @@ and optionally comparisons or contrasts among them.
 ## (used when 'specs' is a 'formula')
 
 lstrends(model, specs, var, delta.var = 0.01 * rng, data, ...)
+
+lsmobj(bhat, V, levels, linfct, df = NA, ...)
 }
 \arguments{
 \item{object}{
-An object of class \code{ref.grid}; or a fitted model object that is supported, such as the result of a call to \code{lm} or \code{lmer}.}
+An object of class \code{ref.grid}; or a fitted model object that is supported, such as the result of a call to \code{lm} or \code{lmer}. Many fitted-model objects are supported; see \code{link{models}} for details.}
 \item{specs}{
 A \code{character} vector specifying the names of the predictors over which LS-means are desired. \code{specs} may also be a \code{formula} or a \code{list} (optionally named) of valid \code{spec}s. Use of formulas is described in the Details section below.}
 \item{by}{
@@ -71,12 +74,17 @@ The user may specify some monotone function of one variable, e.g., \code{var = "
 The value of \emph{h} to use in forming the difference quotient \emph{(f(x+h) - f(x))/h}. Changing it (especially changing its sign) may be necessary to avoid numerical problems such as logs of negative numbers. The default value is 1/100 of the range of \code{var} over the dataset.
 }
 \item{data}{As in \code{\link{ref.grid}}, you may use this argument to supply the dataset used in fitting the model, for situations where it is not possible to reconstruct the data. Otherwise, leave it missing.}
+\item{bhat}{Numeric. Vector of regression coefficients.}
+\item{V}{Square matrix. Covariance matrix of \code{bhat}}
+\item{levels}{Named list or vector. Levels of factor(s) that define the estimates defined by \code{linfct}. If not a list, we assume one factor named \code{"level"}}
+\item{linfct}{Matrix. Linear functions of \code{bhat} for each combination of \code{levels}}
+\item{df}{Numeric or function with arguments \code{x,dfargs)}. If a number, that is used for the degrees of freedom. If a function, it should return the degrees of freedom for \code{sum(x*bhat)}; if additional parameters are needed, include them in \code{\dots} as \code{dfargs} (not abbreviated).}
 \item{\dots}{Additional arguments passed to other methods or to \code{\link{ref.grid}}.}
 }
 
 
 \details{
-Least-squares means are predictions from a linear model over a \emph{reference grid}, or marginal averages thereof. They have been popularized by \pkg{SAS} (SAS Institute, 2012). The \code{\link{ref.grid}} function identifies/creates the reference grid upon which \code{lsmeans} is based.
+Least-squares means are predictions from a linear model over a \emph{reference grid}, or marginal averages thereof. They have been popularized by \pkg{SAS} (SAS Institute, 2012). The \code{\link{ref.grid}} function identifies/creates the reference grid upon which \code{lsmeans} is based. 
 
 If \code{specs} is a \code{formula}, it should be of the form \code{contr ~ specs | by}. The formula is parsed and then used as the arguments \code{contr}, \code{specs}, and \code{by} as indicated. The left-hand side is optional, but if specified it should be the name of a contrast family (e.g., \code{pairwise}) or of a sub-list of \code{contr.list}. Operators like \code{*} or \code{:} are necessary to delineate names in the formulas, but otherwise are ignored.
 
@@ -84,8 +92,7 @@ A number of standard contrast families are provided. They can be identified as f
 \preformatted{ls("package:lsmeans", pat=".lsmc")} 
 to list them. See the documentation for \code{\link{pairwise.lsmc}} and its siblings for details. You may write your own \code{.lsmc} function for custom contrasts.
 
-
-For models fitted using the \pkg{lme4} package, degrees of freedom are obtained using the Kenward-Roger (1997) method as implemented in the package \pkg{pbkrtest}, if it is installed. If \pkg{pbkrtest} is not installed, the degrees of freedom are set to \code{NA} and asymptotic results are displayed. You may also, if you like, disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbkrtest=TRUE)} (this does not disable the \pkg{pbkrtest} package entirely, just its use in \pkg{lsmeans}). The \code{df} argument in the \code{lsmeans} or \code{ref.grid} call (or later in \code{\link{update}} or \code{\link{summary}}) may be used to specify some other degrees of freedom. Specifying \code{df} is \emph{not} equivalent to disabling \pkg{pbkrtest}, because if not disabled, it also makes a bias adjustment to the covariance matrix.
+The function \code{lsmobj} may be used to construct an object just like one returned by \code{lsmeans} from user-specified coefficients, covariance matrix, levels (or row labels), linear functions for each row, and degrees of freedom. After the object is constructed, it is \code{\link[lsmeans]{update}}ed with any additional arguments in \code{\dots}.
 }
 
 \value{
@@ -95,10 +102,6 @@ An object of class \code{\link[=lsmobj-class]{lsmobj}} -- except when \code{spec
 \note{For a \code{ref.grid} or \code{lsmobj} object created in \pkg{lsmeans} version 2.10 or earlier, the frequency information needed by the \code{weights} argument is not present; so a message is displayed and averaging is done using \code{fac.reduce}.}
 
 \references{
-Kenward, M.G. and Roger, J.H. (1997)
-Small sample inference for fixed effects from restricted maximum likelihood,
-\emph{Biometrics}, 53, 983--997.
-
 SAS Institute Inc. (2012)
 Online documentation; Shared concepts; LSMEANS statement,
 \url{http://support.sas.com/documentation/cdl/en/statug/63962/HTML/default/viewer.htm#statug_introcom_a0000003362.htm}, accessed August 15, 2012.
@@ -109,7 +112,7 @@ Russell V. Lenth
 }
 
 \seealso{
-\code{\link{pairwise.lsmc}}, \code{\link[multcomp]{glht}}
+\code{\link{models}}, \code{\link{pairwise.lsmc}}, \code{\link[multcomp]{glht}}
 }
 
 \examples{
@@ -156,6 +159,21 @@ pairs(fiber.lst)
 # Suppose we want trends relative to sqrt(diameter)...
 lstrends(fiber.lm, ~ machine | diameter, var = "sqrt(diameter)", 
     at = list(diameter = c(20,30)))
+
+# Given summary statistics for 4 cities computed elsewhere, 
+# obtain multiple comparisons of their means using the
+# Satterthwaite method
+ybar <- c(47.6, 53.2, 88.9, 69.8)
+s <-    c(12.1, 19.5, 22.8, 13.2)
+n <-    c(44,   11,   37,   24)
+se2 = s^2 / n
+Satt.df <- function(x, dfargs)
+    sum(x * dfargs$v)^2 / sum((x * dfargs$v)^2 / (dfargs$n - 1))
+city.lsm <- lsmobj(bhat = ybar, V = diag(se2),
+    levels = list(city = LETTERS[1:4]), linfct = diag(c(1,1,1,1)),
+    df = Satt.df, dfargs = list(v = se2, n = n), estName = "mean")
+city.lsm
+contrast(city.lsm, "revpairwise")
     
 # See also many other examples in documentation for 
 # 'contrast', 'cld', 'glht', 'lsmip', 'ref.grid', 'MOats',

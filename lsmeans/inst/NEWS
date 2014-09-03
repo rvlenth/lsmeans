@@ -10,7 +10,11 @@ Changelog for 'lsmeans' package
     Modified 'auto.noise' so 'side' has levels 'L' and 'R'
         rather than 'R' and 'L' (so not in reverse position in plots!)
     Added support for gee, geeglm, and geese objects
-*TODO* update vignette
+    Added 'lsmobj' function to construct an lsmobj from 
+        summary statistics
+    Overhauled 'lsmeans-package' help page to provide an overview
+        with links to key functions, and integrated details of 
+        model-specific implementation in a new 'models' help page
 
 2.11
     Added vcov method for ref.grid

@@ -508,3 +508,32 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
     return(FALSE)
 }
 
+# Construct a new lsmobj with given arguments
+lsmobj = function(bhat, V, levels, linfct, df = NA, ...) {
+    if ((nrow(V) != ncol(V)) || (nrow(V) != ncol(linfct)) || (length(bhat) != ncol(linfct)))
+        stop("bhat, V, and linfct are incompatible")
+    if (!is.list(levels))
+        levels = list(level = levels)
+    grid = do.call(expand.grid, levels)
+    if (nrow(grid) != nrow(linfct))
+        stop("linfct should have ", nrow(grid), "rows")
+    model.info = list(call = match.call(), xlev = levels)
+    roles = list(predictors= names(grid), responses=character(0), multresp=character(0))
+    if (is.function(df)) {
+        dffun = df
+        dfargs = list(...)$dfargs
+    } 
+    else {
+        dffun = function(x, dfargs) dfargs$df
+        dfargs = list(df = df)
+    }
+    misc = list(estName = "estimate", infer = c(TRUE,FALSE), level = .95,
+                adjust = "none", famSize = nrow(linfct), 
+                avgd.over = character(0), pri.vars = names(grid),
+                methDesc = "lsmobj")
+    result = new("lsmobj", model.info=model.info, roles=roles, grid=grid,
+                 levels = levels, matlevs=list(),
+                 linfct=linfct, bhat=bhat, nbasis=matrix(NA), V=V,
+                 dffun=dffun, dfargs=dfargs, misc=misc)
+    update(result, ..., silent=TRUE)
+}
