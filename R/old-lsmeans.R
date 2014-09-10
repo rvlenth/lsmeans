@@ -44,7 +44,7 @@
     
     # Get model formula and index of response
     if (inherits(object, "gls")) {
-        Terms = getCovariateFormula(object)
+        Terms = nlme::getCovariateFormula(object)
         yidx = 0
     }
     else {
@@ -63,14 +63,14 @@
     
     # Figure out thecall (fixed effects part of model), bhat (=coefs), contrasts attr
     if (inherits(object, "mer") || inherits(object, "merMod")) {
-        if(!isLMM(object) && !isGLMM(object)) 
+        if(!lme4::isLMM(object) && !lme4::isGLMM(object)) 
             stop("Can't handle a nonlinear mixed model")
         thecall = slot(object, "call")
-        bhat = fixef(object)
+        bhat = lme4::fixef(object)
         contrasts = attr(model.matrix(object), "contrasts")
-        if (isLMM(object)) {
+        if (lme4::isLMM(object)) {
             if (require("pbkrtest")) {
-                adjV = vcovAdj(object, 0)
+                adjV = pbkrtest::vcovAdj(object, 0)
                 ddfm = function(k) .KRdf.mer (adjV, V, k)
             }
             else warning("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
@@ -78,7 +78,7 @@
     }
     else if (inherits(object, "lme")) {
         thecall = object$call
-        bhat = fixef(object)
+        bhat = nlme::fixef(object)
         contrasts = object$contrasts
     }
     else if (inherits(object, "gls")) {

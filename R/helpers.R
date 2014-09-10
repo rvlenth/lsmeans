@@ -172,7 +172,7 @@ lsm.basis.mlm <- function(object, trms, xlev, grid, ...) {
 #--------------------------------------------------------------
 ### merMod objects (lme4 package)
 recover.data.merMod <- function(object, ...) {
-    if(!isLMM(object) && !isGLMM(object)) 
+    if(!lme4::isLMM(object) && !lme4::isGLMM(object)) 
         stop("Can't handle a nonlinear mixed model")
     fcall = object@call
     recover.data(fcall, delete.response(terms(object)), 
@@ -182,20 +182,25 @@ recover.data.merMod <- function(object, ...) {
 lsm.basis.merMod <- function(object, trms, xlev, grid, ...) {
     V = as.matrix(vcov(object))
     dfargs = misc = list()
-    if (isLMM(object)) {
+    if (lme4::isLMM(object)) {
         pbdis = .lsm.is.true("disable.pbkrtest")
         if (!pbdis && requireNamespace("pbkrtest")) {
             dfargs = list(unadjV = V, 
                 adjV = pbkrtest::vcovAdj.lmerMod(object, 0))
             V = as.matrix(dfargs$adjV)
-            dffun = function(k, dfargs) .KRdf.mer (dfargs$adjV, dfargs$unadjV, k)
+# When pbkrtest has its Lb_ddf function ready, uncomment these lines...            
+#             tst = try(pbkrtest::Lb_ddf)
+#             if(class(tst) != "try-error")
+#                 dffun = function(k, dfargs) pbkrtest::Lb_ddf (k, dfargs$adjV, dfargs$unadjV)
+#             else
+                dffun = function(k, dfargs) .KRdf.mer (dfargs$adjV, dfargs$unadjV, k)
         }
         else {
             if(!pbdis) message("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
             dffun = function(k, dfargs) NA
         }
     }
-    else if (isGLMM(object)) {
+    else if (lme4::isGLMM(object)) {
         dffun = function(k, dfargs) NA
         misc = .std.link.labels(family(object), misc)
     }
@@ -205,7 +210,7 @@ lsm.basis.merMod <- function(object, trms, xlev, grid, ...) {
     contrasts = attr(object@pp$X, "contrasts")
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
-    bhat = fixef(object)
+    bhat = lme4::fixef(object)
     
     if (length(bhat) < ncol(X)) {
         # Newer versions of lmer can handle rank deficiency, but we need to do a couple of
@@ -214,7 +219,7 @@ lsm.basis.merMod <- function(object, trms, xlev, grid, ...) {
         kept = match(names(bhat), dimnames(X)[[2]])
         # Now re-do bhat with NAs in the right places
         bhat = NA * X[1, ]
-        bhat[kept] = fixef(object)
+        bhat[kept] = lme4::fixef(object)
         # we have to reconstruct the model matrix
         modmat = model.matrix(trms, object@frame, contrasts.arg=contrasts)
         nbasis = nonest.basis(modmat)
@@ -245,7 +250,7 @@ lsm.basis.lme <- function(object, trms, xlev, grid, ...) {
     contrasts = object$contrasts
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
-    bhat = fixef(object)
+    bhat = nlme::fixef(object)
     V = vcov(object)
     misc = list()
     if (!is.null(object$family)) {
@@ -262,7 +267,7 @@ lsm.basis.lme <- function(object, trms, xlev, grid, ...) {
 ### gls objects (nlme package)
 recover.data.gls <- function(object, ...) {
     fcall = object$call
-    recover.data(fcall, delete.response(getCovariateFormula(object)), 
+    recover.data(fcall, delete.response(nlme::getCovariateFormula(object)), 
                  object$na.action, ...)
 }
 
@@ -483,8 +488,17 @@ lsm.basis.geese = function(object, trms, xlev, grid, vcov.method = "vbeta", ...)
 
 
 
+#--------------------------------------------------------------
+### afex package - mixed objects ###
+# just need to provide an 'lsmeans' method here, assuming Henrik adds the 'data' item
 
+recover.data.mixed <- function(object, ...) {
+    recover.data.merMod(object$full.model, ...)
+}
 
+lsm.basis.mixed <- function(object, trms, xlev, grid, ...) {
+    lsm.basis.merMod(object$full.model, trms, xlev, grid, ...)
+}
 
 #--------------------------------------------------------------
 #--------------------------------------------------------------

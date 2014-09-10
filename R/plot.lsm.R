@@ -60,8 +60,8 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, layout, ..
                          lcl, ucl, lcmpl, rcmpl,                          subscripts, pch = 16, 
                          lty = dot.line$lty, lwd = dot.line$lwd, 
                          col = dot.symbol$col, col.line = dot.line$col, ...) {
-        dot.line <- trellis.par.get("dot.line")
-        dot.symbol <- trellis.par.get("dot.symbol")
+        dot.line <- lattice::trellis.par.get("dot.line")
+        dot.symbol <- lattice::trellis.par.get("dot.symbol")
         x = as.numeric(x)
         y = as.numeric(y)
         lcl = as.numeric(lcl[subscripts])
@@ -72,30 +72,30 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, layout, ..
             rcmpl = as.numeric(rcmpl[subscripts])
         }
         if(horizontal) {
-            panel.abline(h = unique(y), col = col.line, lty = lty, lwd = lwd)
+            lattice::panel.abline(h = unique(y), col = col.line, lty = lty, lwd = lwd)
             if(intervals) 
-                panel.arrows(lcl, y, ucl, y, col = col, length = .6, unit = "char", angle = 90, code = 3)
+                lattice::panel.arrows(lcl, y, ucl, y, col = col, length = .6, unit = "char", angle = 90, code = 3)
             if(compare) {
                 s = (x > min(x))
-                panel.arrows(lcmpl[s], y[s], x[s], y[s], length = .5, unit = "char", code = 1, col = "red", type = "closed", fill="red")
+                lattice::panel.arrows(lcmpl[s], y[s], x[s], y[s], length = .5, unit = "char", code = 1, col = "red", type = "closed", fill="red")
                 s = (x < max(x))
-                panel.arrows(rcmpl[s], y[s], x[s], y[s], length = .5, unit = "char", code = 1, col = "red", type = "closed", fill="red")
+                lattice::panel.arrows(rcmpl[s], y[s], x[s], y[s], length = .5, unit = "char", code = 1, col = "red", type = "closed", fill="red")
             }
         }
         else {
-            panel.abline(v = unique(x), col = col.line, lty = lty, lwd = lwd)
+            lattice::panel.abline(v = unique(x), col = col.line, lty = lty, lwd = lwd)
             if(intervals)
-                panel.arrows(x, lcl, x, ucl, col=col, length = .6, unit = "char", angle = 90, code = 3)
+                lattice::panel.arrows(x, lcl, x, ucl, col=col, length = .6, unit = "char", angle = 90, code = 3)
             if(compare) {
                 s = (y > min(y))
-                panel.arrows(x[s], lcmpl[s], x[s], y[s], length = .5, unit = "char", code = 1, col = "red", type = "closed", fill="red")
+                lattice::panel.arrows(x[s], lcmpl[s], x[s], y[s], length = .5, unit = "char", code = 1, col = "red", type = "closed", fill="red")
                 s = (y < max(y))
-                panel.arrows(x[s], rcmpl[s], x[s], y[s], length = .5, unit = "char", code = 1, col = "red", type = "closed", fill="red")
+                lattice::panel.arrows(x[s], rcmpl[s], x[s], y[s], length = .5, unit = "char", code = 1, col = "red", type = "closed", fill="red")
             }
         }
-        panel.xyplot(x, y, pch=16, ...)
+        lattice::panel.xyplot(x, y, pch=16, ...)
     }
-    my.strip = strip.custom(strip.names = c(TRUE,TRUE), strip.levels = c(TRUE,TRUE), sep = " = ")
+    my.strip = lattice::strip.custom(strip.names = c(TRUE,TRUE), strip.levels = c(TRUE,TRUE), sep = " = ")
     
     priv = attr(summ, "pri.vars")
     pf = do.call(paste, summ[priv])
@@ -230,7 +230,7 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, layout, ..
     if (horizontal) {
         if (missing(xlab)) xlab = estName
         if (missing(ylab)) ylab = facName
-        dotplot(form, prepanel=prepanel.ci, panel=panel.ci, 
+        lattice::dotplot(form, prepanel=prepanel.ci, panel=panel.ci, 
                 strip = my.strip, horizontal = TRUE,
                 ylab = ylab, xlab = xlab,
                 data = summ, intervals = intervals, lcl=lcl, ucl=ucl, 
@@ -239,7 +239,7 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, layout, ..
     else {
         if (missing(xlab)) xlab = facName
         if (missing(ylab)) ylab = estName
-        dotplot(form, prepanel=prepanel.ci, panel=panel.ci, 
+        lattice::dotplot(form, prepanel=prepanel.ci, panel=panel.ci, 
                 strip = my.strip, horizontal = FALSE,
                 xlab = paste(priv, collapse=":"), ylab = ylab,
                 data = summ, intervals = intervals, lcl=lcl, ucl=ucl, 

@@ -74,13 +74,13 @@ lsmip.default = function(object, formula, type,
     }
 
     # The strips the way I want them
-    my.strip = strip.custom(strip.names = c(TRUE,TRUE), strip.levels = c(TRUE,TRUE), sep = " = ")
+    my.strip = lattice::strip.custom(strip.names = c(TRUE,TRUE), strip.levels = c(TRUE,TRUE), sep = " = ")
     
-    TP = TP.orig = trellis.par.get()
+    TP = TP.orig = lattice::trellis.par.get()
     TP$superpose.symbol$pch = pch
     TP$superpose.line$lty = lty
     if (!is.null(col)) TP$superpose.symbol$col = TP$superpose.line$col = col
-    trellis.par.set(TP)
+    lattice::trellis.par.set(TP)
     
     xlab = ifelse(is.null(xargs$xlab),
         paste("Levels of", paste(xvars, collapse=" * ")), xargs$xlab)
@@ -101,6 +101,6 @@ lsmip.default = function(object, formula, type,
 #                    type=c("p","l"), 
 #                    ... )
     print(grobj)
-    trellis.par.set(TP.orig)
+    lattice::trellis.par.set(TP.orig)
     invisible(lsms)
 }

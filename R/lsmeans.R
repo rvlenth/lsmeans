@@ -105,8 +105,9 @@ lsmeans.list = function(object, specs, ...) {
 
 
 # Generic for after we've gotten specs in character form
-lsmeans.character = function(object, specs, ...)
-    UseMethod("lsmeans.character", object)
+lsmeans.character = function(object, specs, ...) {
+    UseMethod("lsmeans.character")####, object)
+}
 
 # Needed for model objects
 lsmeans.character.default = function(object, specs, ...)
