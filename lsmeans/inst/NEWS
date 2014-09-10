@@ -9,7 +9,8 @@ Changelog for 'lsmeans' package
     Fixed a bug in vcov
     Modified 'auto.noise' so 'side' has levels 'L' and 'R'
         rather than 'R' and 'L' (so not in reverse position in plots!)
-    Added support for gee, geeglm, and geese objects
+    Added support for gee, geeglm, and geese objects (gee, geepack)
+    added support for mixed objects (afex)
     Added 'lsmobj' function to construct an lsmobj from 
         summary statistics
     Overhauled 'lsmeans-package' help page to provide an overview
