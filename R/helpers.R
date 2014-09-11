@@ -191,7 +191,7 @@ lsm.basis.merMod <- function(object, trms, xlev, grid, ...) {
 # When pbkrtest has its Lb_ddf function ready, uncomment these lines...            
 #             tst = try(pbkrtest::Lb_ddf)
 #             if(class(tst) != "try-error")
-#                 dffun = function(k, dfargs) pbkrtest::Lb_ddf (k, dfargs$adjV, dfargs$unadjV)
+#                 dffun = function(k, dfargs) pbkrtest::Lb_ddf (k, dfargs$unadjV, dfargs$adjV)
 #             else
                 dffun = function(k, dfargs) .KRdf.mer (dfargs$adjV, dfargs$unadjV, k)
         }
@@ -499,6 +499,37 @@ recover.data.mixed <- function(object, ...) {
 lsm.basis.mixed <- function(object, trms, xlev, grid, ...) {
     lsm.basis.merMod(object$full.model, trms, xlev, grid, ...)
 }
+
+
+### glmmADMB package
+
+recover.data.glmmadmb = recover.data.lm
+
+lsm.basis.glmmadmb = function (object, trms, xlev, grid, ...) 
+{
+    contrasts = object$contrasts
+    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+    X = model.matrix(trms, m, contrasts.arg = contrasts)
+    bhat = fixef(object)
+    V = vcov(object)
+    misc = list()
+    if (!is.null(object$family)) {
+        fam = object$family
+        misc$tran = object$link
+        misc$inv.lbl = "response"
+        if (!is.na(pmatch(fam,"binomial"))) 
+            misc$inv.lbl = "prob"
+        else if (!is.na(pmatch(fam,"poisson"))) 
+            misc$inv.lbl = "rate"
+    }
+    nbasis = matrix(NA)
+    dffun = function(...) NA
+    list(X = X, bhat = bhat, nbasis = nbasis, V = V, dffun = dffun, 
+         dfargs = list(), misc = misc)
+}
+
+
+
 
 #--------------------------------------------------------------
 #--------------------------------------------------------------

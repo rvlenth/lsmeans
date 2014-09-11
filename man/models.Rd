@@ -43,6 +43,13 @@ These models all have more than one covariance estimate available, and it may be
 }}% geepack
 
 
+\section{\pkg{glmmADMB} package}{
+\describe{
+\item{glmmadmb}{No extended features.}
+}}% glmmadmb
+
+
+
 \section{\pkg{lme4} package}{
 \describe{
 \item{lmerMod}{If the \pkg{pbkrtest} package is installed, degrees of freedom for confidence intervals and tests are obtained using its \code{\link[pbkrtest]{ddf_Lb}} function, and the covariance matrix is adjusted using \code{\link[pbkrtest]{vcovAdj}}.
