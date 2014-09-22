@@ -510,7 +510,7 @@ lsm.basis.glmmadmb = function (object, trms, xlev, grid, ...)
     contrasts = object$contrasts
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
-    bhat = fixef(object)
+    bhat = fixef(object)##### non-CRAN so can't say glmmADMB::fixef(object)
     V = vcov(object)
     misc = list()
     if (!is.null(object$family)) {
