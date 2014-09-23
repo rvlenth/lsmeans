@@ -188,12 +188,13 @@ lsm.basis.merMod <- function(object, trms, xlev, grid, ...) {
             dfargs = list(unadjV = V, 
                 adjV = pbkrtest::vcovAdj.lmerMod(object, 0))
             V = as.matrix(dfargs$adjV)
-# When pbkrtest has its Lb_ddf function ready, uncomment these lines...            
-#             tst = try(pbkrtest::Lb_ddf)
-#             if(class(tst) != "try-error")
-#                 dffun = function(k, dfargs) pbkrtest::Lb_ddf (k, dfargs$unadjV, dfargs$adjV)
-#             else
-                dffun = function(k, dfargs) .KRdf.mer (dfargs$adjV, dfargs$unadjV, k)
+            tst = try(pbkrtest::Lb_ddf)
+            if(class(tst) != "try-error")
+                dffun = function(k, dfargs) pbkrtest::Lb_ddf (k, dfargs$unadjV, dfargs$adjV)
+            else {
+                dffun = function(k, dfargs) NA
+                warning("To obtain d.f., install 'pbkrtest' version 0.4-1 or later")
+            }
         }
         else {
             if(!pbdis) message("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
@@ -510,7 +511,7 @@ lsm.basis.glmmadmb = function (object, trms, xlev, grid, ...)
     contrasts = object$contrasts
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
-    bhat = fixef(object)##### non-CRAN so can't say glmmADMB::fixef(object)
+    bhat = glmmADMB::fixef(object)
     V = vcov(object)
     misc = list()
     if (!is.null(object$family)) {

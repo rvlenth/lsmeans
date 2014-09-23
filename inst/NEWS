@@ -3,6 +3,8 @@ Changelog for 'lsmeans' package
 2.12
     *** Developers supporting lsmeans please note:            ***
     *** Change to lsm.basis prototype: Added a "..." argument ***
+    Removed own patch for df from pbkrtest in favor of its Lb_ddf. 
+        This means you must have pbkrtest 0.4-1 or newer
     Added 'plot.lsmobj' method to display confidence intervals
     These plots also optionally can display comparison arrows
         that attempt to display significance of pairwise comparisons
