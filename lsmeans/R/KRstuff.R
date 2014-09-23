@@ -1,3 +1,7 @@
+# !!!!!!!!!! NOW DEPRECATED !!!!!!!!!!!!!!!!!
+# This file is in .Rbuildignore
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 ### Kenward-Roger df for a 1-dimensional hypothesis
 ### Code borrowed and adapted from package pbkrtest.
 ### In particular, the function .KR_adjust

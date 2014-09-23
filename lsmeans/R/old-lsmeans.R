@@ -71,7 +71,7 @@
         if (lme4::isLMM(object)) {
             if (require("pbkrtest")) {
                 adjV = pbkrtest::vcovAdj(object, 0)
-                ddfm = function(k) .KRdf.mer (adjV, V, k)
+                ddfm = function(k) pbkrtest::Lb_ddf (k, V, adjV)
             }
             else warning("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
         }

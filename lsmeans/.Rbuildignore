@@ -2,6 +2,9 @@
 ^.*\.Rproj$
 ^\.svn$
 
+#Deprecated
+KRstuff.R
+
 # New devel stuff
 test-data.R
 int.plot.R
