@@ -59,6 +59,10 @@ The user may disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbk
 \item{glmerMod}{No degrees of freedom are available for these objects, so tests and confidence intervals are asymptotic.}
 }}% lme4
 
+\section{\pkg{lme4.0} package}{
+\describe{
+\item{mer}{Only asymptotic results are available (no d.f.).}
+}}% lme4.0
 
 \section{\pkg{MASS} package}{
 \describe{
