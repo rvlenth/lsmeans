@@ -4,6 +4,7 @@ Changelog for 'lsmeans' package
     nlme and lme4 moved to 'Enhances' field for consistency
     Added limited support for mer objects (lme4.0 package)
     Added support for ordinal package objects 'clm', 'clmm'
+*To do* Provide estimability check for clm, clmm
 *To do* Implement 'by' variable for 'test'
 *To do* 'contrast' does not update the 'pri.vars' member of 'misc'
 *To do* Provide for equivalence, noninferiority, etc. via

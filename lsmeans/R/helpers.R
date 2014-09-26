@@ -582,21 +582,28 @@ lsm.basis.clm = function (object, trms, xlev, grid, ...) {
     V = vcov(object)
     k = length(object$alpha)
     tJac = object$tJac
+    anm = names(object$alpha)
+    bnm = names(object$beta)
+    cnm = dimnames(tJac)[[1]]
+    if (is.null(cnm)) {
+        cnm = paste(seq_len(nrow(tJac)), "|", 1 + seq_len(nrow(tJac)), sep = "")
+    }
     if (object$threshold == "flexible") {
         bhat = c(object$alpha, object$beta)
     }
     else {   # We need to transform the alpha part of the coefficients
         bhat = c(tJac %*% object$alpha, object$beta)
-        names(bhat)[seq_len(nrow(tJac))] = dimnames(tJac)[[1]]
-        V = rbind(tJac %*% V[seq_len(k), ], V[k + seq_along(object$beta), ])
-        V = cbind(V[, seq_len(k), drop = FALSE] %*% t(tJac), V[, k + seq_along(object$beta)])
+        names(bhat)[seq_along(cnm)] = cnm
+        V = rbind(tJac %*% V[anm, ], V[bnm, ])
+        V = cbind(V[, anm, drop = FALSE] %*% t(tJac), V[, bnm])
+        dimnames(V) = list(c(cnm,bnm), c(cnm,bnm))
         k = nrow(tJac)
     }
     j = matrix(1, nrow = k, ncol = 1)
     J = matrix(1, nrow = nrow(X), ncol = 1)
     X = cbind(kronecker(diag(1, k), J), kronecker(-j, X))
     link = as.character(object$info$link)
-    misc = list(ylevs = list(cut = dimnames(tJac)[[1]]), tran = link, 
+    misc = list(ylevs = list(cut = cnm), tran = link, 
                  inv.lbl = "cumprob")
     nbasis = matrix(NA)
     dffun = function(...) NA
@@ -605,39 +612,61 @@ lsm.basis.clm = function (object, trms, xlev, grid, ...) {
 }
 
 lsm.basis.clmm = function (object, trms, xlev, grid, ...) {
-    if (object$threshold != "flexible") {
-        stop("lsmeans deals only with models based on flexible thresholds")
+    if(is.null(object$Hessian)) {
+        message("Updating the model to obtain the Hessian...")
+        object = update(object, Hess = TRUE)
     }
-    contrasts = object$contrasts
-    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
-    X = model.matrix(trms, m, contrasts.arg = contrasts)
-    xint = match("(Intercept)", colnames(X), nomatch = 0L)
-    if (xint > 0L) {
-        X = X[, -xint, drop = FALSE]
-    }
-    bhat = c(object$beta, object$alpha)
+    # borrowed from Maxime's code -- need to understand this better, e.g. when it happens
     H = object$Hessian
     if (any(apply(object$Hessian, 1, function(x) all(x == 0)))) {
         H = H[names(coef(object)), names(coef(object))]
         object$Hessian = H
     }
-    V = vcov(object)
-    n.rand = length(object$gfList)
-    names.rand = paste0("ST", 1:n.rand)
-    V = V[-which(rownames(V) %in% names.rand), -which(colnames(V) %in% 
-                                                           names.rand)]
-    k = length(object$alpha)
-    j = matrix(1, nrow = k, ncol = 1)
-    J = matrix(1, nrow = nrow(X), ncol = 1)
-    X = cbind(kronecker(-j, X), kronecker(diag(1, k), J))
-    link = as.character(object$info$link)
-    misc = list(ylevs = list(cut = names(object$alpha)), tran = link, 
-                 inv.lbl = "cumprob")
-    nbasis = matrix(NA)
-    dffun = function(...) NA
-    list(X = X, bhat = bhat, nbasis = nbasis, V = V, dffun = dffun, 
-         dfargs = list(), misc = misc)
+    
+    # clm method can do most of it...
+    result = lsm.basis.clm(object, trms, xlev, grid, ...)
+    
+    # keep only the fixed effects...
+    nm = names(result$bhat)
+    result$V = result$V[nm, nm]
+    result
 }
+
+# # Maxime's version
+# .MH.lsm.basis.clmm = function (object, trms, xlev, grid, ...) {
+#     if (object$threshold != "flexible") {
+#         stop("lsmeans deals only with models based on flexible thresholds")
+#     }
+#     contrasts = object$contrasts
+#     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+#     X = model.matrix(trms, m, contrasts.arg = contrasts)
+#     xint = match("(Intercept)", colnames(X), nomatch = 0L)
+#     if (xint > 0L) {
+#         X = X[, -xint, drop = FALSE]
+#     }
+#     bhat = c(object$beta, object$alpha)
+#     H = object$Hessian
+#     if (any(apply(object$Hessian, 1, function(x) all(x == 0)))) {
+#         H = H[names(coef(object)), names(coef(object))]
+#         object$Hessian = H
+#     }
+#     V = vcov(object)
+#     n.rand = length(object$gfList)
+#     names.rand = paste0("ST", 1:n.rand)
+#     V = V[-which(rownames(V) %in% names.rand), -which(colnames(V) %in% 
+#                                                            names.rand)]
+#     k = length(object$alpha)
+#     j = matrix(1, nrow = k, ncol = 1)
+#     J = matrix(1, nrow = nrow(X), ncol = 1)
+#     X = cbind(kronecker(-j, X), kronecker(diag(1, k), J))
+#     link = as.character(object$info$link)
+#     misc = list(ylevs = list(cut = names(object$alpha)), tran = link, 
+#                  inv.lbl = "cumprob")
+#     nbasis = matrix(NA)
+#     dffun = function(...) NA
+#     list(X = X, bhat = bhat, nbasis = nbasis, V = V, dffun = dffun, 
+#          dfargs = list(), misc = misc)
+# }
 
 #--------------------------------------------------------------
 #--------------------------------------------------------------
