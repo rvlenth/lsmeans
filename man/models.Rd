@@ -66,7 +66,7 @@ The user may disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbk
 
 \section{\pkg{MASS} package}{
 \describe{
-\item{polr}{The boundaries between categories in the ordinal response are included in  the reference grid as the factor \code{cut}. Thus, the user may specify which cut-point to use in estimating cumulative probabilities.}
+\item{polr}{The boundaries between categories in the ordinal response are included in  the reference grid as the factor \code{cut}. Thus, the user may specify which cut-point to use in estimating cumulative probabilities. Tests and confidence intervals are asymptotic.}
 \item{rlm}{Supported by virtue of inheritance from \code{lm}.}
 }}% MASS
 
@@ -79,7 +79,7 @@ The user may disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbk
 
 \section{\pkg{ordinal} package}{
 \describe{
-\item{clm, clmm}{No degrees of freedom are available for these objects, so tests and confidence intervals are asymptotic.}
+\item{clm, clmm}{The boundaries between categories in the ordinal response are included in  the reference grid as the factor \code{cut}. Thus, the user may specify which cut-point to use in estimating cumulative probabilities. Tests and confidence intervals are asymptotic.}
 }}% ordinal
 
 \section{\pkg{survival} package}{
