@@ -77,6 +77,10 @@ The user may disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbk
 \item{lme, gls}{No degrees of freedom are available for these objects, so tests and confidence intervals are asymptotic.}
 }}% nlme
 
+\section{\pkg{ordinal} package}{
+\describe{
+\item{clm, clmm}{No degrees of freedom are available for these objects, so tests and confidence intervals are asymptotic.}
+}}% ordinal
 
 \section{\pkg{survival} package}{
 \describe{

@@ -54,7 +54,7 @@ Other information: \tab See DESCRIPTION\cr
 }
 }
 \author{
-Russell V. Lenth
+Russell V. Lenth (author), Maxime Hervé (contributor)
 
 Maintainer: Russ Lenth <russell-lenth@uiowa.edu>
 }
