@@ -3,11 +3,12 @@ Changelog for 'lsmeans' package
 2.13
     nlme and lme4 moved to 'Enhances' field for consistency
     Added limited support for mer objects (lme4.0 package)
-*To do* Add support for ordinal package objects 'clm', 'clmm'
+    Added support for ordinal package objects 'clm', 'clmm'
 *To do* Implement 'by' variable for 'test'
 *To do* 'contrast' does not update the 'pri.vars' member of 'misc'
 *To do* Provide for equivalence, noninferiority, etc. via
     'side' and 'delta' arguments
+*To do* In lsmip, label y axis with invName when appropriate
 
 2.12
     *** Developers supporting lsmeans please note:            ***
