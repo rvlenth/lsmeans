@@ -581,22 +581,26 @@ lsm.basis.clm = function (object, trms, xlev, grid, ...) {
     }
     V = vcov(object)
     k = length(object$alpha)
+# TO DO: Figure out what to do if cuts are aliased...
+# Maybe we just omit certain columns of tJac, alter anm accordingly?
     tJac = object$tJac
     anm = names(object$alpha)
-    bnm = names(object$beta)
+    bnm = names(object$beta)[!is.na(object$beta)]
     cnm = dimnames(tJac)[[1]]
+    allnm = c(cnm, bnm)
     if (is.null(cnm)) {
         cnm = paste(seq_len(nrow(tJac)), "|", 1 + seq_len(nrow(tJac)), sep = "")
     }
     if (object$threshold == "flexible") {
         bhat = c(object$alpha, object$beta)
+        V = V[allnm, allnm]
     }
     else {   # We need to transform the alpha part of the coefficients
         bhat = c(tJac %*% object$alpha, object$beta)
         names(bhat)[seq_along(cnm)] = cnm
         V = rbind(tJac %*% V[anm, ], V[bnm, ])
         V = cbind(V[, anm, drop = FALSE] %*% t(tJac), V[, bnm])
-        dimnames(V) = list(c(cnm,bnm), c(cnm,bnm))
+        dimnames(V) = list(allnm, allnm)
         k = nrow(tJac)
     }
     j = matrix(1, nrow = k, ncol = 1)
@@ -605,7 +609,13 @@ lsm.basis.clm = function (object, trms, xlev, grid, ...) {
     link = as.character(object$info$link)
     misc = list(ylevs = list(cut = cnm), tran = link, 
                  inv.lbl = "cumprob")
-    nbasis = matrix(NA)
+    if (sum(is.na(object$beta)) > 0) {
+        nbasis = nonest.basis(model.matrix(object)$X)
+        # Expand the intercept part of this across the cut points
+        nbasis = apply(nbasis, 2, function(x) c(- rep(x[1],k), x[-1]))
+     }
+    else
+        nbasis = matrix(NA)
     dffun = function(...) NA
     list(X = X, bhat = bhat, nbasis = nbasis, V = V, dffun = dffun, 
          dfargs = list(), misc = misc)
@@ -622,14 +632,7 @@ lsm.basis.clmm = function (object, trms, xlev, grid, ...) {
         H = H[names(coef(object)), names(coef(object))]
         object$Hessian = H
     }
-    
-    # clm method can do most of it...
-    result = lsm.basis.clm(object, trms, xlev, grid, ...)
-    
-    # keep only the fixed effects...
-    nm = names(result$bhat)
-    result$V = result$V[nm, nm]
-    result
+    lsm.basis.clm(object, trms, xlev, grid, ...)
 }
 
 # # Maxime's version
