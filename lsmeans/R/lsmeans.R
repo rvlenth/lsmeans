@@ -323,6 +323,7 @@ contrast.ref.grid = function(object, method = "eff", by, adjust,
     misc$estName = "estimate"
     misc$methDesc = attr(cmat, "desc")
     misc$famSize = size=nrow(args)
+    misc$pri.vars = setdiff(names(grid), c(".offset.",".freq."))
     if (missing(adjust)) adjust = attr(cmat, "adjust")
     if (is.null(adjust)) adjust = "none"
     misc$adjust = adjust
