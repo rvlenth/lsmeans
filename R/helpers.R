@@ -273,12 +273,14 @@ lsm.basis.mer = function(object, trms, xlev, grid, ...) {
 ### lme objects (nlme package)
 recover.data.lme = recover.data.lm
 
-lsm.basis.lme = function(object, trms, xlev, grid, ...) {
+lsm.basis.lme = function(object, trms, xlev, grid, adjustSigma = TRUE, ...) {
     contrasts = object$contrasts
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
     bhat = nlme::fixef(object)
     V = vcov(object)
+    if (adjustSigma && object$method == "ML") 
+        V = V * object$dims$N / (object$dims$N - nrow(V))
     misc = list()
     if (!is.null(object$family)) {
         misc = .std.link.labels(object$family, misc)
@@ -572,6 +574,8 @@ recover.data.clmm = recover.data.lm
 # threshold != "flexible". Can get basis using nonest.basis(t(tJac))
 
 lsm.basis.clm = function (object, trms, xlev, grid, ...) {
+    if (!is.null(object$zeta))
+        stop("Scale models in 'clm' are not supported in 'lsmeans'")
     contrasts = object$contrasts
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
@@ -612,10 +616,13 @@ lsm.basis.clm = function (object, trms, xlev, grid, ...) {
     if (sum(is.na(object$beta)) > 0) {
         nbasis = nonest.basis(model.matrix(object)$X)
         # Expand the intercept part of this across the cut points
-        nbasis = apply(nbasis, 2, function(x) c(- rep(x[1],k), x[-1]))
+        nbasis = apply(nbasis, 2, function(x) c(-rep(x[1], k), x[-1]))
      }
     else
         nbasis = matrix(NA)
+    if (any(object$aliased$alpha))
+        message("Note: Estimability is not checked for thresholds")
+        
     dffun = function(...) NA
     list(X = X, bhat = bhat, nbasis = nbasis, V = V, dffun = dffun, 
          dfargs = list(), misc = misc)
@@ -635,41 +642,26 @@ lsm.basis.clmm = function (object, trms, xlev, grid, ...) {
     lsm.basis.clm(object, trms, xlev, grid, ...)
 }
 
-# # Maxime's version
-# .MH.lsm.basis.clmm = function (object, trms, xlev, grid, ...) {
-#     if (object$threshold != "flexible") {
-#         stop("lsmeans deals only with models based on flexible thresholds")
-#     }
-#     contrasts = object$contrasts
-#     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
-#     X = model.matrix(trms, m, contrasts.arg = contrasts)
-#     xint = match("(Intercept)", colnames(X), nomatch = 0L)
-#     if (xint > 0L) {
-#         X = X[, -xint, drop = FALSE]
-#     }
-#     bhat = c(object$beta, object$alpha)
-#     H = object$Hessian
-#     if (any(apply(object$Hessian, 1, function(x) all(x == 0)))) {
-#         H = H[names(coef(object)), names(coef(object))]
-#         object$Hessian = H
-#     }
-#     V = vcov(object)
-#     n.rand = length(object$gfList)
-#     names.rand = paste0("ST", 1:n.rand)
-#     V = V[-which(rownames(V) %in% names.rand), -which(colnames(V) %in% 
-#                                                            names.rand)]
-#     k = length(object$alpha)
-#     j = matrix(1, nrow = k, ncol = 1)
-#     J = matrix(1, nrow = nrow(X), ncol = 1)
-#     X = cbind(kronecker(-j, X), kronecker(diag(1, k), J))
-#     link = as.character(object$info$link)
-#     misc = list(ylevs = list(cut = names(object$alpha)), tran = link, 
-#                  inv.lbl = "cumprob")
-#     nbasis = matrix(NA)
-#     dffun = function(...) NA
-#     list(X = X, bhat = bhat, nbasis = nbasis, V = V, dffun = dffun, 
-#          dfargs = list(), misc = misc)
+
+#--------------------------------------------------------------
+### mgcv package --------------------------------
+
+# gam - OK - inherits from glm
+
+# gamm
+# recover.data.gamm = function(object, ...) {
+#     fcall = object$lme$call
+#     recover.data(fcall, delete.response(terms(object$lme)), object$lme$na.action, ...)
 # }
+# 
+# lsm.basis.gamm = function (object, trms, xlev, grid, adjustSigma = TRUE, ...) {
+#     lsm.basis(object$lme, trms, xlev, grid, adjustSigma, ...)
+#     # Doesn't work because needs the matrices in object$lme$data
+# }
+
+
+
+
 
 #--------------------------------------------------------------
 #--------------------------------------------------------------

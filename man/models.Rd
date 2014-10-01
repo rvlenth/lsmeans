@@ -66,15 +66,22 @@ The user may disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbk
 
 \section{\pkg{MASS} package}{
 \describe{
+\item{glmmPQL}{Supported by virtue of inheritance from \code{lme} in the \pkg{nlme} package.}
 \item{polr}{The boundaries between categories in the ordinal response are included in  the reference grid as the factor \code{cut}. Thus, the user may specify which cut-point to use in estimating cumulative probabilities. Tests and confidence intervals are asymptotic.}
 \item{rlm}{Supported by virtue of inheritance from \code{lm}.}
 }}% MASS
 
+\section{\pkg{mgcv} package}{
+\describe{
+\item{gam}{Supported by virtue of inheritance from \code{glm}.}
+\item{gamm}{Not supported at this time.}
+}}% mgcv
 
 
 \section{\pkg{nlme} package}{
 \describe{
-\item{lme, gls}{No degrees of freedom are available for these objects, so tests and confidence intervals are asymptotic.}
+\item{gls}{No degrees of freedom are available for these objects, so tests and confidence intervals are asymptotic.}
+\item{lme}{No degrees of freedom, as per \code{gls} objects. The optional argument \code{adjustSigma} (defaults to \code{TRUE}) will adjust standard errors like in \code{\link[nlme]{summary.lme}} when the model is fitted using the \code{"ML"} method.}
 }}% nlme
 
 \section{\pkg{ordinal} package}{
