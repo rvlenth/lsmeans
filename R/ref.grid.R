@@ -384,12 +384,15 @@ str.ref.grid <- function(object, ...) {
 
 
 # utility to compute an adjusted p value
-.adj.p.value = function(t, df, adjust, fam.info) {
+# tail is -1, 0, 1 for left, two-sided, or right
+.adj.p.value = function(t, df, adjust, fam.info, tail) {
 # do a pmatch of the adjust method, case insensitive
-    adj.meths = c("tukey", "sidak", "scheffe", p.adjust.methods)
+    adj.meths = c("sidak", p.adjust.methods)
+    if (tail == 0)
+        adj.meths = c("tukey", "scheffe", adj.meths)
     k = pmatch(tolower(adjust), adj.meths)
     if(is.na(k))
-        stop("Adjust method '", adjust, "' is not recognized")
+        stop("Adjust method '", adjust, "' is not recognized or not valid")
     adjust = adj.meths[k]
     
     # pseudo-asymptotic results when df is NA
@@ -398,7 +401,10 @@ str.ref.grid <- function(object, ...) {
     fam.size = fam.info[1]
     n.contr = fam.info[2] ## n.contr = sum(!is.na(t))
     abst = abs(t)
-    unadj.p = 2*pt(abst, df, lower.tail=FALSE)
+    if (tail == 0)
+        unadj.p = 2*pt(abst, df, lower.tail=FALSE)
+    else
+        unadj.p = pt(t, df, lower.tail = (tail<0))
     if (adjust %in% p.adjust.methods) {
         if (n.contr == length(unadj.p))
             pval = p.adjust(unadj.p, adjust, n = n.contr)
@@ -407,8 +413,8 @@ str.ref.grid <- function(object, ...) {
                 function(pp) p.adjust(pp, adjust, n=sum(!is.na(pp)))))
     }
     else pval = switch(adjust,
+        sidak = 1 - (1 - unadj.p)^n.contr,
         tukey = ptukey(sqrt(2)*abst, fam.size, zapsmall(df), lower.tail=FALSE),
-        sidak = 1 - (1 - 2*pt(abst, df, lower.tail=FALSE))^n.contr,
         scheffe = pf(t^2/(fam.size-1), fam.size-1, df, lower.tail=FALSE),
     )
     chk.adj = match(adjust, c("none", "tukey", "scheffe"), nomatch = 99)
@@ -505,7 +511,8 @@ predict.ref.grid <- function(object, type, ...) {
 }
 
 # S3 summary method
-summary.ref.grid <- function(object, infer, level, adjust, by, type, df, ...) {
+summary.ref.grid <- function(object, infer, level, adjust, by, type, df, 
+                             alt = 0, delta = 0, side = 0, ...) {
     # update with any "summary" options
     opt = lsm.options()$summary
     if(!is.null(opt)) {
@@ -516,6 +523,12 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df, ...) {
     if(missing(df)) df = object@misc$df
     if(!is.null(df))
         object@dffun = function(k, dfargs) df
+    
+    # reconcile all the different ways we could specify the alternative
+    side.opts = c("left","both","right","two-sided","noninferiority","nonsuperiority","equivalence","superiority","inferiority","lcl","ucl","0","2","-1","1","+1","<",">","!=","=")
+    side.map =  c( 1,     2,     3,      2,          3,               1,               2,            3,            1,            3,    1,    2,  2,   1,  3,   3,  1,  3,  2,   2)
+    side = side.map[pmatch(side, side.opts, 2)[1]] - 2
+    delta = abs(delta)
     
     result = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@dffun, object@dfargs, object@misc)
     
@@ -584,14 +597,27 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df, ...) {
         mesg = c(mesg, paste("Confidence level used:", level), acv$mesg)
     }
     if(infer[2]) { # add tests
+        if (!all(alt == 0))
+            result[["alt"]] = alt
         tnm = ifelse (zFlag, "z.ratio", "t.ratio")
-        t.ratio = result[[tnm]] = result[[1]] / result$SE
-        apv = .adj.p.value(t.ratio, result$df, adjust, fam.info)
+        tail = ifelse(side == 0, -sign(abs(delta)), side)
+        if (side == 0) {
+            if (delta == 0) # two-sided sig test
+                t.ratio = result[[tnm]] = (result[[1]] - alt) / result$SE
+            else
+                t.ratio = result[[tnm]] = (abs(result[[1]] - alt) - delta) / result$SE
+        }
+        else {
+            t.ratio = result[[tnm]] = (result[[1]] - alt + side * delta) / result$SE            
+        }
+        apv = .adj.p.value(t.ratio, result$df, adjust, fam.info, tail)
         adjust = apv$adjust   # in case it was abbreviated
         result$p.value = apv$pval
         mesg = c(mesg, apv$mesg)
-        if(zFlag) 
-            mesg = c(mesg, "P values are asymptotic")
+        if (delta > 0)
+            mesg = c(mesg, paste("Statistics are tests of", c("nonsuperiority","equivalence","noninferiority")[side+2]))
+        if(tail != 0) 
+            mesg = c(mesg, paste("P values are ", ifelse(tail<0,"left-","right-"),"tailed", sep=""))
         if (!is.null(link)) 
             mesg = c(mesg, "Tests are performed on the linear-predictor scale")
     }
