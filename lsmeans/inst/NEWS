@@ -10,8 +10,9 @@ Changelog for 'lsmeans' package
 *To do* Implement 'by' variable for 'test'
     Fixed bug in 'contrast' that failed to update 'pri.vars'
         which, e.g., creates an error in a subsequent plot
-*To do* Provide for equivalence, noninferiority, etc. via
-    'side' and 'delta' arguments
+    Provides for equivalence, noninferiority, etc. tests via
+        'side' and 'delta' arguments in 'summary'. Also
+        for non-zero alternative hypotheses via 'alt'
 *To do* In lsmip, label y axis with invName when appropriate
 
 2.12

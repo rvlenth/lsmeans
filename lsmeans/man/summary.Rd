@@ -18,7 +18,8 @@ Methods for \code{ref.grid} objects
 Use these methods to summarize, print, plot, or examine objects of class \code{"ref.grid"}. They also apply to the class \code{"lsmobj"}, which is an extension of \code{"ref.grid"}.
 }
 \usage{
-\method{summary}{ref.grid}(object, infer, level, adjust, by, type, df, ...)
+\method{summary}{ref.grid}(object, infer, level, adjust, by, type, df, 
+    alt = 0, delta = 0, side = 0, ...)
 
 \method{predict}{ref.grid}(object, type, ...)
 
@@ -57,6 +58,9 @@ Type of prediction desired. This only has an effect if there is a known transfor
   \item{df}{
 If non-missing a constant number of degrees of freedom to use in constructing confidence intervals and \emph{P} values (\code{NA} specifies asymptotic results).
 }
+  \item{alt}{Alternative value(s) against which estimates are tested. May be a single value used for all, or a numeric vector of length equal to the number of tests in each family.}
+  \item{delta}{Numeric value. If zero, ordinary tests of significance are performed. If positive, this specifies a threshold for testing equivalence (using the TOST or two-one-sided-test method), non-inferiority, or non-superiority, depending on \code{side}. See Details for how the test statistics are defined.}
+  \item{side}{Numeric or character value specifying whether the test is left-tailed (\code{-1}, \code{"-"}, code{"<"}, \code{"left"}, or \code{"nonsuperiority"}); right-tailed (\code{1}, \code{"+"}, \code{">"}, \code{"right"}, or \code{"noninferiority"}); or two-sided (\code{0}, \code{2}, \code{"!="}, \code{"two-sided"}, \code{"both"}, \code{"equivalence"}, or \code{"="}).}
   \item{x}{
 The object to be printed or plotted.
 }
@@ -89,6 +93,16 @@ When the model is rank-deficient, each row \code{x} of \code{object}'s \code{lin
 The \code{plot} method for \code{"lsmobj"} or \code{"summary.ref.grid"} objects (but not \code{"ref.grid"} objects themselves) produces a plot displaying confidence intervals for the estimates. If any \code{by} variables are in force, the plot is divided into separate panels. These functions use the \code{\link[lattice]{dotplot}} function, and thus require that the \pkg{lattice} package be installed. For \code{"summary.ref.grid"} objects, the \code{\dots} arguments in \code{plot} are passed \emph{only} to \code{dotplot}, whereas for \code{"lsmobj"} objects, the object is updated using \code{\dots} before summarizing and plotting.
 
 In plots with \code{comparisons = TRUE}, the resulting arrows are only approximate, and in some cases may fail to accurately reflect the pairwise comparisons of the estimates -- especially when estimates having large and small standard errors are intermingled in just the wrong way.
+
+When \code{delta = 0}, test statistics are of the usual form \samp{(estimate - alt)/SE}, or notationally, \eqn{t = (\hat \theta - \theta_0)/SE}; then left, right, or two-sided \eqn{p} values are produced. 
+
+When \code{delta} is positive, the test statistic depends on \code{side} as follows. 
+
+Left-sided (nonsuperiority, \eqn{H_0: \theta \ge \theta_0 + \delta} versus \eqn{H_1: \theta < \theta_0 + \delta}): \eqn{t = (\hat \theta - \theta_0 - \delta)/SE}. The \eqn{p} value is the lower-tail probability.
+
+Right-sided (noninferiority): \eqn{H_0: \theta \le \theta_0 - \delta} versus \eqn{H_1: \theta > \theta_0 - \delta}): \eqn{t = (\hat \theta - \theta_0 + \delta)/SE}. The \eqn{p} value is the upper-tail probability.
+
+Two-sided (equivalence): \eqn{H_0: |\theta - \theta_0| \ge \delta} versus \eqn{H_1: |\theta - \theta_0| < \delta}): \eqn{t = (|\hat \theta - \theta_0| - \delta)/SE}. The \eqn{p} value is the \emph{lower}-tail probability.
 }
 
 \value{
