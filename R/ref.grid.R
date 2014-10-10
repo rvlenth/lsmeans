@@ -387,13 +387,13 @@ str.ref.grid <- function(object, ...) {
 # tail is -1, 0, 1 for left, two-sided, or right
 .adj.p.value = function(t, df, adjust, fam.info, tail) {
 # do a pmatch of the adjust method, case insensitive
-    adj.meths = c("sidak", p.adjust.methods)
-    if (tail == 0)
-        adj.meths = c("tukey", "scheffe", adj.meths)
+    adj.meths = c("sidak", "tukey", "scheffe", p.adjust.methods)
     k = pmatch(tolower(adjust), adj.meths)
     if(is.na(k))
         stop("Adjust method '", adjust, "' is not recognized or not valid")
     adjust = adj.meths[k]
+    if ((tail != 0) && (k %in% 2:3)) # One-sided tests, change Tukey/Scheffe to Bonferroni
+        adjust = "bonferroni"
     
     # pseudo-asymptotic results when df is NA
     df[is.na(df)] = 10000
@@ -512,7 +512,7 @@ predict.ref.grid <- function(object, type, ...) {
 
 # S3 summary method
 summary.ref.grid <- function(object, infer, level, adjust, by, type, df, 
-                             alt = 0, delta = 0, side = 0, ...) {
+                             null = 0, delta = 0, side = 0, ...) {
     # update with any "summary" options
     opt = lsm.options()$summary
     if(!is.null(opt)) {
@@ -525,8 +525,9 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
         object@dffun = function(k, dfargs) df
     
     # reconcile all the different ways we could specify the alternative
-    side.opts = c("left","both","right","two-sided","noninferiority","nonsuperiority","equivalence","superiority","inferiority","lcl","ucl","0","2","-1","1","+1","<",">","!=","=")
-    side.map =  c( 1,     2,     3,      2,          3,               1,               2,            3,            1,            3,    1,    2,  2,   1,  3,   3,  1,  3,  2,   2)
+    # ... and map each to one of the first 3 subscripts
+    side.opts = c("left","both","right","two-sided","noninferiority","nonsuperiority","equivalence","superiority","inferiority","0","2","-1","1","+1","<",">","!=","=")
+    side.map =  c( 1,     2,     3,      2,          3,               1,               2,            3,            1,            2,  2,   1,  3,   3,  1,  3,  2,   2)
     side = side.map[pmatch(side, side.opts, 2)[1]] - 2
     delta = abs(delta)
     
@@ -597,25 +598,29 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
         mesg = c(mesg, paste("Confidence level used:", level), acv$mesg)
     }
     if(infer[2]) { # add tests
-        if (!all(alt == 0))
-            result[["alt"]] = alt
+        if (!all(null == 0)) {
+            result[["null"]] = null
+            if (!is.null(link))
+                result[["null"]] = link$linkinv(result[["null"]])
+        }
         tnm = ifelse (zFlag, "z.ratio", "t.ratio")
         tail = ifelse(side == 0, -sign(abs(delta)), side)
         if (side == 0) {
             if (delta == 0) # two-sided sig test
-                t.ratio = result[[tnm]] = (result[[1]] - alt) / result$SE
+                t.ratio = result[[tnm]] = (result[[1]] - null) / result$SE
             else
-                t.ratio = result[[tnm]] = (abs(result[[1]] - alt) - delta) / result$SE
+                t.ratio = result[[tnm]] = (abs(result[[1]] - null) - delta) / result$SE
         }
         else {
-            t.ratio = result[[tnm]] = (result[[1]] - alt + side * delta) / result$SE            
+            t.ratio = result[[tnm]] = (result[[1]] - null + side * delta) / result$SE            
         }
         apv = .adj.p.value(t.ratio, result$df, adjust, fam.info, tail)
         adjust = apv$adjust   # in case it was abbreviated
         result$p.value = apv$pval
         mesg = c(mesg, apv$mesg)
         if (delta > 0)
-            mesg = c(mesg, paste("Statistics are tests of", c("nonsuperiority","equivalence","noninferiority")[side+2]))
+            mesg = c(mesg, paste("Statistics are tests of", c("nonsuperiority","equivalence","noninferiority")[side+2],
+                                 "with a threshold of", delta))
         if(tail != 0) 
             mesg = c(mesg, paste("P values are ", ifelse(tail<0,"left-","right-"),"tailed", sep=""))
         if (!is.null(link)) 

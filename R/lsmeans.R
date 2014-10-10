@@ -376,22 +376,22 @@ confint.ref.grid = function(object, parm, level=.95, ...) {
 }
 
 # test S3 generic and method
-test = function(object, parm, ...) {
+test = function(object, null, ...) {
     UseMethod("test")
 }
 
 
-test.ref.grid = function(object, parm = 0, 
+test.ref.grid = function(object, null = 0, 
     joint = FALSE, verbose = FALSE, rows, ...) {
 # if joint = FALSE, this is a courtesy method for 'contrast'
-# else it computes the F test or Wald test of H0: L*beta = parm
+# else it computes the F test or Wald test of H0: L*beta = null
 # where L = object@linfct    
     if (!joint)
-        summary(object, infer=c(FALSE,TRUE), ...)
+        summary(object, infer=c(FALSE,TRUE), null = null, ...)
     else {
         if(verbose) {
             cat("Joint test of the following linear predictions\n")
-            print(cbind(object@grid, equals = parm))
+            print(cbind(object@grid, equals = null))
         } 
         L = object@linfct
         if (!missing(rows)) L = L[rows, , drop = FALSE]
@@ -405,15 +405,15 @@ test.ref.grid = function(object, parm = 0,
         qrLt = qr(t(L))
         r = qrLt$rank
         if (r < nrow(L)) {
-            if(!all(parm==0))
-                stop("Rows are linearly dependent - cannot do the test when 'parm' != 0")
+            if(!all(null==0))
+                stop("Rows are linearly dependent - cannot do the test when 'null' != 0")
             else
                 message("Note: rows are linearly dependent - reducing the df")
         }
         tR = t(qr.R(qrLt))[1:r,1:r]
         tQ = t(qr.Q(qrLt))[1:r, , drop = FALSE]
-        if(length(parm) < r) parm = rep(parm,r)
-        z = tQ %*% bhat - solve(tR, parm[1:r])
+        if(length(null) < r) null = rep(null,r)
+        z = tQ %*% bhat - solve(tR, null[1:r])
         zcov = tQ %*% object@V %*% t(tQ)
         F = sum(z * solve(zcov, z)) / r
         df2 = object@dffun(tQ, object@dfargs)

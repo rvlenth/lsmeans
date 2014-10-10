@@ -81,7 +81,7 @@ The user may disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbk
 \section{\pkg{nlme} package}{
 \describe{
 \item{gls}{No degrees of freedom are available for these objects, so tests and confidence intervals are asymptotic.}
-\item{lme}{No degrees of freedom, as per \code{gls} objects. The optional argument \code{adjustSigma} (defaults to \code{TRUE}) will adjust standard errors like in \code{\link[nlme]{summary.lme}} when the model is fitted using the \code{"ML"} method.}
+\item{lme}{No degrees of freedom, as per \code{gls} objects. The optional argument \code{adjustSigma} (defaults to \code{TRUE}) will adjust standard errors like in \code{\link[nlme]{summary.lme}} when the model is fitted using the \code{"ML"} method. \bold{Note:} It is possible for the \code{adjust} argument (for \eqn{p}-value adjustments) to conflict with \code{adjustSigma}. The workaround is to specify both: e.g., \samp{lsmeans(mod.lme, pairwise ~ trt, adjustSigma = TRUE, adjust = "none")}}
 }}% nlme
 
 \section{\pkg{ordinal} package}{

@@ -6,14 +6,17 @@ Changelog for 'lsmeans' package
     Added support for ordinal package objects 'clm', 'clmm'
     Added 'adjustSigma' option for 'lme' objects 
         (works like in 'summary.lme')
-*To do* Provide estimability check for clm, clmm
 *To do* Implement 'by' variable for 'test'
     Fixed bug in 'contrast' that failed to update 'pri.vars'
         which, e.g., creates an error in a subsequent plot
     Provides for equivalence, noninferiority, etc. tests via
-        'side' and 'delta' arguments in 'summary'. Also
-        for non-zero alternative hypotheses via 'alt'
+        'side' and 'delta' arguments in 'summary' or 'test'. Also
+        for non-zero null values via 'null'
+    Renamed the 'parm' argument in 'test' to 'null'
+    Removed "P values are asymptotic" messages. 
 *To do* In lsmip, label y axis with invName when appropriate
+*To do* Add one-sided and equivalence instances to test script
+*To do* See if I can support nominal, scale in clm
 
 2.12
     *** Developers supporting lsmeans please note:            ***

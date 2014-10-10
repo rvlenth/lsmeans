@@ -22,7 +22,7 @@ These methods provide for analyses of \code{ref.grid} objects, or follow-up anal
     options = getOption("lsmeans")$contrast, ...)
 \method{contrast}{lsm.list}(object, ..., which = 1)
 
-\method{test}{ref.grid}(object, parm = 0, joint = FALSE,
+\method{test}{ref.grid}(object, null = 0, joint = FALSE,
     verbose = FALSE, rows, ...)
 
 \method{confint}{ref.grid}(object, parm, level = 0.95, ...)
@@ -44,10 +44,10 @@ Character names of variable(s) to be used for ``by'' groups. The contrasts will 
 Method to use for adjusting \emph{P} values. This is passed to \code{\link[lsmeans]{summary}}.
 }
   \item{options}{If non-\code{NULL}, a named \code{list} of arguments to pass to \code{\link{update}}, just after the object is constructed.}
-  \item{joint}{Logical value. If \code{FALSE}, the arguments are passed to \code{\link{summary}} with \code{infer=c(FALSE,TRUE)}. If \code{TRUE}, a joint test of the hypothesis L beta = parm is performed, where L is \code{object@linfct} and beta is the vector of fixed effects estimated by \code{object@betahat}. This will be either an \emph{F} test or a chi-square (Wald) test depending on whether degrees of freedom are available.}
+  \item{joint}{Logical value. If \code{FALSE}, the arguments are passed to \code{\link{summary}} with \code{infer=c(FALSE,TRUE)}. If \code{TRUE}, a joint test of the hypothesis L beta = null is performed, where L is \code{object@linfct} and beta is the vector of fixed effects estimated by \code{object@betahat}. This will be either an \emph{F} test or a chi-square (Wald) test depending on whether degrees of freedom are available.}
   \item{rows}{Integer values. The rows of L to be tested in the joint test. If missing, all rows of L are used.}
-  \item{parm}{
-This is a required argument for the generic \code{\link[stats]{confint}}) and \code{test} methods. In \code{test}, when \code{joint} is \code{TRUE}, it specifies the hypothesized values of the linear functions. It is ignored by \code{confint}.)}
+  \item{null}{Numeric value specifying the null value(s) being tested against. It may be either a single value, in which case it is used as the null value for all linear functions under test; or a numeric vector of length equal to the number of linear functions.}
+  \item{parm}{This is ignored, but it is a required argument of the generic  \code{confint} method.)}
   \item{verbose}{Logical value. If \code{TRUE} and \code{joint==TRUE}, a table of the effects being tested is printed.}
   \item{level}{
 Numeric value of the desired confidence level.}
@@ -60,7 +60,7 @@ Additional arguments passed to \code{\link[lsmeans]{summary}} or to a contrast f
 
 \code{confint} and \code{test} (when \code{JOINT==FALSE}) are equivalent to calling \code{\link[lsmeans]{summary}} with \code{infer=c(TRUE,FALSE)} and \code{infer=c(FALSE,TRUE)}, respectively.
 
-When using \code{test} to do a joint test of L beta = parm, an error is thrown if any row of L is non-estimable. It is permissible for the rows of L to be linearly dependent as long as \code{parm == 0}; a reduced set of contrasts is tested. Linear dependence and nonzero \code{parm} cause an error.
+When using \code{test} to do a joint test of L beta = null, an error is thrown if any row of L is non-estimable. It is permissible for the rows of L to be linearly dependent as long as \code{null == 0}; a reduced set of contrasts is tested. Linear dependence and nonzero \code{null} cause an error.
 }
 \value{
 \code{contrast} and \code{pairs} return an object of class \code{"lsmobj"}, which is an extension of \code{"ref.grid"}. Consequently, they may be used as arguments to other \code{"lsmobj"} or \code{"ref.grid"} methods. The user may, for example, compute contrasts of contrasts, or re-summarize a set of confidence intervals with a different \code{by} grouping or confidence level.

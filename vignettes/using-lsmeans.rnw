@@ -99,6 +99,9 @@ options(show.signif.stars=FALSE, prompt="R> ", continue="   ",
   analysis of experimental data for summarizing the effects of factors, and for testing linear contrasts among predictions. The \lsm{} package provides a simple way of obtaining least-squares means and contrasts thereof. It supports many models fitted by \R{} core packages (as well as a few key contributed ones) that fit linear or mixed models, and provides a simple way of extending it to cover more model classes.
 \end{abstract}
 
+
+
+
 \section{Introduction}
 Least-squares means (LS~means for short)  for a linear model are simply predictions---or averages thereof---over a regular grid of predictor settings which I call the \emph{reference grid}. They date back at least to 1976 when LS~means were incorporated in the contributed \SAS{} procedure named \code{HARVEY} \citep{Har76}. Later, they were incorporated via \code{LSMEANS} statements in the regular \SAS{} releases. 
 
@@ -110,6 +113,9 @@ LS~means are not always well understood, in part because the term itself is conf
 \item Once the reference grid is established, LS~means are simply predictions on this grid, or marginal averages of a table of these predictions.
 \end{itemize}
 A user who understands these points will know what is being computed, and thus can judge whether or not LS~means are appropriate for the analysis.
+
+
+
 
 \section{The reference grid}
 Since the reference grid is fundamental, it is our starting point. For each predictor in the model, we define a set of one or more \emph{reference levels}. The reference grid is then the set of all combinations of reference levels. If not specified explicitly, the default reference levels are obtained as follows:
@@ -172,6 +178,9 @@ lsmeans(oranges.lm1, ~ day * price, at = ... )         # Ex 3
 @
 Ex~1 illustrates the formula method for specifying factors, which is more compact. The "|" character replaces the "by" specification. Ex~2 and Ex~3 produce the same results, but their results are displayed as one table (with columns for "day" and "price") rather than as two separate tables.
 
+
+
+
 \section{Working with the results}
 \subsection{Objects}
 The "ref.grid" function produces an object of class \rg{}, and the "lsmeans" function produces an object of class \lsmo{}, which is a subclass of \rg. There is really no practical difference between these two classes except for their "show" methods---what is displayed by default---and the fact that an \lsmo{} is not (necessarily) a true reference grid as defined earlier in this article. Let's use the "str" function to examine the \lsmo{} object just produced:
@@ -220,6 +229,7 @@ The resulting display is shown in \Fig{org-plot}. This function requires that th
 \end{center}
 \caption{Confidence intervals for LS~means in the \code{oranges} example.}\label{org-plot}
 \end{figure}
+
 
 
 
@@ -285,6 +295,9 @@ org.mlsm <- lsmeans(oranges.mlm, ~ day | variety, mult.name = "variety")
 cld(org.mlsm, sort = FALSE)
 @
 
+
+
+
 \section{Contrasts of contrasts}
 With the preceding model, we might want to compare the two varieties on each day:
 <<>>=
@@ -295,6 +308,9 @@ The results (not yet shown) will comprise the six "sales1-sales2" differences, o
 cld(org.vardiff)
 @
 There is little evidence of variety differences, nor that these differences vary from day to day.
+
+
+
 
 \section[Interfacing with multcomp]{Interfacing with \pkg{multcomp}}
 The \pkg{multcomp} package \citep{multc} supports more exacting corrections for simultaneous inference than are available in \lsm{}. Its "glht" (general linear hypothesis testing) function and associated \dqt{glht} class are similar in some ways to "lsmeans" and \dqt{lsmobj} objects, respectively. So we provide methods such as "as.glht" for working with "glht" so as to obtain ``exact'' inferences. To illustrate, let's compare some simultaneous confidence intervals using the two packages. 
@@ -331,6 +347,9 @@ summary(as.glht(pairs(org.lsm), by = NULL))
 summary(as.glht(pairs(org.lsm, by = NULL)))
 @
 which removes the "by" grouping \emph{before} the pairwise comparisons are generated, thus yielding ${6 \choose 2}=15$ contrasts instead of just six.
+
+
+
 
 \section{A new example: Oat yields}
 Orange-sales illustrations are probably getting tiresome. To illustrate some new features, let's turn to a new example.
@@ -370,6 +389,8 @@ These LS~means follow the same quadratic trend for each variety, but with differ
 Fractional degrees of freedom are displayed in these results. These are obtained from the \pkg{pbkrtest} package \citep{pbkrt}, and they use the Kenward-Rogers method. (The degrees of freedom for the polynomial contrasts were also obtained from \pkg{pbkrtest}, but the results turn out to be integers.)
 
 
+
+
 \section{Displaying LS means graphically}
 We have already seen the use of the "plot" function to display confidence intervals and/or comparison arrows.
 The \lsm{} package also includes a function "lsmip" that displays predictions in an interaction-plot-like manner. It uses a formula of the form
@@ -398,6 +419,7 @@ Note that the first model fits the cell means perfectly, so its plot is truly an
 
 
 
+
 \section{Transformations}
 When a transformation or link function is used in fitting a model, "ref.grid" (also called by "lsmeans") stores that information in the returned object, as seen in this example:
 <<>>=
@@ -410,6 +432,50 @@ summary(Oats.lsm2, type = "response")
 It is important to realize that the statistical inferences are all done \emph{before} reversing the transformation. Thus, $t$ ratios are based on the linear predictors and will differ from those computed using the printed estimates and standard errors. Likewise, confidence intervals are computed on the linear-predictor scale, then the endpoints are back-transformed.
 
 This kind of automatic support for transformations is available only for certain standard transformations, namely those supported by the "make.link" function in the \pkg{stats} package. Others require more work---see the documentation for "update" for details.
+
+
+
+
+
+\section{More on tests}
+\def\tj{\theta^{(j)}}%%% Notation for this section only
+The default settings for "test" yield traditional two-tailed $t$ (or $z$) tests of significance against zero. So if $\tj$ is the $j$th parameter (e.g., LS~mean or contrast) being estimated, we are testing the null hypothesis $H_0: \tj=0$ versus the alternative $H_1:\tj\ne 0$. We can, however, specify different types of tests in the "test" or "summary" functions.
+
+\subsection{Nonzero null values}
+If we wish to use nonzero null values, i,e., test $H_0:\tj=\tj_0$, use "test" or "summary" with the "null" argument set to the desired $\tj_0$ values. For example, in the Oat-yield example, suppose we want to test each of the "Variety" yields against 100 (actually $\log 100$ since the response was transformed):
+<<>>=
+Oats.Vlsm = lsmeans(Oats.lmer2, "Variety")
+test(Oats.Vlsm, null = log(100), type = "response")
+@
+Note that "null" should always be given on the linear-predictor scale (in this case $\log$ yield), even when specifying \verb|type="response"|. We could have specified different null values for each hypothesis by providing a vector of three numbers. 
+
+\subsection{Equivalence tests}
+The preceding results say that none of the variety means differs significantly from 100, after transforming. But this is not the same as saying that we have evidence that the means are close to 100 (that is, absence of proof is not proof of absence). To make a strong statement that an effect is small, we should use an equivalence test, which more-or-less turns the hypotheses around:
+\[ H_0: |\tj - \tj_0| \ge \delta \qquad\mbox{versus}\qquad H_1: |\tj - \tj_0| < \delta \]
+where $\delta$ is a specified threshold of equivalence. A common test procedure is the two one-sided test (TOST) method \citep{Sch87}, whereby we obtain equivalence only if we can establish both that $\tj-\tj_0>-\delta$ and that $\tj-\tj_0<\delta$. In "lsmeans", we do this by pre-identifying the less significant of these two tests:
+\[ t = \frac{|\hat\tj-\tj_0| - \delta}{SE(\hat\tj)} \]
+and the $P$~value is the \emph{left}-tail probability of this quantity from the central $t$ distribution.
+
+In "test" or "summary", an equivalence test is requested by specifying a nonzero "delta" argument, which in turn is used as the threshold $\delta$. In the Oat-yield example, the following results are obtained using a threshold of $\delta=0.20$:
+<<>>=
+test(Oats.Vlsm, null = log(100), delta = 0.20, type = "r")
+@
+So two of the three Variety means are established as being within $.20$ of $\log100$. The natural log scale has the special property that small increments on the log scale translate to approximate percentage differences of the same size. That is, a threshold of $.20$ corresponds to about a 20\% difference: $\log 80 - \log100 = \log.8 \approx -.223$, and $\log120 - \log100 = \log1.2 \approx .182$.
+
+\subsection{One-sided tests, noninferiority, nonsuperiority}
+The "side" argument is also available to specify one-sided tests. A right-tailed alternative may be requested using "side" partially matching one of \dqt{+}, \dqt{right}, \verb|">"|, "+1", "1", \dqt{superiority}, or (see later) \dqt{noninferiority}. Similarly, a left-tailed alternative may be specified using "side" equal to \dqt{-}, \dqt{left}, \verb|"<"|, "-1", \dqt{inferiority}, or \dqt{nonsuperiority}. (And for completeness, a two-sided alternative is specified using "0", "2", \verb|"!="|, \dqt{both}, \dqt{two-sided}, \dqt{equivalence}, or \dqt{=}.) In the following example, we test to see if either Golden Rain or Marvellous has better yield than Victory:
+<<>>=
+test(contrast(Oats.Vlsm, "trt.vs.ctrlk"), side = ">")
+@
+The one-sided version of an equivalence test is called a noninferiority or nonsuperiority test. It is obtained by specifying both "side" and a nonzero "delta". For example, to test whether Victory is as good as the other two within a 25\% threshold, use
+<<>>=
+test(contrast(Oats.Vlsm, "trt.vs.ctrlk"), side = "nonsup", delta = .25)
+@
+We find strong evidence that, with the stated threshold of .25, Golden Rain is nonsuperior to Victory (so that Victory is noninferior to Golden Rain); but not strong evidence that Victory is noninferior to Marvellous.
+
+
+
+
 
 \section{Trends}
 The \lsm{} package provides a function \code{lstrends} for estimating and comparing the slopes of fitted lines (or curves). To illustrate, consider the built-in R dataset \code{ChickWeight} which has data on the growths of newly hatched chicks under four different diets. The following code produces the display in \Fig{chick-plot}.
@@ -439,6 +505,9 @@ According to the Tukey~HSD comparisons (with default significance level of $.05$
 
 Note: "lstrends" computes a difference quotient based on two slightly different reference grids. Thus, it must be called with a model object, not a "ref.grid" object.
 
+
+
+
 \section{User preferences}
 \lsm{} sets certain defaults for displaying results---for example, using $.95$ for the confidence coefficient, and showing intervals for "lsmeans" output and test statistics for "contrast" results. As discussed before, one may use arguments in "summary" to change what is displayed, or "update" to change the defaults for a given object. But suppose you want different defaults to begin with. These can be set using the "lsm.options" statement. For example:
 <<>>=
@@ -447,6 +516,9 @@ lsm.options(ref.grid = list(level = .90),
             contrast = list(infer = c(TRUE,TRUE)))
 @
 This requests that any object created by "ref.grid" be set to have confidence levels default to $90$\%, and that "contrast" results are displayed with both intervals and tests. No new options are set for "lsmeans" results, and the "lsmeans" part could have been omitted. These options are stored with objects created by "ref.grid", "lsmeans", and "contrast". For example, even though no new defaults are set for "lsmeans", future calls to "lsmeans" \emph{on a model object} will be displayed with 90\% confidence intervals, because "lsmeans" calls "ref.grid". However, calling "lsmeans" on an existing \dqt{ref.grid} object will inherit that object's setting.
+
+
+
 
 
 \section{Two-sided formulas}
@@ -462,6 +534,9 @@ This example also illustrates the effect of the preceding "lsm.options" settings
 <<>>=
 lsm.options(ref.grid = NULL, contrast = NULL)
 @
+
+
+
 
 \section{Messy data}
 To illustrate some more \code{lsmeans} capabilities, consider the dataset named \code{nutrition} that is provided with the \lsm{} package. These data come from \citet{Mil92}, and contain the results of an observational study on nutrition education. Low-income mothers are classified by race, age category, and whether or not they received food stamps (the \code{group} factor); and the response variable is a gain score (post minus pre scores) after completing a nutrition training program. 
@@ -608,6 +683,9 @@ rg <- ref.grid(my.model, at = list(x1 = c(5,10,15)),
 The values used for $x_2$ and $x_3$ will depend on $x_1$ and should in some sense be more realistic values of those covariates as $x_1$ varies than would be the overall means of $x_2$ and $x_3$. Of course, it would be important to display the values used---available as "rg@grid"---when reporting the analysis.
 
 
+
+
+
 \section{Other types of models}
 \subsection[Models supported by lsmeans]{Models supported by \lsm{}}
 The \lsm{} package comes with built-in support for several packages and model classes: \begin{quote}
@@ -647,6 +725,8 @@ Another point worth noting is that when only asymptotic tests and confidence int
 The functions "ref.grid" and "lsmeans" work by first reconstructing the dataset (so that the reference grid can be identified) and extracting needed information about the model, such as the regression coefficients, covariance matrix, and the linear functions associated with each point in the reference grid. For a fitted model of class, say, \dqt{modelobj}, these tasks are accomplished by defining S3 methods "recover.data.modelobj" and "lsm.basis.modelobj". The help page \dqt{extending-lsmeans} and the vignette by the same name provide details and examples.
 
 Developers of packages that fit models are encouraged to include support for \lsm{} by incorporating (and exporting) "recover.data" and "lsm.basis" methods for their model classes. 
+
+
 
 
 \section{Discussion}
