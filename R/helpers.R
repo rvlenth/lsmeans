@@ -570,8 +570,8 @@ recover.data.clm = function(object, ...) {
     else { # bring-in predictors from loc, scale, and nom models
         trms = delete.response(object$terms)
         preds = union(all.vars(trms), union(all.vars(object$S.terms), all.vars(object$nom.terms)))
-        trms = update(trms, reformulate(preds))
-        recover.data(object$call, trms, object$na.action, ...)
+        x.trms = update(trms, reformulate(preds))
+        recover.data(object$call, x.trms, object$na.action, ...)
     }
 }
 
@@ -588,8 +588,13 @@ lsm.basis.clm = function (object, trms, xlev, grid, ...) {
 #     if (!is.null(object$zeta))
 #         stop("Scale models in 'clm' are not supported in 'lsmeans'")
     contrasts = object$contrasts
+    # remember trms is trumped-up to include scale and nominal predictors.
+    # Use actual terms in the following call...
+    trms = delete.response(object$terms)
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
+    ms = model.frame(object$S.terms, grid, na.action = na.pass, xlev = object$S.xlevels)
+    S = model.matrix(object$S.terms, ms, contrasts.arg = object$S.contrasts)
     xint = match("(Intercept)", colnames(X), nomatch = 0L)
     if (xint > 0L) {
         X = X[, -xint, drop = FALSE]
