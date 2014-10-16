@@ -562,9 +562,20 @@ lsm.basis.glmmadmb = function (object, trms, xlev, grid, ...)
 
 #--------------------------------------------------------------
 ### ordinal package
-# (thanks to Maxime Herve, RVAideMemoire package)
+# (initial setup thanks to Maxime Herve, RVAideMemoire package)
 
-recover.data.clm = recover.data.lm
+recover.data.clm = function(object, ...) {
+    if (is.null(object$S.terms) && is.null(object$nom.terms))
+        recover.data.lm(object, ...)
+    else { # bring-in predictors from loc, scale, and nom models
+        trms = delete.response(object$terms)
+        preds = union(all.vars(trms), union(all.vars(object$S.terms), all.vars(object$nom.terms)))
+        trms = update(trms, reformulate(preds))
+        recover.data(object$call, trms, object$na.action, ...)
+    }
+}
+
+# For now at least, clmm doesn't cover scale, nominal options
 recover.data.clmm = recover.data.lm
 
 # Note: For ALL thresholds, object$Theta has all the threshold values
@@ -574,8 +585,8 @@ recover.data.clmm = recover.data.lm
 # threshold != "flexible". Can get basis using nonest.basis(t(tJac))
 
 lsm.basis.clm = function (object, trms, xlev, grid, ...) {
-    if (!is.null(object$zeta))
-        stop("Scale models in 'clm' are not supported in 'lsmeans'")
+#     if (!is.null(object$zeta))
+#         stop("Scale models in 'clm' are not supported in 'lsmeans'")
     contrasts = object$contrasts
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
