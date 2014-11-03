@@ -241,7 +241,7 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, layout, ..
         if (missing(ylab)) ylab = estName
         lattice::dotplot(form, prepanel=prepanel.ci, panel=panel.ci, 
                 strip = my.strip, horizontal = FALSE,
-                xlab = paste(priv, collapse=":"), ylab = ylab,
+                xlab = xlab, ylab = ylab,
                 data = summ, intervals = intervals, lcl=lcl, ucl=ucl, 
                 lcmpl=lcmpl, rcmpl=rcmpl, layout = layout, ...)
     }
