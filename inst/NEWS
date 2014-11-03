@@ -7,13 +7,15 @@ Changelog for 'lsmeans' package
     Added 'adjustSigma' option for 'lme' objects 
         (works like in 'summary.lme')
 *To do* Implement 'by' variable for 'test'
+    Fixed error in handling offsets for 'polr' objects
     Fixed bug in 'contrast' that failed to update 'pri.vars'
         which, e.g., creates an error in a subsequent plot
+    Fixed bug in plot - it had ignored xlab when horizontal = FALSE
     Provides for equivalence, noninferiority, etc. tests via
         'side' and 'delta' arguments in 'summary' or 'test'. Also
         for non-zero null values via 'null'
     Renamed the 'parm' argument in 'test' to 'null'
-    Removed "P values are asymptotic" messages. 
+    Removed superfluous "P values are asymptotic" messages. 
 *To do* In lsmip, label y axis with invName when appropriate
 *To do* Add one-sided and equivalence instances to test script
 *To do* See if I can support nominal, scale in clm

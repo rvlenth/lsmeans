@@ -200,13 +200,13 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         basis$X = basis$X[incl.flags, , drop=FALSE]
     }
 
-    # Any offsets???
-    if (!is.null(off.idx <- attr(trms, "offset"))) {
-        offset = rep(0, nrow(grid))
-        tvars = attr(trms, "variables")
-        for (i in off.idx)
-            offset = offset + eval(tvars[[i+1]], grid)
-        grid[[".offset."]] = offset
+    # Any offsets??? (misc$offset.mult might specify removing or reversing the offset)
+    if(!is.null(attr(trms,"offset"))) {
+        om = 1
+        if (!is.null(misc$offset.mult))
+            om = misc$offset.mult
+        if (any(om != 0))
+            grid[[".offset."]] = om * .get.offset(trms, grid)
     }
 
     ### --- Determine frequencies --- (added ver.2.11)
@@ -284,6 +284,16 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     intersect(unique(unlist(cvars)), covs.d)
 }
 
+# calculate the offset for the given grid
+.get.offset = function(terms, grid) {
+    off.idx = attr(terms, "offset")
+    offset = rep(0, nrow(grid))
+    tvars = attr(terms, "variables")
+    for (i in off.idx)
+        offset = offset + eval(tvars[[i+1]], grid)
+    offset
+}
+
 
 # Computes the quadratic form y'Xy after subsetting for the nonzero elements of y
 .qf.non0 = function(X, y) {
@@ -309,28 +319,41 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
 # utility fcn to get est's, std errors, and df
 # new arg: do.se -- if FALSE, just do the estimates and return 0 for se and df
 # returns a data.frame with an add'l "link" attribute if misc$tran is non-null
-.est.se.df = function(linfct, bhat, nbasis, V, dffun, dfargs, misc, do.se=TRUE, 
-                      tol=getOption("lsmeans")$estble.tol) {
-    active = which(!is.na(bhat))
-    bhat = bhat[active]
-    if (is.null(tol)) 
-        tol = 1e-8
-    result = apply(linfct, 1, function(x) {
-        if (.is.estble(x, nbasis, tol)) {
-            x = x[active]
-            est = sum(bhat * x)
-            if(do.se) {
-                se = sqrt(.qf.non0(V, x)) ###sqrt(sum(x * .mat.times.vec(V, x)))
-                df = dffun(x, dfargs)
+# .est.se.df = function(linfct, bhat, nbasis, V, dffun, dfargs, misc, do.se=TRUE, 
+#                       tol=getOption("lsmeans")$estble.tol) {
+# 2.13: Revised to call w/ just object instead of all those args (except linfct)
+# Also moved offest comps to here, and provided for misc$estHook
+.est.se.df = function(object, do.se=TRUE, tol=lsm.options()$estble.tol) {
+    misc = object@misc
+    if (!is.null(hook <- misc$estHook)) {
+        if (is.name(hook)) hook = eval(hook)
+        result = hook(object, do.se=do.se, tol=tol)
+    }
+    else {
+        active = which(!is.na(object@bhat))
+        bhat = object@bhat[active]
+        if (is.null(tol)) 
+            tol = 1e-8
+        result = t(apply(object@linfct, 1, function(x) {
+            if (.is.estble(x, object@nbasis, tol)) {
+                x = x[active]
+                est = sum(bhat * x)
+                if (!is.null(object@grid$.offset.))
+                    est = est + object@grid$.offset.
+                if(do.se) {
+                    se = sqrt(.qf.non0(object@V, x))
+                    df = object@dffun(x, object@dfargs)
+                }
+                else # if these unasked-for results are used, we're bound to get an error!
+                    se = df = 0
+                c(est, se, df)
             }
-            else # if these unasked-for results are used, we're bound to get an error!
-                se = df = 0
-            c(est, se, df)
-        }
-        else c(NA,NA,NA)
-    })
-    result = as.data.frame(t(result))
+            else c(NA,NA,NA)
+        }))
+    }
+    result = as.data.frame(result)
     names(result) = c(misc$estName, "SE", "df")
+    
     if (!is.null(misc$tran) && (misc$tran != "none")) {
         if(is.character(misc$tran)) {
             link = try(make.link(misc$tran), silent=TRUE)
@@ -498,10 +521,11 @@ predict.ref.grid <- function(object, type, ...) {
     else
         type = .validate.type(type)
     
-    pred = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@dffun, object@dfargs, object@misc, do.se=FALSE)
+    pred = .est.se.df(object, do.se=FALSE)
     result = pred[[1]]
-    if (".offset." %in% names(object@grid))
-        result = result + object@grid[[".offset."]]
+# MOVED TO .EST.SE.DF    
+#     if (".offset." %in% names(object@grid))
+#         result = result + object@grid[[".offset."]]
     if (type == "response") {
         link = attr(pred, "link")
         if (!is.null(link))
@@ -531,11 +555,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     side = side.map[pmatch(side, side.opts, 2)[1]] - 2
     delta = abs(delta)
     
-    result = .est.se.df(object@linfct, object@bhat, object@nbasis, object@V, object@dffun, object@dfargs, object@misc)
-    
-    
-    if(".offset." %in% names(object@grid))
-        result[[1]] = result[[1]] + object@grid[[".offset."]]
+    result = .est.se.df(object)
     
     lblnms = setdiff(names(object@grid), 
                      c(object@roles$responses, ".offset.", ".freq."))
