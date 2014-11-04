@@ -338,8 +338,6 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
             if (.is.estble(x, object@nbasis, tol)) {
                 x = x[active]
                 est = sum(bhat * x)
-                if (!is.null(object@grid$.offset.))
-                    est = est + object@grid$.offset.
                 if(do.se) {
                     se = sqrt(.qf.non0(object@V, x))
                     df = object@dffun(x, object@dfargs)
@@ -350,6 +348,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
             }
             else c(NA,NA,NA)
         }))
+        if (!is.null(object@grid$.offset.))
+            result[, 1] = result[, 1] + object@grid$.offset.
     }
     result = as.data.frame(result)
     names(result) = c(misc$estName, "SE", "df")

@@ -86,7 +86,8 @@ The user may disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbk
 
 \section{\pkg{ordinal} package}{
 \describe{
-\item{clm, clmm}{The boundaries between categories in the ordinal response are included in  the reference grid as the factor \code{cut}. Thus, the user may specify which cut-point to use in estimating cumulative probabilities. Tests and confidence intervals are asymptotic.}
+\item{clm,clmm}{The reference grid will include all variables that appear in the main model as well as those in the \code{scale} or \code{nominal} models. There is an optional argument \code{latent} which defaults to \code{TRUE}. If \code{TRUE}, the reference-grid predictions are means of the latent variable implied by the model. With \samp{latent = FALSE}, the boundaries between categories (i.e., thresholds) in the ordinal response are included in  the reference grid as the factor \code{cut}. (In essence, the predicted latent mean is the negative of the linear predictor, averaged over the thresholds.) When \samp{latent = FALSE} (only), the \code{summary} option \samp{type = "response"} may be used to obtain estimates of cumulative probabilities.
+Tests and confidence intervals are asymptotic.}
 }}% ordinal
 
 \section{\pkg{survival} package}{

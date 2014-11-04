@@ -40,8 +40,7 @@ lsm.basis.clm = function (object, trms, xlev, grid, latent = TRUE, ...) {
     cnm = dimnames(object$tJac)[[1]]
     if (is.null(cnm))
         cnm = paste(seq_len(nrow(tJac)), "|", 1 + seq_len(nrow(tJac)), sep = "")
-    misc = list(ylevs = list(cut = cnm), tran = link, inv.lbl = "cumprob",
-                offset.mult = -1)
+    misc = list()
     
     
     # My strategy is to piece together the needed matrices for each threshold parameter
@@ -71,27 +70,6 @@ lsm.basis.clm = function (object, trms, xlev, grid, latent = TRUE, ...) {
     if (ncol(NOM) > 1)
         bigNom = bigNom[, as.numeric(t(matrix(seq_len(ncol(bigNom)), nrow=ncol(NOM))))]
     
-    
-    ### ----- Alt return when latent == TRUE ----- ###
-    if (latent) {
-        # Create constant columns for nominal part of linfct
-        nomm = apply(bigNom, 2, mean)
-        J = matrix(1, nrow = nrow(X))
-        bigX = cbind(kronecker(-J, matrix(nomm, nrow = 1)), X)
-        # make zero columns for any scale components
-        if ((nscols <- length(bhat) - ncol(bigX)) > 0) {
-            zer = matrix(0, ncol = nscols)
-            bigX = cbind(bigX, kronecker(J, zer))
-        }
-        dimnames(bigX)[[2]] = names(bhat)
-        return(
-            list(X = bigX, bhat = bhat, nbasis = nbasis, V = V, 
-                 dffun = dffun, dfargs = list(), misc = list())
-        )
-    }
-    
-    # (implied else  !latent)
-
     ### ----- Scale part ----- ###
     if (!is.null(object$S.terms)) {
         ms = model.frame(object$S.terms, grid, na.action = na.pass, xlev = object$S.xlevels)
@@ -104,15 +82,35 @@ lsm.basis.clm = function (object, trms, xlev, grid, latent = TRUE, ...) {
             bhat = c(bhat, offset = 1)
             V = rbind(cbind(V, offset = 0), offset = 0)
         }
-        X = cbind(X, S)
-        misc$scale.idx = length(object$alpha) + length(object$beta) + seq_len(ncol(S))
+        si = misc$scale.idx = length(object$alpha) + length(object$beta) + seq_len(ncol(S))
+        # Make sure there are no name clashes
+        names(bhat)[si] = paste(".S", names(object$zeta), sep=".")
         misc$estHook = as.name(".clm.estHook")
     }
+    else
+        S = NULL
     
+    if (latent) {
+        # Create constant columns for means of scale and nominal parts
+        J = matrix(1, nrow = nrow(X))
+        nomm = apply(bigNom, 2, mean)
+        if (!is.null(S)) {
+            sm = apply(S, 2, mean)
+            X = cbind(X, kronecker(-J, matrix(sm, nrow = 1)))
+        }
+        bigX = cbind(kronecker(-J, matrix(nomm, nrow = 1)), X)
+    }
+    else { ### ----- Piece together big matrix for each threshold ----- ###
+        misc$ylevs = list(cut = cnm)
+        misc$tran = link
+        misc$inv.lbl = "cumprob"
+        misc$offset.mult = -1
+        if (!is.null(S))
+            X = cbind(X, S)
+        J = matrix(1, nrow=nrow(tJac))
+        bigX = cbind(bigNom, kronecker(-J, X))
+    }
     
-    ### ----- Piece it together ----- ###
-    J = matrix(1, nrow=nrow(tJac))
-    bigX = cbind(bigNom, -kronecker(J, X))
     dimnames(bigX)[[2]] = names(bhat)
     
     list(X = bigX, bhat = bhat, nbasis = nbasis, V = V, dffun = dffun, 
@@ -122,7 +120,7 @@ lsm.basis.clm = function (object, trms, xlev, grid, latent = TRUE, ...) {
 # replacement estimation routine for cases with a scale param
 .clm.estHook = function(object, do.se = TRUE, tol = 1e-8) {
     scols = object@misc$scale.idx
-    S = object@linfct[, scols, drop = FALSE] # This is actually -S
+    minusS = object@linfct[, scols, drop = FALSE]
     linfct = object@linfct
     
     active = which(!is.na(object@bhat))
@@ -132,7 +130,7 @@ lsm.basis.clm = function (object, trms, xlev, grid, latent = TRUE, ...) {
     
     result = sapply(seq_len(nrow(linfct)), function(i) {
         if (.is.estble(x, object@nbasis, tol)) {
-            rsigma = exp(sum(S[i, ] * object@bhat[scols]))
+            rsigma = exp(sum(minusS[i, ] * object@bhat[scols]))
             x = linfct[i, active] * rsigma
             est = sum(bhat[-scols] * x[-scols])
             if (!is.null(object@grid$.offset.))
