@@ -29,7 +29,8 @@ recover.data.clmm = recover.data.lm
 # NEW VERSION - assumes everything is est'ble
 # TODO: figure out non-est basis
 
-lsm.basis.clm = function (object, trms, xlev, grid, latent = TRUE, ...) {
+lsm.basis.clm = function (object, trms, xlev, grid, 
+                          latent = TRUE, rescale = c(0,1), ...) {
     # general stuff
     bhat = coef(object)
     V = vcov(object)
@@ -93,12 +94,16 @@ lsm.basis.clm = function (object, trms, xlev, grid, latent = TRUE, ...) {
     if (latent) {
         # Create constant columns for means of scale and nominal parts
         J = matrix(1, nrow = nrow(X))
-        nomm = apply(bigNom, 2, mean)
+        nomm = apply(bigNom, 2, mean)      
         if (!is.null(S)) {
             sm = apply(S, 2, mean)
             X = cbind(X, kronecker(-J, matrix(sm, nrow = 1)))
         }
-        bigX = cbind(kronecker(-J, matrix(nomm, nrow = 1)), X)
+        bigX = rescale[2] * cbind(kronecker(-J, matrix(nomm, nrow = 1)), X)
+        misc$offset.mult = misc$offset.mult * rescale[2]
+        intcpt = seq_len(ncol(tJac))
+        bhat[intcpt] = bhat[intcpt] - rescale[1] / rescale[2]
+        
     }
     else { ### ----- Piece together big matrix for each threshold ----- ###
         misc$ylevs = list(cut = cnm)
@@ -150,7 +155,7 @@ lsm.basis.clm = function (object, trms, xlev, grid, latent = TRUE, ...) {
 }
 
 
-lsm.basis.clmm = function (object, trms, xlev, grid, latent = TRUE, ...) {
+lsm.basis.clmm = function (object, trms, xlev, grid, ...) {
     if(is.null(object$Hessian)) {
         message("Updating the model to obtain the Hessian...")
         object = update(object, Hess = TRUE)
