@@ -67,7 +67,8 @@ The user may disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbk
 \section{\pkg{MASS} package}{
 \describe{
 \item{glmmPQL}{Supported by virtue of inheritance from \code{lme} in the \pkg{nlme} package.}
-\item{polr}{The boundaries between categories in the ordinal response are included in  the reference grid as the factor \code{cut}. Thus, the user may specify which cut-point to use in estimating cumulative probabilities. Tests and confidence intervals are asymptotic.}
+\item{polr}{There are two optional arguments: \code{latent} (which defaults to \code{TRUE}) and \code{rescale} (which defaults to \samp{c(0,1)}). For details, see the documentation below regarding the support for the \pkg{ordinal} package, which produces comparable objects.
+Tests and confidence intervals are asymptotic.}
 \item{rlm}{Supported by virtue of inheritance from \code{lm}.}
 }}% MASS
 
@@ -86,7 +87,9 @@ The user may disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbk
 
 \section{\pkg{ordinal} package}{
 \describe{
-\item{clm,clmm}{The reference grid will include all variables that appear in the main model as well as those in the \code{scale} or \code{nominal} models. There is an optional argument \code{latent} which defaults to \code{TRUE}. If \code{TRUE}, the reference-grid predictions are means of the latent variable implied by the model. With \samp{latent = FALSE}, the boundaries between categories (i.e., thresholds) in the ordinal response are included in  the reference grid as the factor \code{cut}. (In essence, the predicted latent mean is the negative of the linear predictor, averaged over the thresholds.) When \samp{latent = FALSE} (only), the \code{summary} option \samp{type = "response"} may be used to obtain estimates of cumulative probabilities.
+\item{clm,clmm}{The reference grid will include all variables that appear in the main model as well as those in the \code{scale} or \code{nominal} models. There are two optional arguments: \code{latent} (which defaults to \code{TRUE}) and \code{rescale} (which defaults to \samp{c(0,1)}). With \samp{latent = FALSE}, the boundaries between categories (i.e., thresholds) in the ordinal response are included in  the reference grid as the factor \code{cut}. With \samp{latent = TRUE}, the reference-grid predictions are made on the scale of the latent variable implied by the model. (In essence, the predicted latent mean is the negative of the linear predictor, averaged over the thresholds.) The scale and location of the latent variable are arbitrary, and may be altered via \code{rescale}. The predictions are multiplied by \samp{rescale[2]}, then \samp{rescale[1]} is added. Keep in mind that the scaling is related to the link function used in the model; for example, changing from a probit link to a logistic link will inflate the latent values by around \eqn{\pi/\sqrt{3}}{pi/sqrt(3)}, all other things being equal.
+
+When \samp{latent = FALSE} (only), the \code{summary} option \samp{type = "response"} may be used to obtain estimates of cumulative probabilities.
 Tests and confidence intervals are asymptotic.}
 }}% ordinal
 

@@ -318,7 +318,7 @@ lsm.basis.gls = function(object, trms, xlev, grid, ...) {
 ### polr objects (MASS package)
 recover.data.polr = recover.data.lm
 
-lsm.basis.polr = function(object, trms, xlev, grid, ...) {
+lsm.basis.polr = function(object, trms, xlev, grid, latent = TRUE, rescale = c(0,1), ...) {
     contrasts = object$contrasts
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
@@ -329,15 +329,20 @@ lsm.basis.polr = function(object, trms, xlev, grid, ...) {
     bhat = c(coef(object), object$zeta)
     V = vcov(object)
     k = length(object$zeta)
-    j = matrix(1, nrow=k, ncol=1)
-    J = matrix(1, nrow=nrow(X), ncol=1)
-    # Tricky, tricky: need to reverse the sign of the X part
-    # because lin. pred is zeta - eta
-    X = cbind(kronecker(-j, X), kronecker(diag(1,k), J))
-    link = object$method
-    if (link == "logistic") link = "logit"
-    misc = list(ylevs = list(cut = names(object$zeta)), 
-                tran = link, inv.lbl = "cumprob", offset.mult = -1)
+    if (latent) {
+        X = rescale[2] * cbind(X, matrix(- 1/k, nrow = nrow(X), ncol = k))
+        bhat = c(coef(object), object$zeta - rescale[1] / rescale[2])
+        misc = list(offset.mult = rescale[2])
+    }
+    else {
+        j = matrix(1, nrow=k, ncol=1)
+        J = matrix(1, nrow=nrow(X), ncol=1)
+        X = cbind(kronecker(-j, X), kronecker(diag(1,k), J))
+        link = object$method
+        if (link == "logistic") link = "logit"
+        misc = list(ylevs = list(cut = names(object$zeta)), 
+                    tran = link, inv.lbl = "cumprob", offset.mult = -1)
+    }
     nbasis = matrix(NA)
     dffun = function(...) NA
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=list(), misc=misc)
