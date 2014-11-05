@@ -94,12 +94,13 @@ lsm.basis.clm = function (object, trms, xlev, grid,
     if (latent) {
         # Create constant columns for means of scale and nominal parts
         J = matrix(1, nrow = nrow(X))
-        nomm = apply(bigNom, 2, mean)      
+        nomm = rescale[2] * apply(bigNom, 2, mean)
+        X = rescale[2] * X
         if (!is.null(S)) {
             sm = apply(S, 2, mean)
             X = cbind(X, kronecker(-J, matrix(sm, nrow = 1)))
         }
-        bigX = rescale[2] * cbind(kronecker(-J, matrix(nomm, nrow = 1)), X)
+        bigX = cbind(kronecker(-J, matrix(nomm, nrow = 1)), X)
         misc$offset.mult = misc$offset.mult * rescale[2]
         intcpt = seq_len(ncol(tJac))
         bhat[intcpt] = bhat[intcpt] - rescale[1] / rescale[2]
