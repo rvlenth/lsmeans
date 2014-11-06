@@ -37,7 +37,6 @@ lsm.basis.clm = function (object, trms, xlev, grid,
     tJac = object$tJac
     dffun = function(...) NA
     link = as.character(object$info$link)
-    nbasis = matrix(NA)
     cnm = dimnames(object$tJac)[[1]]
     if (is.null(cnm))
         cnm = paste(seq_len(nrow(tJac)), "|", 1 + seq_len(nrow(tJac)), sep = "")
@@ -91,6 +90,44 @@ lsm.basis.clm = function (object, trms, xlev, grid,
     else
         S = NULL
     
+    ### ----- Get non-estimability basis ----- ###
+    nbasis = snbasis = matrix(NA)
+    if (any(is.na(bhat))) {
+        mm = model.matrix(object)
+        if (any(is.na(c(object$alpha, object$beta)))) {
+            NOMX = mm$X
+            if (is.null(mm$NOM))
+                NOMX = mm$X
+            else
+                NOMX = cbind(mm$NOM, mm$X[, -1, drop=false])
+            nbasis = nonest.basis(NOMX)
+            # replicate the NOM parts
+            nomcols = seq_len(ncol(NOM))
+            nbasis = apply(nbasis, 2, function(x)
+                c(rep(x[nomcols], each = length(object$alpha)), x[-nomcols]))
+        }
+        if (!is.null(mm$S)) {
+            if (any(is.na(object$zeta))) {
+                snbasis = nonest.basis(mm$S)
+                # put intercept part at end
+                snbasis = rbind(snbasis[-1, , drop=FALSE], snbasis[1, ])
+                if (!is.null(attr(object$S.terms, "offset")))
+                    snbasis = rbind(snbasis, 0)
+                snbasis = rbind(matrix(0, ncol=ncol(snbasis), nrow=min(si)-1), snbasis)
+                 # Note scale intercept is included, so tack it on to the end of everything
+                S = cbind(S, .S.intcpt = 1)
+                bhat = c(bhat, .S.intcpt = 0)
+                V = rbind(cbind(V, .S.intcpt = 0), .S.intcpt = 0)
+                si = misc$scale.idx = c(si, 1 + max(si))
+            }
+        }
+        if (is.na(nbasis[1])) # then only nonest part is scale
+            nbasis = snbasis
+        else if (!is.na(snbasis[1])) # then have both
+            nbasis = cbind(rbind(nbasis, matrix(0, nrow=length(si), ncol=ncol(nbasis))), snbasis)
+        # else nbasis stands as-is
+    }
+    
     if (latent) {
         # Create constant columns for means of scale and nominal parts
         J = matrix(1, nrow = nrow(X))
@@ -104,7 +141,6 @@ lsm.basis.clm = function (object, trms, xlev, grid,
         misc$offset.mult = misc$offset.mult * rescale[2]
         intcpt = seq_len(ncol(tJac))
         bhat[intcpt] = bhat[intcpt] - rescale[1] / rescale[2]
-        
     }
     else { ### ----- Piece together big matrix for each threshold ----- ###
         misc$ylevs = list(cut = cnm)
@@ -126,27 +162,26 @@ lsm.basis.clm = function (object, trms, xlev, grid,
 # replacement estimation routine for cases with a scale param
 .clm.estHook = function(object, do.se = TRUE, tol = 1e-8) {
     scols = object@misc$scale.idx
-    minusS = object@linfct[, scols, drop = FALSE]
     linfct = object@linfct
-    
-    active = which(!is.na(object@bhat))
-    bhat = object@bhat[active]
+    bhat = object@bhat
+    active = !is.na(bhat)
+    bhat[!active] = 0
     if (is.null(tol)) 
         tol = 1e-8
     
     result = sapply(seq_len(nrow(linfct)), function(i) {
+        x = linfct[i, ]
         if (.is.estble(x, object@nbasis, tol)) {
-            rsigma = exp(sum(minusS[i, ] * object@bhat[scols]))
-            x = linfct[i, active] * rsigma
-            est = sum(bhat[-scols] * x[-scols])
+            rsigma = exp(sum(linfct[i, scols] * bhat[scols]))
+            est = rsigma * sum(bhat[-scols] * x[-scols])
             if (!is.null(object@grid$.offset.))
                 est = est + rsigma * object@grid$.offset.[i] # offset is already negated via offset.mult
             if(do.se) {
                 x[scols] = est * x[scols] / rsigma
-                se = sqrt(.qf.non0(object@V, x))
+                se = sqrt(.qf.non0(object@V, rsigma * x[active]))
                 df = NA
             }
-            else # if these unasked-for results are used, we're bound to get an error!
+            else
                 se = df = 0
             c(est, se, df)
         }
