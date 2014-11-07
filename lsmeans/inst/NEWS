@@ -12,6 +12,8 @@ Changelog for 'lsmeans' package
     Fixed bug in 'contrast' that failed to update 'pri.vars'
         which, e.g., creates an error in a subsequent plot
     Fixed bug in plot - it had ignored xlab when horizontal = FALSE
+    Removed frequencies and offsets from row labels in 'as.glht'
+    Fixed 'as.glht' so df may be omitted or set to NA for asymptotics
     Provides for equivalence, noninferiority, etc. tests via
         'side' and 'delta' arguments in 'summary' or 'test'. Also
         for non-zero null values via 'null'
@@ -22,7 +24,6 @@ Changelog for 'lsmeans' package
     Revision to function for estimates, SEs, and df
     Added provision to specify 'estHook' and 'vcovHook' in 'misc' slot
         to allow for custom routines for estimates and covariances.
-*To do* still need vcovHook - both in vcov fcn and custom one for clm
 
 2.12
     *** Developers supporting lsmeans please note:            ***

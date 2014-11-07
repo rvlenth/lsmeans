@@ -86,6 +86,7 @@ lsm.basis.clm = function (object, trms, xlev, grid,
         # Make sure there are no name clashes
         names(bhat)[si] = paste(".S", names(object$zeta), sep=".")
         misc$estHook = as.name(".clm.estHook")
+        misc$vcovHook = as.name(".clm.vcovHook")
     }
     else
         S = NULL
@@ -188,6 +189,23 @@ lsm.basis.clm = function (object, trms, xlev, grid,
         else c(NA,NA,NA)
     })
     t(result)
+}
+
+.clm.vcovHook = function(object, tol = 1e-8, ...) {
+    scols = object@misc$scale.idx
+    bhat = object@bhat
+    active = !is.na(bhat)
+    bhat[!active] = 0
+    linfct = object@linfct
+    rsigma = as.numeric(linfct[, scols, drop = FALSE] %*% object@bhat[scols])
+    rsigma = exp(rsigma) * apply(linfct, 1, .is.estble, object@nbasis, tol)
+    # I'll do the scaling later
+    eta = as.numeric(linfct[, -scols, drop = FALSE] %*% bhat[-scols])
+    if (!is.null(object@grid$.offset.))
+        eta = eta + object@grid$.offset.
+    for (j in scols) linfct[, j] = eta * linfct[, j]
+    linfct = (diag(rsigma) %*% linfct) [, active, drop = FALSE]
+    linfct %*% tcrossprod(object@V, linfct)
 }
 
 

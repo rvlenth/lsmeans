@@ -732,11 +732,18 @@ vcov.ref.grid = function(object, ...) {
     tol = lsm.options()$estble.tol
     if(is.null(tol)) 
         tol = 1e-8
-    X = object@linfct
-    estble = apply(X, 1, .is.estble, object@nbasis, tol)
-    X[!estble, ] = NA
-    X = X[, !is.na(object@bhat)]
-    X %*% tcrossprod(object@V, X)
+    if (!is.null(hook <- object@misc$vcovHook)) {
+        if (is.name(hook)) 
+            hook = eval(hook)
+        hook(object, tol = tol, ...)
+    }
+    else {
+        X = object@linfct
+        estble = apply(X, 1, .is.estble, object@nbasis, tol)
+        X[!estble, ] = NA
+        X = X[, !is.na(object@bhat)]
+        X %*% tcrossprod(object@V, X)
+    }
 }
 
 

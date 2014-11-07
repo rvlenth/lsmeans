@@ -42,8 +42,11 @@ glht.ref.grid <- function(model, linfct, by, ...) {
     }
     if (missing(by)) by = object@misc$by.vars
     
-    nms = setdiff(names(object@grid), by)
-    lf = object@linfct
+    nms = setdiff(names(object@grid), c(by, ".offset.", ".freq."))
+    if (is.null(object@misc$estHook))
+        lf = object@linfct
+    else # custom estimation setup - use the grid itself as the parameterization
+        lf = diag(1, nrow(object@linfct))
     dimnames(lf)[[1]] = as.character(interaction(object@grid[, nms], sep=", "))
     
     if (is.null(by)) {
@@ -82,9 +85,19 @@ as.glht.ref.grid <- function(object, ...)
 # S3 modelparm method for lsmwrap (S3 wrapper for an lsmobj - see glht.lsmobj)
 modelparm.lsmwrap <- function(model, coef., vcov., df, ...) {
     object = model$object
-    estimable = ! sapply(object@bhat, is.na)
-    .cls.list("modelparm", coef = object@bhat, vcov = object@V,
-              df = df, estimable = estimable)
+    if (is.null(object@misc$estHook)) {
+        bhat = object@bhat
+        V = object@V
+    }
+    else { # Have custom vcov and est methods. Use the grid itself as parameterization
+        bhat = predict(object)
+        V = vcov(object)
+    }
+    if(missing(df) || is.na(df))
+        df = 0
+    .cls.list("modelparm", coef = bhat, vcov = V,
+                df = df, estimable = !is.na(bhat))
+    # This is NOT what we mean by 'estimable', but it is what glht wants...
 }
 
 # S3 methods for glht.list
