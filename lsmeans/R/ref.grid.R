@@ -324,6 +324,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
 # 2.13: Revised to call w/ just object instead of all those args (except linfct)
 # Also moved offest comps to here, and provided for misc$estHook
 .est.se.df = function(object, do.se=TRUE, tol=lsm.options()$estble.tol) {
+    if (is.null(tol)) 
+        tol = 1e-8
     misc = object@misc
     if (!is.null(hook <- misc$estHook)) {
         if (is.name(hook)) hook = eval(hook)
@@ -332,8 +334,6 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     else {
         active = which(!is.na(object@bhat))
         bhat = object@bhat[active]
-        if (is.null(tol)) 
-            tol = 1e-8
         result = t(apply(object@linfct, 1, function(x) {
             if (.is.estble(x, object@nbasis, tol)) {
                 x = x[active]
