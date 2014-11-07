@@ -51,7 +51,7 @@ lsm.basis.clm = function (object, trms, xlev, grid,
     # Remember trms was trumped-up to include scale and nominal predictors.
     # Recover the actual terms for the principal model
     trms = delete.response(object$terms)
-    m = model.frame(trms, grid, na.action = na.pass, xlev = object$xlevelssummarundebui)
+    m = model.frame(trms, grid, na.action = na.pass, xlev = object$xlevels)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
     xint = match("(Intercept)", colnames(X), nomatch = 0L)
     if (xint > 0L) {
@@ -94,22 +94,30 @@ lsm.basis.clm = function (object, trms, xlev, grid,
     ### ----- Get non-estimability basis ----- ###
     nbasis = snbasis = matrix(NA)
     if (any(is.na(bhat))) {
-        mm = model.matrix(object)
+        #####mm = model.matrix(object)
+        # workaround to fact that model.matrix doesn't get the contrasts right...
+        mf = update(object, method = "model.frame")$mf
+        mm = list(X = model.matrix(object$terms, data=mf, contrasts.arg = object$contrasts))
         if (any(is.na(c(object$alpha, object$beta)))) {
             NOMX = mm$X
             if (is.null(mm$NOM))
                 NOMX = mm$X
-            else
-                NOMX = cbind(mm$NOM, mm$X[, -1, drop=false])
+            else {
+                ##NOMX = cbind(mm$NOM, mm$X[, -1, drop=false])
+                mmNOM = model.matrix(object$nom.terms, data = mf, contrasts.arg = object$nom.contrasts)
+                NOMX = cbind(mmNOM, mm$X[, -1])
+            }
             nbasis = nonest.basis(NOMX)
-            # replicate the NOM parts
+            # replicate and reverse the sign of the NOM parts
             nomcols = seq_len(ncol(NOM))
             nbasis = apply(nbasis, 2, function(x)
-                c(rep(x[nomcols], each = length(object$alpha)), x[-nomcols]))
+                c(rep(-x[nomcols], each = length(object$alpha)), x[-nomcols]))
         }
         if (!is.null(mm$S)) {
             if (any(is.na(object$zeta))) {
-                snbasis = nonest.basis(mm$S)
+                ####snbasis = nonest.basis(mm$S)
+                mmS = model.matrix(object$S.terms, data = mf, contrasts.arg = object$S.contrasts)
+                snbasis = nonest.basis(mmS)
                 # put intercept part at end
                 snbasis = rbind(snbasis[-1, , drop=FALSE], snbasis[1, ])
                 if (!is.null(attr(object$S.terms, "offset")))
@@ -124,9 +132,12 @@ lsm.basis.clm = function (object, trms, xlev, grid,
         }
         if (is.na(nbasis[1])) # then only nonest part is scale
             nbasis = snbasis
-        else if (!is.na(snbasis[1])) # then have both
-            nbasis = cbind(rbind(nbasis, matrix(0, nrow=length(si), ncol=ncol(nbasis))), snbasis)
-        # else nbasis stands as-is
+        else { 
+            if (!is.null(S)) # pad nbasis with zeros when there's a scale model
+                nbasis = rbind(nbasis, matrix(0, nrow=length(si), ncol=ncol(nbasis)))
+            if (!is.na(snbasis[1]))
+                nbasis = cbind(nbasis, snbasis)
+        }
     }
     
     if (latent) {
@@ -160,53 +171,40 @@ lsm.basis.clm = function (object, trms, xlev, grid,
          dfargs = list(), misc = misc)
 }
 
-# replacement estimation routine for cases with a scale param
-.clm.estHook = function(object, do.se = TRUE, tol = 1e-8) {
-    scols = object@misc$scale.idx
-    linfct = object@linfct
-    bhat = object@bhat
-    active = !is.na(bhat)
-    bhat[!active] = 0
-    if (is.null(tol)) 
-        tol = 1e-8
-    
-    result = sapply(seq_len(nrow(linfct)), function(i) {
-        x = linfct[i, ]
-        if (.is.estble(x, object@nbasis, tol)) {
-            rsigma = exp(sum(linfct[i, scols] * bhat[scols]))
-            est = rsigma * sum(bhat[-scols] * x[-scols])
-            if (!is.null(object@grid$.offset.))
-                est = est + rsigma * object@grid$.offset.[i] # offset is already negated via offset.mult
-            if(do.se) {
-                x[scols] = est * x[scols] / rsigma
-                se = sqrt(.qf.non0(object@V, rsigma * x[active]))
-                df = NA
-            }
-            else
-                se = df = 0
-            c(est, se, df)
-        }
-        else c(NA,NA,NA)
-    })
-    t(result)
-}
 
-.clm.vcovHook = function(object, tol = 1e-8, ...) {
+
+#### replacement estimation routines for cases with a scale param
+
+## workhorse for estHook and vcovHook functions
+.clm.hook = function(object, tol = 1e-8) {
     scols = object@misc$scale.idx
     bhat = object@bhat
     active = !is.na(bhat)
     bhat[!active] = 0
     linfct = object@linfct
-    rsigma = as.numeric(linfct[, scols, drop = FALSE] %*% object@bhat[scols])
-    rsigma = exp(rsigma) * apply(linfct, 1, .is.estble, object@nbasis, tol)
+    estble = apply(linfct, 1, .is.estble, object@nbasis, tol)
+    estble[!estble] = NA
+    rsigma = estble * as.numeric(linfct[, scols, drop = FALSE] %*% object@bhat[scols])
+    rsigma = exp(rsigma) * estble
     # I'll do the scaling later
     eta = as.numeric(linfct[, -scols, drop = FALSE] %*% bhat[-scols])
     if (!is.null(object@grid$.offset.))
         eta = eta + object@grid$.offset.
     for (j in scols) linfct[, j] = eta * linfct[, j]
     linfct = (diag(rsigma) %*% linfct) [, active, drop = FALSE]
-    linfct %*% tcrossprod(object@V, linfct)
+    list(est = eta * rsigma, V = linfct %*% tcrossprod(object@V, linfct))
 }
+
+.clm.estHook = function(object, do.se = TRUE, tol = 1e-8, ...) {
+    raw.matl = .clm.hook(object, tol)
+    SE = if (do.se) sqrt(diag(raw.matl$V))  else NA
+    cbind(est = raw.matl$est, SE = SE, df = NA)
+}
+
+.clm.vcovHook = function(object, tol = 1e-8, ...) {
+    .clm.hook(object, tol)$V
+}
+
 
 
 lsm.basis.clmm = function (object, trms, xlev, grid, ...) {
