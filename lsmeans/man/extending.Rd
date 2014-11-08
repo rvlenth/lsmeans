@@ -45,16 +45,30 @@ In models where a non-full-rank result is possible (often you can tell by seeing
 
 The models already supported are detailed in \code{\link{models}}. Some packages may provide additional \pkg{lsmeans} support for its object classes. 
 }
+
+}
 \value{
-A \code{list} with the following elements:
+\code{recover.data} should return a \code{data.frame} containing all the variables in the original data that appear as predictors in the model. Several attributes need to be included as well; see the code for \code{lsmeans:::recover.data.lm}.
+
+\code{lsm.basis} should return a \code{list} with the following elements:
 \item{X}{The matrix of linear fcns over \code{grid}, having the same number of rows as \code{grid} and the number of columns equal to the length of \code{bhat}.}
 \item{bhat}{The vector of regression coefficients for fixed effects. This should \emph{include} any \code{NA}s that result from rank deficiencies.}
 \item{nbasis}{A matrix whose columns form a basis for non-estimable functions of beta, or a 1x1 matrix of \code{NA} if there is no rank deficiency.}
 \item{V}{The estimated covariance matrix of \code{bhat}.}
 \item{dffun}{A function of \code{(k, dfargs)} that returns the degrees of freedom associated with \code{sum(k * bhat)}.}
 \item{dfargs}{A \code{list} containing additional arguments needed for \code{dffun}.}
+
+\code{nonest.basis} should return a matrix with the number of rows equal to the length of the vector of regression coefficients, and number of columns equal to the rank deficiency of the model matrix. If the model is full-rank, then it should return \samp{matrix(NA)}.
 }
+
 %\references{}
+
+\section{Optional hooks}{
+Some models may need something other than the product of \code{X} and \code{bhat} as the estimates, or the usual quadratic form as the square of the standard error. In that case, custom functions may be pointed to via the items \code{misc$estHook} and \code{misc$vcovHook}. I suggest providing them in the form \samp{as.name("my.hook.function")}, then the actual code will be loaded as needed when summarizing the object. 
+
+The \code{estHook} function should have arguments \samp{(object, do.se, tol, ...)} where \code{object} is the \code{ref.grid} or \code{lsmobj} object, \code{do.se} is a logical flag for whether to return the standard error, and \code{tol} is the tolerance for assessing estimability. It should return a matrix with 3 columns: the estimates, standard errors (\code{NA} when \code{do.se==FALSE}), and degrees of freedom (\code{NA} for asymptotic). The number of rows should be the same as \samp{object@linfct}. The \code{vcovHook} function should have arguments \samp{(object, tol, ...)} as described. It should return the covariance matrix for the estimates.
+}
+
 \author{
 Russell V. Lenth
 }
