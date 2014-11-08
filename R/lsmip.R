@@ -84,8 +84,10 @@ lsmip.default = function(object, formula, type,
     
     xlab = ifelse(is.null(xargs$xlab),
         paste("Levels of", paste(xvars, collapse=" * ")), xargs$xlab)
+    rspLbl = paste("Predicted", 
+        ifelse(is.null(lsmo@misc$inv.lbl), "response", lsmo@misc$inv.lbl))
     ylab = ifelse(is.null(xargs$ylab),
-        ifelse(type == "response", "Predicted response", "Linear prediction"),
+        ifelse(type == "response", rspLbl, "Linear prediction"),
         xargs$ylab)
     
     # remove the unneeded stuff from xlabs
