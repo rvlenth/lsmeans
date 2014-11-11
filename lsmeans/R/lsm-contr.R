@@ -132,3 +132,21 @@ del.eff.lsmc = function(levs, ...) {
     attr(M, "adjust") = "fdr"
     M
 }
+
+# This one is for turning estimates of cumulative probabilities
+# into cell probabilities
+diff.cum.lsmc = function(levs, sep = "|", ...) {
+    plevs = unique(setdiff(unlist(strsplit(levs, sep, TRUE)), sep))
+    k = 1 + length(levs)
+    if (length(plevs) != k)
+        plevs = seq_len(k)
+    M = matrix(0, nrow = length(levs), ncol = k)
+    for (i in seq_along(levs))
+        M[i, c(i,i+1)] = c(1,-1)
+    dimnames(M) = list(levs, plevs)
+    M = as.data.frame(M)
+    attr(M, "desc") = "Differences of cumulative probabilities"
+    attr(M, "adjust") = "none"
+    attr(M, "offset") = c(rep(0, k-1), 1)
+    M
+}

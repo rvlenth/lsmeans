@@ -85,8 +85,8 @@ lsm.basis.clm = function (object, trms, xlev, grid,
         si = misc$scale.idx = length(object$alpha) + length(object$beta) + seq_len(ncol(S))
         # Make sure there are no name clashes
         names(bhat)[si] = paste(".S", names(object$zeta), sep=".")
-        misc$estHook = as.name(".clm.estHook")
-        misc$vcovHook = as.name(".clm.vcovHook")
+        misc$estHook = ".clm.estHook"
+        misc$vcovHook = ".clm.vcovHook"
     }
     else
         S = NULL
@@ -172,6 +172,21 @@ lsm.basis.clm = function (object, trms, xlev, grid,
 }
 
 
+# Make the linear-predictor ref.grid into one for cell probabilities
+.clm.prob.grid = function(object, thresh = "cut", cellname = "cell") {
+    byv = setdiff(names(object@levels), thresh)
+    newrg = contrast(regrid(object, TRUE), "diff.cum", by = byv)
+    class(newrg) = "ref.grid"
+    misc = newrg@misc
+    misc$infer = c(FALSE,FALSE)
+    misc$estName = "prob"
+    misc$pri.vars = misc$by.vars = NULL
+    newrg@misc = misc
+    names(newrg@levels)[1] = names(newrg@grid)[1] = cellname
+    newrg@roles = object@roles
+    newrg@roles$multresp = cellname
+    newrg
+}
 
 #### replacement estimation routines for cases with a scale param
 
@@ -182,7 +197,7 @@ lsm.basis.clm = function (object, trms, xlev, grid,
     active = !is.na(bhat)
     bhat[!active] = 0
     linfct = object@linfct
-    estble = apply(linfct, 1, .is.estble, object@nbasis, tol)
+    estble = is.estble(linfct, object@nbasis, tol) ###apply(linfct, 1, .is.estble, object@nbasis, tol)
     estble[!estble] = NA
     rsigma = estble * as.numeric(linfct[, scols, drop = FALSE] %*% object@bhat[scols])
     rsigma = exp(rsigma) * estble

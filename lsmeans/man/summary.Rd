@@ -34,6 +34,8 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
     xlab, ylab, layout, ...)
 
 \method{vcov}{ref.grid}(object, ...)
+
+regrid (object, transform = TRUE)
 }
 
 \arguments{
@@ -69,6 +71,7 @@ The object to be printed or plotted.
   \item{intervals}{If \code{TRUE}, confidence intervals are plotted for each estimate}
   \item{comparisons}{If \code{TRUE}, \dQuote{comparison arrows} are added to the plot, in such a way that the degree to which arrows overlap reflects as much as possible the significance of the comparison of the two estimates.}
   \item{alpha, int.adjust}{The \code{alpha} argument to use in constructing comparison arrows. \code{int.adjust} may be used to set the \code{adjust} argument for the confidence intervals (use \code{adjust} to set the adjust method for the comparison arrows).}
+  \item{transform}{Logical value; if true, the inverse transformation is applied to the estimates in the grid}
   \item{\dots, digits, quote, right, xlab, ylab, layout}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, \code{\link{update}}, or \code{\link{dotplot}} as appropriate. If not specified, appropriate defaults are used. For example, the default \code{layout} is one column of horizontal panels or one row of vertical panels.}
 }
 \details{
@@ -110,6 +113,9 @@ Two-sided (equivalence): \eqn{H_0: |\theta - \theta_0| \ge \delta} versus \eqn{H
 The \code{plot} method for \code{"lsmobj"} or \code{"summary.ref.grid"} objects (but not \code{"ref.grid"} objects themselves) produces a plot displaying confidence intervals for the estimates. If any \code{by} variables are in force, the plot is divided into separate panels. These functions use the \code{\link[lattice]{dotplot}} function, and thus require that the \pkg{lattice} package be installed. For \code{"summary.ref.grid"} objects, the \code{\dots} arguments in \code{plot} are passed \emph{only} to \code{dotplot}, whereas for \code{"lsmobj"} objects, the object is updated using \code{\dots} before summarizing and plotting.
 
 In plots with \code{comparisons = TRUE}, the resulting arrows are only approximate, and in some cases may fail to accurately reflect the pairwise comparisons of the estimates -- especially when estimates having large and small standard errors are intermingled in just the wrong way.
+
+\bold{Re-gridding:}
+The \code{regrid} function reparameterizes an existing \code{ref.grid} so that its \code{linfct} slot is the identity matrix and its \code{bhat} slot consists of the estimates at the grid points. If \code{transform} is \code{TRUE}, the inverse transform is applied to the estimates. Outwardly, the \code{summary} after applying \code{regrid} is identical to what it was before (using \samp{type="response"} if \code{transform} is \code{TRUE}). But subsequent contrasts will be conducted on the transformed scale -- which is the reason this function exists. See the example below. \bold{Warning:} in cases where degrees of freedom depends on the linear function being estimated, \code{regrid} will probably cause fatal errors when \code{summary} is called.
 }
 
 \value{
@@ -141,6 +147,14 @@ summary(sqwarp.rg)
 
 # Back-transformed results - compare with summary of 'warp.rg'
 summary(sqwarp.rg, type = "response")
+
+# But differences of sqrts can't be back-transformed
+summary(pairs(sqwarp.rg, by = "wool"), type = "response")
+
+# We can do it via regrid
+sqwarp.rg2 <- regrid(sqwarp.rg)
+summary(sqwarp.rg2)  # same as for sqwarp.rg with type = "response"
+pairs(sqwarp.rg2, by = "wool")
 
 # Logistic regression
 # Reshape the Titanic data
