@@ -27,6 +27,7 @@ exportPattern("*.lsmc")  #all contrast fcns
 export(
     as.glht,
     contrast,
+    is.estble,
     lsm,
     lsm.basis,
     lsmeans, 
@@ -38,6 +39,7 @@ export(
     nonest.basis,
     recover.data,
     ref.grid,
+    regrid,
     test
 )    
 

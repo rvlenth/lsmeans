@@ -702,23 +702,39 @@ The \lsm{} package comes with built-in support for several packages and model cl
 \lsm{} support for all these models works similarly to the examples we have presented. Note that generalized linear or mixed models, and several others such as survival models, typically employ link functions such as "log" or "logit". In all such cases, the LS~means displayed are on the scale of the linear predictor, and any averaging over the reference grid is performed on the linear-predictor scale. Results for \code{aovlist} objects are based on intra-block estimates, and should be used with caution.
 
 \subsection{Proportional-odds example}
-There is an interesting twist in \dqt{polr} objects (polytomous regression for Likert-scale data), in that an extra factor (named \dqt{cut} by default) is created to identify which boundary between scale positions we wish to use in predictions. The example here is based on the "housing" data in the \pkg{MASS} package, where the response variable is satisfaction ("Sat") on a three-point scale of low, medium, high; and predictors include "Type" (type of rental unit, four levels), "Infl" (influence on management of the unit, three levels), and "Cont" (contact with other residents, two levels). Here, we fit a (not necessarily good) model and obtain LS~means for "Infl"
-<<>>=
+The \dqt{polr} function in \pkg{MASS} fits polytomous regression models to Likert-scale data. It does this by modeling the ordinal response as a categorization of a continuous latent variable $S$, then estimating thresholds for this categorization and fitting a generalized linear model to the cumulative probabilities for each threshold.
+By default, "lsmeans" produces predictions of the latent variable.
+
+The example here is based on the "housing" data in the \pkg{MASS} package, where the response variable is satisfaction ("Sat") on a three-point scale of low, medium, high; and predictors include "Type" (type of rental unit, four levels), "Infl" (influence on management of the unit, three levels), and "Cont" (contact with other residents, two levels). We will assume that the latent variable is normally distributed (by specifying a probit link). 
+<<housing-plot, fig=TRUE, width= 9, height = 3.5, include=FALSE>>=
 library("MASS")
-housing.plr <- polr(Sat ~ Infl + Type + Cont,
-                   data = housing, weights = Freq)
-ref.grid(housing.plr)
-housing.lsm <- lsmeans(housing.plr, ~ Infl | cut)
+housing.plr <- polr(Sat ~ (Infl + Type + Cont)^2,
+                   data = housing, weights = Freq, method = "probit")
+lsmip(housing.plr, Cont ~ Infl | Type, layout = c(4,1))
 @
-The default link function is "logit". Now we transform the predictions and contrasts thereof to the response scale:
+\begin{figure}
+\begin{center}
+\includegraphics[width=6in]{using-lsmeans-housing-plot.pdf}
+\end{center}
+\caption{Interaction plot for the latent variable in the  \code{housing} example.}\label{housing-plot}
+\end{figure}
+The plot is shown in \Fig{housing-plot}. Generally, the higher the influence, the higher the satisfaction. Overall $F$ tests of the "Infl" effect suggest that it is strong for all four housing types:
 <<>>=
-summary(housing.lsm, type = "response")
-summary(pairs(housing.lsm), type = "response") [1:3, ]
+test(pairs(lsmeans(housing.plr, ~ Infl | Type)), joint = TRUE)
 @
-The logits are transformed to cumulative probabilities (note that a low cumulative probability means a low number of people are dissatisfied; thus, we find that those having more influence tend to me more satisfied).  Note also that the pairwise comparisons transform to odds ratios. Only the first three rows of the comparisons table are shown because the results for "cut = Medium|High" will be identical.
+The tests are asymptotic (signaled by "df2 = NA"), so they are actually chi-square tests for the statistics $X^2 = df_1\cdot F$ with $df_1$ degrees of freedom. Higher contact also seems to be associated with higher satisfaction, but terrace apartments may be an exception. Let's see:
+<<>>=
+test(pairs(lsmeans(housing.plr, ~Cont | Type)), joint = TRUE)
+@
+So the effect is inconclusive for both atria and terraces.
 
-Another point worth noting is that when only asymptotic tests and confidence intervals are available, degrees of freedom are set to "NA", and  test statistics and intervals are labeled differently.
+The location and scale of the latent variable are not identifiable, and below we use "rescale" to change the reference scale to center on 50 with an error SD around 10.
+<<>>=
+lsmeans(housing.plr, ~ Infl | Type, rescale = c(50,10))
+@
 
+
+%%%%estimating thresholds for the b, in that an extra factor (named \dqt{cut} by default) is created to identify which boundary between scale positions we wish to use in predictions. 
 
 
 \subsection{Extending to more models}

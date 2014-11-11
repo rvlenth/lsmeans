@@ -245,7 +245,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
 contrast = function(object, ...)
     UseMethod("contrast")
               
-contrast.ref.grid = function(object, method = "eff", by, adjust, 
+contrast.ref.grid = function(object, method = "eff", by, adjust, offset = NULL,
         options = getOption("lsmeans")$contrast, ...) {
     args = object@grid
     args[[".offset."]] = NULL 
@@ -326,6 +326,13 @@ contrast.ref.grid = function(object, method = "eff", by, adjust,
     misc$pri.vars = setdiff(names(grid), c(".offset.",".freq."))
     if (missing(adjust)) adjust = attr(cmat, "adjust")
     if (is.null(adjust)) adjust = "none"
+    if (!is.null(attr(cmat, "offset")))
+        offset = attr(cmat, "offset")
+    if (!is.null(offset)) {
+        if(is.null(grid[[".offset."]]))
+            grid[[".offset."]] = 0
+            grid[[".offset."]] = grid[[".offset."]] + rep(offset, length(by.rows))
+    }
     misc$adjust = adjust
     misc$infer = c(FALSE, TRUE)
     misc$by.vars = by
@@ -363,10 +370,12 @@ contrast.ref.grid = function(object, method = "eff", by, adjust,
 .find.by.rows = function(tbl, by) {
     if (any(is.na(match(by, names(tbl)))))
         stop("'by' variables are not all in the grid")    
-    bylevs = tbl[ , by, drop=FALSE]
+    bylevs = tbl[ , by, drop = FALSE]
     by.id = do.call("paste", bylevs)
     uids = unique(by.id)
-    lapply(uids, function(id) which(by.id == id))
+    result = lapply(uids, function(id) which(by.id == id))
+    names(result) = uids
+    result
 }
 
 
@@ -382,7 +391,7 @@ test = function(object, null, ...) {
 
 
 test.ref.grid = function(object, null = 0, 
-    joint = FALSE, verbose = FALSE, rows, ...) {
+    joint = FALSE, verbose = FALSE, rows, by, ...) {
 # if joint = FALSE, this is a courtesy method for 'contrast'
 # else it computes the F test or Wald test of H0: L*beta = null
 # where L = object@linfct    
@@ -394,34 +403,54 @@ test.ref.grid = function(object, null = 0,
             print(cbind(object@grid, equals = null))
         } 
         L = object@linfct
-        if (!missing(rows)) L = L[rows, , drop = FALSE]
-        if(!all(apply(L, 1, .is.estble, object@nbasis)))
-            stop("One or more linear functions is not estimable")
+        if (!missing(rows))
+            by.rows = list(sel.rows = rows)
+        else {
+            by.rows = list(all = seq_len(nrow(L)))
+            if(missing(by)) 
+                by = object@misc$by.vars
+            if (!is.null(by)) 
+                by.rows = .find.by.rows(object@grid, by)
+        }
         
         estble.idx = which(!is.na(object@bhat))
         bhat = object@bhat[estble.idx]
-        L = L[, estble.idx, drop = FALSE]
-        # Check rank
-        qrLt = qr(t(L))
-        r = qrLt$rank
-        if (r < nrow(L)) {
-            if(!all(null==0))
-                stop("Rows are linearly dependent - cannot do the test when 'null' != 0")
-            else
-                message("Note: rows are linearly dependent - reducing the df")
-        }
-        tR = t(qr.R(qrLt))[1:r,1:r]
-        tQ = t(qr.Q(qrLt))[1:r, , drop = FALSE]
-        if(length(null) < r) null = rep(null,r)
-        z = tQ %*% bhat - solve(tR, null[1:r])
-        zcov = tQ %*% object@V %*% t(tQ)
-        F = sum(z * solve(zcov, z)) / r
-        df2 = object@dffun(tQ, object@dfargs)
-        if (is.na(df2))
-            result = c(chisq = F*r, df = r, p.value = pchisq(F*r, r, lower.tail = FALSE))
-        else
-            result = c(F = F, df1 = r, df2 = df2, p.value = pf(F, r, df2, lower.tail = FALSE))
-        round(result, 4)
+        ###L = L[, estble.idx, drop = FALSE]
+        lindep = FALSE
+        
+        result = lapply(by.rows, function(rows) {
+            LL = L[rows, , drop = FALSE]
+            if (!all(is.estble(LL, object@nbasis)))
+                c(F = NA, df1 = NA, df2 = NA, p.value = NA)
+            else {
+                LL = LL[, estble.idx, drop = FALSE]
+                # Check rank
+                qrLt = qr(t(LL))
+                r = qrLt$rank
+                if (r < nrow(LL)) {
+                    if(!all(null==0))
+                        stop("Rows are linearly dependent - cannot do the test when 'null' != 0")
+                    else
+                        lindep <<- TRUE
+                }
+                tR = t(qr.R(qrLt))[1:r,1:r]
+                tQ = t(qr.Q(qrLt))[1:r, , drop = FALSE]
+                if(length(null) < r) null = rep(null,r)
+                z = tQ %*% bhat - solve(tR, null[1:r])
+                zcov = tQ %*% object@V %*% t(tQ)
+                F = sum(z * solve(zcov, z)) / r
+                df2 = object@dffun(tQ, object@dfargs)
+                if (is.na(df2))
+                    p.value = pchisq(F*r, r, lower.tail = FALSE)
+                else
+                    p.value = pf(F, r, df2, lower.tail = FALSE)
+                round(c(F = F, df1 = r, df2 = df2, p.value = p.value), 4)
+            }
+        })
+        
+        if (lindep)
+            message("Note: Rows are linearly dependent - df are reduced accordingly")
+        t(as.data.frame(result))
     }
 }
 

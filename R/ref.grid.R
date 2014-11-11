@@ -151,11 +151,13 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     multresp = character(0) ### ??? was list()
     ylevs = misc$ylevs
     if(!is.null(ylevs)) { # have a multivariate situation
-        if (missing(mult.levs)) {
+       if (missing(mult.levs)) {
             if (missing(mult.name))
                 mult.name = names(ylevs)[1]
             ref.levels[[mult.name]] = ylevs[[1]]
             multresp = mult.name
+            MF = data.frame(ylevs)
+            names(MF) = mult.name
         }
         else {
             k = prod(sapply(mult.levs, length))
@@ -164,8 +166,10 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
             for (nm in names(mult.levs))
                 ref.levels[[nm]] = mult.levs[[nm]]
             multresp = names(mult.levs)
+            MF = do.call("expand.grid", mult.levs)
         }
-        grid = do.call("expand.grid", ref.levels)
+        ###grid = do.call("expand.grid", ref.levels)
+        grid = merge(grid, MF)
         # add any matrices
         for (nm in names(matlevs))
             grid[[nm]] = matrix(rep(matlevs[[nm]], each=nrow(grid)), nrow=nrow(grid))
@@ -304,7 +308,9 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
 }
 
 # utility to check estimability of x'beta, given nonest.basis
-.is.estble = function(x, nbasis, tol=1e-8) {
+is.estble = function(x, nbasis, tol=1e-8) {
+    if (is.matrix(x))
+        return(apply(x, 1, is.estble, nbasis, tol))
     if(is.na(nbasis[1]))
         TRUE
     else {
@@ -328,14 +334,14 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         tol = 1e-8
     misc = object@misc
     if (!is.null(hook <- misc$estHook)) {
-        if (is.name(hook)) hook = eval(hook)
+        if (is.character(hook)) hook = get(hook)
         result = hook(object, do.se=do.se, tol=tol)
     }
     else {
         active = which(!is.na(object@bhat))
         bhat = object@bhat[active]
         result = t(apply(object@linfct, 1, function(x) {
-            if (.is.estble(x, object@nbasis, tol)) {
+            if (is.estble(x, object@nbasis, tol)) {
                 x = x[active]
                 est = sum(bhat * x)
                 if(do.se) {
@@ -733,13 +739,13 @@ vcov.ref.grid = function(object, ...) {
     if(is.null(tol)) 
         tol = 1e-8
     if (!is.null(hook <- object@misc$vcovHook)) {
-        if (is.name(hook)) 
-            hook = eval(hook)
+        if (is.character(hook)) 
+            hook = get(hook)
         hook(object, tol = tol, ...)
     }
     else {
         X = object@linfct
-        estble = apply(X, 1, .is.estble, object@nbasis, tol)
+        estble = is.estble(X, object@nbasis, tol) ###apply(X, 1, .is.estble, object@nbasis, tol)
         X[!estble, ] = NA
         X = X[, !is.na(object@bhat)]
         X %*% tcrossprod(object@V, X)
@@ -794,6 +800,37 @@ lsm.options = function(...) {
     if (is.null(x))  FALSE
     else if (is.logical(x))  x
     else FALSE
+}
+
+
+### Utility to change the internal structure of a ref.grid
+### Returned ref.grid object has linfct = I and bhat = estimates
+### Primary reason to do this is with transform = TRUE, then can 
+### work with linear functions of the transformed predictions
+regrid = function(object, transform = TRUE) {
+    est = .est.se.df(object, do.se = FALSE)
+    estble = !(is.na(est[[1]]))
+    object@V = vcov(object)[estble, estble, drop=FALSE]
+    object@bhat = est[[1]]
+    object@linfct = diag(1, length(estble))
+    if(all(estble))
+        object@nbasis = matrix(NA)
+    else
+        object@nbasis = object@linfct[, !estble, drop = FALSE]
+    if(transform && !is.null(object@misc$tran)) {
+        link = attr(est, "link")
+        D = diag(link$mu.eta(object@bhat[estble]))
+        object@bhat = link$linkinv(object@bhat)
+        object@V = D %*% tcrossprod(object@V, D)
+        inm = object@misc$inv.lbl
+        if (!is.null(inm))
+            object@misc$estName = inm
+        object@misc$tran = object@misc$inv.lbl = NULL
+    }
+    # Nix out things that are no longer needed or valid
+    object@grid$.offset. = object@misc$offset.mult =
+        object@misc$estHook = object@misc$vcovHook = NULL
+    object
 }
 
 

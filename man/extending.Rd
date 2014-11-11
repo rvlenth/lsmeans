@@ -3,6 +3,7 @@
 \alias{recover.data.call}
 \alias{lsm.basis}
 \alias{nonest.basis}
+\alias{is.estble}
 
 % additional ref topic
 \alias{extending-lsmeans}
@@ -19,6 +20,7 @@ recover.data(object, ...)
 lsm.basis(object, trms, xlev, grid, ...)
 
 nonest.basis(qrX)
+is.estble(x, nbasis, tol = 1e-8)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -29,6 +31,9 @@ An object returned from a model-fitting function.}
   \item{grid}{A \code{data.frame} containing predictor values at which predictions are needed.}
   \item{qrX}{A model matrix, or the QR decomposition thereof (from \code{\link{qr}} with \samp{LAPACK=FALSE}). The latter is preferred if already available, as it saves computation.
   }
+  \item{x}{Numeric vector or matrix for assessing estimability of \samp{sum(x * beta)}, where \code{beta} is the vector of regression coefficients.}
+  \item{nbasis}{Matrix returned by \code{nonest.basis}.}
+  \item{tol}{Numeric tolerance for assessing noestimability.}
   \item{na.action}{Integer vector of indices of observations to ignore; or \code{NULL} if none}
   \item{data}{Data frame. Usually, this is \code{NULL}. However, if non-null, this is used in place of the reconstructed dataset. It must have all of the predictors used in the model, and any factor levels must match those used in fitting the model.}
   \item{\dots}{Additional arguments passed to other methods.}
@@ -41,12 +46,12 @@ To extend \pkg{lsmeans}'s support to additional model types, one need only write
 
 If the model has a multivariate response, \code{bhat} needs to be \dQuote{flattened} into a single vector, and \code{X} and \code{V} must be constructed consistently. 
 
-In models where a non-full-rank result is possible (often you can tell by seeing if there is a \code{singular.ok} argument in the model-fitting function), \code{summary} and \code{predict} check the estimability of each prediction, and for this, a basis for the non-estimable functions is required. The \code{nonest.basis} function provides an easy way to obtain this.
+In models where a non-full-rank result is possible (often you can tell by seeing if there is a \code{singular.ok} argument in the model-fitting function), \code{summary} and \code{predict} check the estimability of each prediction, and for this, a basis for the non-estimable functions is required. The \code{nonest.basis} function provides an easy way to obtain this. 
 
 The models already supported are detailed in \code{\link{models}}. Some packages may provide additional \pkg{lsmeans} support for its object classes. 
 }
 
-}
+
 \value{
 \code{recover.data} should return a \code{data.frame} containing all the variables in the original data that appear as predictors in the model. Several attributes need to be included as well; see the code for \code{lsmeans:::recover.data.lm}.
 
@@ -58,13 +63,15 @@ The models already supported are detailed in \code{\link{models}}. Some packages
 \item{dffun}{A function of \code{(k, dfargs)} that returns the degrees of freedom associated with \code{sum(k * bhat)}.}
 \item{dfargs}{A \code{list} containing additional arguments needed for \code{dffun}.}
 
-\code{nonest.basis} should return a matrix with the number of rows equal to the length of the vector of regression coefficients, and number of columns equal to the rank deficiency of the model matrix. If the model is full-rank, then it should return \samp{matrix(NA)}.
+\code{nonest.basis} returns a matrix with the number of rows equal to the length of the vector of regression coefficients, and number of columns equal to the rank deficiency of the model matrix. The columns are orthonormal. If the model is full-rank, then it should return \samp{matrix(NA)}.
+
+The function \code{is.estble} returns a logical value (or vector, if \code{x} is a matrix) that is \code{TRUE} if the function is estimable and \code{FALSE} if not. Estimability of \samp{sum(x*beta)} is assessed by whether or not \samp{sum(crossprod(nbasis,x)^2) < tol * sum(x^2)}.
 }
 
 %\references{}
 
 \section{Optional hooks}{
-Some models may need something other than the product of \code{X} and \code{bhat} as the estimates, or the usual quadratic form as the square of the standard error. In that case, custom functions may be pointed to via the items \code{misc$estHook} and \code{misc$vcovHook}. I suggest providing them in the form \samp{as.name("my.hook.function")}, then the actual code will be loaded as needed when summarizing the object. 
+Some models may need something other than the product of \code{X} and \code{bhat} as the estimates, or the usual quadratic form as the square of the standard error. In that case, custom functions may be pointed to via the items \code{misc$estHook} and \code{misc$vcovHook}. If just the name of the hook function is provided as a character string, then it is retrieved using \code{\link{get}}.
 
 The \code{estHook} function should have arguments \samp{(object, do.se, tol, ...)} where \code{object} is the \code{ref.grid} or \code{lsmobj} object, \code{do.se} is a logical flag for whether to return the standard error, and \code{tol} is the tolerance for assessing estimability. It should return a matrix with 3 columns: the estimates, standard errors (\code{NA} when \code{do.se==FALSE}), and degrees of freedom (\code{NA} for asymptotic). The number of rows should be the same as \samp{object@linfct}. The \code{vcovHook} function should have arguments \samp{(object, tol, ...)} as described. It should return the covariance matrix for the estimates.
 }
@@ -85,7 +92,10 @@ require(lsmeans)
 # Fit a 2-factor model with two empty cells
 warpsing.lm <- lm(breaks ~ wool*tension, 
     data = warpbreaks, subset = -(16:40))
-nonest.basis(warpsing.lm$qr)
+( nb <- nonest.basis(warpsing.lm$qr) )
+
+is.estble(ref.grid(warpsing.lm)@linfct, nb)
+
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

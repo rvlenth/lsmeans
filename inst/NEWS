@@ -23,8 +23,9 @@ Changelog for 'lsmeans' package
     Revision to function for estimates, SEs, and df
     Added provision to specify 'estHook' and 'vcovHook' in 'misc' slot
         to allow for custom routines for estimates and covariances.
-*To do* Implement 'by' variable for 'test'
-*To do* Add one-sided and equivalence instances to test script
+    '.is.estble' is renamed 'is.estble' -- exported and documented.
+    Implemented 'by' variable for 'test' with 'joint = TRUE'
+
 
 2.12
     *** Developers supporting lsmeans please note:            ***
