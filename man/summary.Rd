@@ -8,6 +8,7 @@
 \alias{plot.lsmobj}
 \alias{plot.summary.ref.grid}
 \alias{vcov.ref.grid}
+\alias{regrid}
 
 
 %- Also NEED an '\alias' for EACH other topic documented here.

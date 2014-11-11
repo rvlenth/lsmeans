@@ -32,6 +32,9 @@ lsm.basis.clm = function (object, trms, xlev, grid,
                           rescale = c(0,1), ...) {
     # general stuff
     mode = match.arg(mode)
+    if (is.null(object$contrasts))
+        warning("Contrasts used to fit the model are unknown.\n",
+                "Defaulting to system option, but results may be wrong.")
     bhat = coef(object)
     V = vcov(object)
     tJac = object$tJac
@@ -193,7 +196,7 @@ lsm.basis.clm = function (object, trms, xlev, grid,
 # Make the linear-predictor ref.grid into one for class probabilities
 .clm.prob.grid = function(object, thresh = "cut", newname = "class") {
     byv = setdiff(names(object@levels), thresh)
-    newrg = contrast(regrid(object, TRUE), "diff.cum", by = byv)
+    newrg = contrast(regrid(object, TRUE), ".diff_cum", by = byv)
     class(newrg) = "ref.grid"
     misc = newrg@misc
     misc$infer = c(FALSE,FALSE)
@@ -204,6 +207,24 @@ lsm.basis.clm = function (object, trms, xlev, grid,
     newrg@roles = object@roles
     newrg@roles$multresp = newname
     newrg
+}
+
+# Contrast fcn for turning estimates of cumulative probabilities
+# into cell probabilities
+.diff_cum.lsmc = function(levs, sep = "|", ...) {
+    plevs = unique(setdiff(unlist(strsplit(levs, sep, TRUE)), sep))
+    k = 1 + length(levs)
+    if (length(plevs) != k)
+        plevs = seq_len(k)
+    M = matrix(0, nrow = length(levs), ncol = k)
+    for (i in seq_along(levs))
+        M[i, c(i,i+1)] = c(1,-1)
+    dimnames(M) = list(levs, plevs)
+    M = as.data.frame(M)
+    attr(M, "desc") = "Differences of cumulative probabilities"
+    attr(M, "adjust") = "none"
+    attr(M, "offset") = c(rep(0, k-1), 1)
+    M
 }
 
 #### replacement estimation routines for cases with a scale param
