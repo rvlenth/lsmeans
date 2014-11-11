@@ -1,13 +1,20 @@
 Changelog for 'lsmeans' package
 
 2.13
+    Provides for equivalence, noninferiority, etc. tests via
+        'side' and 'delta' arguments in 'summary' or 'test'. Also
+        for non-zero null values via 'null'
+    Added support for ordinal package objects 'clm', 'clmm'
+    Option 'mode' added for 'polr' objects, defaulting to "latent".
+        NOTE - NEED TO SET 'mode = "linear.predictor" TO REPRODUCE 
+        PAST RESULTS FOR 'polr' OBJECTS.
     nlme and lme4 moved to 'Enhances' field for consistency
     Added limited support for mer objects (lme4.0 package)
-    Added support for ordinal package objects 'clm', 'clmm'
     Added 'adjustSigma' option for 'lme' objects 
         (works like in 'summary.lme')
     Fixed error in handling offsets for 'polr' objects
-    'latent' option added for 'polr' objects -- DEFAULTS TO TRUE
+    Fixed error in omitting modeled covariates when there was a 
+        multivariate response.
     Fixed bug in 'contrast' that failed to update 'pri.vars'
         which, e.g., creates an error in a subsequent plot
     Fixed bug in plot - it had ignored xlab when horizontal = FALSE
@@ -15,16 +22,13 @@ Changelog for 'lsmeans' package
         now labeled with misc$inv.lbl when available
     Removed frequencies and offsets from row labels in 'as.glht'
     Fixed 'as.glht' so df may be omitted or set to NA for asymptotics
-    Provides for equivalence, noninferiority, etc. tests via
-        'side' and 'delta' arguments in 'summary' or 'test'. Also
-        for non-zero null values via 'null'
     Renamed the 'parm' argument in 'test' to 'null'
     Removed superfluous "P values are asymptotic" messages. 
-    Revision to function for estimates, SEs, and df
+    Revision to function producing estimates, SEs, and df
     Added provision to specify 'estHook' and 'vcovHook' in 'misc' slot
         to allow for custom routines for estimates and covariances.
     '.is.estble' is renamed 'is.estble' -- exported and documented.
-    Implemented 'by' variable for 'test' with 'joint = TRUE'
+    The 'by' variable for 'test' now also works when 'joint = TRUE'
 
 
 2.12
