@@ -24,14 +24,14 @@ recover.data.clmm = recover.data.lm
 # Note also that some functions of cut are constrained to be zero when
 # threshold != "flexible". Can get basis using nonest.basis(t(tJac))
 #
-# opt arg 'latent' - if true, we work with +x'beta, else we use theta_j - x'beta
-
-# NEW VERSION - assumes everything is est'ble
-# TODO: figure out non-est basis
+# opt arg 'mode' - determines what goes into ref.grid
+#         'rescale' - (loc, scale) for linear transformation of latent result
 
 lsm.basis.clm = function (object, trms, xlev, grid, 
-                          latent = TRUE, rescale = c(0,1), ...) {
+                          mode = c("latent", "linear.predictor", "cum.prob", "prob"), 
+                          rescale = c(0,1), ...) {
     # general stuff
+    mode = match.arg(mode)
     bhat = coef(object)
     V = vcov(object)
     tJac = object$tJac
@@ -140,7 +140,7 @@ lsm.basis.clm = function (object, trms, xlev, grid,
         }
     }
     
-    if (latent) {
+    if (mode == "latent") {
         # Create constant columns for means of scale and nominal parts
         J = matrix(1, nrow = nrow(X))
         nomm = rescale[2] * apply(bigNom, 2, mean)
@@ -163,6 +163,10 @@ lsm.basis.clm = function (object, trms, xlev, grid,
             X = cbind(X, S)
         J = matrix(1, nrow=nrow(tJac))
         bigX = cbind(bigNom, kronecker(-J, X))
+        if (mode != "linear.predictor") {
+            misc$mode = mode
+            misc$postGridHook = ".clm.postGrid"
+        }
     }
     
     dimnames(bigX)[[2]] = names(bhat)
@@ -171,9 +175,23 @@ lsm.basis.clm = function (object, trms, xlev, grid,
          dfargs = list(), misc = misc)
 }
 
+# fuction called at end of ref.grid
+# I use this for polr as well
+.clm.postGrid = function(object) {
+    mode = object@misc$mode
+    object@misc$postGridHook = object@misc$mode = NULL
+    if (mode == "cum.prob") {
+        object = regrid(object)
+    }
+    else { # mode == "prob"
+        object = .clm.prob.grid(object)
+    }
+    object
+}
 
-# Make the linear-predictor ref.grid into one for cell probabilities
-.clm.prob.grid = function(object, thresh = "cut", cellname = "cell") {
+
+# Make the linear-predictor ref.grid into one for class probabilities
+.clm.prob.grid = function(object, thresh = "cut", newname = "class") {
     byv = setdiff(names(object@levels), thresh)
     newrg = contrast(regrid(object, TRUE), "diff.cum", by = byv)
     class(newrg) = "ref.grid"
@@ -182,9 +200,9 @@ lsm.basis.clm = function (object, trms, xlev, grid,
     misc$estName = "prob"
     misc$pri.vars = misc$by.vars = NULL
     newrg@misc = misc
-    names(newrg@levels)[1] = names(newrg@grid)[1] = cellname
+    names(newrg@levels)[1] = names(newrg@grid)[1] = newname
     newrg@roles = object@roles
-    newrg@roles$multresp = cellname
+    newrg@roles$multresp = newname
     newrg
 }
 
@@ -233,5 +251,9 @@ lsm.basis.clmm = function (object, trms, xlev, grid, ...) {
         H = H[names(coef(object)), names(coef(object))]
         object$Hessian = H
     }
-    lsm.basis.clm(object, trms, xlev, grid, ...)
+    result = lsm.basis.clm(object, trms, xlev, grid, ...)
+    # strip off covariances of random effects
+    keep = seq_along(result$bhat)
+    result$V = result$V[keep,keep]
+    result
 }
