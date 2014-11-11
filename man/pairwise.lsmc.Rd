@@ -60,7 +60,7 @@ Russell V. Lenth
 }
 \note{
 You may create your own contrast functions, using these as guides. A function named \code{mycontr.lsmc} may be invoked in \code{lsmeans} via, e.g., \preformatted{lsmeans(\var{object}, mycontr ~ \var{factor})} 
-The \code{"desc"} and \code{"adjust"} attributes are optional; if absent, the root name of the function is used as \code{"desc"}, and no adjustment is requested for p values. See the examples.
+The \code{"desc"}, \code{"adjust"}, and \code{"offset"} attributes are optional; if present, these are passed to \code{contrast}. If absent, the root name of the function is used as \code{"desc"}, and no adjustment is requested for p values. See the examples.
 }
 
 

@@ -19,7 +19,7 @@ These methods provide for analyses of \code{ref.grid} objects, or follow-up anal
 }
 \usage{
 \method{contrast}{ref.grid}(object, method = "eff", by, adjust, 
-    options = getOption("lsmeans")$contrast, ...)
+    offset = NULL, options = getOption("lsmeans")$contrast, ...)
 \method{contrast}{lsm.list}(object, ..., which = 1)
 
 \method{test}{ref.grid}(object, null = 0, joint = FALSE,
@@ -43,6 +43,8 @@ Character names of variable(s) to be used for ``by'' groups. The contrasts or jo
   \item{adjust}{
 Method to use for adjusting \emph{P} values. This is passed to \code{\link[lsmeans]{summary}}.
 }
+  \item{offset}{Numeric vector of the same length as each \code{by} group. These values are added to their respective linear estimates.
+}
   \item{options}{If non-\code{NULL}, a named \code{list} of arguments to pass to \code{\link{update}}, just after the object is constructed.}
   \item{joint}{Logical value. If \code{FALSE}, the arguments are passed to \code{\link{summary}} with \code{infer=c(FALSE,TRUE)}. If \code{TRUE}, a joint test of the hypothesis L beta = null is performed, where L is \code{object@linfct} and beta is the vector of fixed effects estimated by \code{object@betahat}. This will be either an \emph{F} test or a chi-square (Wald) test depending on whether degrees of freedom are available.}
   \item{rows}{Integer values. The rows of L to be tested in the joint test. If missing, all rows of L are used. If not missing, \code{by} variables are ignored.}
@@ -56,6 +58,7 @@ Additional arguments passed to \code{\link[lsmeans]{summary}} or to a contrast f
   \item{which}{When \code{object} is a list of \code{lsmobj} objects, this specifies which member of the list is analyzed.}
 }
 \details{
+Though \code{contrast} is ordinarily used to create true contrasts (whose coefficients sum to zero), it may be used to estimate any linear function of the LS means; and \code{offset} expands this capability further by allowing additive constants.
 \code{pairs} is equivalent to \code{contrast} with \code{method = "pairwise"}.
 
 \code{confint} and \code{test} (when \code{JOINT==FALSE}) are equivalent to calling \code{\link[lsmeans]{summary}} with \code{infer=c(TRUE,FALSE)} and \code{infer=c(FALSE,TRUE)}, respectively.
