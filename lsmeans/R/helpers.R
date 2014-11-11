@@ -318,7 +318,10 @@ lsm.basis.gls = function(object, trms, xlev, grid, ...) {
 ### polr objects (MASS package)
 recover.data.polr = recover.data.lm
 
-lsm.basis.polr = function(object, trms, xlev, grid, latent = TRUE, rescale = c(0,1), ...) {
+lsm.basis.polr = function(object, trms, xlev, grid, 
+                          mode = c("latent", "linear.predictor", "cum.prob", "prob"), 
+                          rescale = c(0,1), ...) {
+    mode = match.arg(mode)
     contrasts = object$contrasts
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
@@ -329,7 +332,7 @@ lsm.basis.polr = function(object, trms, xlev, grid, latent = TRUE, rescale = c(0
     bhat = c(coef(object), object$zeta)
     V = vcov(object)
     k = length(object$zeta)
-    if (latent) {
+    if (mode == "latent") {
         X = rescale[2] * cbind(X, matrix(- 1/k, nrow = nrow(X), ncol = k))
         bhat = c(coef(object), object$zeta - rescale[1] / rescale[2])
         misc = list(offset.mult = rescale[2])
@@ -342,6 +345,10 @@ lsm.basis.polr = function(object, trms, xlev, grid, latent = TRUE, rescale = c(0
         if (link == "logistic") link = "logit"
         misc = list(ylevs = list(cut = names(object$zeta)), 
                     tran = link, inv.lbl = "cumprob", offset.mult = -1)
+        if (mode != "linear.predictor") {
+            misc$mode = mode
+            misc$postGridHook = ".clm.postGrid"
+        }
     }
     nbasis = matrix(NA)
     dffun = function(...) NA

@@ -67,7 +67,7 @@ The user may disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbk
 \section{\pkg{MASS} package}{
 \describe{
 \item{glmmPQL}{Supported by virtue of inheritance from \code{lme} in the \pkg{nlme} package.}
-\item{polr}{There are two optional arguments: \code{latent} (which defaults to \code{TRUE}) and \code{rescale} (which defaults to \samp{c(0,1)}). For details, see the documentation below regarding the support for the \pkg{ordinal} package, which produces comparable objects.
+\item{polr}{There are two optional arguments: \code{mode} and \code{rescale} (which defaults to \samp{c(0,1)}). For details, see the documentation below regarding the support for the \pkg{ordinal} package, which produces comparable objects.
 Tests and confidence intervals are asymptotic.}
 \item{rlm}{Supported by virtue of inheritance from \code{lm}.}
 }}% MASS
@@ -87,13 +87,16 @@ Tests and confidence intervals are asymptotic.}
 
 \section{\pkg{ordinal} package}{
 \describe{
-\item{clm,clmm}{The reference grid will include all variables that appear in the main model as well as those in the \code{scale} or \code{nominal} models. There are two optional arguments: \code{latent} (which defaults to \code{TRUE}) and \code{rescale} (which defaults to \samp{c(0,1)}). With \samp{latent = FALSE}, the boundaries between categories (i.e., thresholds) in the ordinal response are included in  the reference grid as the factor \code{cut}. With \samp{latent = TRUE}, the reference-grid predictions are made on the scale of the latent variable implied by the model. (In essence, the predicted latent mean is the negative of the linear predictor, averaged over the thresholds.) 
+\item{clm,clmm}{The reference grid will include all variables that appear in the main model as well as those in the \code{scale} or \code{nominal} models. There are two optional arguments: \code{mode} (a character string) and \code{rescale} (which defaults to \samp{c(0,1)}). \code{mode} should match one of \code{"latent"} (the default), \code{"linear.predictor"}, \code{"cum.prob"}, or \code{"prob"} (as per the \code{type} argument in \code{\link[ordinal]{predict.clm}}). 
 
-The scale and location of the latent variable are arbitrary, and may be altered via \code{rescale}. The predictions are multiplied by \samp{rescale[2]}, then \samp{rescale[1]} is added. Keep in mind that the scaling is related to the link function used in the model; for example, changing from a probit link to a logistic link will inflate the latent values by around \eqn{\pi/\sqrt{3}}{pi/sqrt(3)}, all other things being equal.
+With \samp{mode = "latent"}, the reference-grid predictions are made on the scale of the latent variable implied by the model. The scale and location of this latent variable are arbitrary, and may be altered via \code{rescale}. The predictions are multiplied by \samp{rescale[2]}, then \samp{rescale[1]} is added. Keep in mind that the scaling is related to the link function used in the model; for example, changing from a probit link to a logistic link will inflate the latent values by around \eqn{\pi/\sqrt{3}}{pi/sqrt(3)}, all other things being equal. \code{rescale} has no effect for other values of \code{mode}.
 
-In non-latent cases, Any grid point that is non-estimable by either the location or the scale model (if present) is set to \code{NA}, and any LS-means involving such a grid point will also be non-estimable. A consequence of this is that if there is a rank-deficient \code{scale} model, and \samp{latent = TRUE}, then \emph{everything} is non-estimable because the predictions are made using the average log-scale estimate.
+With \samp{mode = "linear.predictor"} and \code{mode = "cum.prob"}, the boundaries between categories (i.e., thresholds) in the ordinal response are included in  the reference grid as a pseudo-factor named \code{cut}. The reference-grid predictions are then of the cumulative probabilities at each threshold (for \code{mode = "cum.prob"}) or the link function thereof (for \code{mode = "linear.predictor"}).
 
-When \samp{latent = FALSE} (only), the \code{summary} option \samp{type = "response"} may be used to obtain estimates of cumulative probabilities.
+With \code{mode = "prob"}, a pseudo-factor named \code{class} is created, and the grid predictions are of the probabilities of each class of the ordinal response.
+
+Any grid point that is non-estimable by either the location or the scale model (if present) is set to \code{NA}, and any LS-means involving such a grid point will also be non-estimable. A consequence of this is that if there is a rank-deficient \code{scale} model, and then \emph{all} latent responses become non-estimable because the predictions are made using the average log-scale estimate.
+
 Tests and confidence intervals are asymptotic.}
 }}% ordinal
 

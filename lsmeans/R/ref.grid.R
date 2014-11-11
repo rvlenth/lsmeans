@@ -249,7 +249,14 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         result = do.call("update.ref.grid", options)
     }
 
-    result
+    if(!is.null(hook <- misc$postGridHook)) {
+        if (is.character(hook))
+            hook = get(hook)
+        result@misc$postGridHook = NULL
+        hook(result)
+    }
+    else
+        result
 }
 
 
