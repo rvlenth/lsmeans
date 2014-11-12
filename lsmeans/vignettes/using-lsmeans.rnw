@@ -697,20 +697,22 @@ The \lsm{} package comes with built-in support for several packages and model cl
 \pitem{coxme}: \dqt{coxme}
 \pitem{MASS}: \dqt{polr}
 \pitem{gee, geepack}: \dqt{gee}, \dqt{geeglm}, \dqt{geese}
+\pitem{ordinal}: \dqt{clm}, \dqt{clmm}
 \end{description}
 \end{quote}
-\lsm{} support for all these models works similarly to the examples we have presented. Note that generalized linear or mixed models, and several others such as survival models, typically employ link functions such as "log" or "logit". In all such cases, the LS~means displayed are on the scale of the linear predictor, and any averaging over the reference grid is performed on the linear-predictor scale. Results for \code{aovlist} objects are based on intra-block estimates, and should be used with caution.
+\lsm{} support for all these models works similarly to the examples we have presented. Note that generalized linear or mixed models, and several others such as survival models, typically employ link functions such as "log" or "logit". In most cases, the LS~means displayed are on the scale of the linear predictor, and any averaging over the reference grid is performed on the linear-predictor scale; but there are exceptions. Some objects have optional arguments that can be specified in the "ref.grid" or "lsmeans" call: see "?models" for details.
 
-\subsection{Proportional-odds example}
-The \dqt{polr} function in \pkg{MASS} fits polytomous regression models to Likert-scale data. It does this by modeling the ordinal response as a categorization of a continuous latent variable $S$, then estimating thresholds for this categorization and fitting a generalized linear model to the cumulative probabilities for each threshold.
+\subsection{Ordinal-data example}
+The "clm" and "clmm" functions in \pkg{ordinal}, as well as the "polr" function in \pkg{MASS}, fit polytomous regression models to Likert-scale data. They do this by modeling the ordinal response as a categorization of a continuous latent variable $S$, then estimating thresholds for this categorization and fitting a generalized linear model to the cumulative probabilities for each threshold.
 By default, "lsmeans" produces predictions of the latent variable.
 
-The example here is based on the "housing" data in the \pkg{MASS} package, where the response variable is satisfaction ("Sat") on a three-point scale of low, medium, high; and predictors include "Type" (type of rental unit, four levels), "Infl" (influence on management of the unit, three levels), and "Cont" (contact with other residents, two levels). We will assume that the latent variable is normally distributed (by specifying a probit link). 
+The example shown here is based on the "housing" data in the \pkg{MASS} package, where the response variable is satisfaction ("Sat") on a three-point scale of low, medium, high; and predictors include "Type" (type of rental unit, four levels), "Infl" (influence on management of the unit, three levels), and "Cont" (contact with other residents, two levels). We will assume that the latent variable is normally distributed (by specifying a probit link). 
 <<housing-plot, fig=TRUE, width= 9, height = 3.5, include=FALSE>>=
-library("MASS")
-housing.plr <- polr(Sat ~ (Infl + Type + Cont)^2,
-                   data = housing, weights = Freq, method = "probit")
-lsmip(housing.plr, Cont ~ Infl | Type, layout = c(4,1))
+library("ordinal")
+data(housing, package = "MASS")
+housing.clm <- clm(Sat ~ (Infl + Type + Cont)^2,
+                   data = housing, weights = Freq, link = "probit")
+lsmip(housing.clm, Cont ~ Infl | Type, layout = c(4,1))
 @
 \begin{figure}
 \begin{center}
@@ -720,21 +722,31 @@ lsmip(housing.plr, Cont ~ Infl | Type, layout = c(4,1))
 \end{figure}
 The plot is shown in \Fig{housing-plot}. Generally, the higher the influence, the higher the satisfaction. Overall $F$ tests of the "Infl" effect suggest that it is strong for all four housing types:
 <<>>=
-test(pairs(lsmeans(housing.plr, ~ Infl | Type)), joint = TRUE)
+test(pairs(lsmeans(housing.clm, ~ Infl | Type)), joint = TRUE)
 @
 The tests are asymptotic (signaled by "df2 = NA"), so they are actually chi-square tests for the statistics $X^2 = df_1\cdot F$ with $df_1$ degrees of freedom. Higher contact also seems to be associated with higher satisfaction, but terrace apartments may be an exception. Let's see:
 <<>>=
-test(pairs(lsmeans(housing.plr, ~Cont | Type)), joint = TRUE)
+test(pairs(lsmeans(housing.clm, ~ Cont | Type)), joint = TRUE)
 @
 So the effect is inconclusive for both atria and terraces.
 
-The location and scale of the latent variable are not identifiable, and below we use "rescale" to change the reference scale to center on 50 with an error SD around 10.
+The "mode" argument may be used to choose what to examine. Modes \dqt{linear.predictor} and \dqt{cum.prob} create an additional pseudo-factor named "cut" for the thresholds at which the predictions are made.
 <<>>=
-lsmeans(housing.plr, ~ Infl | Type, rescale = c(50,10))
+ref.grid(housing.clm, mode = "cum.prob")
 @
+So here are our estimated marginal probabilities for "Infl" of being less than highly satisfied:
+<<>>=
+lsmeans(housing.clm, ~ Infl, at = list(cut = "Medium|High"), 
+        mode = "cum.prob")
+@
+Compare these results with those for the back-transformed linear predictor:
+<<>>=
+summary(lsmeans(housing.clm, ~ Infl, at = list(cut = "Medium|High"), 
+                mode = "linear.predictor"), type = "response")
+@
+The results are similar, but somewhat different because of the back-transformation coming before (first case) or after (second case) averaging or computing confidence limits.
 
 
-%%%%estimating thresholds for the b, in that an extra factor (named \dqt{cut} by default) is created to identify which boundary between scale positions we wish to use in predictions. 
 
 
 \subsection{Extending to more models}
