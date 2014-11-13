@@ -235,36 +235,38 @@ lsm.basis.merMod = function(object, trms, xlev, grid, ...) {
 
 #--------------------------------------------------------------
 ### mer objects (from old lme4 version, now lme4.0)
-recover.data.mer = function(object, ...) {
-    if(!lme4.0::isLMM(object) && !lme4.0::isGLMM(object)) 
-        stop("Can't handle a nonlinear mixed model")
-    fcall = object@call
-    recover.data(fcall, delete.response(terms(object)), 
-                 attr(object@frame, "na.action"), ...)
-}
+###!!! I commented this stuff out because of difficulties getting these past CRAN
 
-# Does NOT support pbkrtest capabilities. Uses asymptotic methods
-lsm.basis.mer = function(object, trms, xlev, grid, ...) {
-    V = as.matrix(vcov(object))
-    dfargs = misc = list()
-    if (lme4.0::isLMM(object)) {
-        dffun = function(k, dfargs) NA        
-    }
-    else if (lme4.0::isGLMM(object)) {
-        dffun = function(k, dfargs) NA
-        misc = .std.link.labels(family(object), misc)
-    }
-    else 
-        stop("Can't handle a nonlinear mixed model")
-    
-    contrasts = attr(object@X, "contrasts")
-    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
-    X = model.matrix(trms, m, contrasts.arg = contrasts)
-    bhat = lme4.0::fixef(object)
-    nbasis=matrix(NA)
-    
-    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=misc)
-}
+# recover.data.mer = function(object, ...) {
+#     if(!lme4.0::isLMM(object) && !lme4.0::isGLMM(object)) 
+#         stop("Can't handle a nonlinear mixed model")
+#     fcall = object@call
+#     recover.data(fcall, delete.response(terms(object)), 
+#                  attr(object@frame, "na.action"), ...)
+# }
+# 
+# # Does NOT support pbkrtest capabilities. Uses asymptotic methods
+# lsm.basis.mer = function(object, trms, xlev, grid, ...) {
+#     V = as.matrix(vcov(object))
+#     dfargs = misc = list()
+#     if (lme4.0::isLMM(object)) {
+#         dffun = function(k, dfargs) NA        
+#     }
+#     else if (lme4.0::isGLMM(object)) {
+#         dffun = function(k, dfargs) NA
+#         misc = .std.link.labels(family(object), misc)
+#     }
+#     else 
+#         stop("Can't handle a nonlinear mixed model")
+#     
+#     contrasts = attr(object@X, "contrasts")
+#     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+#     X = model.matrix(trms, m, contrasts.arg = contrasts)
+#     bhat = lme4.0::fixef(object)
+#     nbasis=matrix(NA)
+#     
+#     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=misc)
+# }
 
 
 

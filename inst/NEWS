@@ -9,7 +9,8 @@ Changelog for 'lsmeans' package
         NOTE - NEED TO SET 'mode = "linear.predictor" TO REPRODUCE 
         PAST RESULTS FOR 'polr' OBJECTS.
     nlme and lme4 moved to 'Enhances' field for consistency
-    Added limited support for mer objects (lme4.0 package)
+    ### Added limited support for mer objects (lme4.0 package)
+    ### I dropped this because it messes-up the CRAN checks
     Added 'adjustSigma' option for 'lme' objects 
         (works like in 'summary.lme')
     Fixed error in handling offsets for 'polr' objects

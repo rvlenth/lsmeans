@@ -8,9 +8,9 @@ Author: Russell V. Lenth [aut], Maxime Hervé [ctb]
 Maintainer: Russ Lenth <russell-lenth@uiowa.edu>
 Depends: methods, R (>= 3.0)
 Suggests: pbkrtest (>= 0.4-1), lattice, multcompView, car, mediation
-Enhances: afex, coxme, gee, geepack, glmmADMB, lme4, lme4.0, MASS, nlme, ordinal, survival
+Enhances: afex, coxme, gee, geepack, glmmADMB, lme4, MASS, nlme, ordinal, survival
 Imports: multcomp, plyr, Matrix
-Additional_repositories: http://glmmadmb.r-forge.r-project.org/repos,http://lme4.r-forge.r-project.org/repos
+Additional_repositories: http://glmmadmb.r-forge.r-project.org/repos
 LazyData: yes
 Description: This package provides methods for obtaining least-squares means for various linear models. It can also compute contrasts or linear combinations of these least-squares means, comparisons of slopes, plots, and compact letter displays.
 License: GPL-2
