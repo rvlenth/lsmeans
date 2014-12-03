@@ -28,7 +28,7 @@ recover.data.clmm = recover.data.lm
 #         'rescale' - (loc, scale) for linear transformation of latent result
 
 lsm.basis.clm = function (object, trms, xlev, grid, 
-                          mode = c("latent", "linear.predictor", "cum.prob", "prob"), 
+                          mode = c("latent", "linear.predictor", "cum.prob", "prob", "mean.class"), 
                           rescale = c(0,1), ...) {
     # general stuff
     mode = match.arg(mode)
@@ -168,6 +168,7 @@ lsm.basis.clm = function (object, trms, xlev, grid,
         bigX = cbind(bigNom, kronecker(-J, X))
         if (mode != "linear.predictor") {
             misc$mode = mode
+            misc$respName = as.character(object$terms)[2]
             misc$postGridHook = ".clm.postGrid"
         }
     }
@@ -186,15 +187,19 @@ lsm.basis.clm = function (object, trms, xlev, grid,
     if (mode == "cum.prob") {
         object = regrid(object)
     }
-    else { # mode == "prob"
+    else if (mode == "prob") {
         object = .clm.prob.grid(object)
     }
+    else { # mode == "mean.class
+        object = .clm.mean.class(object)
+    }
+    object@misc$respName = NULL
     object
 }
 
 
 # Make the linear-predictor ref.grid into one for class probabilities
-.clm.prob.grid = function(object, thresh = "cut", newname = "class") {
+.clm.prob.grid = function(object, thresh = "cut", newname = object@misc$respName) {
     byv = setdiff(names(object@levels), thresh)
     newrg = contrast(regrid(object, TRUE), ".diff_cum", by = byv)
     class(newrg) = "ref.grid"
@@ -206,6 +211,20 @@ lsm.basis.clm = function (object, trms, xlev, grid,
     names(newrg@levels)[1] = names(newrg@grid)[1] = newname
     newrg@roles = object@roles
     newrg@roles$multresp = newname
+    newrg
+}
+
+.clm.mean.class = function(object) {
+    prg = .clm.prob.grid(object, newname = "class")
+    byv = setdiff(names(prg@levels), "class")
+    lf = as.numeric(prg@levels$class)
+    newrg = contrast(prg, list(mean = lf), by = byv)
+    newrg = update(newrg, infer = c(FALSE, FALSE), 
+        pri.vars = NULL, by.vars = NULL, estName = "mean.class")
+    newrg@levels$contrast = newrg@grid$contrast = NULL
+    prg@roles$multresp = NULL
+    newrg@roles = prg@roles
+    class(newrg) = "ref.grid"
     newrg
 }
 

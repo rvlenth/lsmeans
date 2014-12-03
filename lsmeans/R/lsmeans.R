@@ -455,9 +455,12 @@ test.ref.grid = function(object, null = 0,
 }
 
 # pairs method
-pairs.ref.grid = function(x, ...) {
+pairs.ref.grid = function(x, reverse = FALSE, ...) {
     object = x # for my sanity
-    contrast(object, method = "pairwise", ...)
+    if (reverse)
+        contrast(object, method = "revpairwise", ...)
+    else
+        contrast(object, method = "pairwise", ...)
 }
 
 
@@ -504,6 +507,15 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
         newlf = (basis$X - RG@linfct) / diffl
     }
     
+    # remove transformation from object
+    .zaptran = function(obj) {
+        if (is(obj, "ref.grid") && !is.null(obj@misc$tran)) {
+            obj@misc$orig.tran = result@misc$tran
+            obj@misc$tran = NULL
+        }
+        obj
+    }
+    
     RG@linfct = newlf
     RG@roles$trend = var
     args = list(object=RG, specs=specs, ...)
@@ -514,18 +526,16 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
         if (is(result[[1]], "ref.grid")) {
             result[[1]]@misc$estName = estName
             result[[1]]@misc$methDesc = "trends"
+            for (i in seq_along(result))
+                result[[i]] = .zaptran(result[[i]])
         }
     }
     else {
         result@misc$estName = estName
         result@misc$methDesc = "trends"
+        result = .zaptran(result)
     }
     
-    # No transformation info here
-    if (!is.null(result@misc$tran)) {
-        result@misc$orig.tran = result@misc$tran
-        result@misc$tran = NULL
-    }
     
     result
 }
