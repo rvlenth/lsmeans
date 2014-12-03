@@ -321,7 +321,7 @@ lsm.basis.gls = function(object, trms, xlev, grid, ...) {
 recover.data.polr = recover.data.lm
 
 lsm.basis.polr = function(object, trms, xlev, grid, 
-                          mode = c("latent", "linear.predictor", "cum.prob", "prob"), 
+                          mode = c("latent", "linear.predictor", "cum.prob", "prob", "mean.class"), 
                           rescale = c(0,1), ...) {
     mode = match.arg(mode)
     contrasts = object$contrasts
@@ -348,10 +348,12 @@ lsm.basis.polr = function(object, trms, xlev, grid,
         misc = list(ylevs = list(cut = names(object$zeta)), 
                     tran = link, inv.lbl = "cumprob", offset.mult = -1)
         if (mode != "linear.predictor") {
+            # just use the machinery we already have for the 'ordinal' package
             misc$mode = mode
             misc$postGridHook = ".clm.postGrid"
         }
     }
+    misc$respName = as.character(terms(object))[2]
     nbasis = matrix(NA)
     dffun = function(...) NA
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=list(), misc=misc)

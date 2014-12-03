@@ -103,11 +103,13 @@ options(show.signif.stars=FALSE, prompt="R> ", continue="   ",
 
 
 \section{Introduction}
-Least-squares means (LS~means for short)  for a linear model are simply predictions---or averages thereof---over a regular grid of predictor settings which I call the \emph{reference grid}. They date back at least to 1976 when LS~means were incorporated in the contributed \SAS{} procedure named \code{HARVEY} \citep{Har76}. Later, they were incorporated via \code{LSMEANS} statements in the regular \SAS{} releases. 
+Least-squares means (LS~means for short)  for a linear model are simply predictions---or averages thereof---over a regular grid of predictor settings which I call the \emph{reference grid}. They date back at least to \cite{Har60} and his associated computer program \proglang{LSML} \citep{Har77} and the contributed \SAS{} procedure named \pkg{HARVEY} \citep{Har76}. Later, they were incorporated via \code{LSMEANS} statements for various linear model procedures such as \pkg{GLM} in the regular \SAS{} releases. See also \cite{Goo97} and \cite{SAS12} for more information about the \SAS{} implementation.
 
 In simple analysis-of-covariance models, LS~means are the same as covariate-adjusted means. In unbalanced factorial experiments, LS~means for each factor mimic the main-effects means but are adjusted for imbalance. The latter interpretation is quite similar to the ``unweighted means'' method for unbalanced data, as presented in old design books.
 
-LS~means are not always well understood, in part because the term itself is confusing. The most important things to remember are:
+LS~means are not always well understood, in part because the term itself is confusing. \cite{Sea80} discusses exactly how they are defined for various factorial, nested, and covariance models. \citeauthor{Sea80} suggest the term ``predicted marginal means'' (or PMMs) as a better descriptor. However, the term ``least-squares means'' was already well established in the \SAS{} software, and it has stuck.
+
+The most important things to remember are:
 \begin{itemize}
 \item LS~means are computed relative to a \emph{reference grid}.
 \item Once the reference grid is established, LS~means are simply predictions on this grid, or marginal averages of a table of these predictions.
@@ -157,14 +159,19 @@ These unadjusted means are not comparable with one another because they are affe
 Note that one may call "lsmeans" with either the reference grid or the model. If the model is given, then the first thing it does is create the reference grid; so if the reference grid is already available, as in this example, it's more efficient to make use of it.
 
 \subsection{Altering the reference grid}
-The "at" argument may be used to override defaults in the reference grid. The user may specify this argument either in a "ref.grid" call or an "lsmeans" call; and should specify a "list" with named sets of reference levels. Here is a silly example:
+The "at" argument may be used to override defaults in the reference grid.
+The user may specify this argument either in a "ref.grid" call or an "lsmeans" call; and should specify a "list" with named sets of reference levels. Here is a silly example:
 <<>>=
 lsmeans(oranges.lm1, "day", at = list(price1 = 50, 
     price2 = c(40,60), day = c("2","3","4")) )
 @
 Here, we restricted the results to three of the days, and used different prices.
 One possible surprise is that the predictions are averaged over the two "price2"
-values. That is because "price2" is no longer a single reference level, and we average over the levels of all factors not used to split-out the LS~means. This is probably not what we want. To get separate sets of predictions for each "price2", one must specify it as another factor or as a "by" factor in the "lsmeans" call (we will save the result for later discussion):
+values. That is because "price2" is no longer a single reference level, and we average over the levels of all factors not used to split-out the LS~means.
+This is probably not what we want.\footnote{%
+The \emph{default} reference grid produces LS~means exactly as described in \cite{Sea80}.
+However, an altered reference grid containing more than one value of a covariate, such as in this example, departs from (or generalizes, if you please) their definition by averaging with equal weights over those covariate levels. It is not a good idea here, but there is an example later in this vignette where it makes sense.}
+To get separate sets of predictions for each "price2", one must specify it as another factor or as a "by" factor in the "lsmeans" call (we will save the result for later discussion):
 <<>>=
 org.lsm <- lsmeans(oranges.lm1, "day", by = "price2", 
     at = list(price1 = 50, price2 = c(40,60), day = c("2","3","4")) )
@@ -384,7 +391,8 @@ Remember that "nitro" is now used as a quantitative predictor. But for comparing
 Oats.lsm2 <- lsmeans(Oats.lmer2, ~ nitro | Variety, cov.reduce = FALSE)
 Oats.lsm2
 @
-These LS~means follow the same quadratic trend for each variety, but with different intercepts.
+These LS~means follow the same quadratic trend for each variety, but with different intercepts.\footnote{%
+This is the promised example where our generalization of \cite{Sea80}'s definition of LS~means makes sense. Suppose we want to compare the LS~means for \code{Variety} with those in the original model \code{Oats.lmer} where \code{nitro} was a factor, we want to average equally over the four \code{nitro} levels, even though \code{nitro} is a covariate in this second model.}
 
 Fractional degrees of freedom are displayed in these results. These are obtained from the \pkg{pbkrtest} package \citep{pbkrt}, and they use the Kenward-Rogers method. (The degrees of freedom for the polynomial contrasts were also obtained from \pkg{pbkrtest}, but the results turn out to be integers.)
 

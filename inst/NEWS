@@ -1,5 +1,13 @@
 Changelog for 'lsmeans' package
 
+2.13-1
+    Fixed error in 'lstrends' when 'specs' is two-sided formula
+    Added better references for LS means (thanks to jvbraun,
+        http://stats.stackexchange.com/questions/121994)
+    Yet more enhancements for for clm, clmm, polr...
+        "mean.class" mode, uses response name for "prob" mode
+    Added 'reverse' option to 'pairs'
+
 2.13
     Provides for equivalence, noninferiority, etc. tests via
         'side' and 'delta' arguments in 'summary' or 'test'. Also

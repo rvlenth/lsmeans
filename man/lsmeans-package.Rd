@@ -11,9 +11,16 @@ Popular adjustments for multiple-comparisons are provided, as well as graphical 
 
 \section{Overview}{
 \describe{
-\item{Reference grids}{
-Least-squares means rely on the concept of a \emph{reference grid}, which is an array of factor and predictor levels. Predictions are made on this grid, and least-squares means are defined as averages of these predictions over zero or more dimensions of the grid. The function \code{\link{ref.grid}} explicitly creates a reference grid (\code{ref.grid} object) that can subsequently be used to obtain least-squares means. The \code{\link{update}} method is used to change its properties.
+\item{Concept}{
+Least-squares means (see Searle \emph{et al.} 1980, who prefer the term \dQuote{predicted marginal means} (PMM)) are popular for summarizing linear models that include factors. For balanced experimental designs, they are just the marginal means. For unbalanced data, they in essence estimate what you \emph{would} have observed that the data arisen from a  balanced experiment.
 }
+\item{Reference grids}{
+The implementation in \pkg{lsmeans} relies on our own concept of a \emph{reference grid}, which is an array of factor and predictor levels.  
+Predictions are made on this grid, and least-squares means are defined as averages of these predictions over zero or more dimensions of the grid. The function \code{\link{ref.grid}} explicitly creates a reference grid (\code{ref.grid} object) that can subsequently be used to obtain least-squares means. The \code{\link{update}} method is used to change its properties.
+
+Our reference-grid framework expands slightly upon Searle \emph{et al.}'s definitions of PMMs, in that it is possible to include multiple levels of covariates in the grid.
+}
+
 \item{Models supported}{
 Many linear models are supported by the package, including \code{lm}, \code{glm}, \code{aovList}, and \code{mlm} in the \pkg{stats} package, as well as fitted-model objects from several contributed packages including \pkg{nlme}, \pkg{lme4}, \pkg{survival}, \pkg{coxme}, and \pkg{geepack}. The help page for \code{\link{models}} provides more details, including, in some cases, additional \code{ref.grid} arguments that might affect the subsequent analysis. Also, some models require other packages be installed in order to  obtain all the available features.
 }
@@ -53,6 +60,13 @@ License: \tab GPL-2\cr
 Other information: \tab See DESCRIPTION\cr
 }
 }
+
+\references{
+Searle S.R. Speed F.M. Milliken G.A. (1980) 
+Population marginal means in the linear model: An alternative to least squares means. 
+\emph{The American Statistician} \bold{34}(4), 216-221.
+}
+
 \author{
 Russell V. Lenth (author), Maxime Hervé (contributor)
 

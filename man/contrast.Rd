@@ -27,7 +27,7 @@ These methods provide for analyses of \code{ref.grid} objects, or follow-up anal
 
 \method{confint}{ref.grid}(object, parm, level = 0.95, ...)
 
-\method{pairs}{ref.grid}(x, ...)
+\method{pairs}{ref.grid}(x, reverse = FALSE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -53,9 +53,10 @@ Method to use for adjusting \emph{P} values. This is passed to \code{\link[lsmea
   \item{verbose}{Logical value. If \code{TRUE} and \code{joint==TRUE}, a table of the effects being tested is printed.}
   \item{level}{
 Numeric value of the desired confidence level.}
+  \item{which}{When \code{object} is a list of \code{lsmobj} objects, this specifies which member of the list is analyzed.}
+  \item{reverse}{Logical value determining whether \code{"pairwise"} or \code{"revpairwise"} pairwise comparisons are generated.}
   \item{\dots}{
 Additional arguments passed to \code{\link[lsmeans]{summary}} or to a contrast function.}
-  \item{which}{When \code{object} is a list of \code{lsmobj} objects, this specifies which member of the list is analyzed.}
 }
 \details{
 Though \code{contrast} is ordinarily used to create true contrasts (whose coefficients sum to zero), it may be used to estimate any linear function of the LS means; and \code{offset} expands this capability further by allowing additive constants.
