@@ -57,6 +57,8 @@ Numeric vector of weights to use in averaging predictions (must equal the number
 }
 Outer weights are like the 'expected' counts in a chi-square test of independence, and will yield the same results as those obtained by proportional averaging with one factor at a time. All except \code{"cells"} uses the same set of weights for each mean. In a model where the predicted values are the cell means, cell weights will yield the raw averages of the data for the factors involved.
 
+Note: If weights were used in fitting the model, then weight totals are used in place of frequencies in these schemes.
+
 If \code{weights} is used, \code{fac.reduce} is ignored. 
 }
 \item{trend}{
@@ -99,7 +101,7 @@ The function \code{lsmobj} may be used to construct an object just like one retu
 An object of class \code{\link[=lsmobj-class]{lsmobj}} -- except when \code{specs} is a \code{list} or a \code{formula} having a left-hand side, a \code{list} of \code{slmobj} objects. A number of methods are provided for further analysis, including \code{\link[lsmeans]{summary}}, \code{\link[lsmeans]{confint}}, \code{\link[lsmeans]{test}}, \code{\link[lsmeans]{contrast}}, \code{\link[lsmeans]{pairs}}, and \code{\link[lsmeans]{cld}}.
 }
 
-\note{For a \code{ref.grid} or \code{lsmobj} object created in \pkg{lsmeans} version 2.10 or earlier, the frequency information needed by the \code{weights} argument is not present; so a message is displayed and averaging is done using \code{fac.reduce}.}
+\note{For a \code{ref.grid} or \code{lsmobj} object created in \pkg{lsmeans} version 2.10 or earlier, the information needed by the \code{weights} argument is not present; so a message is displayed and averaging is done using \code{fac.reduce}.}
 
 \references{
 SAS Institute Inc. (2012)

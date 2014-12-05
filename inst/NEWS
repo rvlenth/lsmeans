@@ -1,9 +1,10 @@
 Changelog for 'lsmeans' package
 
-2.13-1
+2.13-2
+    Model weights are now used instead of frequencies when weights 
+        are not "equal"
     Fixed error in 'lstrends' when 'specs' is two-sided formula
-    Added better references for LS means (thanks to jvbraun,
-        http://stats.stackexchange.com/questions/121994)
+    Added more/better references for LS means
     Yet more enhancements for for clm, clmm, polr...
         "mean.class" mode, uses response name for "prob" mode
     Added 'reverse' option to 'pairs'

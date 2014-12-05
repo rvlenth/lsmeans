@@ -15,15 +15,6 @@
     result
 }
 
-# If multcomp not installed, define my own generic for cld
-# (It is exported in the NAMESPACE file under the same cond)
-if(!requireNamespace("multcomp", quietly = TRUE)) {
-    
-    cld <- function(object, ...)
-        UseMethod("cld")
-    
-}
-
 # S3 method for ref.grid
 cld.ref.grid = function(object, details=FALSE, sort=TRUE, 
                     by, alpha=.05, 

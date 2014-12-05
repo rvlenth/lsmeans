@@ -9,14 +9,14 @@ import(methods)
 if (requireNamespace("multcomp", quietly = TRUE)) {
     importFrom(multcomp, cld, glht, modelparm)
     
-    #S3method(cld, ref.grid) # Appears later outside this block
+    export(cld) # need user to see it even if multcomp not loaded
+    
+    S3method(cld, ref.grid)
+    S3method(cld, lsm.list)
     S3method(glht, lsmlf)
     S3method(glht, ref.grid)
     S3method(modelparm, lsmwrap)
 }
-
-# Gotta have the generic for cld, whether or not multcomp is attacjed
-    export(cld)
 
 if (requireNamespace("plyr", quietly = TRUE)) {
     importFrom(plyr, alply)
@@ -49,9 +49,6 @@ export(
 # but commenting out the ones used only interally
 
 S3method(as.glht, ref.grid)
-
-S3method(cld, ref.grid)
-S3method(cld, lsm.list)
 
 S3method(confint, ref.grid)
 S3method(confint, lsm.list)
