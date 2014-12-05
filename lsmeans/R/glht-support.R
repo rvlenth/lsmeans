@@ -42,7 +42,7 @@ glht.ref.grid <- function(model, linfct, by, ...) {
     }
     if (missing(by)) by = object@misc$by.vars
     
-    nms = setdiff(names(object@grid), c(by, ".offset.", ".freq."))
+    nms = setdiff(names(object@grid), c(by, ".offset.", ".freq.", ".wgt."))
     if (is.null(object@misc$estHook))
         lf = object@linfct
     else # custom estimation setup - use the grid itself as the parameterization

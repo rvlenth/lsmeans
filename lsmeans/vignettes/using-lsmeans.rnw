@@ -584,7 +584,7 @@ The general conclusion from these analyses is that for age groups 2 and~3, the e
 Note that this analysis is somewhat different than the results we would obtain by subsetting the data before analysis, as we are borrowing information from the other observations in estimating and testing these LS~means.
 
 \subsection{More on weighting}\label{weights}
-The "weights" argument can be a vector of numerical weights (it has to be of the right length), or one of four text values: \dqt{equal} (weight the predictions equally when averaging them, the default), \dqt{proportional} (weight them proportionally to the observed frequencies of the factor combinations being averaged over), \dqt{outer} (weight according to the outer products of the one-factor marginal counts), or \dqt{cells} (weight each mean differently, according to the frequencies of the predictions being averaged). \Fig{wtcomp} shows the LS~means for "race" using the four different weighting schemees.
+The "weights" argument can be a vector of numerical weights (it has to be of the right length), or one of four text values: \dqt{equal} (weight the predictions equally when averaging them, the default), \dqt{proportional} (weight them proportionally to the observed frequencies of the factor combinations being averaged over), \dqt{outer} (weight according to the outer products of the one-factor marginal counts), or \dqt{cells} (weight each mean differently, according to the frequencies of the predictions being averaged). \Fig{wtcomp} shows the LS~means for "race" using the four different weighting schemes. (Note: If the model itself has weights, then the total weights are used instead of counts.)
 \begin{figure}
 \hspace{-.06\linewidth}
 \begin{minipage}{1.12\linewidth}

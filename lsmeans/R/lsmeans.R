@@ -121,7 +121,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     facs = union(specs, by)
     
     # Figure out the structure of the grid
-    freq = RG@grid[[".freq."]]
+    wgt = RG@grid[[".wgt."]]
     dims = sapply(RG@levels, length)
     row.idx = array(seq_len(nrow(RG@linfct)), dims)
     use.mars = match(facs, names(RG@levels)) # which margins to use
@@ -130,17 +130,17 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     # Reconcile weights, if there are any margins left
     if ((length(avgd.mars) > 0) && !missing(weights)) {
         if (is.character(weights)) {
-            if (is.null(freq))
-                message("Frequency information not available -- deferring to fac.reduce")
+            if (is.null(wgt))
+                message("Weighting information not available -- deferring to fac.reduce")
             else {
                 wopts = c("equal","proportional","outer","cells","invalid")
                 weights = switch(wopts[pmatch(weights, wopts, 5)],
                     equal = rep(1, prod(dims[avgd.mars])),
                     proportional = as.numeric(plyr::aaply(row.idx, avgd.mars,
-                                                          function(idx) sum(freq[idx]))),
+                                                          function(idx) sum(wgt[idx]))),
                     outer = {
                         ftbl = plyr::aaply(row.idx, avgd.mars,
-                                           function(idx) sum(freq[idx]), .drop = FALSE)
+                                           function(idx) sum(wgt[idx]), .drop = FALSE)
                         w = N = sum(ftbl)
                         for (d in seq_along(dim(ftbl)))
                             w = outer(w, plyr::aaply(ftbl, d, sum) / N)
@@ -173,7 +173,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     combs = do.call("expand.grid", levs)
     if (!missing(weights) && (weights == "fq"))
         K = plyr::alply(row.idx, use.mars, function(idx) {
-            fq = RG@grid[[".freq."]][idx]
+            fq = RG@grid[[".wgt."]][idx]
             apply(diag(fq) %*% RG@linfct[idx, , drop=FALSE], 2, sum) / sum(fq)
         })
     else
@@ -195,10 +195,10 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     
     avgd.over = names(RG@levels[avgd.mars])
     
-    # Update .freq column of grid, if it exists
-    if (!is.null(freq)) {
-        combs[[".freq."]] = as.numeric(plyr::aaply(row.idx, use.mars, 
-            function(idx) sum(freq[idx])))
+    # Update .wgt column of grid, if it exists
+    if (!is.null(wgt)) {
+        combs[[".wgt."]] = as.numeric(plyr::aaply(row.idx, use.mars, 
+            function(idx) sum(wgt[idx])))
     }
     
     RG@roles$responses = character()
@@ -249,7 +249,7 @@ contrast.ref.grid = function(object, method = "eff", by, adjust, offset = NULL,
         options = getOption("lsmeans")$contrast, ...) {
     args = object@grid
     args[[".offset."]] = NULL 
-    args[[".freq."]] = NULL # ignore auxiliary stuff in labels, etc.
+    args[[".wgt."]] = NULL # ignore auxiliary stuff in labels, etc.
     if(missing(by)) 
         by = object@misc$by.vars
     if (!is.null(by)) {
@@ -323,7 +323,7 @@ contrast.ref.grid = function(object, method = "eff", by, adjust, offset = NULL,
     misc$estName = "estimate"
     misc$methDesc = attr(cmat, "desc")
     misc$famSize = size=nrow(args)
-    misc$pri.vars = setdiff(names(grid), c(".offset.",".freq."))
+    misc$pri.vars = setdiff(names(grid), c(".offset.",".wgt."))
     if (missing(adjust)) adjust = attr(cmat, "adjust")
     if (is.null(adjust)) adjust = "none"
     if (!is.null(attr(cmat, "offset")))

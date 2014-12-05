@@ -2,7 +2,7 @@ Package: lsmeans
 Type: Package
 Title: Least-Squares Means
 Version: 2.13-2
-Date: 2014-12-3
+Date: 2014-12-6
 Encoding: latin1
 Author: Russell V. Lenth [aut], Maxime Hervé [ctb]
 Maintainer: Russ Lenth <russell-lenth@uiowa.edu>

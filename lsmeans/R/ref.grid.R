@@ -213,19 +213,21 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
             grid[[".offset."]] = om * .get.offset(trms, grid)
     }
 
-    ### --- Determine frequencies --- (added ver.2.11)
+    ### --- Determine weights for each grid point --- (added ver.2.11), updated ver.2.14 to include weights
+    if (is.null(data[["(weights)"]]))
+        data[["(weights)"]] = 1
     nms = union(names(xlev), coerced) # only factors, no covariates or mult.resp
     # originally, I used 'plyr::count', but there are probs when there is a 'freq' variable
     id = plyr::id(data[, nms, drop = FALSE], drop = TRUE)
     uid = !duplicated(id)
     key = do.call(paste, data[uid, nms, drop = FALSE])
     key = key[order(id[uid])]
-    frq = tabulate(id, attr(id, "n"))
+    #frq = tabulate(id, attr(id, "n"))
     tgt = do.call(paste, grid[, nms, drop = FALSE])
-    freq = rep(0, nrow(grid))
+    wgt = rep(0, nrow(grid))
     for (i in seq_along(key))
-        freq[tgt == key[i]] = frq[i] ###ftbl[i, "freq"]
-    grid[[".freq."]] = freq
+        wgt[tgt == key[i]] = sum(data[["(weights)"]][id==i])
+    grid[[".wgt."]] = wgt
 
     misc$ylevs = NULL # No longer needed
     misc$estName = "prediction"
@@ -571,7 +573,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     result = .est.se.df(object)
     
     lblnms = setdiff(names(object@grid), 
-                     c(object@roles$responses, ".offset.", ".freq."))
+                     c(object@roles$responses, ".offset.", ".wgt."))
     lbls = object@grid[lblnms]
 
     ### implement my 'variable defaults' scheme    
