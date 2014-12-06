@@ -11,7 +11,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
                      options = lsm.options()$ref.grid, data, ...) {
     # recover the data
     if (missing(data)) {
-        data = try(recover.data (object, data = NULL))
+        data = try(recover.data (object, data = NULL, ...))
         if (inherits(data, "try-error"))
             stop("Possible remedy: Supply the data used in the 'data' argument")
     }
