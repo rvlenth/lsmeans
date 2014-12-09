@@ -133,7 +133,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
             if (is.null(wgt))
                 message("Weighting information not available -- deferring to fac.reduce")
             else {
-                wopts = c("equal","proportional","outer","cells","invalid")
+                wopts = c("equal","proportional","outer","cells","show.levels","invalid")
                 weights = switch(wopts[pmatch(weights, wopts, 5)],
                     equal = rep(1, prod(dims[avgd.mars])),
                     proportional = as.numeric(plyr::aaply(row.idx, avgd.mars,
@@ -147,11 +147,24 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
                         as.numeric(w)
                     },
                     cells = "fq",
+                    show.levels = {
+                        cat("lsmeans are obtained by averaging over these factor combinations\n")
+                        return(do.call(expand.grid, RG@levels[avgd.mars]))
+                    },
                     invalid = stop("Invalid 'weights' option: '", weights, "'")
                 )
             }
         }
-        if (is.numeric(weights)) {
+        if (is.matrix(weights)) {
+            wtrow = 0
+            fac.reduce = function(coefs) {
+                wtmat = diag(weights[wtrow+1, ]) / sum(weights[wtrow+1, ])
+                ans = apply(wtmat %*% coefs, 2, sum)
+                wtrow <<- (1 + wtrow) %% nrow(weights)
+                ans
+            }
+        }
+        else if (is.numeric(weights)) {
             wtmat = diag(weights)
             wtsum = sum(weights)
             if (wtsum <= 1e-8) wtsum = NA

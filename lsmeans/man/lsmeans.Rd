@@ -48,15 +48,17 @@ A named \code{list} of \code{list}s of contrast coefficients, as for \code{contr
 }
 \item{options}{If non-\code{NULL}, a named \code{list} of arguments to pass to \code{\link{update}}, just after the object is constructed.}
 \item{weights}{
-Numeric vector of weights to use in averaging predictions (must equal the number of predictions to be averaged). Alternatively, the user may specify a string that partially matches one of the following:
+Numeric vector, numeric matrix, or character string specifying weights to use in averaging predictions. If a vector, its length must equal the number of predictions to be averaged to obtain each least-squares mean. If a matrix, each row of the matrix is used in turn, wrapping back to the first row as needed.  When in doubt about what is being averaged (or how many), first call with \code{weights = "show.levels"}.)
+
+If a string, it should partially match one of the following:
 \describe{
 \item{\code{"equal"}}{Use an equally weighted average.}
 \item{\code{"proportional"}}{Weight in proportion to the frequencies (in the original data) of the factor combinations that are averaged over.}
 \item{\code{"outer"}}{Weight in proportion to each individual factor's marginal frequencies. Thus, the weights for a combination of factors are the outer product of the one-factor margins}
 \item{\code{"cells"}}{Weight according to the frequencies of the cells being averaged.}
+\item{\code{show.levels}}{This is a convenience feature for understanding what is being averaged over. Instead of a table of LS means, this causes the function to return a table showing the levels that are averaged over, in the order they appear.}
 }
 Outer weights are like the 'expected' counts in a chi-square test of independence, and will yield the same results as those obtained by proportional averaging with one factor at a time. All except \code{"cells"} uses the same set of weights for each mean. In a model where the predicted values are the cell means, cell weights will yield the raw averages of the data for the factors involved.
-
 Note: If weights were used in fitting the model, then weight totals are used in place of frequencies in these schemes.
 
 If \code{weights} is used, \code{fac.reduce} is ignored. 
@@ -151,7 +153,16 @@ Oatsq.lme <- update(Oats.lme, . ~ nitro + I(nitro^2) + Variety)
 # Predictions at each unique 'nitro' value in the dataset
 lsmeans(Oatsq.lme, ~ nitro, cov.reduce = FALSE)
 
-# Trends
+### Weights
+# See what's being averaged over in the above
+lsmeans(Oatsq.lme, ~ nitro, cov.reduce = FALSE, weights = "show.levels")
+
+# Give three times the weight to Marvellous
+lsmeans(Oatsq.lme, ~ nitro, cov.reduce = FALSE, 
+    weights = c(1,3,1))
+
+
+### Trends
 fiber.lm <- lm(strength ~ diameter*machine, data=fiber)
 # Obtain slopes for each machine ...
 ( fiber.lst <- lstrends(fiber.lm, "machine", var="diameter") )

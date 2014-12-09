@@ -62,11 +62,6 @@ lsm.basis.default = function(object, trms, xlev, grid, ...) {
 # then strips that off leaving extensions
 .show_supported = function(ns = "lsmeans", meth = "lsm.basis") {
     "Use help(\"models\", package = \"lsmeans\") for information on supported models."
-#     pat = paste(meth, ".", sep="")
-#     objs = ls(envir = getNamespace(ns), pattern = pat)
-#     clss = gsub(pat, "", objs)
-#     c("Objects of the following classes are supported:\n",
-#       paste(dQuote(setdiff(clss, "default")), collapse = ", "))
 }
 
 

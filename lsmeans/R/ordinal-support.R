@@ -5,7 +5,7 @@
 recover.data.clm = function(object, mode = "latent", ...) {
     if (!is.na(pmatch(mode, "scale"))) {
         if (is.null(trms <- object$S.terms))
-            stop("No scale model is present")
+            return("Specified mode=\"scale\", but no scale model is present") # ref.grid's error handler takes it from here
         recover.data(object$call, trms, object$na.action, ...)
     }
     else if (is.null(object$S.terms) && is.null(object$nom.terms))

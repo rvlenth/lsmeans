@@ -33,11 +33,13 @@ In \code{update}, the names in \code{\dots} are partially matched against those 
 
 \item{\code{estName}}{(\code{character}) is the column label used for displaying predictions or LS means.}
 
-\item{\code{inv.label}}{(\code{character)}) is the column label to use for predictions or LS means when \code{type="response"}.}
+\item{\code{inv.lbl}}{(\code{character)}) is the column label to use for predictions or LS means when \code{type="response"}.}
 
 \item{\code{by.vars}}{(\code{character)} vector or \code{NULL}) the variables used for grouping in the summary, and also for defining subfamilies in a call to \code{\link{contrast}}.}
 
 \item{\code{pri.vars}}{(\code{character} vector) are the names of the grid variables that are not in \code{by.vars}. Thus, the combinations of their levels are used as columns in each table produced by \code{\link{summary}}.}
+
+\item{\code{alpha}}{(numeric) is the default significance level for tests, in \code{\link{summary}} as well as \code{\link{cld}} and \code{\link{plot}} when \samp{intervals = TRUE}}
 
 \item{\code{adjust}}{(\code{character)}) is the default for the \code{adjust} argument in \code{\link{summary}}.}
 
@@ -49,11 +51,13 @@ In \code{update}, the names in \code{\dots} are partially matched against those 
 
 \item{\code{df}}{(numeric) overrides the default degrees of freedom with a specified single value.}
 
-\item{\code{predict.method}}{(character) sets the default method of displaying predictions in \code{\link{summary}}, \code{\link{predict}}, and \code{\link{lsmip}}. Valid values are \code{"link"} (with synonyms \code{"lp"} and \code{"linear"}), or \code{"response"}.}
+\item{\code{predict.type}}{(character) sets the default method of displaying predictions in \code{\link{summary}}, \code{\link{predict}}, and \code{\link{lsmip}}. Valid values are \code{"link"} (with synonyms \code{"lp"} and \code{"linear"}), or \code{"response"}.}
 
 \item{\code{avgd.over}}{(\code{character)} vector) are the names of the variables whose levels are averaged over in obtaining marginal averages of predictions, i.e., LS means. Changing this might produce a misleading printout, but setting it to \code{character(0)} will suppress the \dQuote{averaged over} message in the summary.}
 
-\item{\code{methDesc}}{(\code{character}) is a string that may used for creating names for a list of \code{lsmobj} objects. }
+\item{\code{initMesg}}{(\code{character}) is a string that is added to the beginning of any annotations that appear below the \code{\link{summary}} display.}
+
+\item{\code{methDesc}}{(\code{character}) is a string that may be used for creating names for a list of \code{lsmobj} objects. }
 
 } % end \describe
 
