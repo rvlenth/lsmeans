@@ -8,7 +8,7 @@
 #     FALSE - same as function(x) sort(unique(x))
 
 ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, 
-                     options = lsm.options()$ref.grid, data, ...) {
+                     options = lsm.options()$ref.grid, data, type, ...) {
     # recover the data
     if (missing(data)) {
         data = try(recover.data (object, data = NULL, ...))
@@ -245,6 +245,11 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
          grid = grid, levels = ref.levels, matlevs = matlevs,
          linfct = basis$X, bhat = basis$bhat, nbasis = basis$nbasis, V = basis$V,
          dffun = basis$dffun, dfargs = basis$dfargs, misc = misc)
+
+    if (!missing(type)) {
+        if (is.null(options)) options = list()
+        options$predict.type = type
+    }
 
     if(!is.null(options)) {
         options$object = result

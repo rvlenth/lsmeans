@@ -8,7 +8,12 @@ Changelog for 'lsmeans' package
     Yet more enhancements for for clm, clmm, polr...
         "mean.class" mode, uses response name for "prob" mode
         "scale" mode does lsmeans for estimated log-scale
+    Enhancements to 'weights' argument in 'lsmeans':
+        - May now provide a matrix - it cycles through its rows
+        - weights = "show.levels" shows the factor comb's averaged
     Added 'reverse' option to 'pairs'
+    Added 'type' argument in 'ref.grid' for convenience
+    Fixed some errors/omissions in documentation of 'update'
 
 2.13
     Provides for equivalence, noninferiority, etc. tests via
