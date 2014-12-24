@@ -22,6 +22,7 @@ pairwise.lsmc = function(levs,...) {
     M = M[-1]
     attr(M, "desc") = "pairwise differences"
     attr(M, "adjust") = "tukey"
+    attr(M, "type") = "pairs"
     M
 }
 
@@ -42,6 +43,7 @@ revpairwise.lsmc = function(levs,...) {
     M = M[-1]
     attr(M, "desc") = "pairwise differences"
     attr(M, "adjust") = "tukey"
+    attr(M, "type") = "pairs"
     M
 }
 

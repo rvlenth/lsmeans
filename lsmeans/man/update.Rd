@@ -43,6 +43,8 @@ In \code{update}, the names in \code{\dots} are partially matched against those 
 
 \item{\code{adjust}}{(\code{character)}) is the default for the \code{adjust} argument in \code{\link{summary}}.}
 
+\item{\code{estType}}{(\code{character}) is the type of the estimate. It should match one of \samp{c("prediction","contrast","pairs")}. This is used along with \code{"adjust"} to determine appropriate adjustments to P values and confidence intervals.}
+
 \item{\code{famSize}}{(integer) is the \code{nmeans} parameter for \code{\link{ptukey}} when \code{adjust="tukey"}. }
 
 \item{\code{infer}}{(\code{logical} vector of length 2) is the default value of \code{infer} in \code{\link{summary}}.}

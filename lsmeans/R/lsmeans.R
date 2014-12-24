@@ -334,6 +334,10 @@ contrast.ref.grid = function(object, method = "eff", by, adjust, offset = NULL,
     row.names(linfct) = NULL
     misc = object@misc
     misc$estName = "estimate"
+    if (!is.null(et <- attr(cmat, "type")))
+        misc$estType = et
+    else
+        misc$estType = "contrast"
     misc$methDesc = attr(cmat, "desc")
     misc$famSize = size=nrow(args)
     misc$pri.vars = setdiff(names(grid), c(".offset.",".wgt."))
@@ -538,6 +542,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
         names(result)[1] = "lstrends"
         if (is(result[[1]], "ref.grid")) {
             result[[1]]@misc$estName = estName
+            result[[1]]@misc$estType = "prediction"
             result[[1]]@misc$methDesc = "trends"
             for (i in seq_along(result))
                 result[[i]] = .zaptran(result[[i]])
@@ -545,6 +550,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
     }
     else {
         result@misc$estName = estName
+        result@misc$estType = "prediction"
         result@misc$methDesc = "trends"
         result = .zaptran(result)
     }
@@ -585,7 +591,7 @@ lsmobj = function(bhat, V, levels, linfct, df = NA, ...) {
         dffun = function(x, dfargs) dfargs$df
         dfargs = list(df = df)
     }
-    misc = list(estName = "estimate", infer = c(TRUE,FALSE), level = .95,
+    misc = list(estName = "estimate", estType = "prediction", infer = c(TRUE,FALSE), level = .95,
                 adjust = "none", famSize = nrow(linfct), 
                 avgd.over = character(0), pri.vars = names(grid),
                 methDesc = "lsmobj")
