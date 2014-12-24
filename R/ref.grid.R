@@ -231,6 +231,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
 
     misc$ylevs = NULL # No longer needed
     misc$estName = "prediction"
+    misc$estType = "prediction"
     misc$infer = c(FALSE,FALSE)
     misc$level = .95
     misc$adjust = "none"
@@ -428,6 +429,7 @@ str.ref.grid <- function(object, ...) {
 
 # utility to compute an adjusted p value
 # tail is -1, 0, 1 for left, two-sided, or right
+# Note fam.info is c(famsize, ncontr, estTypeIndex)
 .adj.p.value = function(t, df, adjust, fam.info, tail) {
 # do a pmatch of the adjust method, case insensitive
     adj.meths = c("sidak", "tukey", "scheffe", p.adjust.methods)
@@ -437,12 +439,18 @@ str.ref.grid <- function(object, ...) {
     adjust = adj.meths[k]
     if ((tail != 0) && (k %in% 2:3)) # One-sided tests, change Tukey/Scheffe to Bonferroni
         adjust = "bonferroni"
+    if ((fam.info[3] != 3) && adjust == "tukey") # not pairwise
+        adjust = "scheffe"
     
     # pseudo-asymptotic results when df is NA
     df[is.na(df)] = 10000
     
+    # if estType is "prediction", use #contrasts + 1 as family size
+    # (produces right Scheffe CV; Tukey ones are a bit strange)
     fam.size = fam.info[1]
-    n.contr = fam.info[2] ## n.contr = sum(!is.na(t))
+    n.contr = fam.info[2]
+    if (fam.info[3] == 1) # when not contrasts, we bump up num. df for scheffe
+        fam.size = n.contr + 1
     abst = abs(t)
     if (tail == 0)
         unadj.p = 2*pt(abst, df, lower.tail=FALSE)
@@ -460,11 +468,13 @@ str.ref.grid <- function(object, ...) {
         tukey = ptukey(sqrt(2)*abst, fam.size, zapsmall(df), lower.tail=FALSE),
         scheffe = pf(t^2/(fam.size-1), fam.size-1, df, lower.tail=FALSE),
     )
+    if (fam.info[3] == 1) # for labeling purposes
+        fam.size = fam.size - 1
     chk.adj = match(adjust, c("none", "tukey", "scheffe"), nomatch = 99)
     do.msg = (chk.adj > 1) && (n.contr > 1) && 
              !((fam.size == 2) && (chk.adj < 10)) 
     if (do.msg) {
-        xtra = if(chk.adj < 10) paste("a family of", fam.size, "means")
+        xtra = if(chk.adj < 10) paste("a family of", fam.size, "estimates")
                else             paste(n.contr, "tests")
         mesg = paste("P value adjustment:", adjust, "method for", xtra)
     }
@@ -476,26 +486,33 @@ str.ref.grid <- function(object, ...) {
 # returns a list similar to .adj.p.value
 .adj.critval = function(level, df, adjust, fam.info) {
     mesg = NULL
-    adj.meths = c("tukey", "sidak", "bonferroni", "none")
+    adj.meths = c("tukey", "sidak", "bonferroni", "scheffe", "none")
     k = pmatch(tolower(adjust), adj.meths)
     if(is.na(k)) {
         k = which(adj.meths == "none")
         mesg = "Confidence levels are NOT adjusted for multiplicity"
     }
     adjust = adj.meths[k]
+    if ((fam.info[3] != 3) && adjust == "tukey") # not pairwise
+        adjust = "scheffe"
     
     # pseudo-asymptotic results when df is NA
     df[is.na(df)] = 10000
     
     fam.size = fam.info[1]
     n.contr = fam.info[2]
+    if (fam.info[3] == 1) 
+        fam.size = n.contr + 1
     
-    chk.adj = match(adjust, c("none", "tukey"), nomatch = 99)
+    chk.adj = match(adjust, c("none", "tukey", "scheffe"), nomatch = 99)
     do.msg = (chk.adj > 1) && (n.contr > 1) && 
         !((fam.size == 2) && (chk.adj < 10)) 
+    if (fam.info[3] == 1) # for labeling purposes
+        fam.size = fam.size - 1
+    
     if (do.msg) {
-        xtra = if(chk.adj < 10) paste("a family of", fam.size, "means")
-        else             paste(n.contr, "tests")
+        xtra = if(chk.adj < 10) paste("a family of", fam.size, "estimates")
+        else             paste(n.contr, "estimates")
         mesg = paste("Confidence-level adjustment:", adjust, "method for", xtra)
     }
     
@@ -503,7 +520,8 @@ str.ref.grid <- function(object, ...) {
         none = -qt((1-level)/2, df),
         sidak = -qt((1 - level^(1/n.contr))/2, df),
         bonferroni = -qt((1-level)/n.contr/2, df),
-        tukey = qtukey(level, fam.size, df) / sqrt(2)
+        tukey = qtukey(level, fam.size, df) / sqrt(2),
+        scheffe = sqrt((fam.size - 1) * qf(level, fam.size - 1, df))
     )
     list(cv = cv, mesg = mesg, adjust = adjust)
 }
@@ -615,11 +633,14 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
 
     mesg = object@misc$initMesg
     
+    # et = 1 if a prediction, 2 if a contrast (or unmatched or NULL), 3 if pairs
+    et = pmatch(c(object@misc$estType, "c"), c("prediction", "contrast", "pairs"), nomatch = 2)[1]
+    
     by.size = nrow(object@grid)
     if (!is.null(by))
         for (nm in by)
             by.size = by.size / length(unique(object@levels[[nm]]))
-    fam.info = c(object@misc$famSize, by.size)
+    fam.info = c(object@misc$famSize, by.size, et)
     cnm = NULL
     
     if(infer[1]) { # add CIs
@@ -771,7 +792,7 @@ vcov.ref.grid = function(object, ...) {
 update.ref.grid = function(object, ..., silent = FALSE) {
     args = list(...)
     valid.choices = c("adjust","alpha","avgd.over","by.vars","df",
-        "initMesg","estName","famSize","infer","inv.lbl",
+        "initMesg","estName","estType","famSize","infer","inv.lbl",
         "level","methdesc","predict.type","pri.vars","tran")
     misc = object@misc
     for (nm in names(args)) {

@@ -1,8 +1,10 @@
 # Runs the function multicompLetters from the multcompView package
 # returns an error if not installed
 .mcletters = function(..., Letters=c("1234567890",LETTERS,letters)) {
-    if(!requireNamespace("multcompView", quietly = TRUE))
-        stop("The 'multcompView' package must be installed to use cld methods")
+    if(!requireNamespace("multcompView", quietly = TRUE)) {
+        message("The 'multcompView' package must be installed to use cld methods")
+        return (list(monospacedLetters = "?"))
+    }
     
     # Expand strings to individual letters
     Letters = as.character(unlist(sapply(Letters, function(stg) {

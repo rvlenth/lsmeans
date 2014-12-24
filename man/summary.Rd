@@ -82,15 +82,16 @@ The \code{misc} slot in \code{object} contains default values for \code{by}, \co
 \bold{Transformations and links:}
 With \code{type="response"}, the transformation assumed can be found in \samp{object@misc$tran}, and its label, for the summary is in \samp{object@misc$inv.lbl}. At this time, \code{tran} must be one of the named transformations valid for \code{\link{make.link}}. Any \eqn{t} or \eqn{z} tests are still performed on the scale of the linear predictor, not the inverse-transformed one. Similarly, confidence intervals are computed on the linear-predictor scale, then inverse-transformed.
 
-\bold{P-value adjustments:}
-As applied to \eqn{p} values, \code{adjust} has the following effects:
-\code{"tukey"} computes \eqn{p} values using the Studentized range distribution with the number of means in the family;
-\code{"sidak"} replaces each \eqn{p} value by \eqn{1 - (1 - p)^c}, where \eqn{c} is the number of contrasts;
-\code{"scheffe"} computes \eqn{p} values from the \eqn{F} distribution, according to the Scheffe criterion;
+\bold{Confidence-limit and P-value adjustments:}
+The \code{adjust} argument has the following effects:
+\code{"tukey"} uses the Studentized range distribution with the number of means in the family. 
+\code{"scheffe"} computes \eqn{p} values from the \eqn{F} distribution, according to the Scheffe critical value of \eqn{\sqrt{kF(k,d)}}{sqrt[k*F(k,d)]}, where \eqn{d} is the error degrees of freedom and \eqn{k} is (family size minus 1) for contrasts, and (number of estimates) otherwise.
+\code{"sidak"} makes adjustments as if the estimates were independent (a conservative adjustment in many cases);
 \code{"none"} makes no adjustments to the \eqn{p} values.
-In addition, the Bonferroni-inequality-based adjustment methods in \code{\link{p.adjust}} are available.
 
-Adjustments for confidence limits are available only for \code{adjust} equal to \code{"tukey"}, \code{"sidak"}, \code{"bonferroni"}, and \code{"none"}. For any other \code{adjust}, confidence limits are left unadjusted and a message is displayed to that effect.
+For P-value adjustments only, the Bonferroni-inequality-based adjustment methods in \code{\link{p.adjust}} are also available. If a \code{p.adjust.methods} method is specified for confidence limits, they are left unadjusted and an annotation is added to that effect.
+Also, if the estimates being summarized are not the result of pairwise comparisons, \code{"tukey"} adjustments are not appropriate and \code{"scheffe"} is used instead.
+
 
 In some cases, confidence and \eqn{p}-value adjustments are only approximate -- especially when the degrees of freedom or standard errors vary
 greatly within the family of tests. For more accurate adjustments, use the \code{\link[lsmeans]{glht}} method for \pkg{multcomp}.
