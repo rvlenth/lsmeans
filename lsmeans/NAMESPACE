@@ -3,6 +3,7 @@
 # Imports
 import(Matrix)
 import(methods)
+import(mvtnorm)
 
 # 'requireNamespace' block below allows me to put multcomp in
 # Imports instead of Depends. 
@@ -21,6 +22,7 @@ if (requireNamespace("multcomp", quietly = TRUE)) {
 if (requireNamespace("plyr", quietly = TRUE)) {
     importFrom(plyr, alply)
 }
+
 
 # Visible exports
 exportPattern("*.lsmc")  #all contrast fcns
