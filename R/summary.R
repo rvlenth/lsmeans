@@ -1,0 +1,495 @@
+### This file has summary.ref.grid S3 method and related functions
+
+# Computes the quadratic form y'Xy after subsetting for the nonzero elements of y
+.qf.non0 = function(X, y) {
+    ii = (zapsmall(y) != 0)
+    if (any(ii))
+        sum(y[ii] * (X[ii, ii, drop = FALSE] %*% y[ii]))
+    else 0
+}
+
+# utility to check estimability of x'beta, given nonest.basis
+is.estble = function(x, nbasis, tol=1e-8) {
+    if (is.matrix(x))
+        return(apply(x, 1, is.estble, nbasis, tol))
+    if(is.na(nbasis[1]))
+        TRUE
+    else {
+        chk = as.numeric(crossprod(nbasis, x))
+        ssqx = sum(x*x) # BEFORE subsetting x
+        # If x really small, don't scale chk'chk
+        if (ssqx < tol) ssqx = 1
+        sum(chk*chk) < tol * ssqx
+    }
+}
+
+# utility fcn to get est's, std errors, and df
+# new arg: do.se -- if FALSE, just do the estimates and return 0 for se and df
+# returns a data.frame with an add'l "link" attribute if misc$tran is non-null
+# .est.se.df = function(linfct, bhat, nbasis, V, dffun, dfargs, misc, do.se=TRUE, 
+#                       tol=getOption("lsmeans")$estble.tol) {
+# 2.13: Revised to call w/ just object instead of all those args (except linfct)
+#   Also moved offset comps to here, and provided for misc$estHook
+.est.se.df = function(object, do.se=TRUE, tol=lsm.options()$estble.tol) {
+    if (is.null(tol)) 
+        tol = 1e-8
+    misc = object@misc
+    if (!is.null(hook <- misc$estHook)) {
+        if (is.character(hook)) hook = get(hook)
+        result = hook(object, do.se=do.se, tol=tol)
+    }
+    else {
+        active = which(!is.na(object@bhat))
+        bhat = object@bhat[active]
+        result = t(apply(object@linfct, 1, function(x) {
+            if (is.estble(x, object@nbasis, tol)) {
+                x = x[active]
+                est = sum(bhat * x)
+                if(do.se) {
+                    se = sqrt(.qf.non0(object@V, x))
+                    df = object@dffun(x, object@dfargs)
+                }
+                else # if these unasked-for results are used, we're bound to get an error!
+                    se = df = 0
+                c(est, se, df)
+            }
+            else c(NA,NA,NA)
+        }))
+            
+        if (!is.null(object@grid$.offset.))
+            result[, 1] = result[, 1] + object@grid$.offset.
+    }
+    result = as.data.frame(result)
+    names(result) = c(misc$estName, "SE", "df")
+    
+    if (!is.null(misc$tran) && (misc$tran != "none")) {
+        if(is.character(misc$tran)) {
+            link = try(make.link(misc$tran), silent=TRUE)
+            if (!inherits(link, "try-error"))
+                attr(result, "link") = link
+        }
+        else if (is.list(misc$tran))
+            attr(result, "link") = misc$tran
+    }
+    result
+}
+
+# utility to compute an adjusted p value
+# tail is -1, 0, 1 for left, two-sided, or right
+# Note fam.info is c(famsize, ncontr, estTypeIndex)
+# 2.14: added vcovmat arg, dunnett & mvt adjustments
+# NOTE: vcovmat is NULL unless adjust == "mvt"
+.adj.p.value = function(t, df, adjust, fam.info, tail, vcovmat) {
+    # do a pmatch of the adjust method, case insensitive
+    adj.meths = c("sidak", "tukey", "scheffe", "dunnett", "mvt", p.adjust.methods)
+    k = pmatch(tolower(adjust), adj.meths)
+    if(is.na(k))
+        stop("Adjust method '", adjust, "' is not recognized or not valid")
+    adjust = adj.meths[k]
+    if ((tail != 0) && (k %in% 2:4)) # One-sided tests, change Tukey/Scheffe/Dunnett to Sidak
+        adjust = "sidak"
+    if ((fam.info[3] != 3) && adjust == "tukey") # not pairwise
+        adjust = "sidak"
+    if(adjust == "mvt") # get the correlation matrix
+        corrmat = cov2cor(vcovmat)
+    
+    # pseudo-asymptotic results when df is NA
+    df[is.na(df)] = 10000
+    
+    # if estType is "prediction", use #contrasts + 1 as family size
+    # (produces right Scheffe CV; Tukey ones are a bit strange)
+    fam.size = fam.info[1]
+    n.contr = fam.info[2]
+    if (fam.info[3] == 1) # when not contrasts, we bump up num. df for scheffe
+        fam.size = n.contr + 1
+    abst = abs(t)
+    if (tail == 0)
+        unadj.p = 2*pt(abst, df, lower.tail=FALSE)
+    else
+        unadj.p = pt(t, df, lower.tail = (tail<0))
+    
+    if (adjust %in% p.adjust.methods) {
+        if (n.contr == length(unadj.p))
+            pval = p.adjust(unadj.p, adjust, n = n.contr)
+        else
+            pval = as.numeric(apply(matrix(unadj.p, nrow=n.contr), 2, 
+                                    function(pp) p.adjust(pp, adjust, n=sum(!is.na(pp)))))
+    }
+    else pval = switch(adjust,
+                       sidak = 1 - (1 - unadj.p)^n.contr,
+                       tukey = ptukey(sqrt(2)*abst, fam.size, zapsmall(df), lower.tail=FALSE),
+                       scheffe = pf(t^2/(fam.size-1), fam.size-1, df, lower.tail=FALSE),
+                       dunnett = .pdunnx(abst, n.contr, df),
+                       mvt = 1 - .my.pmvt(abst, df, corrmat, tail)
+    )
+    if (fam.info[3] == 1) # for labeling purposes
+        fam.size = fam.size - 1
+    chk.adj = match(adjust, c("none", "tukey", "scheffe"), nomatch = 99)
+    do.msg = (chk.adj > 1) && (n.contr > 1) && 
+        !((fam.size == 2) && (chk.adj < 10)) 
+    if (do.msg) {
+        xtra = if(chk.adj < 10) paste("a family of", fam.size, "estimates")
+        else             paste(n.contr, "tests")
+        mesg = paste("P value adjustment:", adjust, "method for", xtra)
+    }
+    else mesg = NULL
+    list(pval=pval, mesg=mesg, adjust=adjust)
+}
+
+# Code needed for an adjusted critical value
+# returns a list similar to .adj.p.value
+# 2.14: Added tail vcovmat arg, dunnett & mvt adjustments
+# NOTE: vcovmat is NULL unless adjust == "mvt"
+.adj.critval = function(level, df, adjust, fam.info, tail, vcovmat) {
+    mesg = NULL
+    adj.meths = c("sidak", "tukey", "scheffe", "dunnett", "mvt", "bonferroni", "none")
+    k = pmatch(tolower(adjust), adj.meths)
+    if(is.na(k)) {
+        k = which(adj.meths == "none")
+        mesg = "Confidence levels are NOT adjusted for multiplicity"
+    }
+    adjust = adj.meths[k]
+    if ((fam.info[3] != 3) && adjust == "tukey") # not pairwise
+        adjust = "sidak"
+    if ((tail != 0) && (k %in% 2:4)) # One-sided intervals, change Tukey/Scheffe/Dunnett to Sidak
+        adjust = "sidak"
+    if ((fam.info[3] != 3) && adjust == "tukey") # not pairwise
+        adjust = "sidak"
+    if(adjust == "mvt") # get the correlation matrix
+        corrmat = cov2cor(vcovmat)
+    
+    # pseudo-asymptotic results when df is NA
+    df[is.na(df)] = Inf
+    
+    fam.size = fam.info[1]
+    n.contr = fam.info[2]
+    if (fam.info[3] == 1) 
+        fam.size = n.contr + 1
+    
+    chk.adj = match(adjust, c("none", "tukey", "scheffe", "dunnett", "mvt"), nomatch = 99)
+    do.msg = (chk.adj > 1) && (n.contr > 1) && 
+        !((fam.size == 2) && (chk.adj < 10)) 
+    if (fam.info[3] == 1) # for labeling purposes
+        fam.size = fam.size - 1
+    
+    if (do.msg) {
+        xtra = if(chk.adj < 10) paste("a family of", fam.size, "estimates")
+        else             paste(n.contr, "estimates")
+        mesg = paste("Confidence-level adjustment:", adjust, "method for", xtra)
+    }
+    
+    adiv = ifelse(tail == 0, 2, 1) # divisor for alpha where needed
+    
+    cv = switch(adjust,
+                none = -qt((1-level)/adiv, df),
+                sidak = -qt((1 - level^(1/n.contr))/adiv, df),
+                bonferroni = -qt((1-level)/n.contr/adiv, df),
+                tukey = qtukey(level, fam.size, df) / sqrt(2),
+                scheffe = sqrt((fam.size - 1) * qf(level, fam.size - 1, df)),
+                dunnett = .qdunnx(level, n.contr, df),
+                mvt = .my.qmvt(level, df, corrmat, tail)
+    )
+    list(cv = cv, mesg = mesg, adjust = adjust)
+}
+
+
+### My own functions to ease access to mvt functions
+### These use one argument at a time and expands each (lower, upper) or p to a k-vector
+### Use tailnum = -1, 0, or 1
+.my.pmvt = function(x, df, corrmat, tailnum) {
+    lower = switch(tailnum + 2, -Inf, -x, x)
+    upper = switch(tailnum + 2, x, x, Inf)
+    k = nrow(corrmat)
+    df = .fix.df(df)
+    apply(cbind(lower, upper, df), 1, function(z) {
+        pval = try(mvtnorm::pmvt(rep(z[1], k), rep(z[2], k), 
+            df = as.integer(z[3]), corr = corrmat), silent = TRUE)
+        if (inherits(pval, "try-error"))   NA
+        else                               pval
+    })
+}
+
+.my.qmvt = function(p, df, corrmat, tailnum) {
+    tail = c("lower.tail", "both.tails", "lower.tail")[tailnum + 2] 
+    df = .fix.df(df)
+    apply(cbind(p, df), 1, function(z) {
+        cv = try(mvtnorm::qmvt(z[1], tail = tail, 
+            df = as.integer(z[2]), corr = corrmat)$quantile, silent = TRUE)
+        if (inherits(cv, "try-error"))     NA
+        else                               cv
+    })
+}
+
+# utility to get appropriate integer df
+.fix.df = function(df) {
+    sapply(df, function(d) {
+        if (d > 0) d = max(1, d)
+        if (is.infinite(d) || (d > 9999)) d = 0
+        floor(d + .25) # tends to round down
+    })
+}
+
+### My approximate dunnett distribution 
+### - a mix of the Tukey cdf and Sidak-corrected t
+.pdunnx = function(x, k, df, twt = (k - 1)/k) {
+    tukey = ptukey(sqrt(2)*x, (1 + sqrt(1 + 8*k))/2, df)
+    sidak = (pf(x^2, 1, df))^k
+    twt*tukey + (1 - twt)*sidak
+}
+
+# Uses linear interpolation to get quantile
+.qdunnx = function(p, k, df, ...) {
+    xtuk = qtukey(p, (1 + sqrt(1 + 8*k))/2, df) / sqrt(2)
+    xsid = sqrt(qf(p^(1/k), 1, df))
+    fcn = function(x, d) 
+        .pdunnx(x, k, d, ...) - p
+    apply(cbind(xtuk, xsid, df), 1, function(r) {
+        x = try(uniroot(fcn, r[1:2], tol = .0005, d = r[3]), silent = TRUE)
+        if (inherits(x, "try-error"))     NA
+        else                              x$root
+    })
+}
+
+
+
+### Support for different prediction types ###
+
+# Valid values for type arg or predict.type option
+.valid.types = c("link","response","lp","linear")
+
+# get "predict.type" option from misc, and make sure it's legal
+.get.predict.type = function(misc) {
+    type = misc$predict.type
+    if (is.null(type))
+        .valid.types[1]
+    else
+        .validate.type(type)
+}
+
+# check a "type" arg to make it legal
+.validate.type = function (type) {
+    .valid.types[pmatch(type, .valid.types, 1)]
+}
+
+# S3 predict method
+predict.ref.grid <- function(object, type, ...) {
+    # update with any "summary" options
+    opt = lsm.options()$summary
+    if(!is.null(opt)) {
+        opt$object = object
+        object = do.call("update.ref.grid", opt)
+    }
+    
+    if (missing(type))
+        type = .get.predict.type(object@misc)
+    else
+        type = .validate.type(type)
+    
+    pred = .est.se.df(object, do.se=FALSE)
+    result = pred[[1]]
+    # MOVED TO .EST.SE.DF    
+    #     if (".offset." %in% names(object@grid))
+    #         result = result + object@grid[[".offset."]]
+    if (type == "response") {
+        link = attr(pred, "link")
+        if (!is.null(link))
+            result = link$linkinv(result)
+    }
+    result
+}
+
+# S3 summary method
+summary.ref.grid <- function(object, infer, level, adjust, by, type, df, 
+                             null = 0, delta = 0, side = 0, ...) {
+    # update with any "summary" options
+    opt = lsm.options()$summary
+    if(!is.null(opt)) {
+        opt$object = object
+        object = do.call("update.ref.grid", opt)
+    }
+    
+    if(missing(df)) df = object@misc$df
+    if(!is.null(df))
+        object@dffun = function(k, dfargs) df
+    
+    # reconcile all the different ways we could specify the alternative
+    # ... and map each to one of the first 3 subscripts
+    side.opts = c("left","both","right","two-sided","noninferiority","nonsuperiority","equivalence","superiority","inferiority","0","2","-1","1","+1","<",">","!=","=")
+    side.map =  c( 1,     2,     3,      2,          3,               1,               2,            3,            1,            2,  2,   1,  3,   3,  1,  3,  2,   2)
+    side = side.map[pmatch(side, side.opts, 2)[1]] - 2
+    delta = abs(delta)
+    
+    result = .est.se.df(object)
+    
+    lblnms = setdiff(names(object@grid), 
+                     c(object@roles$responses, ".offset.", ".wgt."))
+    lbls = object@grid[lblnms]
+    
+    ### implement my 'variable defaults' scheme    
+    if(missing(infer)) infer = object@misc$infer
+    if(missing(level)) level = object@misc$level
+    if(missing(adjust)) adjust = object@misc$adjust
+    if(missing(by)) by = object@misc$by.vars
+    
+    if (missing(type))
+        type = .get.predict.type(object@misc)
+    else
+        type = .validate.type(type)
+    
+    zFlag = (all(is.na(result$df)))
+    inv = (type == "response") # flag to inverse-transform
+    
+    if ((length(infer) == 0) || !is.logical(infer)) 
+        infer = c(FALSE, FALSE)
+    if(length(infer == 1)) 
+        infer = c(infer,infer)
+    
+    if(inv && !is.null(object@misc$tran)) {
+        link = attr(result, "link")
+        if (!is.null(object@misc$inv.lbl))
+            names(result)[1] = object@misc$inv.lbl
+        else
+            names(result)[1] = "lsresponse"
+    }
+    else
+        link = NULL
+    
+    attr(result, "link") = NULL
+    estName = names(result)[1]
+    
+    mesg = object@misc$initMesg
+    
+    # et = 1 if a prediction, 2 if a contrast (or unmatched or NULL), 3 if pairs
+    et = pmatch(c(object@misc$estType, "c"), c("prediction", "contrast", "pairs"), nomatch = 2)[1]
+    
+    by.size = nrow(object@grid)
+    if (!is.null(by))
+        for (nm in by)
+            by.size = by.size / length(unique(object@levels[[nm]]))
+    fam.info = c(object@misc$famSize, by.size, et)
+    cnm = NULL
+    
+    # get vcov matrix only if needed (adjust == "mvt")
+    vcovmat = NULL
+    if (!is.na(pmatch(adjust, "mvt")))
+        vcovmat = vcov(object)
+    
+    if(infer[1]) { # add CIs
+        quant = 1 - (1 - level)/2
+        ###cv = if(zFlag) qnorm(quant) else qt(quant, result$df)
+        acv = .adj.critval(level, result$df, adjust, fam.info, side, vcovmat)
+        adjust = acv$adjust
+        cv = acv$cv
+        cv = switch(side + 2, cbind(-Inf, cv), cbind(-cv, cv), cbind(-cv, Inf))
+        cnm = if (zFlag) c("asymp.LCL", "asymp.UCL") else c("lower.CL","upper.CL")
+        result[[cnm[1]]] = result[[1]] + cv[, 1]*result$SE
+        result[[cnm[2]]] = result[[1]] + cv[, 2]*result$SE
+        if (!is.null(link)) {
+            result[[cnm[1]]] = link$linkinv(result[[cnm[1]]])
+            result[[cnm[2]]] = link$linkinv(result[[cnm[2]]])
+        }
+        mesg = c(mesg, paste("Confidence level used:", level), acv$mesg)
+    }
+    if(infer[2]) { # add tests
+        if (!all(null == 0)) {
+            result[["null"]] = null
+            if (!is.null(link))
+                result[["null"]] = link$linkinv(result[["null"]])
+        }
+        tnm = ifelse (zFlag, "z.ratio", "t.ratio")
+        tail = ifelse(side == 0, -sign(abs(delta)), side)
+        if (side == 0) {
+            if (delta == 0) # two-sided sig test
+                t.ratio = result[[tnm]] = (result[[1]] - null) / result$SE
+            else
+                t.ratio = result[[tnm]] = (abs(result[[1]] - null) - delta) / result$SE
+        }
+        else {
+            t.ratio = result[[tnm]] = (result[[1]] - null + side * delta) / result$SE            
+        }
+        apv = .adj.p.value(t.ratio, result$df, adjust, fam.info, tail, vcovmat)
+        adjust = apv$adjust   # in case it was abbreviated
+        result$p.value = apv$pval
+        mesg = c(mesg, apv$mesg)
+        if (delta > 0)
+            mesg = c(mesg, paste("Statistics are tests of", c("nonsuperiority","equivalence","noninferiority")[side+2],
+                                 "with a threshold of", delta))
+        if(tail != 0) 
+            mesg = c(mesg, paste("P values are ", ifelse(tail<0,"left-","right-"),"tailed", sep=""))
+        if (!is.null(link)) 
+            mesg = c(mesg, "Tests are performed on the linear-predictor scale")
+    }
+    if (!is.null(link)) {
+        result[["SE"]] = link$mu.eta(result[[1]]) * result[["SE"]]
+        result[[1]] = link$linkinv(result[[1]])
+    }
+    
+    if (length(object@misc$avgd.over) > 0)
+        mesg = c(paste("Results are averaged over the levels of:",
+                       paste(object@misc$avgd.over, collapse = ", ")), mesg)
+    
+    summ = cbind(lbls, result)
+    attr(summ, "estName") = estName
+    attr(summ, "clNames") = cnm  # will be NULL if infer[1] is FALSE
+    attr(summ, "pri.vars") = setdiff(union(object@misc$pri.vars, object@misc$by.vars), by)
+    attr(summ, "by.vars") = by
+    attr(summ, "mesg") = unique(mesg)
+    class(summ) = c("summary.ref.grid", "data.frame")
+    summ
+}
+
+
+# left-or right-justify column labels for m depending on "l" or "R" in just
+.just.labs = function(m, just) {
+    nm = dimnames(m)[[2]]
+    for (j in seq_len(length(nm))) {
+        if(just[nm[j]] == "L") 
+            nm[j] = format(nm[j], width = nchar(m[1,j]), just="left")
+    }
+    dimnames(m) = list(rep("", nrow(m)), nm)
+    m
+}
+
+# Format a data.frame produced by summary.ref.grid
+print.summary.ref.grid = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) {
+    x.save = x
+    if (!is.null(x$df)) x$df = round(x$df, 2)
+    if (!is.null(x$t.ratio)) x$t.ratio = round(x$t.ratio, 3)
+    if (!is.null(x$p.value)) {
+        fp = x$p.value = format(round(x$p.value,4), nsmall=4, sci=FALSE)
+        x$p.value[fp=="0.0000"] = "<.0001"
+    }
+    just = sapply(x.save, function(col) if(is.numeric(col)) "R" else "L")
+    xc = as.matrix(format.data.frame(x, digits=digits, na.encode=FALSE))
+    m = apply(rbind(just, names(x), xc), 2, function(x) {
+        w = max(sapply(x, nchar))
+        if (x[1] == "R") format(x[-seq_len(2)], width = w, justify="right")
+        else format(x[-seq_len(2)], width = w, justify="left")
+    })
+    if(!is.matrix(m)) m = t(as.matrix(m))
+    by.vars = attr(x, "by.vars")
+    if (is.null(by.vars)) {
+        m = .just.labs(m, just)
+        print(m, quote=FALSE, right=TRUE)
+        cat("\n")
+    }
+    else { # separate listing for each by variable
+        m = .just.labs(m[, setdiff(names(x), by.vars)], just)
+        pargs = as.list(x[,by.vars, drop=FALSE])
+        pargs$sep = ", "
+        lbls = do.call(paste, pargs)
+        for (lb in unique(lbls)) {
+            rows = which(lbls==lb)
+            levs = paste(by.vars, "=", xc[rows[1], by.vars])
+            cat(paste(paste(levs, collapse=", ")), ":\n", sep="")
+            print(m[rows, , drop=FALSE], ..., quote=quote, right=right)
+            cat("\n")
+        }
+    }
+    
+    msg = unique(attr(x, "mesg"))
+    if (!is.null(msg))
+        for (j in seq_len(length(msg))) cat(paste(msg[j], "\n"))
+    
+    invisible(x.save)
+}
