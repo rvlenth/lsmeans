@@ -41,7 +41,7 @@ When there is a non-\code{NULL} \code{by} variable (either explicitly or implici
 Russell V. Lenth
 }
 \note{
-There is also a \code{glht} method for class \code{ref.grid}, but it is far preferable to use \code{as.glht} instead, as \code{model} is redundant. 
+There is also a \code{glht} method for class \code{ref.grid}, but it is far preferable to use \code{as.glht} instead, as its \code{model} argument is redundant. 
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~

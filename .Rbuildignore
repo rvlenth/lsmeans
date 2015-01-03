@@ -4,6 +4,8 @@
 
 #Deprecated
 KRstuff.R
+old-lsmeans.R
+lsmeans-changes.rnw
 
 # New devel stuff
 test-data.R

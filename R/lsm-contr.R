@@ -47,6 +47,14 @@ revpairwise.lsmc = function(levs,...) {
     M
 }
 
+# pseudonym
+tukey.lsmc = function(levs, reverse = FALSE) {
+    if (reverse)
+        revpairwise.lsmc(levs)
+    else
+        pairwise.lsmc(levs)
+}
+
 # Poly contrasts - scaled w/ integer levels like most tables
 # ad hoc scaling works for up to 13 levels
 poly.lsmc = function(levs, max.degree=min(6,k-1)) {
@@ -93,18 +101,23 @@ trt.vs.ctrl.lsmc = function(levs, ref=1) {
     row.names(M) = levs
     M = M[-1]
     attr(M, "desc") = "differences from control"
-    attr(M, "adjust") = "sidak"
+    attr(M, "adjust") = "dunnettx"
     M
 }
 
 # control is 1st level
 trt.vs.ctrl1.lsmc = function(levs, ...) {
-    trt.vs.ctrl.lsmc(levs, ref=1)
+    trt.vs.ctrl.lsmc(levs, ref = 1)
 }
 
 # control is last level
 trt.vs.ctrlk.lsmc = function(levs, ...) {
-    trt.vs.ctrl.lsmc(levs, ref=length(levs))
+    trt.vs.ctrl.lsmc(levs, ref = length(levs))
+}
+
+# pseudonym
+dunnett.lsmc = function(levs, ref = 1) {
+    trt.vs.ctrl.lsmc(levs, ref = ref)
 }
 
 # effects contrasts. Each mean versus the average of all
