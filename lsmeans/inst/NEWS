@@ -1,6 +1,6 @@
 Changelog for 'lsmeans' package
 
-2.13-4
+2.14
     Model weights are now used instead of frequencies when weights 
         are not "equal"
     Fixed error in 'lstrends' when 'specs' is two-sided formula
@@ -15,17 +15,18 @@ Changelog for 'lsmeans' package
     Added 'type' argument in 'ref.grid' for convenience
     Fixed some errors/omissions in documentation of 'update'
     One-sided 'tail' spec now applies to CIs as well as tests
-    Tries harder to use only appropriate adjust methods... 
-        "scheffe" is now available for confidence intervals too
-        "tukey" is overridden by "scheffe" when not pairwise comps
-        "scheffe" adjustment different when not a set of contrasts
-    New 'estType' attr for 'update' related to the above
-    Added "mvt" and "dunnett" to possible adjustment methods
+    New adjustment methods added:
         "mvt" provides exact one-step methods like Tukey, Dunnett
-        "dunnett" is approximate and only available for 2-sided cases
+        "dunnettx" is approximate and only available for 2-sided cases
+    Added contrast fcns "tukey" and "dunnett" - these are pseudonyms
+        for "pairwise" and "trt.vs.ctrl" resp.
+    More adjustments are available for confidence intervals
+    Tries harder to use only appropriate adjust methods
+    New 'estType' attribute for 'update' related to the above
     'cld' accommodates when 'multcompView' isn't installed, thus
         can still pass checks without that package
-TODO: document mvt and dunnett options
+    Removed .old.lsmeans and associated vignette
+
 
 2.13
     Provides for equivalence, noninferiority, etc. tests via

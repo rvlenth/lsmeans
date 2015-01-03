@@ -1,5 +1,5 @@
 
-R version 3.1.1 (2014-07-10) -- "Sock it to Me"
+R version 3.1.2 (2014-10-31) -- "Pumpkin Helmet"
 Copyright (C) 2014 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
@@ -115,7 +115,7 @@ wool = B:
  L - H     8.2584640 4.920788 37   1.678  0.2269
  M - H     9.8537837 4.687418 37   2.102  0.1032
 
-P value adjustment: tukey method for a family of 3 means 
+P value adjustment: tukey method for a family of 3 tests 
 > 
 > #switcheroo of by variables:
 > (tmp = pairs(warp.lsm, by = "tension"))
@@ -140,7 +140,7 @@ contrast = A - B:
  L - H     16.485899 7.867834 37   2.095  0.1046
  M - H     -9.693013 6.867934 37  -1.411  0.3456
 
-P value adjustment: tukey method for a family of 3 means 
+P value adjustment: tukey method for a family of 3 tests 
 > 
 > # Joint tests
 > test(warp.pairs, joint = TRUE)  # all 6 but reduces to 4
@@ -282,7 +282,7 @@ wool = B:
  M       29.28683 3.244426 38 22.71884 35.85483  1    
 
 Confidence level used: 0.95 
-P value adjustment: tukey method for a family of 3 means 
+P value adjustment: tukey method for a family of 3 tests 
 significance level used: alpha = 0.05 
 > 
 > # passing to glht
@@ -367,12 +367,12 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 > # confint
 > confint(contrast(warp.lsm2, "trt.vs.ctrl1"))
  contrast  estimate       SE df  lower.CL  upper.CL
- M - L    -11.50289 3.845692 38 -20.45659 -2.549184
- H - L    -16.51228 3.910237 38 -25.61626 -7.408296
+ M - L    -11.50289 3.845692 38 -20.38431 -2.621472
+ H - L    -16.51228 3.910237 38 -25.54276 -7.481796
 
 Results are averaged over the levels of: wool 
 Confidence level used: 0.95 
-Confidence-level adjustment: sidak method for 2 tests 
+Confidence-level adjustment: dunnettx method for 2 estimates 
 > 
 > # lstrends
 > warp.lm4 <- lm(breaks ~ tension*wool*x1, data = warp)
@@ -450,18 +450,18 @@ Confidence level used: 0.95
 > 
 > ( lsm.D93 <- lsmeans(glm.D93, ~ outcome) )
  outcome   lsmean        SE df asymp.LCL asymp.UCL
- 1       3.044522 0.1259882 NA  2.797560  3.291485
- 2       2.590267 0.1581139 NA  2.280332  2.900202
- 3       2.751535 0.1458650 NA  2.465611  3.037460
+ 1       3.044522 0.1259882 NA  2.797590  3.291455
+ 2       2.590267 0.1581139 NA  2.280370  2.900165
+ 3       2.751535 0.1458650 NA  2.465645  3.037425
 
 Results are averaged over the levels of: treatment 
 Confidence level used: 0.95 
 > # un-log the results to obtain rates
 > summary(lsm.D93, type = "resp")
  outcome     rate       SE df asymp.LCL asymp.UCL
- 1       21.00000 2.645751 NA 16.404576  26.88274
- 2       13.33333 2.108185 NA  9.779928  18.17782
- 3       15.66667 2.285218 NA 11.770667  20.85221
+ 1       21.00000 2.645751 NA 16.405066  26.88194
+ 2       13.33333 2.108185 NA  9.780295  18.17714
+ 3       15.66667 2.285218 NA 11.771074  20.85149
 
 Results are averaged over the levels of: treatment 
 Confidence level used: 0.95 
@@ -542,4 +542,4 @@ Confidence level used: 0.95
 > 
 > proc.time()
    user  system elapsed 
-   2.76    0.17    3.12 
+   2.93    0.12    3.24 

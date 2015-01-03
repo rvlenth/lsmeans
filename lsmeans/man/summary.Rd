@@ -68,7 +68,7 @@ If non-missing a constant number of degrees of freedom to use in constructing co
 The object to be printed or plotted.
 }
   \item{y}{This argument is ignored.}
-  \item{horizontal}{Determines orientatiion of plotted confidence intervals.}
+  \item{horizontal}{Determines orientation of plotted confidence intervals.}
   \item{intervals}{If \code{TRUE}, confidence intervals are plotted for each estimate}
   \item{comparisons}{If \code{TRUE}, \dQuote{comparison arrows} are added to the plot, in such a way that the degree to which arrows overlap reflects as much as possible the significance of the comparison of the two estimates.}
   \item{alpha, int.adjust}{The \code{alpha} argument to use in constructing comparison arrows. \code{int.adjust} may be used to set the \code{adjust} argument for the confidence intervals (use \code{adjust} to set the adjust method for the comparison arrows).}
@@ -84,17 +84,20 @@ With \code{type="response"}, the transformation assumed can be found in \samp{ob
 
 \bold{Confidence-limit and P-value adjustments:}
 The \code{adjust} argument has the following effects:
-\code{"tukey"} uses the Studentized range distribution with the number of means in the family. 
-\code{"scheffe"} computes \eqn{p} values from the \eqn{F} distribution, according to the Scheffe critical value of \eqn{\sqrt{kF(k,d)}}{sqrt[k*F(k,d)]}, where \eqn{d} is the error degrees of freedom and \eqn{k} is (family size minus 1) for contrasts, and (number of estimates) otherwise.
-\code{"sidak"} makes adjustments as if the estimates were independent (a conservative adjustment in many cases);
-\code{"none"} makes no adjustments to the \eqn{p} values.
+\describe{
+\item{\code{"tukey"}}{Uses the Studentized range distribution with the number of means in the family. (Available for two-sided cases only.)} 
+\item{\code{"scheffe"}}{Computes \eqn{p} values from the \eqn{F} distribution, according to the Scheffe critical value of \eqn{\sqrt{kF(k,d)}}{sqrt[k*F(k,d)]}, where \eqn{d} is the error degrees of freedom and \eqn{k} is (family size minus 1) for contrasts, and (number of estimates) otherwise. (Available for two-sided cases only.)}
+\item{\code{"sidak"}}{Makes adjustments as if the estimates were independent (a conservative adjustment in many cases).}
+\item{\code{"bonferroni"}}{Multiplies \eqn{p} values, or divides significance levels by the number of estimates. This is a conservative adjustment.}
+\item{\code{"dunnettx"}}{Uses an approximation to the Dunnett distribution for a family of estimates having pairwise correlations of \eqn{0.5} (as is true when comparing treatments with a control with equal sample sizes). The accuracy of the approximation improves with the number of simultaneous estimates, and is much faster than \code{"mvt"}. (Available for two-sided cases only.)}
+\item{\code{"mvt"}}{Uses the multivariate \eqn{t} distribution to assess the probability or critical value for the maximum of \eqn{k} estimates. This method produces the same \eqn{p} values and intervals as the default \code{summary} or \code{confint} methods to the results of \code{\link{as.glht}}. In the context of pairwise comparisons or comparisons with a control, this produces \dQuote{exact} Tukey or Dunnett adjustments, respectively. However, the algorithm (from the \pkg{mvtnorm} package) uses a Monte Carlo method, so results are not exactly repeatable unless the random-number seed is used (see \code{\link[base]{set.seed}}). As the family size increases, the required computation time will become noticeable or even intolerable, making the \code{"tukey"}, \code{"dunnettx"}, or others more attractive.}
+\item{\code{"none"}}{Makes no adjustments to the \eqn{p} values.}
+} % end \describe {}
 
-For P-value adjustments only, the Bonferroni-inequality-based adjustment methods in \code{\link{p.adjust}} are also available. If a \code{p.adjust.methods} method is specified for confidence limits, they are left unadjusted and an annotation is added to that effect.
-Also, if the estimates being summarized are not the result of pairwise comparisons, \code{"tukey"} adjustments are not appropriate and \code{"scheffe"} is used instead.
+For P-value adjustments only, the other Bonferroni-inequality-based adjustment methods in \code{\link{p.adjust}} are also available. If a \code{p.adjust.methods} method is specified for confidence limits, they are left unadjusted and an annotation is added that says so.
+Also, if an adjustment method is not appropriate (e.g., using \code{"tukey"} with one-sided tests, or with results that are not pairwise comparisons), a more appropriate method (usually \code{"sidak"}) is substituted. 
 
-
-In some cases, confidence and \eqn{p}-value adjustments are only approximate -- especially when the degrees of freedom or standard errors vary
-greatly within the family of tests. For more accurate adjustments, use the \code{\link[lsmeans]{glht}} method for \pkg{multcomp}.
+In some cases, confidence and \eqn{p}-value adjustments are only approximate -- especially when the degrees of freedom or standard errors vary greatly within the family of tests. The \code{"mvt"} method is always the correct one-step adjustment, but it can be very slow. One may use \code{\link{as.glht}} with methods in the \pkg{multcomp} package to obtain non-conservative multi-step adjustments to tests.
 
 \bold{Non-estimable cases:}
 When the model is rank-deficient, each row \code{x} of \code{object}'s \code{linfct} slot is each checked for estimability. If \code{sum(x*bhat)} is found to be non-estimable, then an \code{NA} is displayed for the estimate (as well as any associated statistics). This check is performed using the orthonormal basis \code{N} in the \code{nbasis} slot for the null space of the rows of the model matrix. Estimability fails when \eqn{||Nx||^2 / ||x||^2} exceeds \code{tol}, which by default is \code{1e-8}. You may change it via \code{\link{lsm.options}} by setting \code{estble.tol} to the desired value.

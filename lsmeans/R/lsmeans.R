@@ -385,6 +385,8 @@ contrast.ref.grid = function(object, method = "eff", by, adjust, offset = NULL,
 # return list of row indexes in tbl for each combination of by
 # tbl should be a data.frame
 .find.by.rows = function(tbl, by) {
+    if (is.null(by))
+        return(list(seq_len(nrow(tbl))))
     if (any(is.na(match(by, names(tbl)))))
         stop("'by' variables are not all in the grid")    
     bylevs = tbl[ , by, drop = FALSE]
@@ -412,8 +414,12 @@ test.ref.grid = function(object, null = 0,
 # if joint = FALSE, this is a courtesy method for 'contrast'
 # else it computes the F test or Wald test of H0: L*beta = null
 # where L = object@linfct    
-    if (!joint)
-        summary(object, infer=c(FALSE,TRUE), null = null, ...)
+    if (!joint) {
+        if (missing(by))
+            summary(object, infer=c(FALSE,TRUE), null = null, ...)
+        else
+            summary(object, infer=c(FALSE,TRUE), null = null, by = by, ...)
+    }
     else {
         if(verbose) {
             cat("Joint test of the following linear predictions\n")

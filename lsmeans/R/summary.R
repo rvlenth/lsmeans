@@ -77,21 +77,19 @@ is.estble = function(x, nbasis, tol=1e-8) {
 # utility to compute an adjusted p value
 # tail is -1, 0, 1 for left, two-sided, or right
 # Note fam.info is c(famsize, ncontr, estTypeIndex)
-# 2.14: added vcovmat arg, dunnett & mvt adjustments
-# NOTE: vcovmat is NULL unless adjust == "mvt"
-.adj.p.value = function(t, df, adjust, fam.info, tail, vcovmat) {
+# 2.14: added corrmat arg, dunnettx & mvt adjustments
+# NOTE: corrmat is NULL unless adjust == "mvt"
+.adj.p.value = function(t, df, adjust, fam.info, tail, corrmat) {
     # do a pmatch of the adjust method, case insensitive
-    adj.meths = c("sidak", "tukey", "scheffe", "dunnett", "mvt", p.adjust.methods)
+    adj.meths = c("sidak", "tukey", "scheffe", "dunnettx", "mvt", p.adjust.methods)
     k = pmatch(tolower(adjust), adj.meths)
     if(is.na(k))
         stop("Adjust method '", adjust, "' is not recognized or not valid")
     adjust = adj.meths[k]
-    if ((tail != 0) && (k %in% 2:4)) # One-sided tests, change Tukey/Scheffe/Dunnett to Sidak
+    if ((tail != 0) && (adjust %in% c("tukey", "scheffe", "dunnettx"))) # meth not approp for 1-sided
         adjust = "sidak"
     if ((fam.info[3] != 3) && adjust == "tukey") # not pairwise
         adjust = "sidak"
-    if(adjust == "mvt") # get the correlation matrix
-        corrmat = cov2cor(vcovmat)
     
     # pseudo-asymptotic results when df is NA
     df[is.na(df)] = 10000
@@ -119,7 +117,7 @@ is.estble = function(x, nbasis, tol=1e-8) {
                        sidak = 1 - (1 - unadj.p)^n.contr,
                        tukey = ptukey(sqrt(2)*abst, fam.size, zapsmall(df), lower.tail=FALSE),
                        scheffe = pf(t^2/(fam.size-1), fam.size-1, df, lower.tail=FALSE),
-                       dunnett = .pdunnx(abst, n.contr, df),
+                       dunnettx = 1 - .pdunnx(abst, n.contr, df),
                        mvt = 1 - .my.pmvt(abst, df, corrmat, tail)
     )
     if (fam.info[3] == 1) # for labeling purposes
@@ -128,7 +126,7 @@ is.estble = function(x, nbasis, tol=1e-8) {
     do.msg = (chk.adj > 1) && (n.contr > 1) && 
         !((fam.size == 2) && (chk.adj < 10)) 
     if (do.msg) {
-        xtra = if(chk.adj < 10) paste("a family of", fam.size, "estimates")
+        xtra = if(chk.adj < 10) paste("a family of", fam.size, "tests")
         else             paste(n.contr, "tests")
         mesg = paste("P value adjustment:", adjust, "method for", xtra)
     }
@@ -138,11 +136,11 @@ is.estble = function(x, nbasis, tol=1e-8) {
 
 # Code needed for an adjusted critical value
 # returns a list similar to .adj.p.value
-# 2.14: Added tail vcovmat arg, dunnett & mvt adjustments
-# NOTE: vcovmat is NULL unless adjust == "mvt"
-.adj.critval = function(level, df, adjust, fam.info, tail, vcovmat) {
+# 2.14: Added tail & corrmat args, dunnettx & mvt adjustments
+# NOTE: corrmat is NULL unless adjust == "mvt"
+.adj.critval = function(level, df, adjust, fam.info, tail, corrmat) {
     mesg = NULL
-    adj.meths = c("sidak", "tukey", "scheffe", "dunnett", "mvt", "bonferroni", "none")
+    adj.meths = c("sidak", "tukey", "scheffe", "dunnettx", "mvt", "bonferroni", "none")
     k = pmatch(tolower(adjust), adj.meths)
     if(is.na(k)) {
         k = which(adj.meths == "none")
@@ -151,12 +149,10 @@ is.estble = function(x, nbasis, tol=1e-8) {
     adjust = adj.meths[k]
     if ((fam.info[3] != 3) && adjust == "tukey") # not pairwise
         adjust = "sidak"
-    if ((tail != 0) && (k %in% 2:4)) # One-sided intervals, change Tukey/Scheffe/Dunnett to Sidak
+    if ((tail != 0) && (adjust %in% c("tukey", "scheffe", "dunnettx"))) # meth not approp for 1-sided
         adjust = "sidak"
     if ((fam.info[3] != 3) && adjust == "tukey") # not pairwise
         adjust = "sidak"
-    if(adjust == "mvt") # get the correlation matrix
-        corrmat = cov2cor(vcovmat)
     
     # pseudo-asymptotic results when df is NA
     df[is.na(df)] = Inf
@@ -166,7 +162,7 @@ is.estble = function(x, nbasis, tol=1e-8) {
     if (fam.info[3] == 1) 
         fam.size = n.contr + 1
     
-    chk.adj = match(adjust, c("none", "tukey", "scheffe", "dunnett", "mvt"), nomatch = 99)
+    chk.adj = match(adjust, c("none", "tukey", "scheffe"), nomatch = 99)
     do.msg = (chk.adj > 1) && (n.contr > 1) && 
         !((fam.size == 2) && (chk.adj < 10)) 
     if (fam.info[3] == 1) # for labeling purposes
@@ -186,7 +182,7 @@ is.estble = function(x, nbasis, tol=1e-8) {
                 bonferroni = -qt((1-level)/n.contr/adiv, df),
                 tukey = qtukey(level, fam.size, df) / sqrt(2),
                 scheffe = sqrt((fam.size - 1) * qf(level, fam.size - 1, df)),
-                dunnett = .qdunnx(level, n.contr, df),
+                dunnettx = .qdunnx(level, n.contr, df),
                 mvt = .my.qmvt(level, df, corrmat, tail)
     )
     list(cv = cv, mesg = mesg, adjust = adjust)
@@ -196,28 +192,58 @@ is.estble = function(x, nbasis, tol=1e-8) {
 ### My own functions to ease access to mvt functions
 ### These use one argument at a time and expands each (lower, upper) or p to a k-vector
 ### Use tailnum = -1, 0, or 1
+### NOTE: corrmat needs "by.rows" attribute to tell which rows
+###   belong to which submatrix.
 .my.pmvt = function(x, df, corrmat, tailnum) {
     lower = switch(tailnum + 2, -Inf, -x, x)
     upper = switch(tailnum + 2, x, x, Inf)
-    k = nrow(corrmat)
+    by.rows = attr(corrmat, "by.rows")
+    if (is.null(by.rows)) 
+        by.rows = list(seq_len(length(x)))
+    by.sel = numeric(length(x))
+    for (i in seq_along(by.rows))
+        by.sel[by.rows[[i]]] = i
     df = .fix.df(df)
-    apply(cbind(lower, upper, df), 1, function(z) {
+    apply(cbind(lower, upper, df, by.sel), 1, function(z) {
+        idx = by.rows[[z[4]]]
+        k = length(idx)
         pval = try(mvtnorm::pmvt(rep(z[1], k), rep(z[2], k), 
-            df = as.integer(z[3]), corr = corrmat), silent = TRUE)
+                        df = as.integer(z[3]), corr = corrmat[idx, idx]), 
+                    silent = TRUE)
         if (inherits(pval, "try-error"))   NA
         else                               pval
     })
 }
 
+# Vectorized for df but needs p to be scalar
 .my.qmvt = function(p, df, corrmat, tailnum) {
     tail = c("lower.tail", "both.tails", "lower.tail")[tailnum + 2] 
     df = .fix.df(df)
-    apply(cbind(p, df), 1, function(z) {
+    by.rows = attr(corrmat, "by.rows")
+    if (is.null(by.rows)) 
+        by.rows = list(seq_len(length(df)))
+    by.sel = numeric(length(df))
+    for (i in seq_along(by.rows))
+        by.sel[by.rows[[i]]] = i
+    # If df all equal, compute just once for each by group
+    eq.df = (diff(range(df)) == 0)
+    i1 = if (eq.df)   sapply(by.rows, function(r) r[1])
+         else         seq_along(df)
+    result = apply(cbind(p, df[i1], by.sel[i1]), 1, function(z) {
+        idx = by.rows[[z[3]]]
         cv = try(mvtnorm::qmvt(z[1], tail = tail, 
-            df = as.integer(z[2]), corr = corrmat)$quantile, silent = TRUE)
+                    df = as.integer(z[2]), corr = corrmat[idx, idx])$quantile,
+                 silent = TRUE)
         if (inherits(cv, "try-error"))     NA
         else                               cv
     })
+    if (eq.df) {
+        res = result
+        result = numeric(length(df))
+        for(i in seq_along(by.rows))
+            result[by.rows[[i]]] = res[i]
+    } 
+    result
 }
 
 # utility to get appropriate integer df
@@ -370,14 +396,14 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     cnm = NULL
     
     # get vcov matrix only if needed (adjust == "mvt")
-    vcovmat = NULL
-    if (!is.na(pmatch(adjust, "mvt")))
-        vcovmat = vcov(object)
+    corrmat = NULL
+    if (!is.na(pmatch(adjust, "mvt"))) {
+        corrmat = cov2cor(vcov(object))
+        attr(corrmat, "by.rows") = .find.by.rows(object@grid, by)
+    }
     
     if(infer[1]) { # add CIs
-        quant = 1 - (1 - level)/2
-        ###cv = if(zFlag) qnorm(quant) else qt(quant, result$df)
-        acv = .adj.critval(level, result$df, adjust, fam.info, side, vcovmat)
+        acv = .adj.critval(level, result$df, adjust, fam.info, side, corrmat)
         adjust = acv$adjust
         cv = acv$cv
         cv = switch(side + 2, cbind(-Inf, cv), cbind(-cv, cv), cbind(-cv, Inf))
@@ -407,7 +433,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
         else {
             t.ratio = result[[tnm]] = (result[[1]] - null + side * delta) / result$SE            
         }
-        apv = .adj.p.value(t.ratio, result$df, adjust, fam.info, tail, vcovmat)
+        apv = .adj.p.value(t.ratio, result$df, adjust, fam.info, tail, corrmat)
         adjust = apv$adjust   # in case it was abbreviated
         result$p.value = apv$pval
         mesg = c(mesg, apv$mesg)
