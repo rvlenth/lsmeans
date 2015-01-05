@@ -251,9 +251,9 @@ Note that this preserves the "by" specification from before, and obtains the eff
 Another popular method is Dunnett-style contrasts, where a particular LS~mean is compared with each of the others. This is done using \dqt{trt.vs.ctrl}. In the following, we obtain (again) the LS~means for days, and compare each with the average of the LS~means on day~5 and~6.
 <<>>=
 days.lsm <- lsmeans(oranges.rg1, "day")
-contrast(days.lsm, "trt.vs.ctrl", ref = c(5,6))
+( days_contr.lsm <- contrast(days.lsm, "trt.vs.ctrl", ref = c(5,6)) )
 @
-For convenience, \dqt{trt.vs.ctrl1} and \dqt{trt.vs.ctrlk} methods are provided for use in lieu of "ref" for comparing with the first and the last LS~means.
+For convenience, \dqt{trt.vs.ctrl1} and \dqt{trt.vs.ctrlk} methods are provided for use in lieu of "ref" for comparing with the first and the last LS~means. The \dqt{dunnettx} adjustment is a good approximation to the exact Dunnett $P$~value adjustment. If the exact adjustment is desired, use "adjust = "\dqt{mvt}; but this can take a lot of computing time when there are several tests.
 
 Note that by default, "lsmeans" results are displayed with confidence intervals while "contrast" results are displayed with $t$ tests. One can easily override this; for example,
 <<eval=FALSE>>=
@@ -320,28 +320,33 @@ There is little evidence of variety differences, nor that these differences vary
 
 
 \section[Interfacing with multcomp]{Interfacing with \pkg{multcomp}}
-The \pkg{multcomp} package \citep{multc} supports more exacting corrections for simultaneous inference than are available in \lsm{}. Its "glht" (general linear hypothesis testing) function and associated \dqt{glht} class are similar in some ways to "lsmeans" and \dqt{lsmobj} objects, respectively. So we provide methods such as "as.glht" for working with "glht" so as to obtain ``exact'' inferences. To illustrate, let's compare some simultaneous confidence intervals using the two packages. 
-%%%\begin{multicols}{2}\small
-First, using a Bonferroni correction on the LS~means for "day" in the "oranges" model:
-<<>>=
-confint(days.lsm, adjust = "bon")
+The \pkg{multcomp} package \citep{multc} supports more options for simultaneous inference than are available in \lsm{}. Its "glht" (general linear hypothesis testing) function and associated \dqt{glht} class are similar in some ways to "lsmeans" and \dqt{lsmobj} objects, respectively. So \lsm{} provides an "as.glht" function to do the conversion.
+
+To illustrate, let us convert the "days_contr.lsm" object (produced earlier) to a "glht" object, and use it to obtain adjusted $P$~values under Westfall's adjustment procedure (not available in \lsm{}):
+<<echo = FALSE, results = hide>>=
+# Ensure we see the same results each time
+set.seed(123454321)
 @
-%%%\columnbreak
-And now using \pkg{multcomp}:
 <<>>=
 library("multcomp")
-confint(as.glht(days.lsm))
+days.glht <- as.glht(days_contr.lsm)
+summary(days.glht, test = adjusted("Westfall"))
 @
-%%%\end{multicols}
-The latter intervals are somewhat narrower, which is expected since the Bonferroni method is conservative.
-
-The \lsm{} package also provides an "lsm" function that can be called as the second argument of "glht":
-<<>>=
-summary(glht(oranges.lm1, lsm("day", contr="eff")), 
-        test = adjusted("free"))
+In addition, \lsm{} provides an "lsm" function that may be called from within a call to "glht". Thus, another way to obtain the same "glht" object is to use
+<<eval = FALSE>>=
+days.glht1 <- glht(oranges.lm1, 
+                   lsm("day", contr = "trt.vs.ctrl", ref = c(5,6)))
 @
 
-An additional detail: If there is a "by" variable in effect, "glht" or "as.glht" returns a "list" of "glht" objects---one for each "by" level. There is a courtesy "summary" method for this \dqt{glht.list} class to make things a bit more user-friendly. Recall the earlier example result "org.lsm", which contains information for LS~means for three "day"s at each of two values of "price2". Suppose we are interested in pairwise comparisons of these LS~means, by "price2". If we call
+By the way, the following two statements will produce the same results:
+<<eval = FALSE>>=
+summary(days_contr.lsm, adjust = "mvt")
+summary(days.glht)
+@
+That is, the \dqt{mvt} adjust method in \lsm{} is the same as the default single-step $P$~value adjustment in \pkg{multcomp}.
+
+
+One additional detail: If there is a "by" variable in effect, "glht" or "as.glht" returns a "list" of "glht" objects---one for each "by" level. There is a courtesy "summary" method for this \dqt{glht.list} class to make things a bit more user-friendly. Recall the earlier example result "org.lsm", which contains information for LS~means for three "day"s at each of two values of "price2". Suppose we are interested in pairwise comparisons of these LS~means, by "price2". If we call
 <<eval=FALSE>>=
 summary(as.glht(pairs(org.lsm)))
 @
