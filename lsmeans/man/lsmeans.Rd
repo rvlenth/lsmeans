@@ -41,7 +41,7 @@ A character vector specifying the names of predictors to condition on.}
 \item{fac.reduce}{
 A function that combines the rows of a matrix into a single vector. This implements the ``marginal averaging'' aspect of least-squares means. The default is the mean of the rows. Typically if it is overridden, it would be some kind of weighted mean of the rows. If \code{fac.reduce} is nonlinear, bizarre results are likely, and LS means will not be interpretable. If the \code{weights} argument is non-missing, \code{fac.reduce} is ignored.}
 \item{contr}{
-A \code{list} of contrast coefficients to apply to the least-squares means -- or the root name of an \code{.lsmc} function that returns such coefficients. In addition, \code{contr = "cld"} is an alternative way to invoke the \code{\link[lsmeans]{cld}} function. See \code{\link{contrast}} for more details on contrasts.
+A \code{list} of contrast coefficients to apply to the least-squares means -- or the root name of an \code{.lsmc} function that returns such coefficients. In addition, \code{contr = "cld"} is an alternative way to invoke the \code{\link[lsmeans]{cld}} function. See \code{\link{contrast}} for more details on contrasts. NOTE: \code{contr} is ignored when \code{specs} is a formula.
 }
 \item{contr.list}{
 A named \code{list} of \code{list}s of contrast coefficients, as for \code{contr}. This is used only in the formula method; see Details below. 
@@ -104,6 +104,7 @@ An object of class \code{\link[=lsmobj-class]{lsmobj}} -- except when \code{spec
 }
 
 \note{For a \code{ref.grid} or \code{lsmobj} object created in \pkg{lsmeans} version 2.10 or earlier, the information needed by the \code{weights} argument is not present; so a message is displayed and averaging is done using \code{fac.reduce}.}
+
 
 \references{
 SAS Institute Inc. (2012)
