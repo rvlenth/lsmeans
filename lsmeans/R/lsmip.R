@@ -7,7 +7,7 @@ lsmip = function(object, formula, ...)
 # formula - a formula of the form  x.factors ~ trace.factors | panel.factors
 lsmip.default = function(object, formula, type,  
         pch=c(1,2,6,7,9,10,15:20), lty=1, col=NULL, ...) {
-    if (!require("lattice"))
+    if (!requireNamespace("lattice"))
         stop("This function requires the 'lattice' package be installed.")
     if (length(formula) < 3)
         formula = reformulate(as.character(formula)[[2]], response = ".single.")
@@ -95,7 +95,7 @@ lsmip.default = function(object, formula, type,
     plotspecs = list(x = plotform, data = lsms, groups = ~ tvar, 
         xlab = xlab, ylab = ylab,
         strip = my.strip, auto.key = my.key(tvars), type=c("p","l"))
-    grobj = do.call("xyplot", c(plotspecs, xargs))
+    grobj = do.call(lattice::xyplot, c(plotspecs, xargs))
 #     grobj = xyplot(plotform, groups=~tvar, data=lsms, 
 #                    xlab = xlab, ylab = ylab,
 #                    strip = my.strip,
