@@ -28,7 +28,7 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, layout, ..
 # Workhorse for plot.summary.ref.grid
 .plot.srg = function(x, y, horizontal = TRUE, xlab, ylab, layout, intervals = TRUE, extra = NULL, ...) {
         
-    if (!require("lattice"))
+    if (!requireNamespace("lattice"))
         stop("This function requires the 'lattice' package be installed.")
     
     summ = x # so I don't get confused

@@ -493,6 +493,7 @@ We find strong evidence that, with the stated threshold of .25, Golden Rain is n
 \section{Trends}
 The \lsm{} package provides a function \code{lstrends} for estimating and comparing the slopes of fitted lines (or curves). To illustrate, consider the built-in R dataset \code{ChickWeight} which has data on the growths of newly hatched chicks under four different diets. The following code produces the display in \Fig{chick-plot}.
 <<chick-plot, fig=TRUE, include=FALSE, height=3.5, width=8>>=
+require("lattice")
 xyplot(weight~Time | Diet, groups = ~ Chick, data=ChickWeight, type="o", 
        layout=c(4,1))
 @
