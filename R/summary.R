@@ -115,10 +115,11 @@ is.estble = function(x, nbasis, tol=1e-8) {
     }
     else pval = switch(adjust,
                        sidak = 1 - (1 - unadj.p)^n.contr,
+                       # NOTE: tukey, scheffe, dunnettx all assumed 2-sided!
                        tukey = ptukey(sqrt(2)*abst, fam.size, zapsmall(df), lower.tail=FALSE),
                        scheffe = pf(t^2/(fam.size-1), fam.size-1, df, lower.tail=FALSE),
                        dunnettx = 1 - .pdunnx(abst, n.contr, df),
-                       mvt = 1 - .my.pmvt(abst, df, corrmat, tail)
+                       mvt = 1 - .my.pmvt(t, df, corrmat, -tail) # tricky - reverse the tail because we're subtracting from 1 
     )
     if (fam.info[3] == 1) # for labeling purposes
         fam.size = fam.size - 1
@@ -195,8 +196,8 @@ is.estble = function(x, nbasis, tol=1e-8) {
 ### NOTE: corrmat needs "by.rows" attribute to tell which rows
 ###   belong to which submatrix.
 .my.pmvt = function(x, df, corrmat, tailnum) {
-    lower = switch(tailnum + 2, -Inf, -x, x)
-    upper = switch(tailnum + 2, x, x, Inf)
+    lower = switch(tailnum + 2, -Inf, -abs(x), x)
+    upper = switch(tailnum + 2, x, abs(x), Inf)
     by.rows = attr(corrmat, "by.rows")
     if (is.null(by.rows)) 
         by.rows = list(seq_len(length(x)))
