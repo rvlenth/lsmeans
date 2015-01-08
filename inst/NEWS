@@ -1,5 +1,11 @@
 Changelog for 'lsmeans' package
 
+2.15
+TODO: Fix up annotations, dimensionality for Scheffe & Tukey
+TODO: Support for gam
+TODO: Nonlinear models?
+
+
 2.14
     Model weights are now used instead of frequencies when weights 
         are not "equal"
