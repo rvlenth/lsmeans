@@ -336,10 +336,12 @@ contrast.ref.grid = function(object, method = "eff", by, adjust, offset = NULL,
     misc$estName = "estimate"
     if (!is.null(et <- attr(cmat, "type")))
         misc$estType = et
-    else
-        misc$estType = "contrast"
+    else {
+        is.con = all(abs(sapply(cmat, sum)) < .001)
+        misc$estType = ifelse(is.con, "contrast", "prediction")
+    }
     misc$methDesc = attr(cmat, "desc")
-    misc$famSize = size=nrow(args)
+    misc$famSize = size = nrow(args)
     misc$pri.vars = setdiff(names(grid), c(".offset.",".wgt."))
     if (missing(adjust)) adjust = attr(cmat, "adjust")
     if (is.null(adjust)) adjust = "none"

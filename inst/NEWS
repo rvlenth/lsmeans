@@ -1,7 +1,7 @@
 Changelog for 'lsmeans' package
 
 2.15
-TODO: Fix up annotations, dimensionality for Scheffe & Tukey
+    Clarified annotations for Tukey and Scheffe-adjusted summaries
 TODO: Support for gam
 TODO: Nonlinear models?
 
