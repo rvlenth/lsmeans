@@ -102,7 +102,7 @@ lsm.basis.clm = function (object, trms, xlev, grid,
         S = NULL
     
     ### ----- Get non-estimability basis ----- ###
-    nbasis = snbasis = matrix(NA)
+    nbasis = snbasis = estimability::all.estble
     if (any(is.na(bhat))) {
         #####mm = model.matrix(object)
         # workaround to fact that model.matrix doesn't get the contrasts right...
@@ -117,7 +117,7 @@ lsm.basis.clm = function (object, trms, xlev, grid,
                 mmNOM = model.matrix(object$nom.terms, data = mf, contrasts.arg = object$nom.contrasts)
                 NOMX = cbind(mmNOM, mm$X[, -1])
             }
-            nbasis = nonest.basis(NOMX)
+            nbasis = estimability::nonest.basis(NOMX)
             # replicate and reverse the sign of the NOM parts
             nomcols = seq_len(ncol(NOM))
             nbasis = apply(nbasis, 2, function(x)
@@ -127,7 +127,7 @@ lsm.basis.clm = function (object, trms, xlev, grid,
             if (any(is.na(object$zeta))) {
                 ####snbasis = nonest.basis(mm$S)
                 mmS = model.matrix(object$S.terms, data = mf, contrasts.arg = object$S.contrasts)
-                snbasis = nonest.basis(mmS)
+                snbasis = estimability::nonest.basis(mmS)
                 # put intercept part at end
                 snbasis = rbind(snbasis[-1, , drop=FALSE], snbasis[1, ])
                 if (!is.null(attr(object$S.terms, "offset")))
@@ -262,7 +262,7 @@ lsm.basis.clm = function (object, trms, xlev, grid,
     active = !is.na(bhat)
     bhat[!active] = 0
     linfct = object@linfct
-    estble = is.estble(linfct, object@nbasis, tol) ###apply(linfct, 1, .is.estble, object@nbasis, tol)
+    estble = estimability::is.estble(linfct, object@nbasis, tol) ###apply(linfct, 1, .is.estble, object@nbasis, tol)
     estble[!estble] = NA
     rsigma = estble * as.numeric(linfct[, scols, drop = FALSE] %*% object@bhat[scols])
     rsigma = exp(rsigma) * estble
@@ -290,11 +290,11 @@ lsm.basis.clm = function (object, trms, xlev, grid,
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = object$S.contrasts)
     bhat = c(`(intercept)` = 0, object$zeta)
-    nbasis = matrix(NA)
+    nbasis = estimability::all.estble
     if (any(is.na(bhat))) {
         mf = update(object, method = "model.frame")$mf
         S = model.matrix(trms, mf, contrasts.arg = object$S.contrasts)
-        nbasis = nonest.basis(S)
+        nbasis = estimability::nonest.basis(S)
     }
     k = sum(!is.na(bhat)) - 1
     V = vcov(object)

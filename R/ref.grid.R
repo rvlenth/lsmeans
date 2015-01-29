@@ -373,7 +373,7 @@ vcov.ref.grid = function(object, ...) {
     }
     else {
         X = object@linfct
-        estble = is.estble(X, object@nbasis, tol) ###apply(X, 1, .is.estble, object@nbasis, tol)
+        estble = estimability::is.estble(X, object@nbasis, tol) ###apply(X, 1, .is.estble, object@nbasis, tol)
         X[!estble, ] = NA
         X = X[, !is.na(object@bhat)]
         X %*% tcrossprod(object@V, X)
@@ -442,7 +442,7 @@ regrid = function(object, transform = TRUE) {
     object@bhat = est[[1]]
     object@linfct = diag(1, length(estble))
     if(all(estble))
-        object@nbasis = matrix(NA)
+        object@nbasis = estimability::all.estble
     else
         object@nbasis = object@linfct[, !estble, drop = FALSE]
     if(transform && !is.null(object@misc$tran)) {

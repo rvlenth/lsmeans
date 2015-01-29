@@ -23,7 +23,7 @@ recover.data = function(object, ...)
 # All methods must return a list with these elements:
 #     X      - basis for linear fcns over reference grid
 #     bhat   - regression coefficients for fixed effects (INCLUDING any NAs)
-#     nbasis - matrix whose columns for a basis for non-estimable functions of beta; matrix(NA) if none
+#     nbasis - matrix whose columns for a basis for non-estimable functions of beta; all.estble if none
 #     V      - estimated covariance matrix of bhat
 #     dffun  - function(k, dfargs) to find df for k'bhat having std error se
 #     dfargs - additional arguments, if any, for dffun
@@ -128,9 +128,9 @@ lsm.basis.lm = function(object, trms, xlev, grid, ...) {
     V = vcov(object)
     
     if (sum(is.na(bhat)) > 0)
-        nbasis = nonest.basis(object$qr)
+        nbasis = estimability::nonest.basis(object$qr)
     else
-        nbasis = matrix(NA)
+        nbasis = estimability::all.estble
     misc = list()
     if (inherits(object, "glm")) {
         misc = .std.link.labels(object$family, misc)
@@ -218,10 +218,10 @@ lsm.basis.merMod = function(object, trms, xlev, grid, ...) {
         bhat[kept] = lme4::fixef(object)
         # we have to reconstruct the model matrix
         modmat = model.matrix(trms, object@frame, contrasts.arg=contrasts)
-        nbasis = nonest.basis(modmat)
+        nbasis = estimability::nonest.basis(modmat)
     }
     else
-        nbasis=matrix(NA)
+        nbasis=estimability::all.estble
     
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=misc)
 }
@@ -258,7 +258,7 @@ lsm.basis.merMod = function(object, trms, xlev, grid, ...) {
 #     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
 #     X = model.matrix(trms, m, contrasts.arg = contrasts)
 #     bhat = lme4.0::fixef(object)
-#     nbasis=matrix(NA)
+#     nbasis=estimability::all.estble
 #     
 #     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=misc)
 # }
@@ -282,7 +282,7 @@ lsm.basis.lme = function(object, trms, xlev, grid, adjustSigma = TRUE, ...) {
     if (!is.null(object$family)) {
         misc = .std.link.labels(object$family, misc)
     }
-    nbasis = matrix(NA)
+    nbasis = estimability::all.estble
     dffun = function(...) NA
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=list(), misc=misc)
 }
@@ -303,7 +303,7 @@ lsm.basis.gls = function(object, trms, xlev, grid, ...) {
     X = model.matrix(trms, m, contrasts.arg = contrasts)
     bhat = coef(object)
     V = vcov(object)
-    nbasis = matrix(NA)
+    nbasis = estimability::all.estble
     dfargs = list(df = object$dims$N - object$dims$p)
     dffun = function(k, dfargs) dfargs$df
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=list())
@@ -349,7 +349,7 @@ lsm.basis.polr = function(object, trms, xlev, grid,
         }
     }
     misc$respName = as.character(terms(object))[2]
-    nbasis = matrix(NA)
+    nbasis = estimability::all.estble
     dffun = function(...) NA
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=list(), misc=misc)
 }
@@ -373,7 +373,7 @@ lsm.basis.survreg = function(object, trms, xlev, grid, ...) {
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)    
     # Hmmm, differs from my lm method using model.matrix(trms, m, contrasts)
     X = model.matrix(object, m)
-    nbasis = nonest.basis(model.matrix(object))
+    nbasis = estimability::nonest.basis(model.matrix(object))
     dfargs = list(df = object$df.residual)
     dffun = function(k, dfargs) dfargs$df
     if (object$dist %in% c("exponential","weibull","loglogistic","loggaussian","lognormal")) 
@@ -444,9 +444,9 @@ lsm.basis.coxme = function(object, trms, xlev, grid, ...) {
     V = .named.vcov(object, vcov.method, valid, idx, ...)
     
     if (sum(is.na(bhat)) > 0)
-        nbasis = nonest.basis(object$qr)
+        nbasis = estimability::nonest.basis(object$qr)
     else
-        nbasis = matrix(NA)
+        nbasis = estimability::all.estble
     
     misc = .std.link.labels(object$family, list())
     misc$initMesg = attr(V, "methMesg")
@@ -477,9 +477,9 @@ lsm.basis.geeglm = function(object, trms, xlev, grid, vcov.method = "vbeta", ...
                     idx = c(1,2,3,4,1,2))
     
     if (sum(is.na(bhat)) > 0)
-        nbasis = nonest.basis(object$qr)
+        nbasis = estimability::nonest.basis(object$qr)
     else
-        nbasis = matrix(NA)
+        nbasis = estimability::all.estble
     
     misc = .std.link.labels(object$family, list())
     misc$initMesg = attr(V, "methMesg")
@@ -515,9 +515,9 @@ lsm.basis.geese = function(object, trms, xlev, grid, vcov.method = "vbeta", ...)
     # We don't have the qr component - I'm gonna punt for now
      if (sum(is.na(bhat)) > 0)
          warning("There are non-estimable functions, but estimability is NOT being checked")
-#         nbasis = nonest.basis(object$qr)
+#         nbasis = estimability::nonest.basis(object$qr)
 #     else
-        nbasis = matrix(NA)
+        nbasis = estimability::all.estble
     
     misc = .std.link.labels(eval(object$call$family)(), list())
     misc$initMesg = attr(V, "methMesg")
@@ -563,7 +563,7 @@ lsm.basis.glmmadmb = function (object, trms, xlev, grid, ...)
         else if (!is.na(pmatch(fam,"poisson"))) 
             misc$inv.lbl = "rate"
     }
-    nbasis = matrix(NA)
+    nbasis = estimability::all.estble
     dffun = function(...) NA
     list(X = X, bhat = bhat, nbasis = nbasis, V = V, dffun = dffun, 
          dfargs = list(), misc = misc)
@@ -598,26 +598,29 @@ lsm.basis.glmmadmb = function (object, trms, xlev, grid, ...)
 #--------------------------------------------------------------
 ### Public utility to use for obtaining an orthonormal basis nor nonestimable functions
 # Call with its QR decomp (LAPACK=FALSE), if available
-nonest.basis = function(qrX) {
-    if (!is.qr(qrX))
-        qrX = qr(qrX, LAPACK=FALSE)
-    rank = qrX$rank
-    tR = t(qr.R(qrX))
-    p = nrow(tR)
-    if (rank == p)
-        return (matrix(NA))
-    # null space of X is same as null space of R in QR decomp
-    if (ncol(tR) < p) # add columns if not square
-        tR = cbind(tR, matrix(0, nrow=p, ncol=p-ncol(tR)))
-    # last few rows are zero -- add a diagonal of 1s
-    extras = rank + seq_len(p - rank)
-    for (j in extras) tR[j,j] = 1
-    # nbasis is last p - rank cols of Q in QR decomp of tR
-    nbasis = qr.Q(qr(tR))[ , extras, drop = FALSE]
-    # permute the rows via pivot
-    nbasis[qrX$pivot, ] = nbasis
-    nbasis
-}
+### --- Jan 27, 2015. Celebrating Mozart's 259th birthday
+### by moving the estimability stuff to a separate package --
+### 'estimability'
+# nonest.basis = function(qrX) {
+#     if (!is.qr(qrX))
+#         qrX = qr(qrX, LAPACK=FALSE)
+#     rank = qrX$rank
+#     tR = t(qr.R(qrX))
+#     p = nrow(tR)
+#     if (rank == p)
+#         return (matrix(NA))
+#     # null space of X is same as null space of R in QR decomp
+#     if (ncol(tR) < p) # add columns if not square
+#         tR = cbind(tR, matrix(0, nrow=p, ncol=p-ncol(tR)))
+#     # last few rows are zero -- add a diagonal of 1s
+#     extras = rank + seq_len(p - rank)
+#     for (j in extras) tR[j,j] = 1
+#     # nbasis is last p - rank cols of Q in QR decomp of tR
+#     nbasis = qr.Q(qr(tR))[ , extras, drop = FALSE]
+#     # permute the rows via pivot
+#     nbasis[qrX$pivot, ] = nbasis
+#     nbasis
+# }
 
 # Call this to do the standard stuff with link labels
 # Returns a modified misc

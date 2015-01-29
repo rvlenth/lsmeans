@@ -92,7 +92,7 @@ lsm.basis.aovlist = function (object, trms, xlev, grid, ...) {
         })
         sum(v)^2 / sum(v^2 / dfargs$Vdf) # Good ole Satterthwaite
     }
-    nbasis = matrix(NA)  # Consider this further?
+    nbasis = estimability::all.estble  # Consider this further?
     misc = list()
     
     list(X = X, bhat = bhat, nbasis = nbasis, V = V, dffun = dffun, 
