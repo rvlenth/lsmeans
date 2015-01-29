@@ -2,6 +2,7 @@ Changelog for 'lsmeans' package
 
 2.15
     Clarified annotations for Tukey and Scheffe-adjusted summaries
+    Moved estimability code to a separate 'estmability' package
 TODO: Support for gam
 TODO: Nonlinear models?
 

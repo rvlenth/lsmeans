@@ -9,19 +9,20 @@
 }
 
 # utility to check estimability of x'beta, given nonest.basis
-is.estble = function(x, nbasis, tol=1e-8) {
-    if (is.matrix(x))
-        return(apply(x, 1, is.estble, nbasis, tol))
-    if(is.na(nbasis[1]))
-        TRUE
-    else {
-        chk = as.numeric(crossprod(nbasis, x))
-        ssqx = sum(x*x) # BEFORE subsetting x
-        # If x really small, don't scale chk'chk
-        if (ssqx < tol) ssqx = 1
-        sum(chk*chk) < tol * ssqx
-    }
-}
+### Moved this to separate 'estimability' package
+# is.estble = function(x, nbasis, tol=1e-8) {
+#     if (is.matrix(x))
+#         return(apply(x, 1, is.estble, nbasis, tol))
+#     if(is.na(nbasis[1]))
+#         TRUE
+#     else {
+#         chk = as.numeric(crossprod(nbasis, x))
+#         ssqx = sum(x*x) # BEFORE subsetting x
+#         # If x really small, don't scale chk'chk
+#         if (ssqx < tol) ssqx = 1
+#         sum(chk*chk) < tol * ssqx
+#     }
+# }
 
 # utility fcn to get est's, std errors, and df
 # new arg: do.se -- if FALSE, just do the estimates and return 0 for se and df
@@ -42,7 +43,7 @@ is.estble = function(x, nbasis, tol=1e-8) {
         active = which(!is.na(object@bhat))
         bhat = object@bhat[active]
         result = t(apply(object@linfct, 1, function(x) {
-            if (is.estble(x, object@nbasis, tol)) {
+            if (estimability::is.estble(x, object@nbasis, tol)) {
                 x = x[active]
                 est = sum(bhat * x)
                 if(do.se) {

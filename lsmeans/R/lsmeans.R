@@ -605,7 +605,7 @@ lsmobj = function(bhat, V, levels, linfct, df = NA, ...) {
                 methDesc = "lsmobj")
     result = new("lsmobj", model.info=model.info, roles=roles, grid=grid,
                  levels = levels, matlevs=list(),
-                 linfct=linfct, bhat=bhat, nbasis=matrix(NA), V=V,
+                 linfct=linfct, bhat=bhat, nbasis=all.estble, V=V,
                  dffun=dffun, dfargs=dfargs, misc=misc)
     update(result, ..., silent=TRUE)
 }

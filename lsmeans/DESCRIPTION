@@ -6,7 +6,7 @@ Date: 2015-01-06
 Encoding: latin1
 Author: Russell V. Lenth [aut], Maxime Hervé [ctb]
 Maintainer: Russ Lenth <russell-lenth@uiowa.edu>
-Depends: methods, R (>= 3.0)
+Depends: estimability, methods, R (>= 3.0)
 Suggests: pbkrtest (>= 0.4-1), lattice, multcompView, car, mediation, ordinal
 Enhances: afex, coxme, gee, geepack, glmmADMB, lme4, MASS, nlme, survival
 Imports: multcomp, plyr, Matrix, mvtnorm

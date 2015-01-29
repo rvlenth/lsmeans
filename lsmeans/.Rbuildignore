@@ -7,10 +7,14 @@ KRstuff.R
 old-lsmeans.R
 lsmeans-changes.rnw
 
+# Not ready for prime time
+nonlin-support.R
+
 # New devel stuff
 test-data.R
 int.plot.R
 CopyOflsmeans.R
+
 # Complicated rules about Enhances vs. Suggests - I say just ditch these tests
 tests2.R
 tests2.Rout.save

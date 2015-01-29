@@ -2,8 +2,8 @@
 \alias{recover.data}
 \alias{recover.data.call}
 \alias{lsm.basis}
-\alias{nonest.basis}
-\alias{is.estble}
+%%\alias{nonest.basis} % moved to estimability package
+%%\alias{is.estble}
 
 % additional ref topic
 \alias{extending-lsmeans}
@@ -18,9 +18,6 @@ recover.data(object, ...)
 \S3method{recover.data}{call}(object, trms, na.action, data, ...)
 
 lsm.basis(object, trms, xlev, grid, ...)
-
-nonest.basis(qrX)
-is.estble(x, nbasis, tol = 1e-8)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -29,11 +26,6 @@ An object returned from a model-fitting function.}
   \item{trms}{The \code{\link{terms}} component of \code{object}}
   \item{xlev}{Named list of levels of factors in the model frame. This should \emph{not} include levels of factors created in the model itself, e.g., by including a \code{factor} call in the mdoel formula.}
   \item{grid}{A \code{data.frame} containing predictor values at which predictions are needed.}
-  \item{qrX}{A model matrix, or the QR decomposition thereof (from \code{\link{qr}} with \samp{LAPACK=FALSE}). The latter is preferred if already available, as it saves computation.
-  }
-  \item{x}{Numeric vector or matrix for assessing estimability of \samp{sum(x * beta)}, where \code{beta} is the vector of regression coefficients.}
-  \item{nbasis}{Matrix returned by \code{nonest.basis}.}
-  \item{tol}{Numeric tolerance for assessing noestimability.}
   \item{na.action}{Integer vector of indices of observations to ignore; or \code{NULL} if none}
   \item{data}{Data frame. Usually, this is \code{NULL}. However, if non-null, this is used in place of the reconstructed dataset. It must have all of the predictors used in the model, and any factor levels must match those used in fitting the model.}
   \item{\dots}{Additional arguments passed to other methods.}
@@ -46,7 +38,7 @@ To extend \pkg{lsmeans}'s support to additional model types, one need only write
 
 If the model has a multivariate response, \code{bhat} needs to be \dQuote{flattened} into a single vector, and \code{X} and \code{V} must be constructed consistently. 
 
-In models where a non-full-rank result is possible (often you can tell by seeing if there is a \code{singular.ok} argument in the model-fitting function), \code{summary} and \code{predict} check the estimability of each prediction, and for this, a basis for the non-estimable functions is required. The \code{nonest.basis} function provides an easy way to obtain this. 
+In models where a non-full-rank result is possible (often you can tell by seeing if there is a \code{singular.ok} argument in the model-fitting function), \code{summary} and \code{predict} check the estimability of each prediction, using the \code{\link[estimability]{nonest.basis}} function in the \pkg{estimability} package. 
 
 The models already supported are detailed in \code{\link{models}}. Some packages may provide additional \pkg{lsmeans} support for its object classes. 
 }
@@ -62,10 +54,6 @@ The models already supported are detailed in \code{\link{models}}. Some packages
 \item{V}{The estimated covariance matrix of \code{bhat}.}
 \item{dffun}{A function of \code{(k, dfargs)} that returns the degrees of freedom associated with \code{sum(k * bhat)}.}
 \item{dfargs}{A \code{list} containing additional arguments needed for \code{dffun}.}
-
-\code{nonest.basis} returns a matrix with the number of rows equal to the length of the vector of regression coefficients, and number of columns equal to the rank deficiency of the model matrix. The columns are orthonormal. If the model is full-rank, then it should return \samp{matrix(NA)}.
-
-The function \code{is.estble} returns a logical value (or vector, if \code{x} is a matrix) that is \code{TRUE} if the function is estimable and \code{FALSE} if not. Estimability of \samp{sum(x*beta)} is assessed by whether or not \samp{sum(crossprod(nbasis,x)^2) < tol * sum(x^2)}.
 }
 
 %\references{}
@@ -87,17 +75,21 @@ Russell V. Lenth
 \code{\link{models}}, \code{\link{ref.grid}}, \code{\link{ref.grid-class}}
 }
 \examples{
-require(lsmeans)
+\dontrun{
+    require(lsmeans)
 
-# Fit a 2-factor model with two empty cells
-warpsing.lm <- lm(breaks ~ wool*tension, 
-    data = warpbreaks, subset = -(16:40))
-( nb <- nonest.basis(warpsing.lm$qr) )
+    # Fit a 2-factor model with two empty cells
+    warpsing.lm <- lm(breaks ~ wool*tension, 
+        data = warpbreaks, subset = -(16:40))
 
-is.estble(ref.grid(warpsing.lm)@linfct, nb)
-
+    lsmeans:::recover.data.lm(warpsing.lm, data = NULL)
+    grid = with(warpbreaks, 
+        expand.grid(wool = levels(wool), tension = levels(tension)))
+    lsmeans:::lsm.basis.lm(warpsing.lm, delete.response(terms(warpsing.lm)),
+        warpsing.lm$xlevels, grid)
+} % end dontrun
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
+
+
 \keyword{ models }
 \keyword{ regression }
