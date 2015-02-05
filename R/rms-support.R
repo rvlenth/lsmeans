@@ -9,7 +9,8 @@ recover.data.rms = function(object, ...) {
 # 1. If multivariate - like mlm method?
 # 2. orm cases?
 
-lsm.basis.rms = function(object, trms, xlev, grid, mode = c("middle", "latent", "linear.predictor"), ...) {
+lsm.basis.rms = function(object, trms, xlev, grid, 
+        mode = c("middle", "latent", "linear.predictor", "cum.prob", "exc.prob", "prob", "mean.class"), ...) {
     mode = match.arg(mode)
     bhat = coef(object) 
     V = vcov(object, intercepts = "all")
@@ -47,7 +48,7 @@ lsm.basis.rms = function(object, trms, xlev, grid, mode = c("middle", "latent", 
         }
         ### else mode == "single" and all is OK as it is
     }
-    else { # mode == "linear.predictor"
+    else { # mode %in% c("linear.predictor", "cum.prob", "exc.prob", "prob", "mean.class")
         misc$ylevs = list(cut = intcpts)
         I = diag(1, nint)
         J = matrix(1, nrow = nrow(X))
@@ -55,12 +56,26 @@ lsm.basis.rms = function(object, trms, xlev, grid, mode = c("middle", "latent", 
         X = cbind(kronecker(I, J), kronecker(JJ, X))
         # Note V is correct as-is
         dimnames(X)[[2]] = c(intcpts, xnames)
+        if (mode != "linear.predictor") {
+            misc$mode = mode
+            misc$postGridHook = .clm.postGrid
+            misc$respName = as.character(object$terms)[2]
+        }
     }
     
     # I think rms does not allow rank deficiency...
     nbasis = estimability::all.estble
-    if (inherits(object, "glm")) {
-        misc = .std.link.labels(object$family, misc)
+    if (!is.null(object$family)) {
+        if (!is.character(object$family))
+            misc = .std.link.labels(object$family, misc)
+        else {
+            misc$tran = object$family
+            if (misc$tran == "logistic") misc$tran = "logit"
+            misc$inv.lbl = switch(class(object)[1], 
+                orm = "exc.prob",
+                lrm = ifelse(nint == 1, "prob", "exc.prob"),
+                "response")
+        }
         dffun = function(k, dfargs) NA
         dfargs = list()
     }

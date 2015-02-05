@@ -33,7 +33,7 @@ recover.data.clmm = recover.data.lm
 #         'rescale' - (loc, scale) for linear transformation of latent result
 
 lsm.basis.clm = function (object, trms, xlev, grid, 
-                          mode = c("latent", "linear.predictor", "cum.prob", "prob", "mean.class", "scale"), 
+                          mode = c("latent", "linear.predictor", "cum.prob", "exc.prob", "prob", "mean.class", "scale"), 
                           rescale = c(0,1), ...) {
     # general stuff
     mode = match.arg(mode)
@@ -167,7 +167,7 @@ lsm.basis.clm = function (object, trms, xlev, grid,
     else { ### ----- Piece together big matrix for each threshold ----- ###
         misc$ylevs = list(cut = cnm)
         misc$tran = link
-        misc$inv.lbl = "cumprob"
+        misc$inv.lbl = "cum.prob"
         misc$offset.mult = -1
         if (!is.null(S))
             X = cbind(X, S)
@@ -191,24 +191,32 @@ lsm.basis.clm = function (object, trms, xlev, grid,
 .clm.postGrid = function(object) {
     mode = object@misc$mode
     object@misc$postGridHook = object@misc$mode = NULL
-    if (mode == "cum.prob") {
-        object = regrid(object)
+    object = regrid(object, TRUE)
+    if(object@misc$estName == "exc.prob") { # Exceedance probs
+        object@bhat = 1 - object@bhat
+        object@misc$estName = "cum.prob"
     }
-    else if (mode == "prob") {
+    if (mode == "prob") {
         object = .clm.prob.grid(object)
     }
-    else { # mode == "mean.class
+    else if (mode == "mean.class") {
         object = .clm.mean.class(object)
     }
+    else if (mode == "exc.prob") {
+        object@bhat = 1 - object@bhat
+        object@misc$estName = "exc.prob"        
+    }
+    # (else mode == "cum.prob" and it's all OK)
     object@misc$respName = NULL
     object
 }
 
 
 # Make the linear-predictor ref.grid into one for class probabilities
+# This assumes that object has already been re-gridded and back-transformed
 .clm.prob.grid = function(object, thresh = "cut", newname = object@misc$respName) {
     byv = setdiff(names(object@levels), thresh)
-    newrg = contrast(regrid(object, TRUE), ".diff_cum", by = byv)
+    newrg = contrast(object, ".diff_cum", by = byv)
     class(newrg) = "ref.grid"
     misc = newrg@misc
     misc$infer = c(FALSE,FALSE)

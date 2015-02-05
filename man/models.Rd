@@ -88,11 +88,11 @@ Tests and confidence intervals are asymptotic.}
 
 \section{\pkg{ordinal} package}{
 \describe{
-\item{clm,clmm}{The reference grid will include all variables that appear in the main model as well as those in the \code{scale} or \code{nominal} models. There are two optional arguments: \code{mode} (a character string) and \code{rescale} (which defaults to \samp{c(0,1)}). \code{mode} should match one of \code{"latent"} (the default), \code{"linear.predictor"}, \code{"cum.prob"}, \code{"prob"},  \code{"mean.class"}, or \code{"scale"}. 
+\item{clm,clmm}{The reference grid will include all variables that appear in the main model as well as those in the \code{scale} or \code{nominal} models. There are two optional arguments: \code{mode} (a character string) and \code{rescale} (which defaults to \samp{c(0,1)}). \code{mode} should match one of \code{"latent"} (the default), \code{"linear.predictor"}, \code{"cum.prob"}, \code{"exc.prob"}, \code{"prob"}, \code{"mean.class"}, or \code{"scale"}. 
 
 With \samp{mode = "latent"}, the reference-grid predictions are made on the scale of the latent variable implied by the model. The scale and location of this latent variable are arbitrary, and may be altered via \code{rescale}. The predictions are multiplied by \samp{rescale[2]}, then \samp{rescale[1]} is added. Keep in mind that the scaling is related to the link function used in the model; for example, changing from a probit link to a logistic link will inflate the latent values by around \eqn{\pi/\sqrt{3}}{pi/sqrt(3)}, all other things being equal. \code{rescale} has no effect for other values of \code{mode}.
 
-With \samp{mode = "linear.predictor"} and \code{mode = "cum.prob"}, the boundaries between categories (i.e., thresholds) in the ordinal response are included in  the reference grid as a pseudo-factor named \code{cut}. The reference-grid predictions are then of the cumulative probabilities at each threshold (for \code{mode = "cum.prob"}) or the link function thereof (for \code{mode = "linear.predictor"}).
+With \samp{mode = "linear.predictor"} \code{mode = "cum.prob"}, and \code{mode = "exc.prob"}, the boundaries between categories (i.e., thresholds) in the ordinal response are included in  the reference grid as a pseudo-factor named \code{cut}. The reference-grid predictions are then of the cumulative probabilities at each threshold (for \code{mode = "cum.prob"}), exceedance probabilities (one minus cumulative probabilities, for \code{mode = "exc.prob"}), or the link function thereof (for \code{mode = "linear.predictor"}).
 
 With \code{mode = "prob"}, a pseudo-factor with the same name as the model's response variable is created, and the grid predictions are of the probabilities of each class of the ordinal response. With \code{"mean.class"}, the returned results are means of the ordinal response, interpreted as a numeric value from 1 to the number of classes, using the \code{"prob"} results as the estimated probability distribution for each case.
 
@@ -105,14 +105,17 @@ Tests and confidence intervals are asymptotic.}
 
 \section{\pkg{rms} package}{
 \describe{
+\item{Potential masking issue}{
+Both \pkg{rms} and \pkg{lsmeans} offer \code{contrast} methods, and whichever package is loaded later masks the other. Thus, you may need to call \code{lsmeans::contrast} explicitly to use those capabilities. The \pkg{lsmeans} package provides a courtesy \code{contrast.rms} method that passes its arguments to \code{rms::contrast} if that package is installed.
+}
 \item{Objects inheriting from rms}{
-Currently, only basic support is provided. However, with models having more than one intercept (e.g. from \code{orm}), a \code{mode} argument is provided that works similarly to that for the \pkg{ordinal} package, but currently with fewer options. The available modes are \code{"middle"}, \code{"latent"}, and \code{"linear.predictor"}. 
+Standard support is provided. However, with models having more than one intercept (e.g. from \code{orm}), a \code{mode} argument is provided that works similarly to that for the \pkg{ordinal} package. The available modes are \code{"middle"} (the default), \code{"latent"}, \code{"linear.predictor"}, \code{"cum.prob"}, \code{"exc.prob"}, \code{"prob"}, and \code{"mean.class"}. All are as described for the \pkg{ordinal} package, except as noted below.
 
-With \code{mode = "middle"} (this is the default), the middle intercept is used, comparable to the default for \pkg{rms}'s \code{Predict} function. 
+With \code{mode = "middle"} (this is the default), the middle intercept is used, comparable to the default for \pkg{rms}'s \code{Predict} function. This is quite similar in concept to \code{mode = "latent"}, where all intercepts are averaged together.
 
-With \code{mode = "latent"}, the intercepts are averaged, as described above for \code{clm} in the \pkg{ordinal} package.
+Results for \code{mode = "linear.predictor"} are reversed from those in the \pkg{ordinal} package, because \code{orm} models predict the link function of the \emph{upper}-tail (exceedance) probabilities.
 
-With \code{mode = "linear.predictor"}, all intercepts are used, and a pseudo-factor named \code{"cut"} is created having levels equal to the intercept names. Again, this is comparable to what is done with \code{clm} objects, except \code{orm} models predict the link function of the \emph{upper}-tail probabilities.
+With \code{mode = "prob"}, a pseudo-factor is created having the same name as the model response variable, but its levels are always integers \samp{1, 2, ...} regardless of the levels of the original response.
 }
 }}% rms
 
