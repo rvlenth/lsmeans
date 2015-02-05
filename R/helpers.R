@@ -570,6 +570,13 @@ lsm.basis.glmmadmb = function (object, trms, xlev, grid, ...)
 }
 
 
+# --------------------------------------------------------------
+### Explicit non-support for 'gam' objects (runs, but results are wrong)
+
+lsm.basis.gam = function(object, trms, xlev, grid, ...) {
+    stop("Can't handle an object of class", dQuote(class(object)[1]), "\n",
+         .show_supported())
+}
 
 
 #--------------------------------------------------------------
