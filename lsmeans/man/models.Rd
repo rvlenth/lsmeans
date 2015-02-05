@@ -103,6 +103,20 @@ Any grid point that is non-estimable by either the location or the scale model (
 Tests and confidence intervals are asymptotic.}
 }}% ordinal
 
+\section{\pkg{rms} package}{
+\describe{
+\item{Objects inheriting from rms}{
+Currently, only basic support is provided. However, with models having more than one intercept (e.g. from \code{orm}), a \code{mode} argument is provided that works similarly to that for the \pkg{ordinal} package, but currently with fewer options. The available modes are \code{"middle"}, \code{"latent"}, and \code{"linear.predictor"}. 
+
+With \code{mode = "middle"} (this is the default), the middle intercept is used, comparable to the default for \pkg{rms}'s \code{Predict} function. 
+
+With \code{mode = "latent"}, the intercepts are averaged, as described above for \code{clm} in the \pkg{ordinal} package.
+
+With \code{mode = "linear.predictor"}, all intercepts are used, and a pseudo-factor named \code{"cut"} is created having levels equal to the intercept names. Again, this is comparable to what is done with \code{clm} objects, except \code{orm} models predict the link function of the \emph{upper}-tail probabilities.
+}
+}}% rms
+
+
 \section{\pkg{survival} package}{
 \describe{
 \item{survreg, coxph}{No extended features.}
