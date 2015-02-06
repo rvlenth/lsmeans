@@ -88,3 +88,16 @@ lsm.basis.rms = function(object, trms, xlev, grid,
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, 
          dffun=dffun, dfargs=dfargs, misc=misc)
 }
+
+
+
+## Courtesy method to prevent masking this generic in rms package
+# Excluded because this just causes headaches with CRAN's
+# dependency checking.
+# contrast.rms = function(object, ...) {
+#     if (requireNamespace("rms"))
+#         rms::contrast(object, ...)
+#     else
+#         stop ("The 'rms' package is not installed.")
+#     
+# }

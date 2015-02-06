@@ -34,6 +34,11 @@ Additional models can be supported by writing appropriate \code{recover.data} an
 }}% coxme
 
 
+\section{\pkg{gam} package}{
+\describe{
+\item{gam}{Currently, \code{gam} objects are not supported. Past versions of \pkg{lsmeans} appeared to support \code{gam} models owing to inheritance from \code{lm}, but the results were incorrect because spline features were ignored. We now explicitly trap \code{gam} objects to avoid tyhese misleading analyses.}
+}}% coxme
+
 
 \section{\pkg{gee} and \pkg{geepack} packages}{
 These models all have more than one covariance estimate available, and it may be selected by supplying a string as the \code{vcov.method} argument. It is partially matched with the available choices; thus, for example, \samp{vcov = "n"} translates to \samp{vcov.method = "naive"}
@@ -106,7 +111,7 @@ Tests and confidence intervals are asymptotic.}
 \section{\pkg{rms} package}{
 \describe{
 \item{Potential masking issue}{
-Both \pkg{rms} and \pkg{lsmeans} offer \code{contrast} methods, and whichever package is loaded later masks the other. Thus, you may need to call \code{lsmeans::contrast} explicitly to use those capabilities. The \pkg{lsmeans} package provides a courtesy \code{contrast.rms} method that passes its arguments to \code{rms::contrast} if that package is installed.
+Both \pkg{rms} and \pkg{lsmeans} offer \code{contrast} methods, and whichever package is loaded later masks the other. Thus, you may need to call \code{lsmeans::contrast} or \code{rms::contrast} explicitly to access the one you want. 
 }
 \item{Objects inheriting from rms}{
 Standard support is provided. However, with models having more than one intercept (e.g. from \code{orm}), a \code{mode} argument is provided that works similarly to that for the \pkg{ordinal} package. The available modes are \code{"middle"} (the default), \code{"latent"}, \code{"linear.predictor"}, \code{"cum.prob"}, \code{"exc.prob"}, \code{"prob"}, and \code{"mean.class"}. All are as described for the \pkg{ordinal} package, except as noted below.
