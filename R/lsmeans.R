@@ -258,13 +258,6 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
 contrast = function(object, ...)
     UseMethod("contrast")
 
-# Courtesy method to prevent masking this generic in rms package
-contrast.rms = function(object, ...)
-    if (requireNamespace("rms"))
-        rms::contrast(object, ...)
-    else
-        stop ("The 'rms' package is not installed.")
-              
 contrast.ref.grid = function(object, method = "eff", by, adjust, offset = NULL,
         options = getOption("lsmeans")$contrast, ...) {
     args = object@grid

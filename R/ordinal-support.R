@@ -167,7 +167,7 @@ lsm.basis.clm = function (object, trms, xlev, grid,
     else { ### ----- Piece together big matrix for each threshold ----- ###
         misc$ylevs = list(cut = cnm)
         misc$tran = link
-        misc$inv.lbl = "cum.prob"
+        misc$inv.lbl = "cumprob"
         misc$offset.mult = -1
         if (!is.null(S))
             X = cbind(X, S)
