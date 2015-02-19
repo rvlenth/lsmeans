@@ -18,7 +18,7 @@ lsmip.default = function(object, formula, type,
     # arguments allowed to be passed
     lsa.allowed = c("at","trend","cov.reduce","fac.reduce")
     xargs = list(...)
-    lsmopts = list()
+    lsmopts = list(...)
     for (arg in names(xargs)) {
         idx = pmatch(arg, lsa.allowed)
         if (!is.na(idx)) {

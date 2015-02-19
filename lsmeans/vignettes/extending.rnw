@@ -102,6 +102,8 @@ Our recovered data excludes the response variable "y" (owing to the "delete.resp
 
 By the way, the "data" argument is handed to "recover.data" if it is specified in the "ref.grid" or "lsmeans" call. It is needed to cover a desperate situation that occurs with certain kinds of models that are fitted by iteratively modifying the data. In those cases, the only way to recover the data is to for the user to give it explicitly, and "recover.data" just adds a few needed attributes to it.
 
+Related (in a surprising way) to the above, if you check for any error conditions in "recover.data", simply have it return a character string with the desired message, rather than invoking "stop". This provides a cleaner exit. The reason is that whenever "recover.data" throws an error, an informative message suggesting that "data" be provided is displayed. But a character return value is tested for an throws a different error with your message.
+
 \subsection{The \code{lsm.basis} method}
 The "lsm.basis" method has four required arguments:
 <<>>=

@@ -3,6 +3,7 @@ Changelog for 'lsmeans' package
 2.15-1
     Bug fix in lstrends when there is a multivariate response
     Added support for 'nlme' objects (for parameters in 'fixed')
+    Other minor bug fixes and documentation improvements
 
 2.15
     Clarified annotations for Tukey and Scheffe-adjusted summaries
