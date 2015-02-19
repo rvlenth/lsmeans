@@ -40,7 +40,8 @@ recover.data.nlme = function(object, param, ...) {
     if (is.null(form))
         return(paste("Can't find '", param, "' among the fixed parameters", sep = ""))
     fcall$weights = NULL
-    trms = delete.response(terms(update(terms(object), form)))
+    #trms = delete.response(terms(update(terms(object), form)))
+    trms = delete.response(terms(form))
     if (length(all.vars(trms)) == 0)
         return(paste("No predictors for '", param, "' in fixed model", sep = ""))
     recover.data(fcall, trms, object$na.action, ...)
@@ -53,9 +54,11 @@ lsm.basis.nlme = function(object, trms, xlev, grid, param, ...) {
     contr = attr(object$plist[[param]]$fixed, "contrasts")
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contr)
-    list(X=X, bhat=bhat, nbasis=estimability::all.estble, V=V, 
-         dffun=function(k, dfargs) NA, dfargs=list(), 
-         misc=list(estName = param))
+    dfargs = list(df = min(object$fixDF$X[idx]))
+    dffun = function(k, dfargs) dfargs$df
+    list(X = X, bhat = bhat, nbasis = estimability::all.estble, 
+         V = V, dffun = dffun, dfargs = dfargs, 
+         misc = list(estName = param))
 }
 
 
