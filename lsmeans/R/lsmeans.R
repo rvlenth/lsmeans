@@ -519,6 +519,11 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
     
     RG = ref.grid(model, ...)
     grid = RG@grid
+    if (!is.null(mr <- RG@roles$multresp)) {
+        # use the grid value only for the 1st mult resp (no dupes)
+        if (length(mr) > 0)
+            grid = grid[grid[[mr]] == RG@levels[[mr]][1], ]
+    }
     grid[[var]] = grid[[var]] + delta.var
     
     basis = lsm.basis(model, attr(data, "terms"), RG@roles$xlev, grid, ...)
