@@ -1,8 +1,8 @@
 Package: lsmeans
 Type: Package
 Title: Least-Squares Means
-Version: 2.15-1
-Date: 2015-02-17
+Version: 2.15-2
+Date: 2015-02-22
 Encoding: latin1
 Author: Russell V. Lenth [aut], Maxime Hervé [ctb]
 Maintainer: Russ Lenth <russell-lenth@uiowa.edu>
@@ -12,5 +12,6 @@ Enhances: afex, coxme, gee, geepack, glmmADMB, lme4, MASS, nlme, survival
 Imports: multcomp, plyr, Matrix, mvtnorm
 Additional_repositories: http://glmmadmb.r-forge.r-project.org/repos
 LazyData: yes
+ByteCompile: yes
 Description: Obtain least-squares means for many linear, generalized linear, and mixed models. Compute contrasts or linear functions of least-squares means, and comparisons of slopes. Plots and compact letter displays.
 License: GPL-2

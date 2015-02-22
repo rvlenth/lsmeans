@@ -19,7 +19,7 @@ These methods provide for analyses of \code{ref.grid} objects, or follow-up anal
 }
 \usage{
 \method{contrast}{ref.grid}(object, method = "eff", by, adjust, 
-    offset = NULL, options = getOption("lsmeans")$contrast, ...)
+    offset = NULL, name = "contrast", options = getOption("lsmeans")$contrast, ...)
 \method{contrast}{lsm.list}(object, ..., which = 1)
 
 \method{test}{ref.grid}(object, null = 0, joint = FALSE,
@@ -44,6 +44,9 @@ Character names of variable(s) to be used for ``by'' groups. The contrasts or jo
 Method to use for adjusting \emph{P} values. This is passed to \code{\link[lsmeans]{summary}}.
 }
   \item{offset}{Numeric vector of the same length as each \code{by} group. These values are added to their respective linear estimates.
+}
+  \item{name}{Name to use to label the contrasts in table headings
+  or subsequent contrasts of the returned object.
 }
   \item{options}{If non-\code{NULL}, a named \code{list} of arguments to pass to \code{\link{update}}, just after the object is constructed.}
   \item{joint}{Logical value. If \code{FALSE}, the arguments are passed to \code{\link{summary}} with \code{infer=c(FALSE,TRUE)}. If \code{TRUE}, a joint test of the hypothesis L beta = null is performed, where L is \code{object@linfct} and beta is the vector of fixed effects estimated by \code{object@betahat}. This will be either an \emph{F} test or a chi-square (Wald) test depending on whether degrees of freedom are available.}
@@ -89,19 +92,15 @@ warp.lm <- lm(breaks ~ wool*tension, data = warpbreaks)
 warp.lsm <- lsmeans(warp.lm, ~ tension | wool)
 
 # Polynomial contrasts of tension, by wool
-(warp.pl <- contrast(warp.lsm, "poly"))
+(warp.pl <- contrast(warp.lsm, "poly", name = "order"))
 # Same results with a different adjustment
 summary(warp.pl, adjust = "fdr")
 
 # Jointly test the tension effects for each wool
-test(warp.pl, joint = TRUE, rows = 1:2)  # wool A
-test(warp.pl, joint = TRUE, rows = 3:4)  # wool B
+test(warp.pl, joint = TRUE, by = "wool")
 
-# Jointly test the linear and 
-test(warp.pl, joint = TRUE, rows = 1:2)
-
-# Compare the two contrasts for each degree
-contrast(warp.pl, "revpairwise", by = "contrast")
+# Compare the two contrasts for each order
+contrast(warp.pl, "revpairwise", by = "order")
 
 # User-provided contrasts, ignoring the previous by grouping
 contrast(warp.lsm, 
