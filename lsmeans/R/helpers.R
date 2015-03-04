@@ -283,8 +283,16 @@ lsm.basis.lme = function(object, trms, xlev, grid, adjustSigma = TRUE, ...) {
         misc = .std.link.labels(object$family, misc)
     }
     nbasis = estimability::all.estble
-    dffun = function(...) NA
-    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=list(), misc=misc)
+    # Replaced by containment method##dffun = function(...) NA
+    dfx = object$fixDF$X
+    if (names(bhat[1]) == "(Intercept)")
+        dfx[1] = length(levels(object$groups[[1]])) - 1#min(dfx)   ### Correct apparent error in lme containment algorithm
+    dffun = function(x, dfargs) {
+        idx = which(abs(x) > 1e-4)
+        ifelse(length(idx) > 0, min(dfargs$dfx[idx]), NA)
+    }
+    list(X = X, bhat = bhat, nbasis = nbasis, V = V, 
+         dffun = dffun, dfargs = list(dfx = dfx), misc = misc)
 }
 
 

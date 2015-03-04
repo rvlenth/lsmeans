@@ -54,10 +54,14 @@ lsm.basis.nlme = function(object, trms, xlev, grid, param, ...) {
     contr = attr(object$plist[[param]]$fixed, "contrasts")
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contr)
-    dfargs = list(df = min(object$fixDF$X[idx]))
-    dffun = function(k, dfargs) dfargs$df
+    dfx = object$fixDF$X[idx]
+    dfx[1] = min(dfx) # I'm assuming 1st one is intercept
+    dffun = function(k, dfargs) { # containment df
+        idx = which(abs(k) > 1e-6)
+        ifelse(length(idx) > 0, min(dfargs$dfx[idx]), NA)
+    }
     list(X = X, bhat = bhat, nbasis = estimability::all.estble, 
-         V = V, dffun = dffun, dfargs = dfargs, 
+         V = V, dffun = dffun, dfargs = list(dfx = dfx), 
          misc = list(estName = param))
 }
 
