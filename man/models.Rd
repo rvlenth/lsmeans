@@ -87,9 +87,9 @@ Tests and confidence intervals are asymptotic.}
 
 \section{\pkg{nlme} package}{
 \describe{
-\item{gls}{No degrees of freedom are available for these objects, so tests and confidence intervals are asymptotic.}
-\item{lme}{No degrees of freedom, as per \code{gls} objects. The optional argument \code{adjustSigma} (defaults to \code{TRUE}) will adjust standard errors like in \code{\link[nlme]{summary.lme}} when the model is fitted using the \code{"ML"} method. \bold{Note:} It is possible for the \code{adjust} argument (for \eqn{p}-value adjustments) to conflict with \code{adjustSigma}. The workaround is to specify both: e.g., \samp{lsmeans(mod.lme, pairwise ~ trt, adjustSigma = TRUE, adjust = "none")}}
-\item{nlme}{Support is provided for inferences on parameters named in the \code{fixed} part of the model. The user \emph{must} specify \code{param} in the call and give the name of a parameter that appears in the right-hand side of a \code{fixed} formula. No degrees of freedom are available.}
+\item{gls}{No additional features. Degrees of freedom are computed using \code{N - p} in \code{object$dims}. This is consistent with \code{nlme:::summary.gls} but seems questionable.}
+\item{lme}{Degrees of freedom are obtained using the containment method, i.e., the minimum of those elements of \code{object$fixDF$X} receiving nonzero weight (but with a correction to the intercept). The optional argument \code{adjustSigma} (defaults to \code{TRUE}) will adjust standard errors like in \code{\link[nlme]{summary.lme}} when the model is fitted using the \code{"ML"} method. \bold{Note:} It is possible for the \code{adjust} argument (for \eqn{p}-value adjustments) to conflict with \code{adjustSigma}. The workaround is to specify both: e.g., \samp{lsmeans(mod.lme, pairwise ~ trt, adjustSigma = TRUE, adjust = "none")}}
+\item{nlme}{Support is provided for inferences on parameters named in the \code{fixed} part of the model. The user \emph{must} specify \code{param} in the call and give the name of a parameter that appears in the right-hand side of a \code{fixed} formula. Degrees of freedom are obtained using containment.}
 }}% nlme
 
 \section{\pkg{ordinal} package}{
