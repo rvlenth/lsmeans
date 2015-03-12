@@ -3,9 +3,9 @@ Changelog for 'lsmeans' package
 2.15-2
     Added support for 'nlme' objects (for parameters in 'fixed')
     Degrees of freedom now produced with lme and nlme objects
-        (uses containment method)
+        (uses containment-like method)
     Addition of 'name' argument in 'contrast'
-    Decided to build it byte-compiled
+    Now built with byte-compiler enabled
     Bug fix in lstrends when there is a multivariate response
     Other minor bug fixes and documentation improvements
 
