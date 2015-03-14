@@ -128,7 +128,7 @@
 #         xtra = if(chk.adj < 10) paste("a family of", fam.size, "tests")
 #         else             paste(n.contr, "tests")
         xtra = switch(adjust, 
-                      tukey = paste("for comparing a family of", fam.size, "tests"),
+                      tukey = paste("for comparing a family of", fam.size, "estimates"),
                       scheffe = paste("with dimensionality", scheffe.dim),
                       paste("for", n.contr, "tests")
                 )

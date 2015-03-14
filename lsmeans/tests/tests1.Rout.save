@@ -116,7 +116,7 @@ wool = B:
  L - H     8.2584640 4.920788 37   1.678  0.2269
  M - H     9.8537837 4.687418 37   2.102  0.1032
 
-P value adjustment: tukey method for comparing a family of 3 tests 
+P value adjustment: tukey method for comparing a family of 3 estimates 
 > 
 > #switcheroo of by variables:
 > (tmp = pairs(warp.lsm, by = "tension"))
@@ -141,7 +141,7 @@ contrast = A - B:
  L - H     16.485899 7.867834 37   2.095  0.1046
  M - H     -9.693013 6.867934 37  -1.411  0.3456
 
-P value adjustment: tukey method for comparing a family of 3 tests 
+P value adjustment: tukey method for comparing a family of 3 estimates 
 > 
 > # Joint tests
 > test(warp.pairs, joint = TRUE)  # all 6 but reduces to 4
@@ -283,7 +283,7 @@ wool = B:
  M       29.28683 3.244426 38 22.71884 35.85483  1    
 
 Confidence level used: 0.95 
-P value adjustment: tukey method for comparing a family of 3 tests 
+P value adjustment: tukey method for comparing a family of 3 estimates 
 significance level used: alpha = 0.05 
 > 
 > # passing to glht
@@ -543,4 +543,4 @@ Confidence level used: 0.95
 > 
 > proc.time()
    user  system elapsed 
-   2.94    0.12    3.32 
+   2.74    0.20    3.16 

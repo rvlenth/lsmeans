@@ -494,8 +494,8 @@ We find strong evidence that, with the stated threshold of .25, Golden Rain is n
 The \lsm{} package provides a function \code{lstrends} for estimating and comparing the slopes of fitted lines (or curves). To illustrate, consider the built-in R dataset \code{ChickWeight} which has data on the growths of newly hatched chicks under four different diets. The following code produces the display in \Fig{chick-plot}.
 <<chick-plot, fig=TRUE, include=FALSE, height=3.5, width=8>>=
 require("lattice")
-xyplot(weight~Time | Diet, groups = ~ Chick, data=ChickWeight, type="o", 
-       layout=c(4,1))
+xyplot(weight~Time | Diet, groups = ~ Chick, data = ChickWeight, 
+    type = "o", layout=c(4, 1))
 @
 \begin{figure}
 \centerline{\includegraphics[width=6in]{using-lsmeans-chick-plot}}
@@ -705,13 +705,14 @@ The values used for $x_2$ and $x_3$ will depend on $x_1$ and should in some sens
 The \lsm{} package comes with built-in support for several packages and model classes: \begin{quote}
 \begin{description}
 \pitem{stats}: \dqt{lm}, \dqt{mlm}, \dqt{aov}, \dqt{aovlist}, \dqt{glm}
-\pitem{nlme}: \dqt{lme}, \dqt{gls}
+\pitem{nlme}: \dqt{lme}, \dqt{gls}, \dqt{nlme}
 \pitem{lme4}: \dqt{lmerMod}, \dqt{glmerMod}
 \pitem{survival}: \dqt{survreg}, \dqt{coxph}
 \pitem{coxme}: \dqt{coxme}
 \pitem{MASS}: \dqt{polr}
 \pitem{gee, geepack}: \dqt{gee}, \dqt{geeglm}, \dqt{geese}
 \pitem{ordinal}: \dqt{clm}, \dqt{clmm}
+\pitem{rms}: \dqt{rms} and descendents such as \dqt{ols}, \dqt{lrm}, \dqt{orm}, etc.
 \end{description}
 \end{quote}
 \lsm{} support for all these models works similarly to the examples we have presented. Note that generalized linear or mixed models, and several others such as survival models, typically employ link functions such as "log" or "logit". In most cases, the LS~means displayed are on the scale of the linear predictor, and any averaging over the reference grid is performed on the linear-predictor scale; but there are exceptions. Some objects have optional arguments that can be specified in the "ref.grid" or "lsmeans" call: see "?models" for details.
@@ -760,7 +761,26 @@ summary(lsmeans(housing.clm, ~ Infl, at = list(cut = "Medium|High"),
 @
 The results are similar, but somewhat different because of the back-transformation coming before (first case) or after (second case) averaging or computing confidence limits.
 
+\subsection{Chick weights, revisited}
+Previously, we used the "ChickWeight" data to illustratie the use of "lstrends". That example made the simplifying assumption that the growth trends are linear, which is clearly questionable. To do a better job of fitting the data, consider instead the idea of fitting a logistic curve to each chick's data. The \pkg{stats} package provides the "SSlogis" function for this purpose: it is an S-shaped curve (scaled from the cdf of a logistic distribution) having three parameters "asym" (the asymptotic value at which it levels off), "xmid" (the $x$ coordinate of its inflection point), and "scal" (roughly the difference between the median and the .73rd quantile). Also, the \pkg{nlme} package's "nlme" function can fit a set of nonlinar curves such that the parameters of those curves may be modeled using a mixed-effects linear model. 
 
+Accordingly, let us fit a model where each chick has a logistic curve for which the "asym" parameter varies randomly for each chick, and for which both "asym" and "xmid" depend on the chick's diet. We chose starting values by examining the curves and making a rough judgment of the typical asymptotic value, midpoint, and scale for each diet. We need to keep firmly in mind how factors are coded; so we explicitly show that we intend to use \dqt{contr.treatment} coding, by which the first mean is estimated directly, and the remaining estimates are offsets from that. We need a set of four starting values for "asym" and "xmid", and one for "scal".
+<<>>=
+require("nlme")
+options(contrasts = c("contr.treatment", "contr.poly"))
+Chick.nlme = nlme(weight ~ SSlogis(Time, asym, xmid, scal), 
+    data = ChickWeight,
+    fixed = list(asym + xmid ~ Diet, scal ~ 1),
+    random = asym ~ 1 | Chick, 
+    start = c(200, 100, 200, 100,   10, 0, 0, 0,   7))
+Chick.nlme
+@
+Now we can use "lsmeans" to compare the parameters based on "Diet":
+<<>>=
+cld(lsmeans(Chick.nlme, ~ Diet, param = "asym"))    
+cld(lsmeans(Chick.nlme, ~ Diet, param = "xmid"))    
+@
+The result is that diet~3 has both a higher mean "asym" an a higher mean "xmid" than the other diets. This is compatible with the results of the earlier "lstrends" analysis, but grounded in terms of the parameters of the logistic curve.
 
 
 \subsection{Extending to more models}
