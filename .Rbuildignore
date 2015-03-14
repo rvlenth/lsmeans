@@ -8,7 +8,7 @@ old-lsmeans.R
 lsmeans-changes.rnw
 
 # Not ready for prime time
-nonlin-support.R
+#nonlin-support.R
 
 # New devel stuff
 test-data.R
