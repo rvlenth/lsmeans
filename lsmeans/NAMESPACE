@@ -1,7 +1,7 @@
 # Namespace for lsmeans package
 
 # Imports
-import(Matrix)
+# import(Matrix) -- NO LONGER NEEDED
 import(methods)
 import(mvtnorm)
 import(estimability)
@@ -30,16 +30,14 @@ exportPattern("*.lsmc")  #all contrast fcns
 export(
     as.glht,
     contrast,
-    ### is.estble,
     lsm,
     lsm.basis,
     lsmeans, 
-    lsmeans.character,  # because it is a generic
+    lsmeans.character,
     lsmobj,
     lsmip,
     lsm.options,
     lstrends,
-    ### nonest.basis,
     recover.data,
     ref.grid,
     regrid,
