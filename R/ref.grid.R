@@ -86,18 +86,20 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     for (nm in attr(data, "predictors")) {
         x = data[[nm]]
         
-    # Save the original levels of factors, no matter what
-    if (is.factor(x))
-        xlev[[nm]] = levels(factor(x))
-    # (applying factor drops any unused levels)
+        # Save the original levels of factors, no matter what
+        if (is.factor(x))
+            xlev[[nm]] = levels(factor(x))
+            # (applying factor drops any unused levels)
     
-    # Now go thru and find reference levels...
+        # Now go thru and find reference levels...
         # mentioned in 'at' list but not coerced
         if (!(nm %in% coerced) && !missing(at) && !is.null(at[[nm]]))
             ref.levels[[nm]] = at[[nm]]
         # factors not in 'at'
         else if (is.factor(x))
             ref.levels[[nm]] = levels(factor(x))
+        else if (is.character(x))
+            ref.levels[[nm]] = sort.unique(x)
         # matrices
         else if (is.matrix(x)) {
             # Matrices -- reduce columns thereof, but don't add to baselevs

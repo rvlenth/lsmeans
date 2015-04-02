@@ -1,9 +1,11 @@
 Changelog for 'lsmeans' package
 
 
-2.16-1
+2.16-3
     Removed unneeded import of 'Matrix' (could have done this in 2.12
         when I stopped using my own adaptation of 'pbkrtest' code)
+    Bug fix for gls, lme, nlme objects with 'weights' argument
+    Allows for character predictors in models as well as factors
     
 
 2.16

@@ -29,6 +29,8 @@ recover.data.nlme = function(object, param, ...) {
     if(missing(param))
         return("'param' argument is required for nlme objects")
     fcall = object$call
+    if (!is.null(fcall$weights))
+        fcall$weights = nlme::varWeights(object$modelStruct)
     fixed = fcall$fixed
     if (is.call(fixed))
         fixed = eval(fixed, envir = parent.frame())
