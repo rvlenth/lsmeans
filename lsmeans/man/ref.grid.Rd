@@ -41,7 +41,7 @@ Any \code{cov.reduce} specification for a covariate also named in \code{at} is i
 } %--- end of \arguments
 
 \details{The reference grid consists of combinations of independent variables over which predictions are made. Least-squares means are defined as these predictions, or marginal averages thereof.
-The grid is determined by first reconstructing the data used in fitting the model (see \code{\link{recover.data}}), or by using the \code{data.frame} provided in \code{context}. The default reference grid is determined by the observed levels of any factors, and the results of \code{cov.reduce} for numeric predictors. These may be overridden using \code{at}.
+The grid is determined by first reconstructing the data used in fitting the model (see \code{\link{recover.data}}), or by using the \code{data.frame} provided in \code{context}. The default reference grid is determined by the observed levels of any factors, the ordered unique values of character-valued predictors, and the results of \code{cov.reduce} for numeric predictors. These may be overridden using \code{at}.
 
 Ability to support a particular class of \code{object} depends on the existence of \code{recover.data} and \code{lsm.basis} methods -- see \link{extending-lsmeans} for details. The call \code{methods("recover.data")} will help identify these.
 

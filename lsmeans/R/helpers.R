@@ -268,7 +268,12 @@ lsm.basis.merMod = function(object, trms, xlev, grid, ...) {
 
 #--------------------------------------------------------------
 ### lme objects (nlme package)
-recover.data.lme = recover.data.lm
+recover.data.lme = function(object, ...) {
+    fcall = object$call
+    if (!is.null(fcall$weights))
+        fcall$weights = nlme::varWeights(object$modelStruct)
+    recover.data(fcall, delete.response(terms(object)), object$na.action, ...)
+}
 
 lsm.basis.lme = function(object, trms, xlev, grid, adjustSigma = TRUE, ...) {
     contrasts = object$contrasts
@@ -301,6 +306,8 @@ lsm.basis.lme = function(object, trms, xlev, grid, adjustSigma = TRUE, ...) {
 ### gls objects (nlme package)
 recover.data.gls = function(object, ...) {
     fcall = object$call
+    if (!is.null(fcall$weights))
+        fcall$weights = nlme::varWeights(object$modelStruct)
     recover.data(fcall, delete.response(nlme::getCovariateFormula(object)), 
                  object$na.action, ...)
 }
