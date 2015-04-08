@@ -179,6 +179,9 @@ Most linear models supported by \lsm{} have straightforward structure: Regressio
 
 In addition, you may want to apply some form of special post-processing after the reference grid is constructed. To provide for this, give the name of your function to post-process the object in "misc$postGridHook". Again, \dqt{clm} objects (as well as \dqt{polr} in the \pkg{MASS} package) serve as an example. They allow a "mode" specification that in twio cases, calls for post-processing. The \dqt{cum.prob} mode uses the "regrid" function to transform the linear predictor to the cumulative-probability scale. And the \dqt{prob} mode performs this, as well as applying the contrasts necessary to difference the cumulative probabilities into the class probabilities.
 
+\section{Exported methods}
+For package developers' convenience, \pkg{lsmeans} exports some of its S3 methods for "recover.data" and/or "lsm.basis"---use \code{methods(\dqt{recover.data})} and \code{methods(\dqt{lsm.basis})} to discover which ones. It may be that all you need is to invoke one of those methods and perhaps make some small changes---especially if your model-fitting algorithm makes heavy use of an existing model type supported by \pkg{lsmeans}. Contact me if you need \pkg{lsmeans} to export some additional methods for your use.
+
 
 \section{Conclusions}
 It is relatively simple to write appropriate methods that work with \lsm{} for model objects it does not support. I hope this vignette is helpful for understanding how. Furthermore, if you are the developer of a package that fits linear models, I encourage you to include "recover.data" and "lsm.basis" methods for those classes of objects, and to remember to export them in your "NAMESPACE" file as follows:
