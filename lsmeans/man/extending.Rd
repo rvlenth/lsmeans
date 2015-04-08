@@ -24,7 +24,7 @@ lsm.basis(object, trms, xlev, grid, ...)
   \item{object}{
 An object returned from a model-fitting function.}
   \item{trms}{The \code{\link{terms}} component of \code{object}}
-  \item{xlev}{Named list of levels of factors in the model frame. This should \emph{not} include levels of factors created in the model itself, e.g., by including a \code{factor} call in the mdoel formula.}
+  \item{xlev}{Named list of levels of factors in the model frame. This should \emph{not} include levels of factors created in the model itself, e.g., by including a \code{factor} call in the model formula.}
   \item{grid}{A \code{data.frame} containing predictor values at which predictions are needed.}
   \item{na.action}{Integer vector of indices of observations to ignore; or \code{NULL} if none}
   \item{data}{Data frame. Usually, this is \code{NULL}. However, if non-null, this is used in place of the reconstructed dataset. It must have all of the predictors used in the model, and any factor levels must match those used in fitting the model.}
@@ -34,7 +34,7 @@ An object returned from a model-fitting function.}
 \details{
 To create a reference grid, the \code{ref.grid} function needs to reconstruct the data used in fitting the model, and then obtain a matrix of linear functions of the regression coefficients for a given grid of predictor values. These tasks are performed by calls to \code{recover.data} and \code{lsm.basis} respectively. 
 
-To extend \pkg{lsmeans}'s support to additional model types, one need only write S3 methods for these two functions. The existing methods serve as helpful guidance for writing new ones.  Most of the work for \code{recover.data} can be done by its method for class \code{"call"}, providing the \code{terms} component and \code{na.action} data as additional arguments. Writing an \code{lsm.basis} method is more involved, but the existing methods (e.g., \code{lsmeans:::lsm.basis.lm}) can serve as models. See the ``Value'' section below for details on what it needs to return.
+To extend \pkg{lsmeans}'s support to additional model types, one need only write S3 methods for these two functions. The existing methods serve as helpful guidance for writing new ones.  Most of the work for \code{recover.data} can be done by its method for class \code{"call"}, providing the \code{terms} component and \code{na.action} data as additional arguments. Writing an \code{lsm.basis} method is more involved, but the existing methods (e.g., \code{lsmeans:::lsm.basis.lm}) can serve as models. See the ``Value'' section below for details on what it needs to return. Also, certain \code{recover.data} and \code{lsm.basis} methods are exported from \pkg{lsmeans}, so if your object is based on another model-fitting object, it may be that all that is needed is to call one of these exported methods and perhaps make modifications to the results. Contact the developer if you need others of these exported.
 
 If the model has a multivariate response, \code{bhat} needs to be \dQuote{flattened} into a single vector, and \code{X} and \code{V} must be constructed consistently. 
 

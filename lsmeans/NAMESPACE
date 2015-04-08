@@ -42,8 +42,24 @@ export(
     ref.grid,
     regrid,
     test
-)    
+)
 
+# S3 methods for recover.data and lsm.basis that are needed by other packages
+S3method(recover.data, call)
+
+S3method(recover.data, aovlist)
+S3method(lsm.basis, aovlist)
+
+S3method(recover.data, lm)
+S3method(lsm.basis, lm)
+
+S3method(recover.data, lme)
+S3method(lsm.basis, lme)
+
+S3method(recover.data, merMod)
+S3method(lsm.basis, merMod)
+
+S3method(lsm.basis, mlm) # recover.data for mlm uses lm
 
 # S3 methods - 
 # For clarity, I'm showing them all 
@@ -82,8 +98,6 @@ S3method(predict, ref.grid)
 S3method(print, ref.grid)
 S3method(print, summary.ref.grid)
 S3method(print, lsm.list)
-
-S3method(recover.data, call)
 
 S3method(str, ref.grid)
 S3method(str, lsm.list)
