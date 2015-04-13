@@ -84,6 +84,11 @@ Tests and confidence intervals are asymptotic.}
 %\item{gamm}{Not supported at this time.}
 %}}% mgcv
 
+\section{\pkg{MCMCglmm} package}{
+\describe{
+\item{MCMCglmm}{Currently, I have found no way to reconstruct the data based on information in the object; thus, you \emph{must} provide the dataset via the \code{data} argument. The usual \code{summary}, \code{test}, etc. methods provide frequentist analyses of the results based on the posterior means and covariances. However, an \code{as.mcmc} method is provided that creates an \code{mcmc} object that can be summarized or plotted using the \pkg{coda} package. It provides a posterior sample of lsmeans for the given reference grid, based on the posterior sample of the fixed effects from the \code{MCMCglmm} object.}
+}}% MCMCglmm
+
 
 \section{\pkg{nlme} package}{
 \describe{

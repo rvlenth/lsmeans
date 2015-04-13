@@ -31,6 +31,7 @@ Objects of class \code{"lsmobj"} are created by calling \code{\link{lsmeans}} or
     \item{\code{V}:}{Object of class \code{"matrix"}, the symmetric variance-covariance matrix of \code{bhat} }
     \item{\code{dffun, dfargs:}}{Objects of class \code{"function"} and \code{"list"} respectively. \code{dffun(k,dfargs)} should return the degrees of freedom for the linear function \code{sum(k*bhat)}, or \code{NA} if unavailable}
     \item{\code{misc}:}{A \code{list} containing additional information used by methods. These include at least the following: \code{estName} (the label for the estimates of linear functions), and the default values of \code{infer}, \code{level}, and \code{adjust} to be used in the \code{\link{summary}} method. Elements in this slot may be modified if desired using the \code{\link{update}} method.}
+    \item{\code{post.beta}:}{A \code{matrix} containing a sample from the posterior distribution of the regression coefficients; or a 1 x 1 matrix of \code{NA} if this is not available. When it is non-trivial, the \code{as.mcmc} method returns \code{post.beta} times \code{t(linfct)}, which is a sample from the posterior distribution of the LS means.}
 }} % end of describe and slots section
 
 \section{Extends}{

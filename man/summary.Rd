@@ -9,6 +9,7 @@
 \alias{plot.summary.ref.grid}
 \alias{vcov.ref.grid}
 \alias{regrid}
+\alias{as.mcmc.ref.grid}
 
 
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -37,6 +38,8 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 \method{vcov}{ref.grid}(object, ...)
 
 regrid (object, transform = TRUE)
+
+\method{as.mcmc}{ref.grid}(x, ...)
 }
 
 \arguments{
@@ -65,7 +68,7 @@ If non-missing a constant number of degrees of freedom to use in constructing co
   \item{delta}{Numeric value. If zero, ordinary tests of significance are performed. If positive, this specifies a threshold for testing equivalence (using the TOST or two-one-sided-test method), non-inferiority, or non-superiority, depending on \code{side}. See Details for how the test statistics are defined.}
   \item{side}{Numeric or character value specifying whether the test is left-tailed (\code{-1}, \code{"-"}, code{"<"}, \code{"left"}, or \code{"nonsuperiority"}); right-tailed (\code{1}, \code{"+"}, \code{">"}, \code{"right"}, or \code{"noninferiority"}); or two-sided (\code{0}, \code{2}, \code{"!="}, \code{"two-sided"}, \code{"both"}, \code{"equivalence"}, or \code{"="}).}
   \item{x}{
-The object to be printed or plotted.
+The object to be printed, plotted, or converted.
 }
   \item{y}{This argument is ignored.}
   \item{horizontal}{Determines orientation of plotted confidence intervals.}
@@ -121,10 +124,13 @@ In plots with \code{comparisons = TRUE}, the resulting arrows are only approxima
 
 \bold{Re-gridding:}
 The \code{regrid} function reparameterizes an existing \code{ref.grid} so that its \code{linfct} slot is the identity matrix and its \code{bhat} slot consists of the estimates at the grid points. If \code{transform} is \code{TRUE}, the inverse transform is applied to the estimates. Outwardly, the \code{summary} after applying \code{regrid} is identical to what it was before (using \samp{type="response"} if \code{transform} is \code{TRUE}). But subsequent contrasts will be conducted on the transformed scale -- which is the reason this function exists. See the example below. \bold{Warning:} in cases where degrees of freedom depends on the linear function being estimated, \code{regrid} will probably cause fatal errors when \code{summary} is called.
+
+\bold{MCMC samplers:}
+When the object's \code{post.beta} slot is non-trivial, \code{as.mcmc} will return an \code{\link[coda]{mcmc}} object that can be summarized or plotted using methods in the \pkg{coda} package. Specifically, \code{post.beta} is transformed by post-multiplying by \code{t(linfct)}, creating a sample from the posterior distribution of LS means. The user may specify any alterations to \code{mcmc}'s \code{start}, \code{end}, or \code{thin} arguments vuia \code{...}.
 }
 
 \value{
-The \code{summary} method for \code{"ref.grid"} objects returns an object of class \code{"summary.ref.grid"}, which extends \code{"data.frame"}. \code{plot} returns an object of class \code{"trellis"}. \code{vcov} returns the covariance matrix of the object's \code{linfct} slot.
+The \code{summary} method for \code{"ref.grid"} objects returns an object of class \code{"summary.ref.grid"}, which extends \code{"data.frame"}. \code{plot} returns an object of class \code{"trellis"}. \code{vcov} returns the covariance matrix of the product of the object's \code{linfct} and \code{bhat} slots. \code{as.mcmc} returns a \pkg{coda} \code{mcmc} object.
 }
 %%\references{}
 \author{

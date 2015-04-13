@@ -15,7 +15,8 @@
     result
 }
 
-setMethod("show", "lsmobj", function(object) print(summary(object)) )
+setMethod("show", "lsmobj", 
+          function(object) print(summary(object)) )
 
 
 
@@ -225,6 +226,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     RG@misc$methDesc = "lsmeans"
     RG@roles$predictors = names(levs)
     result = new("lsmobj", RG, linfct = linfct, levels = levs, grid = combs)
+    
     
     if(!is.null(options)) {
         options$object = result
@@ -587,7 +589,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
 }
 
 # Construct a new lsmobj with given arguments
-lsmobj = function(bhat, V, levels, linfct, df = NA, ...) {
+lsmobj = function(bhat, V, levels, linfct, df = NA, post.beta = matrix(NA), ...) {
     if ((nrow(V) != ncol(V)) || (nrow(V) != ncol(linfct)) || (length(bhat) != ncol(linfct)))
         stop("bhat, V, and linfct are incompatible")
     if (!is.list(levels))
@@ -612,6 +614,7 @@ lsmobj = function(bhat, V, levels, linfct, df = NA, ...) {
     result = new("lsmobj", model.info=model.info, roles=roles, grid=grid,
                  levels = levels, matlevs=list(),
                  linfct=linfct, bhat=bhat, nbasis=all.estble, V=V,
-                 dffun=dffun, dfargs=dfargs, misc=misc)
+                 dffun=dffun, dfargs=dfargs, misc=misc, post.beta=post.beta)
+    
     update(result, ..., silent=TRUE)
 }

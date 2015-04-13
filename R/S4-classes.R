@@ -14,7 +14,8 @@ setClass("ref.grid", representation (
     V = "matrix",
     dffun = "function",
     dfargs = "list",
-    misc = "list"   
+    misc = "list",
+    post.beta = "matrix"
 ))
 # Note: misc will hold various extra params,
 # including at least the following req'd by the summary method
@@ -29,3 +30,4 @@ setClass("ref.grid", representation (
 # In general its 'grid' will correspond to some set of 
 # linear functions of grid points
 setClass("lsmobj", contains="ref.grid")
+
