@@ -1,13 +1,18 @@
 Changelog for 'lsmeans' package
 
 
-2.16-4
+2.16-5
     Removed unneeded import of 'Matrix' (could have done this in 2.12
         when I stopped using my own adaptation of 'pbkrtest' code)
     Bug fix for gls, lme, nlme objects with 'weights' argument
     Allows for character predictors in models as well as factors
     Exported selected S3 methods for lsm.basis and recover.data
-        for use by other packages.
+        for use by other packages
+    Added 'post.beta' slot in 'ref.grid' and 'lsmobj' classes;
+        if not NA, holds sample from posterior of fixed effects.
+        Also added 'as.mcmc' function to return posterior sample 
+        of lsmeans when 'post.beta' has data
+    Added support for 'MCMCglmm' objects
     
 
 2.16

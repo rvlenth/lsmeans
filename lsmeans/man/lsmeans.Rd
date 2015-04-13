@@ -29,7 +29,7 @@ and optionally comparisons or contrasts among them.
 
 lstrends(model, specs, var, delta.var = 0.01 * rng, data, ...)
 
-lsmobj(bhat, V, levels, linfct, df = NA, ...)
+lsmobj(bhat, V, levels, linfct, df = NA, post.beta = matrix(NA), ...)
 }
 \arguments{
 \item{object}{
@@ -83,6 +83,7 @@ The value of \emph{h} to use in forming the difference quotient \emph{(f(x+h) - 
 \item{levels}{Named list or vector. Levels of factor(s) that define the estimates defined by \code{linfct}. If not a list, we assume one factor named \code{"level"}}
 \item{linfct}{Matrix. Linear functions of \code{bhat} for each combination of \code{levels}}
 \item{df}{Numeric or function with arguments \code{x,dfargs)}. If a number, that is used for the degrees of freedom. If a function, it should return the degrees of freedom for \code{sum(x*bhat)}; if additional parameters are needed, include them in \code{\dots} as \code{dfargs} (not abbreviated).}
+\item{post.beta}{Matrix whose columns comprise a sample from the posterior distribution of the regression coefficients (so that typically, the column averages will be \code{bhat}). A 1 x 1 matrix of \code{NA} indicates that such a sample is unavailable.}
 \item{\dots}{Additional arguments passed to other methods or to \code{\link{ref.grid}}.}
 }
 

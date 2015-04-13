@@ -1,15 +1,15 @@
 Package: lsmeans
 Type: Package
 Title: Least-Squares Means
-Version: 2.16-4
-Date: 2015-04-07
+Version: 2.16-5
+Date: 2015-04-13
 Encoding: latin1
 Author: Russell V. Lenth [aut], Maxime Hervé [ctb]
 Maintainer: Russ Lenth <russell-lenth@uiowa.edu>
 Depends: estimability, methods, R (>= 3.0)
-Suggests: pbkrtest (>= 0.4-1), lattice, multcompView, car, mediation, ordinal
+Suggests: car, lattice, mediation, multcompView, ordinal, pbkrtest (>= 0.4-1)
 Enhances: afex, coxme, gee, geepack, glmmADMB, lme4, MASS, nlme, survival
-Imports: multcomp, plyr, mvtnorm
+Imports: coda, multcomp, plyr, mvtnorm
 Additional_repositories: http://glmmadmb.r-forge.r-project.org/repos
 LazyData: yes
 ByteCompile: yes

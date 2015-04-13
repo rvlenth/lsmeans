@@ -24,6 +24,10 @@ if (requireNamespace("plyr", quietly = TRUE)) {
     importFrom(plyr, alply)
 }
 
+if (requireNamespace("coda", quietly = TRUE)) {
+    importFrom(coda, as.mcmc)
+}
+
 
 # Visible exports
 exportPattern("*.lsmc")  #all contrast fcns
@@ -66,6 +70,8 @@ S3method(lsm.basis, mlm) # recover.data for mlm uses lm
 # but commenting out the ones used only interally
 
 S3method(as.glht, ref.grid)
+
+S3method(as.mcmc, ref.grid)
 
 S3method(confint, ref.grid)
 S3method(confint, lsm.list)
@@ -112,6 +118,8 @@ S3method(test, lsm.list)
 S3method(update, ref.grid)
 
 S3method(vcov, ref.grid)
+
+
 
 # interim support for old lsmeans function
 # removed at version 2.14
