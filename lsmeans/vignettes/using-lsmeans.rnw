@@ -788,6 +788,25 @@ The functions "ref.grid" and "lsmeans" work by first reconstructing the dataset 
 
 Developers of packages that fit models are encouraged to include support for \lsm{} by incorporating (and exporting) "recover.data" and "lsm.basis" methods for their model classes. 
 
+\subsection{Bayesian models}
+Certain Bayesian models are now supported by \lsm{}. For illustration, consider a two-factor Poisson regression example given in the \pkg{MCMCpack} package:
+<<>>=
+library("MCMCpack")
+counts <- c(18, 17, 15,   20, 10, 20,   25, 13, 12)
+outcome <- gl(3, 1, 9)
+treatment <- gl(3, 3)
+posterior <- MCMCpoisson(counts ~ outcome + treatment, mcmc = 1000)
+@
+The result is an "mcmc" object (defined in the \pkg{coda} package), but it has an added \dqt{call} attribute that enables "lsmeans" to do its work. Here are results for treatments, averaged over outcomes:
+<<>>=
+( post.lsm <- lsmeans(posterior, "treatment") )
+@
+This is a frequentist summary, based on the mean and covariance of the regression parameters in the "posterior" sample. But \lsm{} provides an "as.mcmc" method to obtain a sample from the posterior distribution of the LS~means (that is, the original posterior sample iof regression coefficients, transformed by the appropriate linear functions.)
+<<>>=
+library("coda")
+summary(as.mcmc(post.lsm))
+@
+Since "as.mcmc" produces an "mcmc" object, any of the other available methods may be used with it.
 
 
 

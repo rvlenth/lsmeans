@@ -89,6 +89,11 @@ Tests and confidence intervals are asymptotic.}
 \item{MCMCglmm}{Currently, I have found no way to reconstruct the data based on information in the object; thus, you \emph{must} provide the dataset via the \code{data} argument. The usual \code{summary}, \code{test}, etc. methods provide frequentist analyses of the results based on the posterior means and covariances. However, an \code{as.mcmc} method is provided that creates an \code{mcmc} object that can be summarized or plotted using the \pkg{coda} package. It provides a posterior sample of lsmeans for the given reference grid, based on the posterior sample of the fixed effects from the \code{MCMCglmm} object.}
 }}% MCMCglmm
 
+\section{\pkg{MCMCpack} package (and perhaps others)}{
+\describe{
+\item{mcmc}{Certain linear-model or mixed-model objects are of class \code{mcmc}, and contain a sample from the posterior distribution of fixed-effect coefficients. In some cases (e.g., results of \code{MCMCregress} and \code{MCMCpoisson}), the object may include a \code{"call"} attribute that \code{lsmeans} can use to reconstruct the data and obtain a basis for the least-squares means. If not, a \code{formula} and \code{data} argument are provided that may help produce the right results. As for \code{MCMCglmm} objects, the summaries and such are frequentist, but the \code{as.mcmc} method provides a posterior sample of the desired quantities.}
+}}% MCMCpack
+
 
 \section{\pkg{nlme} package}{
 \describe{
