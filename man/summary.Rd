@@ -126,7 +126,7 @@ In plots with \code{comparisons = TRUE}, the resulting arrows are only approxima
 The \code{regrid} function reparameterizes an existing \code{ref.grid} so that its \code{linfct} slot is the identity matrix and its \code{bhat} slot consists of the estimates at the grid points. If \code{transform} is \code{TRUE}, the inverse transform is applied to the estimates. Outwardly, the \code{summary} after applying \code{regrid} is identical to what it was before (using \samp{type="response"} if \code{transform} is \code{TRUE}). But subsequent contrasts will be conducted on the transformed scale -- which is the reason this function exists. See the example below. \bold{Warning:} in cases where degrees of freedom depends on the linear function being estimated, \code{regrid} will probably cause fatal errors when \code{summary} is called.
 
 \bold{MCMC samplers:}
-When the object's \code{post.beta} slot is non-trivial, \code{as.mcmc} will return an \code{\link[coda]{mcmc}} object that can be summarized or plotted using methods in the \pkg{coda} package. Specifically, \code{post.beta} is transformed by post-multiplying by \code{t(linfct)}, creating a sample from the posterior distribution of LS means. The user may specify any alterations to \code{mcmc}'s \code{start}, \code{end}, or \code{thin} arguments vuia \code{...}.
+When the object's \code{post.beta} slot is non-trivial, \code{as.mcmc} will return an \code{\link[coda]{mcmc}} object that can be summarized or plotted using methods in the \pkg{coda} package. Specifically, \code{post.beta} is transformed by post-multiplying by \code{t(linfct)}, creating a sample from the posterior distribution of LS means.
 }
 
 \value{

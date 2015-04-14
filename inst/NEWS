@@ -12,7 +12,8 @@ Changelog for 'lsmeans' package
         if not NA, holds sample from posterior of fixed effects.
         Also added 'as.mcmc' function to return posterior sample 
         of lsmeans when 'post.beta' has data
-    Added support for 'MCMCglmm' objects
+    Added support for 'MCMCglmm' and some 'mcmc' objects produced
+        by the 'MCMCpack' package
     
 
 2.16

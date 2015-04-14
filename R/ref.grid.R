@@ -16,7 +16,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
             stop("Possible remedy: Supply the data used in the 'data' argument")
     }
     else # attach needed attributes to given data
-        data = recover.data(object, data = data)
+        data = recover.data(object, data = data, ...)
     
     if(is.character(data)) # 'data' is in fact an error message
         stop(data)
