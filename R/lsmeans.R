@@ -520,7 +520,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
     rng = diff(range(x))
     if (delta.var == 0)  stop("Provide a nonzero value of 'delta.var'")
     
-    RG = ref.grid(model, ...)
+    RG = ref.grid(model, data = data, ...)
     grid = RG@grid
     if (!is.null(mr <- RG@roles$multresp)) {
         # use the grid value only for the 1st mult resp (no dupes)
