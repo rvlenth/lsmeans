@@ -2,12 +2,17 @@
 
 # Method to create a coda 'mcmc' object from a ref.grid
 # (dots not supported, unfortunately)
-as.mcmc.ref.grid = function(x, ...) {
+as.mcmc.ref.grid = function(x, names = TRUE, ...) {
     object = x
     if (is.na(x@post.beta[1]))
         stop("No posterior sample -- can't make an 'mcmc' object")
     mat = x@post.beta %*% t(x@linfct)
     nm = setdiff(names(x@grid), c(".wgt.",".offset."))
+    if (any(names)) {
+        names = rep(names, length(nm))
+        for (i in seq_along(nm))
+            if(names[i]) x@grid[nm[i]] = paste(nm[i], x@grid[[nm[i]]])
+    }
     dimnames(mat)[[2]] = do.call(paste, c(x@grid[, nm, drop = FALSE], sep=", "))
     coda::mcmc(mat, ...)
 }

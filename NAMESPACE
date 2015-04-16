@@ -26,6 +26,8 @@ if (requireNamespace("plyr", quietly = TRUE)) {
 
 if (requireNamespace("coda", quietly = TRUE)) {
     importFrom(coda, as.mcmc)
+    export(as.mcmc)
+    S3method(as.mcmc, ref.grid)
 }
 
 
@@ -70,8 +72,6 @@ S3method(lsm.basis, mlm) # recover.data for mlm uses lm
 # but commenting out the ones used only interally
 
 S3method(as.glht, ref.grid)
-
-S3method(as.mcmc, ref.grid)
 
 S3method(confint, ref.grid)
 S3method(confint, lsm.list)
