@@ -9,6 +9,7 @@
 \alias{plot.summary.ref.grid}
 \alias{vcov.ref.grid}
 \alias{regrid}
+\alias{as.mcmc}
 \alias{as.mcmc.ref.grid}
 
 
@@ -39,7 +40,7 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 
 regrid (object, transform = TRUE)
 
-\method{as.mcmc}{ref.grid}(x, ...)
+\method{as.mcmc}{ref.grid}(x, names = TRUE, ...)
 }
 
 \arguments{
@@ -76,6 +77,7 @@ The object to be printed, plotted, or converted.
   \item{comparisons}{If \code{TRUE}, \dQuote{comparison arrows} are added to the plot, in such a way that the degree to which arrows overlap reflects as much as possible the significance of the comparison of the two estimates.}
   \item{alpha, int.adjust}{The \code{alpha} argument to use in constructing comparison arrows. \code{int.adjust} may be used to set the \code{adjust} argument for the confidence intervals (use \code{adjust} to set the adjust method for the comparison arrows).}
   \item{transform}{Logical value; if true, the inverse transformation is applied to the estimates in the grid}
+  \item{names}{Logical scalar or vector specifying whether variable names are appended to levels in the column labels for the \code{as.mcmc} result -- e.g., column names of \code{treat A} and \code{treat B} versus  just \code{A} and \code{B}. When there is more than one variable involved, the elements of \code{names} are used cyclically.}
   \item{\dots, digits, quote, right, xlab, ylab, layout}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, \code{\link{update}}, or \code{\link{dotplot}} as appropriate. If not specified, appropriate defaults are used. For example, the default \code{layout} is one column of horizontal panels or one row of vertical panels.}
 }
 \details{

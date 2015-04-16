@@ -1,7 +1,7 @@
 Changelog for 'lsmeans' package
 
 
-2.16-5
+2.17
     Removed unneeded import of 'Matrix' (could have done this in 2.12
         when I stopped using my own adaptation of 'pbkrtest' code)
     Bug fix for gls, lme, nlme objects with 'weights' argument
