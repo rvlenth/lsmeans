@@ -81,6 +81,11 @@
 # 2.14: added corrmat arg, dunnettx & mvt adjustments
 # NOTE: corrmat is NULL unless adjust == "mvt"
 .adj.p.value = function(t, df, adjust, fam.info, tail, corrmat) {
+    fam.size = fam.info[1]
+    n.contr = fam.info[2]
+    if (n.contr == 1) # Force no adjustment when just one test
+        adjust = "none"
+    
     # do a pmatch of the adjust method, case insensitive
     adj.meths = c("sidak", "tukey", "scheffe", "dunnettx", "mvt", p.adjust.methods)
     k = pmatch(tolower(adjust), adj.meths)
@@ -97,8 +102,6 @@
     
     # if estType is "prediction", use #contrasts + 1 as family size
     # (produces right Scheffe CV; Tukey ones are a bit strange)
-    fam.size = fam.info[1]
-    n.contr = fam.info[2]
     scheffe.dim = ifelse(fam.info[3] == 1, fam.size, fam.size - 1)
     abst = abs(t)
     if (tail == 0)
@@ -144,6 +147,12 @@
 # NOTE: corrmat is NULL unless adjust == "mvt"
 .adj.critval = function(level, df, adjust, fam.info, tail, corrmat) {
     mesg = NULL
+    
+    fam.size = fam.info[1]
+    n.contr = fam.info[2]
+    if (n.contr == 1) # Force no adjustment when just one interval
+        adjust = "none"
+    
     adj.meths = c("sidak", "tukey", "scheffe", "dunnettx", "mvt", "bonferroni", "none")
     k = pmatch(tolower(adjust), adj.meths)
     if(is.na(k)) {
@@ -161,8 +170,6 @@
     # pseudo-asymptotic results when df is NA
     df[is.na(df)] = Inf
     
-    fam.size = fam.info[1]
-    n.contr = fam.info[2]
     scheffe.dim = ifelse(fam.info[3] == 1, fam.size, fam.size - 1)
     
     chk.adj = match(adjust, c("none", "tukey", "scheffe"), nomatch = 99)
@@ -271,14 +278,22 @@
 
 # Uses linear interpolation to get quantile
 .qdunnx = function(p, k, df, ...) {
+     if (k < 1.005)
+         return(qt(1 - .5*(1 - p), df))
     xtuk = qtukey(p, (1 + sqrt(1 + 8*k))/2, df) / sqrt(2)
     xsid = sqrt(qf(p^(1/k), 1, df))
     fcn = function(x, d) 
         .pdunnx(x, k, d, ...) - p
     apply(cbind(xtuk, xsid, df), 1, function(r) {
+        if (abs(diff(r[1:2])) < .0005)
+            return (r[1])
         x = try(uniroot(fcn, r[1:2], tol = .0005, d = r[3]), silent = TRUE)
-        if (inherits(x, "try-error"))     NA
-        else                              x$root
+        if (inherits(x, "try-error")) {
+            warning("Root-finding failed; using qtukey approximation for Dunnett quantile")
+            return(xtuk)
+        }
+        else
+            x$root
     })
 }
 
