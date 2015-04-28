@@ -83,3 +83,25 @@ lsm.basis.mcmc = function(object, trms, xlev, grid, ...) {
          dffun = function(k, dfargs) NA, dfargs = list(), 
          misc = misc, post.beta = samp)
 }
+
+
+### support for CARBayes package - currently MUST supply data and have
+### default contrasts matching what was used in fitting the mdoel
+recover.data.carbayes = function(object, data, ...) {
+    cl = call("carbayes.proxy", formula = object$formula, data = quote(data))
+    trms = delete.response(terms(eval(object$formula, parent.frame())))
+    recover.data(cl, trms, NULL, data, ...)
+}
+
+lsm.basis.carbayes = function(object, trms, xlev, grid, ...) {
+    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+    X = model.matrix(trms, m, contrasts.arg = NULL)
+    samp = as.matrix(object$samples$beta)
+    bhat = apply(samp, 2, mean)
+    V = cov(samp)
+    misc = list()
+    list(X = X, bhat = bhat, nbasis = matrix(NA), V = V, 
+         dffun = function(k, dfargs) NA, dfargs = list(), 
+         misc = misc, post.beta = samp)
+}
+
