@@ -27,7 +27,7 @@ cld.ref.grid = function(object, details=FALSE, sort=TRUE,
     if (sort) {
         args = list()
         for (nm in by) args[[nm]] = lsmtbl[[nm]]
-        args$.lsm. = lsmtbl[[object@misc$estName]]
+        args$.lsm. = lsmtbl[[attr(lsmtbl, "estName")]]
         ord = do.call("order", args)
         lsmtbl = lsmtbl[ord, ]
         object@grid = object@grid[ord, , drop=FALSE]
