@@ -104,7 +104,7 @@ The function \code{lsmobj} may be used to construct an object just like one retu
 An object of class \code{\link[=lsmobj-class]{lsmobj}} -- except when \code{specs} is a \code{list} or a \code{formula} having a left-hand side, a \code{list} of \code{slmobj} objects. A number of methods are provided for further analysis, including \code{\link[lsmeans]{summary}}, \code{\link[lsmeans]{confint}}, \code{\link[lsmeans]{test}}, \code{\link[lsmeans]{contrast}}, \code{\link[lsmeans]{pairs}}, and \code{\link[lsmeans]{cld}}.
 }
 
-\note{\code{lsmeans} and its relatives can produce fatal errors or incorrect results with models containing splines (e.g., \code{\link{ns}}) because the required information to reconstruct their basis is not always available. A model with \code{\link{poly}} involving two or more predictors will almost always produce misleading results without any warning; but \code{poly(..., raw = TRUE)} will work correctly.}
+\note{\code{lsmeans} and its relatives can produce fatal errors or incorrect results with models containing splines (e.g., \code{\link{ns}}) and other smoothers because the required information to reconstruct their basis is not always available. A model with \code{\link{poly}} involving two or more predictors will almost always produce misleading results without any warning; but \code{poly(..., raw = TRUE)} will work correctly.}
 
 \note{For a \code{ref.grid} or \code{lsmobj} object created in \pkg{lsmeans} version 2.10 or earlier, the information needed by the \code{weights} argument is not present; so a message is displayed and averaging is done using \code{fac.reduce}.}
 
