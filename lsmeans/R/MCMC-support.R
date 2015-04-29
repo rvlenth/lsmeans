@@ -95,7 +95,7 @@ recover.data.carbayes = function(object, data, ...) {
 
 lsm.basis.carbayes = function(object, trms, xlev, grid, ...) {
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
-    X = model.matrix(trms, m, contrasts.arg = NULL)
+    X = model.matrix(trms, m, contrasts.arg = attr(object$X, "contrasts"))
     samp = as.matrix(object$samples$beta)
     bhat = apply(samp, 2, mean)
     V = cov(samp)

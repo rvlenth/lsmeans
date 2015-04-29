@@ -29,7 +29,7 @@ Additional models can be supported by writing appropriate \code{recover.data} an
 
 \section{\pkg{CARBayes} package}{
 \describe{
-\item{carbayes}{The user \emph{must} supply (via the \code{data} argument) the dataset used in fitting the model. In addition, the \code{contrasts} specifications are not recoverable from the object, so the system default must match what was actually used in fitting the model. As for other MCMC-based objects, the summaries and such are frequentist, but the \code{as.mcmc} method provides a posterior sample of the desired quantities.}
+\item{carbayes}{The user \emph{must} supply (via the \code{data} argument) the dataset used in fitting the model. As with other MCMC-based objects, the summaries and such are frequentist, but the \code{as.mcmc} method provides a posterior sample of the desired quantities.}
 }}% CARBayes
 
 
