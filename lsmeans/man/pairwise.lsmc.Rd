@@ -9,6 +9,8 @@
 \alias{del.eff.lsmc}
 \alias{tukey.lsmc}
 \alias{dunnett.lsmc}
+\alias{consec.lsmc}
+\alias{mean.chg.lsmc}
 
 \title{
 Contrast families
@@ -29,6 +31,9 @@ trt.vs.ctrl1.lsmc(levs, ...)
 trt.vs.ctrlk.lsmc(levs, ...)
 dunnett.lsmc(levs, ref = 1)
 
+consec.lsmc(levs, reverse = FALSE, ...)
+mean.chg.lsmc(levs, reverse = FALSE, ...)
+
 eff.lsmc(levs, ...)
 del.eff.lsmc(levs, ...)
 }
@@ -37,7 +42,7 @@ del.eff.lsmc(levs, ...)
   \item{levs}{Vector of factor levels}
   \item{\dots}{Additional arguments, ignored but needed to make these functions interchangeable}
   \item{max.degree}{The maximum degree of the polynomial contrasts in \code{poly.lsmc}}
-  \item{reverse}{Logical value to select pairwise (if \code{TRUE}) or reverse-pairwise (if \code{FALSE}) comparisons.}
+  \item{reverse}{Logical value to determine the direction of comparisons, e.g., pairwise (if \code{TRUE}) or reverse-pairwise (if \code{FALSE}) comparisons.}
   \item{ref}{Reference level (or control group) in \code{trt.vs.ctrl.lsmc}}
 }
 
@@ -50,6 +55,8 @@ Each contrast family has a default multiple-testing adjustment as noted below. T
 
 \code{trt.vs.ctrl.lsmc} and its relatives generate contrasts for comparing one level (or the average over specified levels) with each of the other levels. The argument \code{ref} should be the \emph{index}(es) (not the labels) of the reference level(s). \code{trt.vs.ctrl1.lsmc} is the same as \code{trt.vs.ctrl} with a reference value of \code{1}, and \code{trt.vs.ctrlk.lsmc} is the same as \code{trt.vs.ctrl} with a reference value of \code{length(levs)}. \code{dunnett.lsmc} is the same as \code{trt.vs.ctrl}.
 The default multiplicity adjustment method is \code{"dunnettx"}, a close approximation to the Dunnett adjustment.
+
+\code{consec.lsmc} and \code{mean.chg.lsmc} are useful for contrasting treatments that occur in sequence. For a factor with levels A, B, C, D, E, \code{consec.lsmc} generates the comparisons B-A, C-B, and D-C, while \code{mean.chg.lsmc} generates the contrasts (B+C+D)/3 - A, (C+D)/2 - (A+B)/2, and D - (A+B+C)/3.  With \code{reverse = TRUE}, these differences go in the opposite direction.
 
 \code{eff.lsmc} and \code{del.eff.lsmc} generate contrasts that compare each level with the average over all levels (in \code{eff.lsmc}) or over all other levels (in \code{del.eff.lsmc}). These differ only in how they are scaled. For a set of \eqn{k} lsmeans, \code{del.eff.lsmc} gives weight \eqn{1} to one lsmean and weight \eqn{-1/(k-1)} to the others, while \code{eff.lsmc} gives weights \eqn{(k-1)/k} and \eqn{-1/k} respectively, as in subtracting the overall lsmean from each lsmean.
 The default multiplicity adjustment method is \code{"fdr"}. This is a Bonferroni-based method and is slightly conservative; see \code{\link{p.adjust}}

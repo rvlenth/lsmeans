@@ -88,6 +88,8 @@ lsm.basis.mcmc = function(object, trms, xlev, grid, ...) {
 ### support for CARBayes package - currently MUST supply data and have
 ### default contrasts matching what was used in fitting the mdoel
 recover.data.carbayes = function(object, data, ...) {
+    if(is.null(data)) # Try to recover data from parent frame
+        data = model.frame(object$formula, data = parent.frame())
     cl = call("carbayes.proxy", formula = object$formula, data = quote(data))
     trms = delete.response(terms(eval(object$formula, parent.frame())))
     recover.data(cl, trms, NULL, data, ...)
