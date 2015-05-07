@@ -148,3 +148,45 @@ del.eff.lsmc = function(levs, ...) {
     M
 }
 
+# Contrasts to compare consecutive levels:
+# (-1,1,0,0,...), (0,-1,1,0,...), ..., (0,...0,-1,1)
+consec.lsmc = function(levs, reverse = FALSE, ...) {
+    sgn = ifelse(reverse, -1, 1)
+    k = length(levs)
+    M = data.frame(levs=levs)
+    for (i in seq_len(k-1)) {
+        con = rep(0, k)
+        con[i] = -sgn
+        con[i+1] = sgn
+        nm = ifelse(reverse,
+                    paste(levs[i], "-", levs[i+1]),
+                    paste(levs[i+1], "-", levs[i]))
+        M[[nm]] = con
+    }
+    row.names(M) = levs
+    M = M[-1]
+    attr(M, "desc") = "changes between consecutive levels"
+    attr(M, "adjust") = "mvt"
+    M
+}
+
+# Mean after minus mean before
+# e.g., (-1, 1/3,1/3,1/3), (-1/2,-1/2, 1/2,1/2), (-1/3,-1/3,-1/3, 1)
+mean.chg.lsmc = function(levs, reverse = FALSE, ...) {
+    sgn = ifelse(reverse, -1, 1)
+    k = length(levs)
+    M = data.frame(levs=levs)
+    for (i in seq_len(k-1)) {
+        kmi = k - i
+        con = rep(c(-sgn/i, sgn/kmi), c(i, kmi)) 
+        nm = paste(levs[i], levs[i+1], sep="|")
+        M[[nm]] = con
+    }
+    row.names(M) = levs
+    M = M[-1]
+    attr(M, "desc") = "mean after minus mean before"
+    attr(M, "adjust") = "mvt"
+    M
+}
+
+
