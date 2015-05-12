@@ -151,6 +151,7 @@ lsm.basis.lm = function(object, trms, xlev, grid, ...) {
 # (recover.data.lm works just fine)
 
 lsm.basis.mlm = function(object, trms, xlev, grid, ...) {
+    class(object) = c("mlm", "lm") # avoids error in vcov for "maov" objects
     bas = lsm.basis.lm(object, trms, xlev, grid, ...)
     bhat = coef(object)
     k = ncol(bhat)
@@ -610,39 +611,6 @@ lsm.basis.gam = function(object, trms, xlev, grid, ...) {
 #     # Doesn't work because needs the matrices in object$lme$data
 # }
 
-
-
-
-
-#--------------------------------------------------------------
-#--------------------------------------------------------------
-#--------------------------------------------------------------
-#--------------------------------------------------------------
-### Public utility to use for obtaining an orthonormal basis nor nonestimable functions
-# Call with its QR decomp (LAPACK=FALSE), if available
-### --- Jan 27, 2015. Celebrating Mozart's 259th birthday
-### by moving the estimability stuff to a separate package --
-### 'estimability'
-# nonest.basis = function(qrX) {
-#     if (!is.qr(qrX))
-#         qrX = qr(qrX, LAPACK=FALSE)
-#     rank = qrX$rank
-#     tR = t(qr.R(qrX))
-#     p = nrow(tR)
-#     if (rank == p)
-#         return (matrix(NA))
-#     # null space of X is same as null space of R in QR decomp
-#     if (ncol(tR) < p) # add columns if not square
-#         tR = cbind(tR, matrix(0, nrow=p, ncol=p-ncol(tR)))
-#     # last few rows are zero -- add a diagonal of 1s
-#     extras = rank + seq_len(p - rank)
-#     for (j in extras) tR[j,j] = 1
-#     # nbasis is last p - rank cols of Q in QR decomp of tR
-#     nbasis = qr.Q(qr(tR))[ , extras, drop = FALSE]
-#     # permute the rows via pivot
-#     nbasis[qrX$pivot, ] = nbasis
-#     nbasis
-# }
 
 # Call this to do the standard stuff with link labels
 # Returns a modified misc

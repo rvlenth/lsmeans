@@ -1,12 +1,14 @@
 Changelog for 'lsmeans' package
 
-2.17-4
+2.17-6
     In DESCRIPTION, moved all packages from Enhances to Suggests,
         as Enhancements can't appear in vignettes or tests
-    Fixed bug in lstrends where 'data' argument is not used correctly
+    Fixed bug in lstrends - 'data' argument was not used correctly
     Fixed bug in cld where fatal error occurs when type = "response"
+    Added support for 'maov' and 'manova' objects (just works around 
+        error in stats package with vcov for "maov" objects)
     Made "dunnettx"-adjusted critical values more robust
-    Coding improvements for adjusted p-\ values and critical values
+    Coding improvements for adjusted p values and critical values
     Added 'consec.lsmc' and 'mean.chg.lsmc' to available contrasts
     Added support for the CARBayes package
     
