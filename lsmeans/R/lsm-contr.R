@@ -172,7 +172,7 @@ consec.lsmc = function(levs, reverse = FALSE, ...) {
 
 # Mean after minus mean before
 # e.g., (-1, 1/3,1/3,1/3), (-1/2,-1/2, 1/2,1/2), (-1/3,-1/3,-1/3, 1)
-mean.chg.lsmc = function(levs, reverse = FALSE, ...) {
+mean_chg.lsmc = function(levs, reverse = FALSE, ...) {
     sgn = ifelse(reverse, -1, 1)
     k = length(levs)
     M = data.frame(levs=levs)
