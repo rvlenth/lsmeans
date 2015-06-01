@@ -97,8 +97,8 @@
     if ((fam.info[3] != 3) && adjust == "tukey") # not pairwise
         adjust = "sidak"
     
-    # pseudo-asymptotic results when df is NA
-    df[is.na(df)] = 10000
+    # asymptotic results when df is NA
+    df[is.na(df)] = Inf
     
     # if estType is "prediction", use #contrasts + 1 as family size
     # (produces right Scheffe CV; Tukey ones are a bit strange)
@@ -167,7 +167,7 @@
     if ((fam.info[3] != 3) && adjust == "tukey") # not pairwise
         adjust = "sidak"
     
-    # pseudo-asymptotic results when df is NA
+    # asymptotic results when df is NA
     df[is.na(df)] = Inf
     
     scheffe.dim = ifelse(fam.info[3] == 1, fam.size, fam.size - 1)
