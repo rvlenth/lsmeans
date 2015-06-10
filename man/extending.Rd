@@ -15,7 +15,8 @@ This documents the methods used to create a \code{\link[=ref.grid-class]{ref.gri
 }
 \usage{
 recover.data(object, ...)
-\S3method{recover.data}{call}(object, trms, na.action, data, ...)
+\S3method{recover.data}{call}(object, trms, na.action, 
+    data = NULL, params = NULL, ...)
 
 lsm.basis(object, trms, xlev, grid, ...)
 }
@@ -28,6 +29,10 @@ An object returned from a model-fitting function.}
   \item{grid}{A \code{data.frame} containing predictor values at which predictions are needed.}
   \item{na.action}{Integer vector of indices of observations to ignore; or \code{NULL} if none}
   \item{data}{Data frame. Usually, this is \code{NULL}. However, if non-null, this is used in place of the reconstructed dataset. It must have all of the predictors used in the model, and any factor levels must match those used in fitting the model.}
+  \item{params}{Character vector giving the names of any variables in the
+  model formula that are \emph{not} predictors. An example would be a   
+  variable \code{knots} specifying the knots to use in a spline model.
+}
   \item{\dots}{Additional arguments passed to other methods.}
 }
 

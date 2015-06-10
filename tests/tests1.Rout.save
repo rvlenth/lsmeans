@@ -196,7 +196,7 @@ Confidence level used: 0.95
 > try(lsmeans(warp.lm3, "tension")) 
 Error in eval(expr, envir, enclos) : object 'x1' not found
 Error in ref.grid(object = structure(list(coefficients = structure(c(39.9798298407202,  : 
-  Possible remedy: Supply the data used in the 'data' argument
+  Perhaps a 'data' or 'params' argument is needed
 > 
 > # However, we're OK again if we use 'data'
 > lsmeans(warp.lm3, "tension", data = warp)
@@ -542,4 +542,4 @@ Confidence level used: 0.95
 > 
 > proc.time()
    user  system elapsed 
-   1.01    0.06    1.34 
+   1.02    0.09    1.26 

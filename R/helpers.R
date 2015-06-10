@@ -71,32 +71,26 @@ lsm.basis.default = function(object, trms, xlev, grid, ...) {
 # For model objects, call this with the object's call and its terms component
 # Late addition: if data is non-null, use it in place of recovered data
 # Later addition: na.action arg req'd - vector of row indexes removed due to NAs
-recover.data.call = function(object, trms, na.action, data, ...) {
+recover.data.call = function(object, trms, na.action, data = NULL, params = NULL, ...) {
     fcall = object # because I'm easily confused
-    vars = all.vars(trms)
+    vars = setdiff(all.vars(trms), params)
     tbl = data
     if (is.null(tbl)) {
-#         m = match(c("formula", "data", "subset", "weights", 
-#                      "na.action", "offset"), names(fcall), 0L)
-# I think we don't need to match some of these just to recover the data        
         m = match(c("formula", "data", "subset", "weights"), names(fcall), 0L)
         fcall = fcall[c(1L, m)]
         fcall$drop.unused.levels = TRUE
         fcall[[1L]] = as.name("model.frame")
         fcall$xlev = NULL # we'll ignore xlev
         fcall$na.action = na.omit
-        # (moved earlier)  vars = all.vars(trms) # (length will always be >= 2)
-        # Put one var on left - keeps out lhs transformations
         if (length(vars) > 1) 
             form = reformulate(vars[-1], response = vars[1])
-        else 
+        else
             form = reformulate(vars)
         fcall$formula = update(trms, form)
         env = environment(trms)
         if (is.null(env)) 
             env = parent.frame()
         tbl = eval(fcall, env, parent.frame())
-        # Drop rows associated with NAs in data
         if (!is.null(na.action))
             tbl = tbl[-(na.action),  , drop=FALSE]
     }
@@ -106,8 +100,8 @@ recover.data.call = function(object, trms, na.action, data, ...) {
     
     attr(tbl, "call") = object # the original call
     attr(tbl, "terms") = trms
-    attr(tbl, "predictors") = all.vars(delete.response(trms))
-    attr(tbl, "responses") = setdiff(vars, attr(tbl, "predictors"))
+    attr(tbl, "predictors") = setdiff(all.vars(delete.response(trms)), params)
+    attr(tbl, "responses") = setdiff(vars, union(attr(tbl, "predictors"), params))
     tbl
 }
 
