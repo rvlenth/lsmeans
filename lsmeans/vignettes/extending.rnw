@@ -93,16 +93,20 @@ Note that all it does is obtain the "call" component and call the method for cla
 <<>>=
 recover.data.lqs = lsmeans:::recover.data.lm
 @
-The trickier part is testing it, as it isn't clear that there is a required "data" argument.
+Let's test it:
 <<>>=
-rec.fake = recover.data(fake.lts, data = NULL)
+rec.fake = recover.data(fake.lts)
 head(rec.fake)
 @
 Our recovered data excludes the response variable "y" (owing to the "delete.response" call), and this is fine. 
 
-By the way, the "data" argument is handed to "recover.data" if it is specified in the "ref.grid" or "lsmeans" call. It is needed to cover a desperate situation that occurs with certain kinds of models that are fitted by iteratively modifying the data. In those cases, the only way to recover the data is to for the user to give it explicitly, and "recover.data" just adds a few needed attributes to it.
+\paragaph{Special arguments}
+By the way, there are two special arguments "data" and "params" that may be handed to "recover.data" via "ref.grid" or "lsmeans" or a related function; and you may need to provide for if you don't use the "recover.data.call" function. The "data" argument is needed to cover a desperate situation that occurs with certain kinds of models where the underlying data information is not saved with the object---e.g., models that are fitted by iteratively modifying the data. In those cases, the only way to recover the data is to for the user to give it explicitly, and "recover.data" just adds a few needed attributes to it. 
 
-Related (in a surprising way) to the above, if you check for any error conditions in "recover.data", simply have it return a character string with the desired message, rather than invoking "stop". This provides a cleaner exit. The reason is that whenever "recover.data" throws an error, an informative message suggesting that "data" be provided is displayed. But a character return value is tested for an throws a different error with your message.
+The "params" argument is needed when the model formula refers to variables besides predictors. For example, a model may include a spline term, and the knots are saved in the user's environment as a vector and referred to in the call to fit the model. In trying to recover the data, we try to construct a data frame containing all the variables present on the right-hand side of the model, but if some of those are scalars or of different lengths than the number of observations, an error occurs. So you need to exclude any names in "params" when reconstructing the data.
+
+\paragraph{Error handling}
+If you check for any error conditions in "recover.data", simply have it return a character string with the desired message, rather than invoking "stop". This provides a cleaner exit. The reason is that whenever "recover.data" throws an error, an informative message suggesting that "data" or "params" be provided is displayed. But a character return value is tested for and throws a different error with your string as the message.
 
 \subsection{The \code{lsm.basis} method}
 The "lsm.basis" method has four required arguments:

@@ -13,7 +13,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     if (missing(data)) {
         data = try(recover.data (object, data = NULL, ...))
         if (inherits(data, "try-error"))
-            stop("Possible remedy: Supply the data used in the 'data' argument")
+            stop("Perhaps a 'data' or 'params' argument is needed")
     }
     else # attach needed attributes to given data
         data = recover.data(object, data = data, ...)
