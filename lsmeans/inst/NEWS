@@ -1,9 +1,11 @@
 Changelog for 'lsmeans' package
 
-2.18-1
+2.18-2
     Added optional `params` argument for `ref.grid` and related
         functions - use it to specify variables in the model formula
         that are not predictors
+    Now supports model formulas containing `$` and `[[]]`
+        (and related exported function `All.vars`)
 
 
 2.18

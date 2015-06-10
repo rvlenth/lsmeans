@@ -42,7 +42,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         else if (inherits(cvr, "formula")) {
             if (length(cvr) < 3)
                 stop("Formulas in 'cov.reduce' must be two-sided")
-            lhs = all.vars(cvr)[1]
+            lhs = All.vars(cvr)[1]
             dep.x[[lhs]] <<- cvr
             cvr = mean 
         }
@@ -130,7 +130,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
 
     # resolve any covariate formulas
     for (xnm in names(dep.x)) {
-        if (!all(all.vars(dep.x[[xnm]]) %in% names(grid)))
+        if (!all(All.vars(dep.x[[xnm]]) %in% names(grid)))
             stop("Formulas in 'cov.reduce' must predict covariates actually in the model")
         xmod = lm(dep.x[[xnm]], data = data)
         grid[[xnm]] = predict(xmod, newdata = grid)
@@ -143,8 +143,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     
     form = attr(data, "call")$formula
     if (is.null(misc$tran) && (length(form) > 2)) { # No link fcn, but response may be transformed
-        lhs = form[[2]]
-        tran = setdiff(all.names(lhs), c(all.vars(lhs), "~", "cbind"))
+        lhs = form[-3] ####form[[2]]
+        tran = setdiff(All.vars(lhs, functions = TRUE), c(All.vars(lhs), "~", "cbind"))
         if(length(tran) == 1)
             misc$tran = tran
     }
@@ -304,7 +304,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     if(length(cterms) == 0) 
         return(cterms)
     # (else) Strip off the function calls
-    cvars = lapply(cterms, function(x) all.vars(reformulate(x)))
+    cvars = lapply(cterms, function(x) All.vars(reformulate(x)))
     
     # Exclude any variables that are already factors
     intersect(unique(unlist(cvars)), covs.d)

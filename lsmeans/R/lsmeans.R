@@ -44,11 +44,11 @@ function(object, specs, contr.list, trend, ...) {
     
     if(length(specs) == 2) { # just a rhs
         by = .find.by(as.character(specs[2]))
-        lsmeans(object, all.vars(specs), by = by, ...)
+        lsmeans(object, All.vars(specs), by = by, ...)
     }
     else {
-#        lsms = lsmeans(object, all.vars(specs[-2]), ...)
-        contr.spec = all.vars(specs[-3])[1]
+#        lsms = lsmeans(object, All.vars(specs[-2]), ...)
+        contr.spec = All.vars(specs[-3])[1]
         by = .find.by(as.character(specs[3]))
         # Handle old-style case where contr is a list of lists
         if (!missing(contr.list)) {
@@ -56,7 +56,7 @@ function(object, specs, contr.list, trend, ...) {
             if (!is.null(cmat))
                 contr.spec = cmat
         }
-        lsmeans(object, specs = all.vars(specs[-2]), 
+        lsmeans(object, specs = All.vars(specs[-2]), 
                 by = by, contr = contr.spec, ...)
     }
 }
@@ -252,7 +252,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
 .find.by = function(rhs) {
     b = strsplit(rhs, "\\|")[[1]]
     if (length(b) > 1) 
-        all.vars(as.formula(paste("~",b[2])))
+        All.vars(as.formula(paste("~",b[2])))
     else NULL
 }
 
@@ -509,7 +509,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
     fcn = NULL   # differential
     if (is.null(x)) {
         fcn = var
-        var = all.vars(as.formula(paste("~",var)))
+        var = All.vars(as.formula(paste("~",var)))
         if (length(var) > 1)
             stop("Can only support a function of one variable")
         else {
@@ -582,7 +582,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
 .some.term.contains = function(facs, terms) {
     for (trm in attr(terms, "term.labels")) {
         if(all(sapply(facs, function(f) length(grep(f,trm))>0)))
-            if (length(all.vars(as.formula(paste("~",trm)))) > length(facs)) 
+            if (length(All.vars(as.formula(paste("~",trm)))) > length(facs)) 
                 return(TRUE)
     }
     return(FALSE)

@@ -73,7 +73,7 @@ lsm.basis.default = function(object, trms, xlev, grid, ...) {
 # Later addition: na.action arg req'd - vector of row indexes removed due to NAs
 recover.data.call = function(object, trms, na.action, data = NULL, params = NULL, ...) {
     fcall = object # because I'm easily confused
-    vars = setdiff(all.vars(trms), params)
+    vars = setdiff(All.vars(trms), params)
     tbl = data
     if (is.null(tbl)) {
         m = match(c("formula", "data", "subset", "weights"), names(fcall), 0L)
@@ -82,10 +82,12 @@ recover.data.call = function(object, trms, na.action, data = NULL, params = NULL
         fcall[[1L]] = as.name("model.frame")
         fcall$xlev = NULL # we'll ignore xlev
         fcall$na.action = na.omit
-        if (length(vars) > 1) 
-            form = reformulate(vars[-1], response = vars[1])
-        else
-            form = reformulate(vars)
+        ### I once had a reason to put one var on the left, but don't remember why
+        ### Now it messes up if there's a '$' in that term
+        #         if (length(vars) > 1) 
+        #             form = reformulate(vars[-1], response = vars[1])
+        #         else
+        form = reformulate(vars)
         fcall$formula = update(trms, form)
         env = environment(trms)
         if (is.null(env)) 
@@ -100,7 +102,7 @@ recover.data.call = function(object, trms, na.action, data = NULL, params = NULL
     
     attr(tbl, "call") = object # the original call
     attr(tbl, "terms") = trms
-    attr(tbl, "predictors") = setdiff(all.vars(delete.response(trms)), params)
+    attr(tbl, "predictors") = setdiff(All.vars(delete.response(trms)), params)
     attr(tbl, "responses") = setdiff(vars, union(attr(tbl, "predictors"), params))
     tbl
 }
@@ -622,4 +624,18 @@ lsm.basis.gam = function(object, trms, xlev, grid, ...) {
     else if (length(grep("poisson", fam$family)) == 1)
         misc$inv.lbl = "rate"
     misc
+}
+
+## Alternative to all.vars, but keeps vars like foo$x and foo[[1]] as-is
+##   Passes ... to all.vars
+All.vars = function(expr, retain = c("\\$", "\\[\\[", "\\]\\]"), ...) {
+    repl = paste("_Av", seq_along(retain), "_", sep = "")
+    for (i in seq_along(retain))
+        expr = gsub(retain[i], repl[i], expr)
+    subs = switch(length(expr), 1, c(1,2), c(2,1,3))
+    vars = all.vars(as.formula(paste(expr[subs], collapse = "")), ...)
+    retain = gsub("\\\\", "", retain)
+    for (i in seq_along(retain))
+        vars = gsub(repl[i], retain[i], vars)
+    vars
 }
