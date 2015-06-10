@@ -28,7 +28,7 @@ lsmip.default = function(object, formula, type,
         }
     }
     
-    allvars = setdiff(all.vars(formula), ".single.")
+    allvars = setdiff(All.vars(formula), ".single.")
     lsmopts$object = object
     lsmopts$specs = reformulate(allvars)
     lsmo = do.call("lsmeans", lsmopts)
@@ -43,7 +43,7 @@ lsmip.default = function(object, formula, type,
     lsms = cbind(lsmo@grid, lsmean = lsm)
 
     # Set up trace vars and key
-    tvars = all.vars(formula[[2]])
+    tvars = All.vars(update(formula, . ~ 1))
     if (all(tvars == ".single.")) {
         lsms$.single. = 1
         my.key = function(tvars) list()
@@ -61,7 +61,7 @@ lsmip.default = function(object, formula, type,
     
     # figure out 'x' and 'by' vars
     rhs = strsplit(as.character(formula[3]), "\\|")[[1]]
-    xvars = all.vars(reformulate(rhs[[1]]))
+    xvars = All.vars(reformulate(rhs[[1]]))
     xv = do.call(paste, lsms[xvars])
     lsms$xvar = factor(xv, levels = unique(xv))
     lsms = lsms[order(lsms$xvar), ]
@@ -69,7 +69,7 @@ lsmip.default = function(object, formula, type,
     
     # see if we have any 'by' vars
     if (length(rhs) > 1) {
-        byvars = all.vars(reformulate(rhs[[2]]))
+        byvars = All.vars(reformulate(rhs[[2]]))
         plotform = as.formula(paste("lsmean ~ xvar |", paste(byvars, collapse="*")))
     }
 

@@ -2,6 +2,7 @@
 \alias{recover.data}
 \alias{recover.data.call}
 \alias{lsm.basis}
+\alias{All.vars}
 %%\alias{nonest.basis} % moved to estimability package
 %%\alias{is.estble}
 
@@ -19,6 +20,8 @@ recover.data(object, ...)
     data = NULL, params = NULL, ...)
 
 lsm.basis(object, trms, xlev, grid, ...)
+
+All.vars(expr, retain = c("\\\\$", "\\\\[\\\\[", "\\\\]\\\\]"), ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -33,6 +36,8 @@ An object returned from a model-fitting function.}
   model formula that are \emph{not} predictors. An example would be a   
   variable \code{knots} specifying the knots to use in a spline model.
 }
+  \item{expr}{A formula}
+  \item{retain}{Character vector of operators to retain (escaped as for \code{\link{gsub}})}
   \item{\dots}{Additional arguments passed to other methods.}
 }
 
@@ -59,6 +64,8 @@ The models already supported are detailed in \code{\link{models}}. Some packages
 \item{V}{The estimated covariance matrix of \code{bhat}.}
 \item{dffun}{A function of \code{(k, dfargs)} that returns the degrees of freedom associated with \code{sum(k * bhat)}.}
 \item{dfargs}{A \code{list} containing additional arguments needed for \code{dffun}.}
+
+\code{All.vars} is an enhancement of \code{\link{all.vars}}, whereby the operators specified in \code{retain} are left intact. Thus, \code{All.vars(foo$y ~ bar[[2]])} returns \code{"foo$y", "bar[[2]]"}, whereas \code{all.vars} returns \code{"foo", "y", "bar"}
 }
 
 %\references{}
@@ -93,6 +100,14 @@ Russell V. Lenth
     lsmeans:::lsm.basis.lm(warpsing.lm, delete.response(terms(warpsing.lm)),
         warpsing.lm$xlevels, grid)
 } % end dontrun
+
+# Compare results of all.vars and All.vars
+form = log(cows$weight) ~ factor(bulls[[3]]) * herd$breed
+all.vars(form)
+All.vars(form)
+
+all.vars(form, functions = TRUE) ## same as all.names(form, unique = TRUE)
+All.vars(form, functions = TRUE)
 }
 
 
