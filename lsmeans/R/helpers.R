@@ -377,7 +377,15 @@ lsm.basis.polr = function(object, trms, xlev, grid,
 
 #--------------------------------------------------------------
 ### survreg objects (survival package)
-recover.data.survreg = recover.data.lm
+recover.data.survreg = function(object, ...) {
+    fcall = object$call
+    trms = delete.response(terms(object))
+    tmp = c(survival::untangle.specials(trms, "strata")$terms,
+            survival::untangle.specials(trms, "cluster")$terms)
+    if (length(tmp))
+        trms = trms[-tmp]
+    recover.data(fcall, trms, object$na.action, ...)
+}
 
 # Seems to work right in a little testing.
 # However, it fails sometimes if I update the model 
@@ -387,7 +395,7 @@ lsm.basis.survreg = function(object, trms, xlev, grid, ...) {
     bhat = object$coefficients
     k = length(bhat)
     V = vcov(object)[seq_len(k), seq_len(k), drop=FALSE]
-    is.fixeds = (k == ncol(object$var))
+    # ??? not used... is.fixeds = (k == ncol(object$var))
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)    
     # Hmmm, differs from my lm method using model.matrix(trms, m, contrasts)
     X = model.matrix(object, m)
@@ -405,13 +413,14 @@ lsm.basis.survreg = function(object, trms, xlev, grid, ...) {
 
 #--------------------------------------------------------------
 ###  coxph objects (survival package)
-recover.data.coxph = recover.data.survreg
+recover.data.coxph = function(object, ...) 
+    recover.data.survreg(object, ...)
 
-lsm.basis.coxph = function(object, trms, xlev, grid, ...) {
+lsm.basis.coxph = function (object, trms, xlev, grid, ...) 
+{
     object$dist = "doesn't matter"
     result = lsm.basis.survreg(object, trms, xlev, grid, ...)
     result$dfargs$df = NA
-    # mimic code for reference = "sample" in predict.coxph
     result$X = result$X - rep(object$means, each = nrow(result$X))
     result$misc$tran = "log"
     result$misc$inv.lbl = "hazard"
@@ -424,14 +433,25 @@ lsm.basis.coxph = function(object, trms, xlev, grid, ...) {
 
 #--------------------------------------------------------------
 ###  coxme objects ####
-recover.data.coxme = recover.data.coxph
+### Greatly revised 6-15-15 (after version 2.18)
+recover.data.coxme = function(object, ...) 
+    recover.data.survreg(object, ...)
 
-# I guess this works because it's based on lme code
 lsm.basis.coxme = function(object, trms, xlev, grid, ...) {
-    result = lsm.basis.lme(object, trms, xlev, grid, ...)
-    result$misc$tran = "log"
-    result$misc$inv.lbl = "hazard"
-    result
+    bhat = fixef(object)
+    k = length(bhat)
+    V = vcov(object)[seq_len(k), seq_len(k), drop = FALSE]
+    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+    X = model.matrix(trms, m)
+    X = X[, -1, drop = FALSE] # remove the intercept
+    # scale the linear predictor
+    for (j in seq_along(X[1, ]))
+        X[, j] = (X[, j] - object$means[j]) ### / object$scale[j]
+    nbasis = estimability::all.estble
+    dffun = function(k, dfargs) NA
+    misc = list(tran = "log", inv.lbl = "hazard")
+    list(X = X, bhat = bhat, nbasis = nbasis, V = V, dffun = dffun, 
+         dfargs = list(), misc = misc)
 }
 
 

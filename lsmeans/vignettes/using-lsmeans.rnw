@@ -708,7 +708,7 @@ The \lsm{} package comes with built-in support for several packages and model cl
 \pitem{nlme}: \dqt{lme}, \dqt{gls}, \dqt{nlme}
 \pitem{lme4}: \dqt{lmerMod}, \dqt{glmerMod}
 \pitem{survival}: \dqt{survreg}, \dqt{coxph}
-\pitem{coxme}: \dqt{coxme}
+%%%\pitem{coxme}: \dqt{coxme}
 \pitem{MASS}: \dqt{polr}
 \pitem{gee, geepack}: \dqt{gee}, \dqt{geeglm}, \dqt{geese}
 \pitem{ordinal}: \dqt{clm}, \dqt{clmm}

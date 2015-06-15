@@ -35,7 +35,7 @@ Additional models can be supported by writing appropriate \code{recover.data} an
 
 \section{\pkg{coxme} package}{
 \describe{
-\item{coxme}{No extended features.}
+\item{coxme}{No additional options. Support for these models is experimental; may throw errors or incorrect results.}
 }}% coxme
 
 

@@ -22,7 +22,7 @@ Our reference-grid framework expands slightly upon Searle \emph{et al.}'s defini
 }
 
 \item{Models supported}{
-Many linear models are supported by the package, including \code{lm}, \code{glm}, \code{aovList}, and \code{mlm} in the \pkg{stats} package, as well as fitted-model objects from several contributed packages including \pkg{nlme}, \pkg{lme4}, \pkg{survival}, \pkg{coxme}, and \pkg{geepack}. The help page for \code{\link{models}} provides more details, including, in some cases, additional \code{ref.grid} arguments that might affect the subsequent analysis. Also, some models require other packages be installed in order to  obtain all the available features.
+Many linear models are supported by the package, including \code{lm}, \code{glm}, \code{aovList}, and \code{mlm} in the \pkg{stats} package, as well as fitted-model objects from several contributed packages including \pkg{nlme}, \pkg{lme4}, \pkg{survival}, and \pkg{geepack}. The help page for \code{\link{models}} provides more details, including, in some cases, additional \code{ref.grid} arguments that might affect the subsequent analysis. Also, some models require other packages be installed in order to  obtain all the available features.
 }
 \item{Least-squares means}{
 The \code{\link{lsmeans}} function computes least-squares means given a \code{ref.grid} object or a fitted model, and a specification indicating what factors to include. The \code{\link{lstrends}} function creates the same sort of results for estimating and comparing slopes of fitted lines. Both return an \code{lsmobj} object very much like a reference grid, but with possibly fewer factors involved.
