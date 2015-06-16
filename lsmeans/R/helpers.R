@@ -380,8 +380,9 @@ lsm.basis.polr = function(object, trms, xlev, grid,
 recover.data.survreg = function(object, ...) {
     fcall = object$call
     trms = delete.response(terms(object))
-    tmp = c(survival::untangle.specials(trms, "strata")$terms,
-            survival::untangle.specials(trms, "cluster")$terms)
+    # I'm gonna delete any terms involving strata(), cluster(), or frailty()
+    mod.elts = dimnames(attr(trms, "factor"))[[2]]
+    tmp = grep("strata\\(|cluster\\(|frailty\\(", mod.elts)
     if (length(tmp))
         trms = trms[-tmp]
     recover.data(fcall, trms, object$na.action, ...)
@@ -397,8 +398,9 @@ lsm.basis.survreg = function(object, trms, xlev, grid, ...) {
     V = vcov(object)[seq_len(k), seq_len(k), drop=FALSE]
     # ??? not used... is.fixeds = (k == ncol(object$var))
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)    
-    # Hmmm, differs from my lm method using model.matrix(trms, m, contrasts)
-    X = model.matrix(object, m)
+    # X = model.matrix(object, m) # This is what predict.survreg does
+    # But I have manipulated trms, so need to make sure things are consistent
+    X = model.matrix(trms, m, contrasts.arg = object$contrasts)
     nbasis = estimability::nonest.basis(model.matrix(object))
     dfargs = list(df = object$df.residual)
     dffun = function(k, dfargs) dfargs$df
@@ -421,6 +423,7 @@ lsm.basis.coxph = function (object, trms, xlev, grid, ...)
     object$dist = "doesn't matter"
     result = lsm.basis.survreg(object, trms, xlev, grid, ...)
     result$dfargs$df = NA
+    result$X = result$X[, -1, drop = FALSE]
     result$X = result$X - rep(object$means, each = nrow(result$X))
     result$misc$tran = "log"
     result$misc$inv.lbl = "hazard"
