@@ -35,12 +35,15 @@ recover.data.MCMCglmm = function(object, data, ...) {
     data
 }
 
-lsm.basis.MCMCglmm = function(object, trms, xlev, grid, ...) {
+lsm.basis.MCMCglmm = function(object, trms, xlev, grid, vcov., ...) {
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = NULL)
     Sol = as.matrix(object$Sol)[, seq_len(object$Fixed$nfl)] # toss out random effects if included
     bhat = apply(Sol, 2, mean)
-    V = cov(Sol)
+    if (missing(vcov.))
+        V = cov(Sol)
+    else
+        V = .my.vcov(object, vcov.)
     misc = list()
     list(X = X, bhat = bhat, nbasis = matrix(NA), V = V, 
          dffun = function(k, dfargs) NA, dfargs = list(), 
@@ -72,12 +75,15 @@ recover.data.mcmc = function(object, formula, data, ...) {
     recover.data(cl, trms, NULL, data, ...)
 }
 
-lsm.basis.mcmc = function(object, trms, xlev, grid, ...) {
+lsm.basis.mcmc = function(object, trms, xlev, grid, vcov., ...) {
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = NULL)
     samp = as.matrix(object)[, seq_len(ncol(X)), drop = FALSE]
     bhat = apply(samp, 2, mean)
-    V = cov(samp)
+    if (missing(vcov.))
+        V = cov(samp)
+    else
+        V = .my.vcov(object, vcov.)
     misc = list()
     list(X = X, bhat = bhat, nbasis = matrix(NA), V = V, 
          dffun = function(k, dfargs) NA, dfargs = list(), 

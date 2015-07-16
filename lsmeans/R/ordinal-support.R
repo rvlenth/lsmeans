@@ -44,7 +44,7 @@ lsm.basis.clm = function (object, trms, xlev, grid,
         warning("Contrasts used to fit the model are unknown.\n",
                 "Defaulting to system option, but results may be wrong.")
     bhat = coef(object)
-    V = vcov(object)
+    V = .my.vcov(object, ...)
     tJac = object$tJac
     dffun = function(...) NA
     link = as.character(object$info$link)
@@ -305,7 +305,7 @@ lsm.basis.clm = function (object, trms, xlev, grid,
         nbasis = estimability::nonest.basis(S)
     }
     k = sum(!is.na(bhat)) - 1
-    V = vcov(object)
+    V = .my.vcov(object, ...)
     pick = nrow(V) - k + seq_len(k)
     V = V[pick, pick, drop = FALSE]
     V = cbind(0, rbind(0,V))

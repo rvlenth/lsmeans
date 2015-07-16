@@ -37,7 +37,7 @@ Any \code{cov.reduce} specification for a covariate also named in \code{at} is i
   \item{options}{If non-\code{NULL}, a named \code{list} of arguments to pass to \code{\link{update}}, just after the object is constructed.}
   \item{data}{A \code{data.frame} to use to obtain information about the predictors (e.g. factor levels). If missing, then \code{\link{recover.data}} is used to attempt to reconstruct the data.}
   \item{type}{If provided, this is saved as the \code{"predict.type"} setting. See \code{\link{update}}}
-  \item{\dots}{Optional arguments passed to \code{\link{lsm.basis}}}
+  \item{\dots}{Optional arguments passed to \code{\link{lsm.basis}}, such as \code{vcov.} (see Details below) or options for certain models (see \link{models}).}
 } %--- end of \arguments
 
 \details{The reference grid consists of combinations of independent variables over which predictions are made. Least-squares means are defined as these predictions, or marginal averages thereof.
@@ -49,6 +49,8 @@ In certain models, (e.g., results of \code{\link[lme4]{glmer.nb}}),
 it is not possible to identify the original dataset. In such cases, we can work around this by setting \code{data} equal to the dataset used in fitting the model, or a suitable subset.
 Only the complete cases in \code{data} are used, so it may be necessary to exclude some unused variables.
 Using \code{data} can also help save computing, especially when the dataset is large. In any case, \code{data} must represent all factor levels used in fitting the model. It \emph{cannot} be used as an alternative to \code{at}. (Note: If there is a pattern of \code{NAs} that caused one or more factor levels to be excluded when fitting the model, then \code{data} should also exclude those levels.)
+
+By default, the variance-covariance matrix for the fixed effects is obtained from \code{object}, usually via its \code{\link{vcov}} method. However, the user may override this via a \code{vcov.} argument, specifying a matrix or a function. If a matrix, it must be square and of the same dimension and parameter order of the fixed efefcts. If a function, must return a suitable matrix when it is called with \code{object} as its only argument.
 } % --- end of details
 
 \value{An S4 object of class \code{"ref.grid"} (see \code{\link{ref.grid-class}}). These objects encapsulate everything needed to do calculations and inferences for least-squares means, and contain nothing that depends on the model-fitting procedure.
@@ -73,7 +75,16 @@ require(lsmeans)
 
 fiber.lm <- lm(strength ~ machine*diameter, data = fiber)
 ref.grid(fiber.lm)
-summary(ref.grid(fiber.lm, at = list(diameter = c(15,25))))
+summary(ref.grid(fiber.lm))
+
+ref.grid(fiber.lm, at = list(diameter = c(15, 25)))
+
+\dontrun{
+# We could substitute the sandwich estimator vcovHAC(fiber.lm)
+# as follows:
+require(sandwich)
+summary(ref.grid(fiber.lm, vcov. = vcovHAC))
+}
 
 # If we thought that the machines affect the diameters
 # (admittedly not plausible in this example), then we should use:

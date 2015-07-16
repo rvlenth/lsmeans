@@ -7,7 +7,7 @@ recover.data.nls = function(object, ...) {
 }
 
 lsm.basis.nls = function(object, trms, xlev, grid, ...) {
-    Vbeta = vcov(object)
+    Vbeta = .my.vcov(object, ...)
     env = object$m$getEnv()
     for (nm in names(grid)) env[[nm]] = grid[[nm]]
     pars = object$m$getAllPars()

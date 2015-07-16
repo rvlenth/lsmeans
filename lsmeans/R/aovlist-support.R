@@ -13,7 +13,7 @@ recover.data.aovlist = function(object, ...) {
 
 # This works great for balanced experiments, and goes horribly wrong
 # even for slightly unbalanced ones. So I abort on these kinds of cases
-lsm.basis.aovlist = function (object, trms, xlev, grid, ...) {
+lsm.basis.aovlist = function (object, trms, xlev, grid, vcov., ...) {
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     contr = attr(object, "contrasts")
     X = model.matrix(trms, m, contrasts.arg = contr)
@@ -82,15 +82,23 @@ lsm.basis.aovlist = function (object, trms, xlev, grid, ...) {
         #dimnames(vv) = list(c(xnms[ii], xnms[ii]))
         Vmats[[1]] = vv
     }
-    dfargs = list(Vmats=Vmats, Vidx=Vidx, Vdf=unlist(Vdf), wts = wts)
-    dffun = function(k, dfargs) {
-        v = sapply(seq_along(dfargs$Vdf), function(j) {
-            ii = dfargs$Vidx[[j]]
-            kk = (k * dfargs$wts[j, ])[ii]            
-            #sum(kk * .mat.times.vec(dfargs$Vmats[[j]], kk))
-            .qf.non0(dfargs$Vmats[[j]], kk)
-        })
-        sum(v)^2 / sum(v^2 / dfargs$Vdf) # Good ole Satterthwaite
+    # override V if vcov. is supplied
+    if(!missing(vcov.)) {
+        V = .my.vcov(object, vcov.)
+        dfargs = list()
+        dffun = function(k, dfargs) NA
+    }
+    else{
+        dfargs = list(Vmats=Vmats, Vidx=Vidx, Vdf=unlist(Vdf), wts = wts)
+        dffun = function(k, dfargs) {
+            v = sapply(seq_along(dfargs$Vdf), function(j) {
+                ii = dfargs$Vidx[[j]]
+                kk = (k * dfargs$wts[j, ])[ii]            
+                #sum(kk * .mat.times.vec(dfargs$Vmats[[j]], kk))
+                .qf.non0(dfargs$Vmats[[j]], kk)
+            })
+            sum(v)^2 / sum(v^2 / dfargs$Vdf) # Good ole Satterthwaite
+        }
     }
     nbasis = estimability::all.estble  # Consider this further?
     misc = list()

@@ -10,10 +10,14 @@ recover.data.rms = function(object, ...) {
 # 2. orm cases?
 
 lsm.basis.rms = function(object, trms, xlev, grid, 
-        mode = c("middle", "latent", "linear.predictor", "cum.prob", "exc.prob", "prob", "mean.class"), ...) {
+        mode = c("middle", "latent", "linear.predictor", "cum.prob", "exc.prob", "prob", "mean.class"), 
+        vcov., ...) {
     mode = match.arg(mode)
     bhat = coef(object) 
-    V = vcov(object, intercepts = "all")
+    if (missing(vcov.))
+        V = vcov(object, intercepts = "all")
+    else
+        V = .my.vcov(object, vcov.)
     misc = list()
     
     X = predict(object, newdata = grid, type = "x")

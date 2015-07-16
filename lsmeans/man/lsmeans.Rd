@@ -84,7 +84,7 @@ The value of \emph{h} to use in forming the difference quotient \emph{(f(x+h) - 
 \item{linfct}{Matrix. Linear functions of \code{bhat} for each combination of \code{levels}}
 \item{df}{Numeric or function with arguments \code{x,dfargs)}. If a number, that is used for the degrees of freedom. If a function, it should return the degrees of freedom for \code{sum(x*bhat)}; if additional parameters are needed, include them in \code{\dots} as \code{dfargs} (not abbreviated).}
 \item{post.beta}{Matrix whose columns comprise a sample from the posterior distribution of the regression coefficients (so that typically, the column averages will be \code{bhat}). A 1 x 1 matrix of \code{NA} indicates that such a sample is unavailable.}
-\item{\dots}{Additional arguments passed to other methods or to \code{\link{ref.grid}}. Some models require \code{data} to be given explicitly (see help page for \link{models}). In addition, if the model formula contains references to variables that are not predictors, you must provide a \code{params} argument with a list of their names; see the example below for \code{Oatsq.lm}.}
+\item{\dots}{Additional arguments passed to other methods or to \code{\link{ref.grid}}. For example, \code{vcov.} may be used to override the default covariance estimate, and some models allow additional options. Some models require \code{data} to be given explicitly. See the help pages for \code{\link{ref.grid}} and \link{models}. In addition, if the model formula contains references to variables that are not predictors, you must provide a \code{params} argument with a list of their names; see the example below for \code{Oatsq.lm}.}
 }
 
 

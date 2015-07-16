@@ -121,7 +121,7 @@ lsm.basis.lm = function(object, trms, xlev, grid, ...) {
     # coef() works right for lm but coef.aov tosses out NAs
     bhat = as.numeric(object$coefficients) 
     # stretches it out if multivariate - see mlm method
-    V = vcov(object)
+    V = .my.vcov(object, ...)
     
     if (sum(is.na(bhat)) > 0)
         nbasis = estimability::nonest.basis(object$qr)
@@ -171,12 +171,15 @@ recover.data.merMod = function(object, ...) {
                  attr(object@frame, "na.action"), ...)
 }
 
-lsm.basis.merMod = function(object, trms, xlev, grid, ...) {
-    V = as.matrix(vcov(object))
+lsm.basis.merMod = function(object, trms, xlev, grid, vcov., ...) {
+    if (missing(vcov.))
+        V = as.matrix(vcov(object))
+    else
+        V = as.matrix(.my.vcov(object, vcov.))
     dfargs = misc = list()
     if (lme4::isLMM(object)) {
         pbdis = .lsm.is.true("disable.pbkrtest")
-        if (!pbdis && requireNamespace("pbkrtest")) {
+        if (!pbdis && requireNamespace("pbkrtest") && missing(vcov.)) {
             dfargs = list(unadjV = V, 
                 adjV = pbkrtest::vcovAdj.lmerMod(object, 0))
             V = as.matrix(dfargs$adjV)
@@ -239,7 +242,7 @@ recover.data.mer = function(object, ...) {
 
 # Does NOT support pbkrtest capabilities. Uses asymptotic methods
 lsm.basis.mer = function(object, trms, xlev, grid, ...) {
-    V = as.matrix(vcov(object))
+    V = as.matrix(.my.vcov(object, ...))
     dfargs = misc = list()
     if (lme4.0::isLMM(object)) {
         dffun = function(k, dfargs) NA        
@@ -283,7 +286,7 @@ lsm.basis.lme = function(object, trms, xlev, grid, adjustSigma = TRUE, ...) {
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
     bhat = nlme::fixef(object)
-    V = vcov(object)
+    V = .my.vcov(object, ...)
     if (adjustSigma && object$method == "ML") 
         V = V * object$dims$N / (object$dims$N - nrow(V))
     misc = list()
@@ -320,7 +323,7 @@ lsm.basis.gls = function(object, trms, xlev, grid, ...) {
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
     bhat = coef(object)
-    V = vcov(object)
+    V = .my.vcov(object, ...)
     nbasis = estimability::all.estble
     dfargs = list(df = object$dims$N - object$dims$p)
     dffun = function(k, dfargs) dfargs$df
@@ -345,7 +348,7 @@ lsm.basis.polr = function(object, trms, xlev, grid,
     if (xint > 0L) 
         X = X[, -xint, drop = FALSE]
     bhat = c(coef(object), object$zeta)
-    V = vcov(object)
+    V = .my.vcov(object, ...)
     k = length(object$zeta)
     if (mode == "latent") {
         X = rescale[2] * cbind(X, matrix(- 1/k, nrow = nrow(X), ncol = k))
@@ -395,7 +398,7 @@ lsm.basis.survreg = function(object, trms, xlev, grid, ...) {
     # Much of this code is adapted from predict.survreg
     bhat = object$coefficients
     k = length(bhat)
-    V = vcov(object)[seq_len(k), seq_len(k), drop=FALSE]
+    V = .my.vcov(object, ...)[seq_len(k), seq_len(k), drop=FALSE]
     # ??? not used... is.fixeds = (k == ncol(object$var))
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)    
     # X = model.matrix(object, m) # This is what predict.survreg does
@@ -443,7 +446,7 @@ recover.data.coxme = function(object, ...)
 lsm.basis.coxme = function(object, trms, xlev, grid, ...) {
     bhat = fixef(object)
     k = length(bhat)
-    V = vcov(object)[seq_len(k), seq_len(k), drop = FALSE]
+    V = .my.vcov(object, ...)[seq_len(k), seq_len(k), drop = FALSE]
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m)
     X = X[, -1, drop = FALSE] # remove the intercept
@@ -470,10 +473,16 @@ lsm.basis.coxme = function(object, trms, xlev, grid, ...) {
 #     -- so ultimately results can only be "mammal" or "fish"
 # nonmatches revert to 1st elt.
 .named.vcov.default = function(object, method, valid, idx = seq_along(valid), ...) {
-    i = pmatch(method, valid, 1)
-    method = valid[idx[i]]
-    V = object[[method]]
-    attr(V, "methMesg") = paste("Covariance estimate used: \"", method, "\"", sep = "")
+    if (!is.character(method)) { # in case vcov. arg was matched by vcov.method {
+        V = .my.vcov(object, method)
+        method = "user-supplied"
+    }
+    else {
+        i = pmatch(method, valid, 1)
+        method = valid[idx[i]]
+        V = object[[method]]
+    }
+    attr(V, "methMesg") = paste("Covariance estimate used:", method)
     V
 }
 
@@ -560,7 +569,9 @@ lsm.basis.geese = function(object, trms, xlev, grid, vcov.method = "vbeta", ...)
 #     else
         nbasis = estimability::all.estble
     
-    misc = .std.link.labels(eval(object$call$family)(), list())
+    misc = list()
+    if (!is.null(fam <- object$call$family))
+        misc = .std.link.labels(eval(fam)(), misc)
     misc$initMesg = attr(V, "methMesg")
     dffun = function(k, dfargs) NA
     dfargs = list()
@@ -593,7 +604,7 @@ lsm.basis.glmmadmb = function (object, trms, xlev, grid, ...)
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
     bhat = glmmADMB::fixef(object)
-    V = vcov(object)
+    V = .my.vcov(object, ...)
     misc = list()
     if (!is.null(object$family)) {
         fam = object$family
@@ -637,9 +648,26 @@ lsm.basis.gam = function(object, trms, xlev, grid, ...) {
 # }
 
 
+
+
+
+
+### ----- Auxiliary routines -------------------------
+# Provide for vcov. argument in ref.grid call, which could be a function or a matrix
+
+.my.vcov = function(object, vcov. = stats::vcov, ...) {
+    if (is.function(vcov.))
+        vcov. = vcov.(object)
+    else if (!is.matrix(vcov.))
+        stop("vcov. must be a function or a square matrix")
+    vcov.
+}
+
 # Call this to do the standard stuff with link labels
 # Returns a modified misc
 .std.link.labels = function(fam, misc) {
+    if (is.null(fam))
+        return(misc)
     misc$tran = fam$link
     misc$inv.lbl = "response"
     if (length(grep("binomial", fam$family)) == 1)
