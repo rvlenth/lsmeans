@@ -16,7 +16,7 @@ Additional models can be supported by writing appropriate \code{recover.data} an
   \describe{
   \item{lm, aov, glm}{No extended features. Note that the \code{lm} support often extends to a number of model objects that inherit from it, such as \code{rlm} in the \pkg{MASS} package and \code{rsm} in the \pkg{rsm} package.}
   \item{mlm, maov, manova}{When there is a multivariate response, the different responses are treated as if they were levels of a factor -- named \code{rep.meas} by default. The \code{mult.name} argument may be used to change this name. The \code{mult.levs} argument may specify a named list of one or more sets of levels. If this has more than one element, then the multivariate levels are expressed as combinations of the named factor levels via the function \code{\link{expand.grid}}.}
-  \item{aovlist}{Support for these objects is limited. To avoid strong biases in the predictions, the \code{contrasts} attribute of all factors should be of a type that sums to zero -- for example, \code{"contr.sum"}, \code{"contr.poly"}, or \code{"contr.helmert"} but \emph{not} \code{"contr.treatment"}.  Only intra-block estimates of covariances are used. That is, if a factor appears in more than one error stratum, only the covariance structure from its lowest stratum is used in estimating standard errors. In general, \code{aovList} support is best with balanced designs, and due caution in the use of contrasts.}
+  \item{aovlist}{Support for these objects is limited. To avoid strong biases in the predictions, the \code{contrasts} attribute of all factors should be of a type that sums to zero -- for example, \code{"contr.sum"}, \code{"contr.poly"}, or \code{"contr.helmert"} but \emph{not} \code{"contr.treatment"}.  Only intra-block estimates of covariances are used. That is, if a factor appears in more than one error stratum, only the covariance structure from its lowest stratum is used in estimating standard errors. Degrees of freedom are obtained using the Satterthwaite method. In general, \code{aovList} support is best with balanced designs, and due caution in the use of contrasts. If a \code{vcov.} argument is supplied, it must yield a single covariance matrix for the unique fixed effects, and the degrees of freedom are set to \code{NA}.}
 }} %stats
 
 
@@ -50,7 +50,9 @@ These models all have more than one covariance estimate available, and it may be
 \describe{
 \item{gee}{Available covariance estimates are specified in \code{vcov.method} as \code{"robust"} (the default) and \code{"naive"}.}
 \item{geeglm, geese}{Available covariance estimates are specified in \code{vcov.method} as \code{"vbeta"} (the default), \code{"vbeta.naiv"}, \code{"vbeta.j1s"}, or \code{"vbeta.fij"}. The aliases \code{"robust"} (for \code{"vbeta"}) and \code{"naive"} (for \code{"vbeta.naiv"} are also accepted.}
-}}% geepack
+}
+If a matrix or function is supplied as \code{vcov.method}, it is interpreted as a \code{vcov.} specification as described for \code{...} in \code{\link{ref.grid}}.
+}% geepack
 
 
 \section{\pkg{glmmADMB} package}{

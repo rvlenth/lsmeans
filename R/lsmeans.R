@@ -552,7 +552,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
     RG@linfct = newlf
     RG@roles$trend = var
     args = list(object=RG, specs=specs, ...)
-    args$at = args$cov.reduce = args$mult.levs = NULL
+    args$at = args$cov.reduce = args$mult.levs = args$vcov. = NULL
     result = do.call("lsmeans", args)
     if (is.list(result)) {
         names(result)[1] = "lstrends"
