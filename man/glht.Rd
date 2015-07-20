@@ -4,6 +4,7 @@
 \alias{glht.ref.grid}
 \alias{as.glht}
 \alias{as.glht.ref.grid}
+\alias{as.glht.lsm.list}
 \alias{summary.glht.list}
 
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -15,6 +16,7 @@ These functions and methods provide an interface between \pkg{lsmeans} and the \
 }
 \usage{
 \method{as.glht}{ref.grid}(object, ...)
+\method{as.glht}{lsm.list}(object, ..., which = 1)
 
 \method{summary}{glht.list}(object, ...)
 
@@ -24,6 +26,7 @@ lsm(...)
   \item{object}{
 An object of the required class.
 }
+  \item{which}{Numeric index of which element of the \code{lsm.list} to use.}
   \item{\dots}{
 Additional arguuments to other methods.
 }

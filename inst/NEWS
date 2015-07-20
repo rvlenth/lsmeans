@@ -11,6 +11,8 @@ Changelog for 'lsmeans' package
     Revised support for survreg, coxph, coxme -- strata and cluster
         no longer in reference grid. 
         Previous coxme support was bad for other reasons as well
+    Added as.glht method for 'lsm.list', similar to other methods 
+        for this class
     Imports of globals from default packages per a change in CRAN 
         checking requirements.
 
@@ -171,7 +173,7 @@ Changelog for 'lsmeans' package
     Support for 'aovlist' objects (does intra-block analysis)
         To use, avoid contr.treatment; use contr.sum or other that sums to 0
     Added 'contrast', 'test', 'pairs', 'confint', 'cld' methods for
-        lsmlist, with 'which' argument defaulting to 1
+        lsm.list, with 'which' argument defaulting to 1
     Added 'disable.pbkrtest' option (via lsm.options) if you don't want
         bias correction and K-R degrees of freedom with lmerMod objects
     Added 'df' argument to 'ref.grid' constructor, also 'summary' and 

@@ -101,10 +101,14 @@ The function \code{lsmobj} may be used to construct an object just like one retu
 }
 
 \value{
-An object of class \code{\link[=lsmobj-class]{lsmobj}} -- except when \code{specs} is a \code{list} or a \code{formula} having a left-hand side, a \code{list} of \code{slmobj} objects. A number of methods are provided for further analysis, including \code{\link[lsmeans]{summary}}, \code{\link[lsmeans]{confint}}, \code{\link[lsmeans]{test}}, \code{\link[lsmeans]{contrast}}, \code{\link[lsmeans]{pairs}}, and \code{\link[lsmeans]{cld}}.
+When \code{specs} is a \code{character} vector or one-sided formula, an object of class \code{\link[=lsmobj-class]{lsmobj}}. A number of methods are provided for further analysis, including \code{\link[lsmeans]{summary}}, \code{\link[lsmeans]{confint}}, \code{\link[lsmeans]{test}}, \code{\link[lsmeans]{contrast}}, \code{\link[lsmeans]{pairs}}, and \code{\link[lsmeans]{cld}}.
+
+When \code{specs} is a \code{list} or a \code{formula} having a left-hand side, the eturn value is an \code{lsm.list} object, which is simply a \code{list} of \code{lsmobj} objects. Methods for \code{lsm.list} objects are the same as those for \code{lsmobj}, but they apply to only one member of the list, determined by its \code{which} argument.
 }
 
 \note{If the model formula contains variables that are not predictors (e.g., degree of a polynomial, knots for a spline, etc.), you must add a \code{params} argument to the call}
+
+\note{While using \code{specs} as a two-sided formula or a list is a convenient way to get a lot of results with minimal effort, it can also create confusion because the result is a list of \code{lsmobj}s. For example, an \code{adjust} specification may not be applied to the element of the list you intended. thus, the safer route is to do things incrementally.}
 
 \note{\code{lsmeans} and its relatives can produce fatal errors or incorrect results with models containing splines (e.g., \code{\link{ns}}) and other smoothers because the required information to reconstruct their basis is not always available. A model with \code{\link{poly}} involving two or more predictors will almost always produce misleading results without any warning; but \code{poly(..., raw = TRUE)} will work correctly.}
 
@@ -152,7 +156,10 @@ require(nlme)
 Oats.lme <- lme(yield ~ factor(nitro) + Variety, 
     random = ~1 | Block/Variety, 
     subset = -c(1,2,3,5,8,13,21,34,55), data = Oats)
-lsmeans(Oats.lme, list(poly ~ nitro, pairwise ~ Variety))
+(Oats.anal <- lsmeans(Oats.lme, list(poly ~ nitro, pairwise ~ Variety)))
+# If you want any follow-ups, remember that Oats.anal is a list
+confint(Oats.anal[[4]], adjust = "none")
+# or equivalently: confint(Oats.anal, which = 4, adjust = "none")
 
 ### Weights
 # See what's being averaged over in the above

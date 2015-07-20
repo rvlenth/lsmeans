@@ -81,6 +81,9 @@ as.glht.default <- function(object, ...)
 as.glht.ref.grid <- function(object, ...)
     glht( , object, ...)
 
+as.glht.lsm.list <- function(object, ..., which = 1)
+    as.glht(object[[which]], ...)
+
 
 # S3 modelparm method for lsmwrap (S3 wrapper for an lsmobj - see glht.lsmobj)
 modelparm.lsmwrap <- function(model, coef., vcov., df, ...) {
