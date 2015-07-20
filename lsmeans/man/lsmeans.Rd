@@ -108,7 +108,7 @@ When \code{specs} is a \code{list} or a \code{formula} having a left-hand side, 
 
 \note{If the model formula contains variables that are not predictors (e.g., degree of a polynomial, knots for a spline, etc.), you must add a \code{params} argument to the call}
 
-\note{While using \code{specs} as a two-sided formula or a list is a convenient way to get a lot of results with minimal effort, it can also create confusion because the result is a list of \code{lsmobj}s. For example, an \code{adjust} specification may not be applied to the element of the list you intended. thus, the safer route is to do things incrementally.}
+\note{While using \code{specs} as a two-sided formula or a list is a convenient way to get a lot of results with minimal effort, it can also create confusion when additional arguments are provided, because not all arguments may be applied to all the results produced (see examples). Thus, the safer route is to do things incrementally.}
 
 \note{\code{lsmeans} and its relatives can produce fatal errors or incorrect results with models containing splines (e.g., \code{\link{ns}}) and other smoothers because the required information to reconstruct their basis is not always available. A model with \code{\link{poly}} involving two or more predictors will almost always produce misleading results without any warning; but \code{poly(..., raw = TRUE)} will work correctly.}
 
@@ -142,12 +142,14 @@ contrast(fiber.lsm, "trt.vs.ctrlk")
 # Or get both at once using
 #     lsmeans (fiber.lm, "machine", contr = "trt.vs.ctrlk")
 
+
 ### Factorial experiment
 warp.lm <- lm(breaks ~ wool * tension, data = warpbreaks)
 ( warp.lsm <- lsmeans (warp.lm,  ~ wool | tension,
     options = list(estName = "pred.breaks")) )
 pairs(warp.lsm) # remembers 'by' structure
 contrast(warp.lsm, method = "poly", by = "wool")
+
 
 ### Unbalanced split-plot example ###
 #-- The imbalance is imposed deliberately to illustrate that
@@ -157,9 +159,20 @@ Oats.lme <- lme(yield ~ factor(nitro) + Variety,
     random = ~1 | Block/Variety, 
     subset = -c(1,2,3,5,8,13,21,34,55), data = Oats)
 (Oats.anal <- lsmeans(Oats.lme, list(poly ~ nitro, pairwise ~ Variety)))
-# If you want any follow-ups, remember that Oats.anal is a list
-confint(Oats.anal[[4]], adjust = "none")
-# or equivalently: confint(Oats.anal, which = 4, adjust = "none")
+
+
+### Issues with lists of specs
+test(Oats.anal)                # Uses 1st element by default
+confint(Oats.anal, which = 4)  # or confint(Oats.anal[[4]])
+
+# These two calls apply the "bonf" adjustment to different elements...
+lsmeans(warp.lm, eff ~ wool, adjust = "bonf") 
+lsmeans(warp.lm, eff ~ wool, options = list(adjust = "bonf"))
+# Advice: Do one thing at a time if you want non-default adjustments
+#   e.g., wool.lsm <- lsmeans(warp.lm, ~ wool)
+#         summary(wool.lsm, adjust = "bonf")
+#         contrast(wool.lsm, "eff", adjust = "sidak")
+
 
 ### Weights
 # See what's being averaged over in the above
@@ -175,6 +188,7 @@ deg = 2
 Oatsq.lm <- lm(yield ~ Block + poly(nitro, deg) + Variety, data = Oats)
 # Predictions at each unique 'nitro' value in the dataset
 lsmeans(Oatsq.lm, ~ nitro, cov.reduce = FALSE, params = "deg")
+
 
 ### Trends
 fiber.lm <- lm(strength ~ diameter*machine, data=fiber)
@@ -201,6 +215,7 @@ city.lsm <- lsmobj(bhat = ybar, V = diag(se2),
     df = Satt.df, dfargs = list(v = se2, n = n), estName = "mean")
 city.lsm
 contrast(city.lsm, "revpairwise")
+    
     
 # See also many other examples in documentation for 
 # 'contrast', 'cld', 'glht', 'lsmip', 'ref.grid', 'MOats',
