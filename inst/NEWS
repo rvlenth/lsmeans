@@ -13,6 +13,8 @@ Changelog for 'lsmeans' package
         Previous coxme support was bad for other reasons as well
     Added as.glht method for 'lsm.list', similar to other methods 
         for this class
+    In 'contrast', when 'method' is a list, names are kept as-is
+        whereas previously there was an implicit 'make.names' call
     Imports of globals from default packages per a change in CRAN 
         checking requirements.
 
