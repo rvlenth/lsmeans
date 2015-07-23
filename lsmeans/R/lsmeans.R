@@ -278,7 +278,9 @@ contrast.ref.grid = function(object, method = "eff", by, adjust, offset = NULL,
     
     
     if (is.list(method)) {
-        cmat = as.data.frame(method)
+        cmat = as.data.frame(method, optional = TRUE)
+        # I have no clue why they named that argument 'optional',
+        # but setting it to TRUE keeps it from messing up the names
         method = function(levs) cmat
     }
     else if (is.character(method)) {
