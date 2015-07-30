@@ -274,11 +274,13 @@ lsm.basis.mer = function(object, trms, xlev, grid, ...) {
 
 #--------------------------------------------------------------
 ### lme objects (nlme package)
-recover.data.lme = function(object, ...) {
+recover.data.lme = function(object, data, ...) {
     fcall = object$call
     if (!is.null(fcall$weights))
         fcall$weights = nlme::varWeights(object$modelStruct)
-    recover.data(fcall, delete.response(terms(object)), object$na.action, ...)
+    if(is.null(data)) # lme objects actually have the data, so use it!
+        data = object$data
+    recover.data(fcall, delete.response(terms(object)), object$na.action, data = data, ...)
 }
 
 lsm.basis.lme = function(object, trms, xlev, grid, adjustSigma = TRUE, ...) {
