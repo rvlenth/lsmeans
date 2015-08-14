@@ -1,7 +1,9 @@
 Changelog for 'lsmeans' package
 
-2.19-1
+2.19-2
+    Added 'rbind' function for combining ref.grids into one family
     Efficiency/robustness improvements to recover.data for certain models
+    
 
 2.19
     Added optional `params` argument for `ref.grid` and related

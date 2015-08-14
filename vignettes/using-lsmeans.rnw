@@ -92,6 +92,7 @@ options(show.signif.stars=FALSE, prompt="R> ", continue="   ",
 
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 \maketitle{}
 
 \begin{abstract}
