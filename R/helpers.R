@@ -586,13 +586,15 @@ lsm.basis.geese = function(object, trms, xlev, grid, vcov.method = "vbeta", ...)
 ### afex package - mixed objects ###
 # just need to provide an 'lsmeans' method here, assuming Henrik adds the 'data' item
 
-recover.data.mixed = function(object, ...) {
-    recover.data.merMod(object$full.model, ...)
-}
+### These are deprecated as of afex 0.14 - now afex has its own lsmeans support
 
-lsm.basis.mixed = function(object, trms, xlev, grid, ...) {
-    lsm.basis.merMod(object$full.model, trms, xlev, grid, ...)
-}
+# recover.data.mixed = function(object, ...) {
+#     recover.data.merMod(object$full.model, ...)
+# }
+# 
+# lsm.basis.mixed = function(object, trms, xlev, grid, ...) {
+#     lsm.basis.merMod(object$full.model, trms, xlev, grid, ...)
+# }
 
 
 #--------------------------------------------------------------
