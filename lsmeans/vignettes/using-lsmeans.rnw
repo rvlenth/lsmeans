@@ -288,6 +288,18 @@ plot(days.lsm, comparisons = TRUE, alpha = .10)
 \caption{Graphical comparisons of the LS~means for \code{days}.}\label{days-cmp}
 \end{figure}
 
+\subsection{Multiplicity adjustments---changing the family}
+You may have noticed that in the preceding examples where $P$-value adjustments were implemented, those adjustments were made \emph{separately} for each sub-table when a "by" variable is active. Some users prefer that all the adjusted tests together as one family---or even combine more than one family of tests into one family for purposes of adjustment. This may be done using the "rbind" method (similar to using "rbind" to combine matrices. 
+
+On the flip side, perhaps we want to exclude some tests. This may be used using the "[]" operator: simply specify the row indexes of the tests to include.
+
+To illustrate, consider the previously obtained "org.lsm" object. In "pairs(org.lsm)", we obtain the same results twice (as seen above) because the model is additive. For the same reason, if we change the "by" variable to \dqt{day}, we'll obtain three copies of the same comparison of the two "price2"s. If we want to consider the three "day" comparisons and the one "price2" comparison together as one family of four tests, we can do:
+<<>>=
+rbind(pairs(org.lsm)[1:3], pairs(org.lsm, by = "day")[1])
+@
+Note that by default, the \dqt{mvt} adjustment level is used; for complicated families like this, ordinary Tukey and Dunnett adjustments are usually not appropriate.
+
+
 
 
 \section{Multivariate models}

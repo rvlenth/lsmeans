@@ -9,8 +9,11 @@
 \alias{plot.summary.ref.grid}
 \alias{vcov.ref.grid}
 \alias{regrid}
+\alias{rbind}
+\alias{rbind.ref.grid}
 \alias{as.mcmc}
 \alias{as.mcmc.ref.grid}
+\alias{[.ref.grid}
 
 
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -27,6 +30,10 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 \method{predict}{ref.grid}(object, type, ...)
 
 \method{str}{ref.grid}(object, ...)
+
+\method{rbind}{ref.grid}(..., deparse.level = 1, adjust = "mvt")
+
+\method{[}{ref,grid}(x, i, adjust = "mvt", ...)
 
 \method{print}{ref.grid}(x, ...)
 \method{print}{summary.ref.grid}(x, ..., digits = NULL, quote = FALSE, right = TRUE)
@@ -68,8 +75,9 @@ If non-missing a constant number of degrees of freedom to use in constructing co
   \item{null}{Null hypothesis value(s) against which estimates are tested. May be a single value used for all, or a numeric vector of length equal to the number of tests in each family (i.e., \code{by} group in the displayed table).}
   \item{delta}{Numeric value. If zero, ordinary tests of significance are performed. If positive, this specifies a threshold for testing equivalence (using the TOST or two-one-sided-test method), non-inferiority, or non-superiority, depending on \code{side}. See Details for how the test statistics are defined.}
   \item{side}{Numeric or character value specifying whether the test is left-tailed (\code{-1}, \code{"-"}, code{"<"}, \code{"left"}, or \code{"nonsuperiority"}); right-tailed (\code{1}, \code{"+"}, \code{">"}, \code{"right"}, or \code{"noninferiority"}); or two-sided (\code{0}, \code{2}, \code{"!="}, \code{"two-sided"}, \code{"both"}, \code{"equivalence"}, or \code{"="}).}
+  \item{deparse.level}{This argument is needed by the generic \code{rbind} method, but ignored by its \code{ref.grid} method.}
   \item{x}{
-The object to be printed, plotted, or converted.
+The object to be subsetted, printed, plotted, or converted.
 }
   \item{y}{This argument is ignored.}
   \item{horizontal}{Determines orientation of plotted confidence intervals.}
@@ -88,7 +96,7 @@ The \code{misc} slot in \code{object} contains default values for \code{by}, \co
 With \code{type="response"}, the transformation assumed can be found in \samp{object@misc$tran}, and its label, for the summary is in \samp{object@misc$inv.lbl}. At this time, \code{tran} must be one of the named transformations valid for \code{\link{make.link}}. Any \eqn{t} or \eqn{z} tests are still performed on the scale of the linear predictor, not the inverse-transformed one. Similarly, confidence intervals are computed on the linear-predictor scale, then inverse-transformed.
 
 \bold{Confidence-limit and P-value adjustments:}
-The \code{adjust} argument has the following effects:
+The \code{adjust} argument specifies a multiplicity adjustment for tests or confidence intervals. This adjustment always is applied \emph{separately} to each table or sub-table that you see in the printed output (see the details on \code{rbind} below for how to combine tables). The valid values of \code{adjust} are as follows:
 \describe{
 \item{\code{"tukey"}}{Uses the Studentized range distribution with the number of means in the family. (Available for two-sided cases only.)} 
 \item{\code{"scheffe"}}{Computes \eqn{p} values from the \eqn{F} distribution, according to the Scheffe critical value of \eqn{\sqrt{kF(k,d)}}{sqrt[k*F(k,d)]}, where \eqn{d} is the error degrees of freedom and \eqn{k} is (family size minus 1) for contrasts, and (number of estimates) otherwise. (Available for two-sided cases only.)}
@@ -103,6 +111,10 @@ For P-value adjustments only, the other Bonferroni-inequality-based adjustment m
 Also, if an adjustment method is not appropriate (e.g., using \code{"tukey"} with one-sided tests, or with results that are not pairwise comparisons), a more appropriate method (usually \code{"sidak"}) is substituted. 
 
 In some cases, confidence and \eqn{p}-value adjustments are only approximate -- especially when the degrees of freedom or standard errors vary greatly within the family of tests. The \code{"mvt"} method is always the correct one-step adjustment, but it can be very slow. One may use \code{\link{as.glht}} with methods in the \pkg{multcomp} package to obtain non-conservative multi-step adjustments to tests.
+
+\bold{\code{rbind} and \code{[} methods:}
+\code{rbind} can be used to combine two or more reference grids into one. The \code{"["} method for \code{ref.grid}s may be used to obtain a subset. The primary reason for doing this would be to redefine the family of tests to which a P-value adjustment method applies. In \code{rbind}, the variables defined in the objects' grids are merged into one grid, and the returned object has no \dQuote{by} variables and the multiplicity adjustment method set to \code{"mvt"} (as this is likely the only appropriate one).
+\code{rbind} throws an error if there are any mismatches among the dimensions, fixed-effect coefficients, or covariance matrices.
 
 \bold{Non-estimable cases:}
 When the model is rank-deficient, each row \code{x} of \code{object}'s \code{linfct} slot is each checked for estimability. If \code{sum(x*bhat)} is found to be non-estimable, then an \code{NA} is displayed for the estimate (as well as any associated statistics). This check is performed using the orthonormal basis \code{N} in the \code{nbasis} slot for the null space of the rows of the model matrix. Estimability fails when \eqn{||Nx||^2 / ||x||^2} exceeds \code{tol}, which by default is \code{1e-8}. You may change it via \code{\link{lsm.options}} by setting \code{estble.tol} to the desired value.
@@ -153,6 +165,12 @@ summary(warp.rg)
 
 summary(warp.rg, by = "wool", 
         infer = c(TRUE, FALSE), level = .90, adjust = "sidak")
+
+# Do all pairwise comparisons within rows or within columns, 
+# all considered as one faily of tests:
+w.t <- pairs(lsmeans(warp.rg, ~ wool | tension))
+t.w <- pairs(lsmeans(warp.rg, ~ tension | wool))
+rbind(w.t, t.w)
 
 # Transformed response
 sqwarp.rg <- ref.grid(update(warp.lm, sqrt(breaks) ~ .))

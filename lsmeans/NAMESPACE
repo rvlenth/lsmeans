@@ -78,6 +78,8 @@ S3method(lsm.basis, mlm) # recover.data for mlm uses lm
 # For clarity, I'm showing them all 
 # but commenting out the ones used only interally
 
+S3method("[", ref.grid)
+
 S3method(as.glht, ref.grid)
 S3method(as.glht, lsm.list)
 
