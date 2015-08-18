@@ -24,8 +24,9 @@ Additional models can be supported by writing appropriate \code{recover.data} an
 
 \section{\pkg{afex} package}{
 \describe{
-\item{mixed}{Support for the \code{full.model} element of these objects is the same as that for \code{merMod} in the \pkg{lme4} package -- see below. However, for \pkg{afex} versions 0.10-113 and earlier, the \code{data} argument is required in calls to \code{lsmeans} or \code{ref.grid}, as the information about the original dataset is not preserved in the object.}
-}}% afex
+\item{mixed}{Support for \code{mixed} objects has been removed. Version 0.14 and later of \pkg{afex} provides new object classes with their own \pkg{lsmeans} support.}}% afex
+%%%Support for the \code{full.model} element of these objects is the same as that for \code{merMod} in the \pkg{lme4} package -- see below. However, for \pkg{afex} versions 0.10-113 and earlier, the \code{data} argument is required in calls to \code{lsmeans} or \code{ref.grid}, as the information about the original dataset is not preserved in the object.}
+
 
 \section{\pkg{CARBayes} package}{
 \describe{
