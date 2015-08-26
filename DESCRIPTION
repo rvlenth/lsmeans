@@ -1,10 +1,11 @@
 Package: lsmeans
 Type: Package
 Title: Least-Squares Means
-Version: 2.19-4
-Date: 2015-08-24
-Authors@R: c(person("Russell", "Lenth", role = c("aut", "cre"), email = "russell-lenth@uiowa.edu"),
-                    person("Maxime", "Herv\\'e", role = "ctb"))
+Version: 2.19-5
+Date: 2015-08-25
+Authors@R: c(person("Russell", "Lenth", role = c("aut", "cre"), 
+    email = "russell-lenth@uiowa.edu"),
+  person("Maxime", "Herv\\'e", role = "ctb"))
 Depends: estimability, methods, R (>= 3.0)
 Suggests: car, lattice, MCMCpack, mediation, multcompView, ordinal, pbkrtest (>= 0.4-1),
           afex, CARBayes, coxme, gee, geepack, glmmADMB, lme4.0, lme4, MASS, MCMCglmm, survival

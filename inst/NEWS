@@ -1,10 +1,13 @@
 Changelog for 'lsmeans' package
 
-2.19-3
+2.19-5
     Added 'rbind' function for combining ref.grids into one family
     Added "[.ref.grid" method for subsetting a reference grid
     Efficiency/robustness improvements to recover.data for certain models
     Removed 'mixed' support -- afex >= 0.14 has its own lsmeans support
+    Returned table from 'lsmip' now includes a "lattice" attribute;
+        also an additional 'plotit' argument to control its display
+    Changed DESCRIPTION to produce a clearer citation
     
 
 2.19

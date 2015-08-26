@@ -11,7 +11,7 @@ This function creates an interaction plot of the least-squares means based on a 
 \usage{
 \method{lsmip}{default}(object, formula, type,
     pch = c(1,2,6,7,9,10,15:20), 
-    lty = 1, col = NULL, ...)
+    lty = 1, col = NULL, plotit = TRUE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -34,6 +34,9 @@ The line types to use for each group. Recycled as needed.
 The colors to use for each group, recycled as needed. If not specified,
 the default trellis colors are used.
 }
+  \item{plotit}{
+If \code{TRUE}, the plot is displayed. Otherwise, one may use the \code{"lattice"} attribute of the returned object and print it, perhaps after additional manipulation.  
+}
   \item{\dots}{
 Additional arguments passed to \code{\link{lsmeans}} or to \code{\link[lattice]{xyplot}}. 
 }
@@ -43,7 +46,7 @@ If \code{object} is a fitted model, \code{\link{lsmeans}} is called with an appr
 Otherwise, if \code{object} is an \code{lsmobj} object, its first element is used, and it must contain one \code{lsmean} value for each combination of the factors present in \code{formula}.
 }
 \value{
-(Invisibly), the table of least-squares means that were plotted.
+(Invisibly), a \code{\link{data.frame} with the table of least-squares means that were plotted, with an additional \code{"lattice"} attribute containing the \code{trellis} object for the plot.
 }
 \author{
 Russell V. Lenth
