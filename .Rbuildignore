@@ -7,8 +7,8 @@ KRstuff.R
 old-lsmeans.R
 lsmeans-changes.rnw
 
-# Not ready for prime time
-#nonlin-support.R
+# Not yet ready for prime time
+#multinom-support.R
 
 # New devel stuff
 test-data.R

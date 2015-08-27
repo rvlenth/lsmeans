@@ -46,7 +46,7 @@ If \code{object} is a fitted model, \code{\link{lsmeans}} is called with an appr
 Otherwise, if \code{object} is an \code{lsmobj} object, its first element is used, and it must contain one \code{lsmean} value for each combination of the factors present in \code{formula}.
 }
 \value{
-(Invisibly), a \code{\link{data.frame} with the table of least-squares means that were plotted, with an additional \code{"lattice"} attribute containing the \code{trellis} object for the plot.
+(Invisibly), a \code{\link{data.frame}} with the table of least-squares means that were plotted, with an additional \code{"lattice"} attribute containing the \code{trellis} object for the plot.
 }
 \author{
 Russell V. Lenth

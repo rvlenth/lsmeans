@@ -111,6 +111,13 @@ Tests and confidence intervals are asymptotic.}
 \item{nlme}{Support is provided for inferences on parameters named in the \code{fixed} part of the model. The user \emph{must} specify \code{param} in the call and give the name of a parameter that appears in the right-hand side of a \code{fixed} formula. Degrees of freedom are obtained using the containment-like method described above for \code{lme}.}
 }}% nlme
 
+\section{\pkg{nnet} package}{
+\describe{
+\item{multinom}{
+The reference grid includes a pseudo-factor with the same name and levels as the multinomial response. There is an optional \code{mode} argument which should match \code{"latent"} or \code{"prob"}. The \code{"latent"} mode returns the linear predictor, recentered so that it averages to zero over the levels of the response variable (similar to sum-to-zero contrasts). Thus each latent variable can be regarded as the log probability at that level minus the average log probability over all levels. 
+The \code{"prob"} mode is not yet implemented.
+}}}% nnet, multinom
+
 \section{\pkg{ordinal} package}{
 \describe{
 \item{clm,clmm}{The reference grid will include all variables that appear in the main model as well as those in the \code{scale} or \code{nominal} models. There are two optional arguments: \code{mode} (a character string) and \code{rescale} (which defaults to \samp{c(0,1)}). \code{mode} should match one of \code{"latent"} (the default), \code{"linear.predictor"}, \code{"cum.prob"}, \code{"exc.prob"}, \code{"prob"}, \code{"mean.class"}, or \code{"scale"}. 
