@@ -88,19 +88,10 @@ lsm.basis.aovlist = function (object, trms, xlev, grid, vcov., ...) {
         dfargs = list()
         dffun = function(k, dfargs) NA
     }
-    else{
+    else {
         dfargs = list(Vmats=Vmats, Vidx=Vidx, Vdf=unlist(Vdf), wts = wts)
-        # this isn't perfect, but we'll use 1st row of k if it's a matrix
         dffun = function(k, dfargs) {
-            if(is.matrix(k) && (nrow(k) > 1))
-                k = k[1, ]
-            v = sapply(seq_along(dfargs$Vdf), function(j) {
-                ii = dfargs$Vidx[[j]]
-                kk = (k * dfargs$wts[j, ])[ii]            
-                #sum(kk * .mat.times.vec(dfargs$Vmats[[j]], kk))
-                .qf.non0(dfargs$Vmats[[j]], kk)
-            })
-            sum(v)^2 / sum(v^2 / dfargs$Vdf) # Good ole Satterthwaite
+            lsmeans::.aovlist.dffun(k, dfargs)
         }
     }
     nbasis = estimability::all.estble  # Consider this further?
@@ -108,4 +99,20 @@ lsm.basis.aovlist = function (object, trms, xlev, grid, vcov., ...) {
     
     list(X = X, bhat = bhat, nbasis = nbasis, V = V, dffun = dffun, 
          dfargs = dfargs, misc = misc)
+}
+
+.aovlist.dffun = function(k, dfargs) {
+    if(is.matrix(k) && (nrow(k) > 1)) {
+        dfs = apply(k, 1, .aovlist.dffun, dfargs)
+        min(dfs)
+    }
+    else {
+        v = sapply(seq_along(dfargs$Vdf), function(j) {
+            ii = dfargs$Vidx[[j]]
+            kk = (k * dfargs$wts[j, ])[ii]            
+            #sum(kk * .mat.times.vec(dfargs$Vmats[[j]], kk))
+            .qf.non0(dfargs$Vmats[[j]], kk)
+        })
+        sum(v)^2 / sum(v^2 / dfargs$Vdf) # Good ole Satterthwaite
+    }
 }
