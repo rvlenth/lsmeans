@@ -33,7 +33,7 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 
 \method{rbind}{ref.grid}(..., deparse.level = 1, adjust = "mvt")
 
-\method{[}{ref,grid}(x, i, adjust = "mvt", ...)
+\method{[}{ref.grid}(x, i, adjust = "mvt", ...)
 
 \method{print}{ref.grid}(x, ...)
 \method{print}{summary.ref.grid}(x, ..., digits = NULL, quote = FALSE, right = TRUE)
@@ -80,6 +80,7 @@ If non-missing a constant number of degrees of freedom to use in constructing co
 The object to be subsetted, printed, plotted, or converted.
 }
   \item{y}{This argument is ignored.}
+  \item{i}{Integer index(es) of which linear functions to extract.}
   \item{horizontal}{Determines orientation of plotted confidence intervals.}
   \item{intervals}{If \code{TRUE}, confidence intervals are plotted for each estimate}
   \item{comparisons}{If \code{TRUE}, \dQuote{comparison arrows} are added to the plot, in such a way that the degree to which arrows overlap reflects as much as possible the significance of the comparison of the two estimates.}
