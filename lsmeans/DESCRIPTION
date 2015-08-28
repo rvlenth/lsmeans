@@ -1,7 +1,7 @@
 Package: lsmeans
 Type: Package
 Title: Least-Squares Means
-Version: 2.19-7
+Version: 2.20
 Date: 2015-08-28
 Authors@R: c(person("Russell", "Lenth", role = c("aut", "cre"), 
     email = "russell-lenth@uiowa.edu"),
@@ -14,6 +14,7 @@ Imports: graphics, stats, utils, nlme,
 Additional_repositories: http://glmmadmb.r-forge.r-project.org/repos, http://lme4.0.r-forge.r-project.org/repos
 LazyData: yes
 ByteCompile: yes
+Encoding: latin1
 Description: Obtain least-squares means for many linear, generalized linear, 
   and mixed models. Compute contrasts or linear functions of least-squares
   means, and comparisons of slopes. Plots and compact letter displays.
