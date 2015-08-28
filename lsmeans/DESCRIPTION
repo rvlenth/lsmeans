@@ -1,8 +1,8 @@
 Package: lsmeans
 Type: Package
 Title: Least-Squares Means
-Version: 2.19-6
-Date: 2015-08-27
+Version: 2.19-7
+Date: 2015-08-28
 Authors@R: c(person("Russell", "Lenth", role = c("aut", "cre"), 
     email = "russell-lenth@uiowa.edu"),
   person("Maxime", "Herv\\'e", role = "ctb"))
