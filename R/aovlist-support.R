@@ -91,6 +91,8 @@ lsm.basis.aovlist = function (object, trms, xlev, grid, vcov., ...) {
     else{
         dfargs = list(Vmats=Vmats, Vidx=Vidx, Vdf=unlist(Vdf), wts = wts)
         dffun = function(k, dfargs) {
+            if(is.matrix(k) && (nrow(k) > 1))
+                stop("Joint tests are not supported for aovlist objects")
             v = sapply(seq_along(dfargs$Vdf), function(j) {
                 ii = dfargs$Vidx[[j]]
                 kk = (k * dfargs$wts[j, ])[ii]            
