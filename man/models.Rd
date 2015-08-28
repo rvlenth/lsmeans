@@ -114,8 +114,7 @@ Tests and confidence intervals are asymptotic.}
 \section{\pkg{nnet} package}{
 \describe{
 \item{multinom}{
-The reference grid includes a pseudo-factor with the same name and levels as the multinomial response. There is an optional \code{mode} argument which should match \code{"latent"} or \code{"prob"}. The \code{"latent"} mode returns the linear predictor, recentered so that it averages to zero over the levels of the response variable (similar to sum-to-zero contrasts). Thus each latent variable can be regarded as the log probability at that level minus the average log probability over all levels. 
-The \code{"prob"} mode is not yet implemented.
+The reference grid includes a pseudo-factor with the same name and levels as the multinomial response. There is an optional \code{mode} argument which should match \code{"prob"} or \code{"latent"}. With \code{mode = "prob"}, the reference-grid predictions consist of the estimated multinomial probabilities. The \code{"latent"} mode returns the linear predictor, recentered so that it averages to zero over the levels of the response variable (similar to sum-to-zero contrasts). Thus each latent variable can be regarded as the log probability at that level minus the average log probability over all levels. 
 }}}% nnet, multinom
 
 \section{\pkg{ordinal} package}{

@@ -74,6 +74,8 @@ lsm.basis.default = function(object, trms, xlev, grid, ...) {
 recover.data.call = function(object, trms, na.action, data = NULL, params = NULL, ...) {
     fcall = object # because I'm easily confused
     vars = setdiff(All.vars(trms), params)
+    if (length(vars) == 0)
+        return("Model must have at least one predictor")
     tbl = data
     if (is.null(tbl)) {
         m = match(c("formula", "data", "subset", "weights"), names(fcall), 0L)
