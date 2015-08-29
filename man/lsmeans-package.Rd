@@ -1,6 +1,7 @@
 \name{lsmeans-package}
 \alias{lsmeans-package}
 \docType{package}
+\encoding{utf-8}
 \title{
 Least-squares means
 }
