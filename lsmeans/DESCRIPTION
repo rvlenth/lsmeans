@@ -14,7 +14,6 @@ Imports: graphics, stats, utils, nlme,
 Additional_repositories: http://glmmadmb.r-forge.r-project.org/repos, http://lme4.0.r-forge.r-project.org/repos
 LazyData: yes
 ByteCompile: yes
-Encoding: latin1
 Description: Obtain least-squares means for many linear, generalized linear, 
   and mixed models. Compute contrasts or linear functions of least-squares
   means, and comparisons of slopes. Plots and compact letter displays.
