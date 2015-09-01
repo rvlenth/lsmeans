@@ -37,6 +37,11 @@ rbind.ref.grid = function(..., deparse.level = 1, adjust = "mvt") {
 }
 
 
+### Needed for compatibility with with R 3.1.3 and earlier
+setMethod("rbind2", signature(x = "ref.grid", y = "ref.grid"),
+          function(x, y, ...) rbind.ref.grid(x, y, ...))
+
+
 ### Subset a reference grid
 
 "[.ref.grid" = function(x, i, adjust = "mvt", ...) {
@@ -47,3 +52,4 @@ rbind.ref.grid = function(..., deparse.level = 1, adjust = "mvt") {
     x@misc$by.vars = NULL
     x
 }
+

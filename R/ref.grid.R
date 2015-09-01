@@ -473,6 +473,5 @@ regrid = function(object, transform = TRUE) {
 ## use S3 for this setMethod("summary", "ref.grid", summary.ref.grid)
 setMethod("show", "ref.grid", function(object) str.ref.grid(object))
 
-### Needed for compatibility with with R 3.1.3 and earlier
-setMethod("rbind2", signature = c("ref.grid", "ref.grid"),
-          function(x, y, ...) rbind.ref.grid(x, y, ...))
+
+
