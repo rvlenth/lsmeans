@@ -1,5 +1,5 @@
 
-R version 3.2.0 (2015-04-16) -- "Full of Ingredients"
+R Under development (unstable) (2015-08-28 r69202) -- "Unsuffered Consequences"
 Copyright (C) 2015 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
@@ -20,6 +20,13 @@ Type 'q()' to quit R.
 > require(lsmeans)
 Loading required package: lsmeans
 Loading required package: estimability
+
+Attaching package: 'lsmeans'
+
+The following object is masked from 'package:base':
+
+    rbind
+
 > 
 > # ---------- multivariate ---------------------------------
 > 
@@ -542,4 +549,4 @@ Confidence level used: 0.95
 > 
 > proc.time()
    user  system elapsed 
-   1.02    0.09    1.26 
+   1.01    0.32    2.84 

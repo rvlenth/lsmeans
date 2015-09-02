@@ -52,6 +52,7 @@ export(
     lsmip,
     lsm.options,
     lstrends,
+    rbind, # my own version that overrides one in methods
     recover.data,
     ref.grid,
     regrid,

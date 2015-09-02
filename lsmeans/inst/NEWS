@@ -1,8 +1,9 @@
 Changelog for 'lsmeans' package
 
-2.20-1
+2.20-2
     Fixed error in df for joint tests with aovlist objects (but existing 
         ref.grid objects need to be rebuilt for it to work)
+    Patched problem with rbind with R < 3.2
 
 
 2.20
