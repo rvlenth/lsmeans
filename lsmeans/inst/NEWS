@@ -1,5 +1,10 @@
 Changelog for 'lsmeans' package
 
+2.20-21
+    Fixed bug that occurs with models where the response is not 
+        discernible from the call.
+    
+
 2.20-2
     Fixed error in df for joint tests with aovlist objects (but existing 
         ref.grid objects need to be rebuilt for it to work)
