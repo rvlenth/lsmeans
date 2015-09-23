@@ -142,8 +142,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     misc = basis$misc
     
     form = attr(data, "call")$formula
-### Potential issue here - any better way to get the formula? Sometimes it's a call...    
-    if (inherits(form, "formula") && is.null(misc$tran) && (length(form) > 2)) { # No link fcn, but response may be transformed
+    if (is.null(misc$tran) && (length(form) > 2)) { # No link fcn, but response may be transformed
         lhs = form[-3] ####form[[2]]
         tran = setdiff(All.vars(lhs, functions = TRUE), c(All.vars(lhs), "~", "cbind"))
         if(length(tran) == 1)

@@ -686,6 +686,12 @@ lsm.basis.gam = function(object, trms, xlev, grid, ...) {
 ## Alternative to all.vars, but keeps vars like foo$x and foo[[1]] as-is
 ##   Passes ... to all.vars
 All.vars = function(expr, retain = c("\\$", "\\[\\[", "\\]\\]"), ...) {
+    if (!inherits(expr, "formula")) {
+        expr = try(eval(expr), silent = TRUE)
+        if(inherits(expr, "try-error")) {
+            return(character(0))
+        }
+    }
     repl = paste("_Av", seq_along(retain), "_", sep = "")
     for (i in seq_along(retain))
         expr = gsub(retain[i], repl[i], expr)
