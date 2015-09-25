@@ -8,6 +8,11 @@ plot.lsmobj = function(x, y, type, intervals = TRUE, comparisons = FALSE,
         object = update(x, predict.type = type, ..., silent = TRUE)
     else
         object = update(x, ..., silent = TRUE)
+    if (missing(int.adjust)) {
+        int.adjust = object@misc$adjust
+        if (is.null(int.adjust))
+            int.adjust = "none"
+    }
     summ = summary(object, infer = c(TRUE, FALSE), adjust = int.adjust)
     estName = attr(summ, "estName")
     extra = NULL
