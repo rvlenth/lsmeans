@@ -1,11 +1,15 @@
 Changelog for 'lsmeans' package
 
-2.20-22
+2.20-23
+    Added 'get.lsm.option()', works like 'getOption()' but with defaults
+        obtained from 'lsmeans::defaults'
+    Added pbkrtest.limit option -- to limit object size of 'lmerMod' objects 
+        for which the K-R method is used, to prevent excessive time/memory
     Fixed bug that occurs with models where the response is not 
         discernible from the call.
     In plot.lsmobj, int.adjust now defaults to object's 'adjust' setting
         (as it should have originally)
-    
+        
 
 2.20-2
     Fixed error in df for joint tests with aovlist objects (but existing 

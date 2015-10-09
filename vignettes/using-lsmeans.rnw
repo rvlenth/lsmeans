@@ -543,11 +543,15 @@ Note: "lstrends" computes a difference quotient based on two slightly different 
 <<>>=
 lsm.options(ref.grid = list(level = .90),
             lsmeans = list(),
-            contrast = list(infer = c(TRUE,TRUE)))
+            contrast = list(infer = c(TRUE, TRUE)))
 @
 This requests that any object created by "ref.grid" be set to have confidence levels default to $90$\%, and that "contrast" results are displayed with both intervals and tests. No new options are set for "lsmeans" results, and the "lsmeans" part could have been omitted. These options are stored with objects created by "ref.grid", "lsmeans", and "contrast". For example, even though no new defaults are set for "lsmeans", future calls to "lsmeans" \emph{on a model object} will be displayed with 90\% confidence intervals, because "lsmeans" calls "ref.grid". However, calling "lsmeans" on an existing \dqt{ref.grid} object will inherit that object's setting.
 
-
+Certain other options are available; for example, the \dqt{estble.tol} option sets the tolerance for determining estimability of linear contrasts. To see its current value:
+<<>>=
+get.lsm.option("estble.tol")
+@
+Defaults for this and some other parameters are saved in "lsm.default".
 
 
 

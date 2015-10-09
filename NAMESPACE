@@ -4,7 +4,7 @@
 # From default packages (new req from CRAN, July 2015)
 importFrom("graphics", "pairs")
 importFrom("stats", "as.formula", "coef", "complete.cases", "confint", "cov", "cov2cor", "delete.response", "deriv", "family", "lm", "make.link", "model.frame", "model.matrix", "na.omit", "na.pass", "p.adjust", "p.adjust.methods", "pchisq", "pf", "poly", "predict", "pt", "ptukey", "qf", "qt", "qtukey", "reformulate", "terms", "uniroot", "update", "vcov")
-importFrom("utils", "str")
+importFrom("utils", "installed.packages", "object.size", "str")
 importFrom("nlme", "fixef")
 
 # Others
@@ -44,6 +44,8 @@ export(
     All.vars,
     as.glht,
     contrast,
+    defaults,
+    get.lsm.option,
     lsm,
     lsm.basis,
     lsmeans, 

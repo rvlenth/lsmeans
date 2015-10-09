@@ -8,21 +8,6 @@
     else 0
 }
 
-# utility to check estimability of x'beta, given nonest.basis
-### Moved this to separate 'estimability' package
-# is.estble = function(x, nbasis, tol=1e-8) {
-#     if (is.matrix(x))
-#         return(apply(x, 1, is.estble, nbasis, tol))
-#     if(is.na(nbasis[1]))
-#         TRUE
-#     else {
-#         chk = as.numeric(crossprod(nbasis, x))
-#         ssqx = sum(x*x) # BEFORE subsetting x
-#         # If x really small, don't scale chk'chk
-#         if (ssqx < tol) ssqx = 1
-#         sum(chk*chk) < tol * ssqx
-#     }
-# }
 
 # utility fcn to get est's, std errors, and df
 # new arg: do.se -- if FALSE, just do the estimates and return 0 for se and df
@@ -31,9 +16,7 @@
 #                       tol=getOption("lsmeans")$estble.tol) {
 # 2.13: Revised to call w/ just object instead of all those args (except linfct)
 #   Also moved offset comps to here, and provided for misc$estHook
-.est.se.df = function(object, do.se=TRUE, tol=lsm.options()$estble.tol) {
-    if (is.null(tol)) 
-        tol = 1e-8
+.est.se.df = function(object, do.se=TRUE, tol = get.lsm.option("estble.tol")) {
     misc = object@misc
     if (!is.null(hook <- misc$estHook)) {
         if (is.character(hook)) hook = get(hook)
@@ -321,7 +304,7 @@
 # S3 predict method
 predict.ref.grid <- function(object, type, ...) {
     # update with any "summary" options
-    opt = lsm.options()$summary
+    opt = get.lsm.option("summary")
     if(!is.null(opt)) {
         opt$object = object
         object = do.call("update.ref.grid", opt)
@@ -349,7 +332,7 @@ predict.ref.grid <- function(object, type, ...) {
 summary.ref.grid <- function(object, infer, level, adjust, by, type, df, 
                              null = 0, delta = 0, side = 0, ...) {
     # update with any "summary" options
-    opt = lsm.options()$summary
+    opt = get.lsm.option("summary")
     if(!is.null(opt)) {
         opt$object = object
         object = do.call("update.ref.grid", opt)

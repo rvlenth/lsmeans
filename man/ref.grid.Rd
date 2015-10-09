@@ -14,7 +14,7 @@ Using a fitted model object, determine a reference grid for which least-squares 
 }
 \usage{
 ref.grid(object, at, cov.reduce = mean, mult.name, mult.levs, 
-    options = lsm.options()$ref.grid, data, type, ...)
+    options = get.lsm.option("ref.grid"), data, type, ...)
 }
 
 \arguments{

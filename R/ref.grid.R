@@ -8,7 +8,7 @@
 #     FALSE - same as function(x) sort(unique(x))
 
 ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, 
-                     options = lsm.options()$ref.grid, data, type, ...) {
+                     options = get.lsm.option("ref.grid"), data, type, ...) {
     # recover the data
     if (missing(data)) {
         data = try(recover.data (object, data = NULL, ...))
@@ -370,9 +370,7 @@ print.ref.grid = function(x,...)
 
 # vcov method
 vcov.ref.grid = function(object, ...) {
-    tol = lsm.options()$estble.tol
-    if(is.null(tol)) 
-        tol = 1e-8
+    tol = get.lsm.option("estble.tol")
     if (!is.null(hook <- object@misc$vcovHook)) {
         if (is.character(hook)) 
             hook = get(hook)
@@ -420,8 +418,8 @@ update.ref.grid = function(object, ..., silent = FALSE) {
 
 ### set or change lsmeans options
 lsm.options = function(...) {
-    opts = getOption("lsmeans")
-    if (is.null(opts)) opts = list()
+    opts = getOption("lsmeans", list())
+#    if (is.null(opts)) opts = list()
     newopts = list(...)
     for (nm in names(newopts))
         opts[[nm]] = newopts[[nm]]
@@ -429,11 +427,25 @@ lsm.options = function(...) {
     invisible(opts)
 }
 
+# equivalent of getOption()
+get.lsm.option = function(x, default = lsmeans::defaults[[x]]) {
+    opts = getOption("lsmeans", list())
+    if(is.null(default) || x %in% names(opts))
+        opts[[x]]
+    else 
+        default
+}
+
+### Exported defaults for certain options
+defaults = list(
+    estble.tol = 1e-8,
+    pbkrtest.limit = 1
+)
+
 # Utility that returns TRUE if getOption("lsmeans")[[opt]] is TRUE
 .lsm.is.true = function(opt) {
-    x = getOption("lsmeans")[[opt]]
-    if (is.null(x))  FALSE
-    else if (is.logical(x))  x
+    x = get.lsm.option(opt, FALSE)
+    if (is.logical(x))  x
     else FALSE
 }
 
