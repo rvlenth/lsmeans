@@ -33,7 +33,7 @@ lsmip.default = function(object, formula, type,
     lsmopts$specs = reformulate(allvars)
     lsmo = do.call("lsmeans", lsmopts)
     if(missing(type)) {
-        type = lsm.options()$summary$predict.type
+        type = get.lsm.option("summary")$predict.type
         if (is.null(type))
             type = .get.predict.type(lsmo@misc)
     }

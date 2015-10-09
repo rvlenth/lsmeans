@@ -2,9 +2,11 @@
 \alias{update}
 \alias{update.ref.grid}
 \alias{lsm.options}
+\alias{get.lsm.option}
+\alias{defaults}
 
 \title{
-Set options for \code{ref.grid} or \code{lsmobj} objects
+Set or retrieve options for objects and summaries in \pkg{lsmeans}
 }
 \description{
 Objects of class \code{ref.grid} or \code{lsmobj} contain several settings in their \code{"misc"} slot that affect primarily the 
@@ -16,6 +18,7 @@ In addition, the user may set defaults for all objects using \samp{options(lsmea
 \S3method{update}{ref.grid}(object, ..., silent = FALSE)
 
 lsm.options(...)
+get.lsm.option(x, default = lsmeans::defaults[[x]])
 }
 \arguments{
   \item{object}{An object of class \code{ref.grid} (or its extension, \code{lsmobj})
@@ -24,6 +27,8 @@ lsm.options(...)
 Arguments specifying elements' names and their new values.
 }
   \item{silent}{If \code{FALSE}, a message is displayed for any unmatched names.}
+  \item{x}{Character string holding an option name for \code{lsm.options}.}
+  \item{default}{Return value if \code{x} is not found.}
 }
 \details{
 In \code{update}, the names in \code{\dots} are partially matched against those that are valid, and if a match is found, it adds or replaces the current setting. The valid names are
@@ -69,7 +74,7 @@ In \code{lsm.options}, we may set or change the default values for the above att
 \item{\code{lsmeans}}{A named \code{list} of defaults for objects created by \code{\link{lsmeans}} (or \code{\link{lstrends}}).}
 \item{\code{contrast}}{A named \code{list} of defaults for objects created by \code{\link{contrast}} (or \code{\link{pairs}}).}
 \item{\code{summary}}{A named \code{list} of defaults used by the methods \code{\link{summary}}, \code{\link{predict}}, and \code{\link{lsmip}}. The only option that can affect the latter two is \code{"predict.method"}.}
-\item{\code{estble.tol}}{Tolerance for determining estimability in rank-deficient cases. If absent, \code{1e-8} is used.}
+\item{\code{estble.tol}}{Tolerance for determining estimability in rank-deficient cases. If absent, the value in \code{lsmeans::defaults$estble.tol)} is used.}
 } % end \describe
 } % end details
 \value{
@@ -108,11 +113,14 @@ lsm.options(ref.grid = list(level = .90),
 # reference grid). In addition, when we call 'contrast', 'pairs', etc.,
 # confidence intervals rather than tests are displayed by default.
 
+\dontrun{
 lsm.options(disable.pbkrtest = TRUE)
 # This forces use of asymptotic methods for lmerMod objects.
 # Set to FALSE or NULL to re-enable using pbkrtest.
+}
 
-print(lsm.options())    # see the current settings
+# See tolerance being used for determining estimability
+get.lsm.option("estble.tol")
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
