@@ -182,7 +182,7 @@ lsm.basis.merMod = function(object, trms, xlev, grid, vcov., ...) {
     if (lme4::isLMM(object)) {
         pbdis = .lsm.is.true("disable.pbkrtest")
         sizelim = get.lsm.option("pbkrtest.limit")
-        objsize = object.size(object) / 2^30
+        objsize = object.size(object) / 2^10
         toobig = objsize > sizelim
         if (!pbdis && !toobig && requireNamespace("pbkrtest") && missing(vcov.)) {
             dfargs = list(unadjV = V, 
@@ -201,8 +201,8 @@ lsm.basis.merMod = function(object, trms, xlev, grid, vcov., ...) {
                 message("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
             else if(toobig)
                 message("Adjusted covariance calculations and K-R degrees of freedom\n",
-                        "have been disabled because the model object exceeds ", signif(sizelim, 2), " GB.\n",
-                        "To enable it, set lsm.options(pbkrtest.limit = ", round(objsize+.01, 2), ") or larger,\n",
+                        "have been disabled because the model object exceeds ", signif(sizelim, 2), " KB.\n",
+                        "To enable it, set lsm.options(pbkrtest.limit = ", round(objsize+.5), ") or larger,\n",
                         "but be warned that this may result in large computation time and memory use.")
             dffun = function(k, dfargs) NA
         }
