@@ -1,5 +1,9 @@
 Changelog for 'lsmeans' package
 
+2.20-24
+    Changed default for pbkrtest.limit to a much more realistic value
+    
+
 2.20-23
     Added 'get.lsm.option()', works like 'getOption()' but with defaults
         obtained from 'lsmeans::defaults'
