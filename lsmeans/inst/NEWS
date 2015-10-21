@@ -1,7 +1,8 @@
 Changelog for 'lsmeans' package
 
-2.20-24
-    Changed default for pbkrtest.limit to a much more realistic value
+2.20-25
+    Changed implementation of pbkrtest.limit - now based on
+        number of rows of design matrix.
     
 
 2.20-23

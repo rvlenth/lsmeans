@@ -440,7 +440,7 @@ get.lsm.option = function(x, default = lsmeans::defaults[[x]]) {
 defaults = list(
     estble.tol = 1e-8,        # tolerance for estimability checks
     disable.pbkrtest = FALSE, # whether to bypass pbkrtest routines for lmerMod
-    pbkrtest.limit = 200      # KB limit for object size
+    pbkrtest.limit = 3000     # limit on N for enabling adj V
 )
 
 # Utility that returns TRUE if getOption("lsmeans")[[opt]] is TRUE

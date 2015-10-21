@@ -71,7 +71,7 @@ If \pkg{pbkrtest} is not installed, the covariance matrix is not adjusted, degre
 
 The user may disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbkrtest=TRUE)} (this does not disable the \pkg{pbkrtest} package entirely, just its use in \pkg{lsmeans}). The \code{df} argument may be used to specify some other degrees of freedom. Specifying \code{df} is \emph{not} equivalent to disabling \pkg{pbkrtest}, because if not disabled, the covariance matrix is still adjusted.
 
-On a related matter: for very large objects, computation time or memory use may be excessive. Thus, \pkg{pbkrtest} is also automatically disabled if the size of the object (in KB) exceeds the value of \code{get.lsm.option("pbkrtest.limit")}. If desired, the user may use \code{lsm.options} to adjust this limit from the 200KB default.}
+On a related matter: for very large objects, computation time or memory use may be excessive. The amount required depends roughly on the number of observations, \emph{N}, in the design matrix (because a major part of the computation involves inverting an \emph{N x N} matrix). Thus, \pkg{pbkrtest} is automatically disabled if \emph{N} exceeds the value of \code{get.lsm.option("pbkrtest.limit")}. If desired, the user may use \code{lsm.options} to adjust this limit from the default of 3000.}
 \item{glmerMod}{No degrees of freedom are available for these objects, so tests and confidence intervals are asymptotic.}
 }}% lme4
 
