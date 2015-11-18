@@ -234,12 +234,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     grid[[".wgt."]] = wgt
 
     misc$ylevs = NULL # No longer needed
-    if (is.null(misc$estName)) {
-        if (!is.null(misc$tran) && !is.null(misc$inv.lbl))
-            misc$estName = paste(misc$tran, "(", misc$inv.lbl, ")", sep = "")
-        else
-            misc$estName = "prediction"
-    }
+    misc$estName = "prediction"
     misc$estType = "prediction"
     misc$infer = c(FALSE,FALSE)
     misc$level = .95

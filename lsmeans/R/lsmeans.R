@@ -217,7 +217,8 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     
     RG@roles$responses = character()
     RG@misc$famSize = nrow(linfct)
-    if(RG@misc$estName == "prediction") RG@misc$estName = "lsmean"
+    if(RG@misc$estName == "prediction") 
+        RG@misc$estName = "lsmean"
     RG@misc$adjust = "none"
     RG@misc$infer = c(TRUE,FALSE)
     RG@misc$pri.vars = setdiff(facs, by)

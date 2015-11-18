@@ -389,6 +389,14 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     
     mesg = object@misc$initMesg
     
+    ### Add an annotation when we show results on lp scale and
+    ### there is a transformation
+    if (!inv && !is.null(linkName <- object@misc$tran)) {
+        if (!is.character(linkName))
+            linkName = "linear predictor (not response)"
+        mesg = c(mesg, paste("Results are given on the", linkName, "scale."))
+    }
+    
     # et = 1 if a prediction, 2 if a contrast (or unmatched or NULL), 3 if pairs
     et = pmatch(c(object@misc$estType, "c"), c("prediction", "contrast", "pairs"), nomatch = 2)[1]
     
