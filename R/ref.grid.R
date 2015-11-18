@@ -145,8 +145,10 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     if (is.null(misc$tran) && (length(form) > 2)) { # No link fcn, but response may be transformed
         lhs = form[-3] ####form[[2]]
         tran = setdiff(All.vars(lhs, functions = TRUE), c(All.vars(lhs), "~", "cbind"))
-        if(length(tran) == 1)
+        if(length(tran) == 1) {
             misc$tran = tran
+            misc$inv.lbl = "response"
+        }
     }
     
     # Take care of multivariate response
@@ -232,7 +234,12 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     grid[[".wgt."]] = wgt
 
     misc$ylevs = NULL # No longer needed
-    misc$estName = "prediction"
+    if (is.null(misc$estName)) {
+        if (!is.null(misc$tran) && !is.null(misc$inv.lbl))
+            misc$estName = paste(misc$tran, "(", misc$inv.lbl, ")", sep = "")
+        else
+            misc$estName = "prediction"
+    }
     misc$estType = "prediction"
     misc$infer = c(FALSE,FALSE)
     misc$level = .95

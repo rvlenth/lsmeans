@@ -1,8 +1,10 @@
 Changelog for 'lsmeans' package
 
-2.20-25
+2.20-26
     Changed implementation of pbkrtest.limit - now based on
         number of rows of design matrix.
+    Added support for "zeroinfl" class (pscr package)
+    Changes in estName defaults in hopes of being more informative
     
 
 2.20-23
