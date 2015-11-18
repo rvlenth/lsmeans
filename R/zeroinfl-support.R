@@ -18,7 +18,7 @@ recover.data.zeroinfl = function(object, mode = c("response", "count", "zero"), 
 
 
 lsm.basis.zeroinfl = function(object, trms, xlev, grid, 
-        mode = c("response", "count", "zero"), ...) 
+        mode = c("mean", "count", "zero"), ...) 
 {
     mode = match.arg(mode)
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
@@ -28,12 +28,11 @@ lsm.basis.zeroinfl = function(object, trms, xlev, grid,
         bhat = coef(object, model = mode)
         V = vcov(object, model = mode)
         if (mode == "count")
-            misc = list(tran = "log", inv.lbl = "count", estName = "log(count)")
+            misc = list(tran = "log", inv.lbl = "count")
         else
-            misc = list(tran = object$link, inv.lbl = "prob", 
-                        estName = paste(object$link, "(prob)", sep = ""))
+            misc = list(tran = object$link, inv.lbl = "prob")
     }
-    else {
+    else {   ### mode = "mean"
         trms1 = delete.response(terms(object, model = "count"))
         contr1 = object$contrasts[["count"]]
         X1 = model.matrix(trms1, m, contrasts.arg = contr1)
@@ -44,10 +43,12 @@ lsm.basis.zeroinfl = function(object, trms, xlev, grid,
         contr2 = object$contrasts[["zero"]]
         X2 = model.matrix(trms2, m, contrasts.arg = contr2)
         b2 = coef(object, model = "zero")
-        eta2 = as.numeric(object$linkinv(X2 %*% b2))
+        lp2 = as.numeric(X2 %*% b2)
+        eta2 = object$linkinv(lp2)
+        eta2prime = stats::make.link(object$link)$mu.eta(lp2)
         
-        X = diag(eta1) %*% cbind(diag(1 - eta2) %*% X1, diag(-eta2) %*% X2)
-        V = X %*% tcrossprod(vcov(object, model = "full"), X)
+        delta = diag(eta1) %*% cbind(diag(1 - eta2) %*% X1, diag(-eta2prime) %*% X2)
+        V = delta %*% tcrossprod(vcov(object, model = "full"), delta)
         bhat = (1 - eta2) * eta1
         X = diag(1, length(bhat))
         

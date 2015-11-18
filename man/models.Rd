@@ -143,12 +143,12 @@ Tests and confidence intervals are asymptotic.}
 \section{\pkg{pscr} package}{
 \describe{
 \item{zeroinfl}{
-An optional \code{mode} argument is provided with possible values \code{"response"} (the default), \code{"count"}, or \code{"zero"}. These essentially correspond to the same options for \code{type} in \code{\link[pscr]{predict.zeroinfl}}, \emph{except} the results are not back-transformed for 
-\code{"count"} or \code{"zero"}. (To also back-transform, also specify \code{type = "response"}; or later, create a back-transformed version via \code{\link{regrid}}, or use \code{\link{summary}} with \code{type = "response"}.) 
-
-With \code{mode = "count"}, the predicted log count is used. With \code{mode = "zero"}, the linear predictor (according to the \code{link} used, e.g., logit) for the probability of zero is used. With \code{mode = "response"} or unspecified \code{mode}, the results consist of predictions of the mean of the zero-inflated distribution, i.e., \eqn{(1-P(0))*count}; these results are already converted to the dependent variable's scale.
+An optional \code{mode} argument is provided with possible values \code{"mean"} (the default), \code{"count"}, or \code{"zero"}. 
+With \code{mode = "count"}, the count model is used, and results are thus predicted log counts (add \code{type = "response"} to obtain predicted counts). 
+With \code{mode = "zero"}, the zero model is used, and results are in terms of the link function (e.g., logit) of the probability of zero (add \code{type = "response"} to obtain predicted probabilities). 
+With \code{mode = "mean"} or unspecified \code{mode}, the results consist of predictions of the mean of the zero-inflated distribution, i.e., \eqn{(1-P(0))*count}; these results are already converted to the same scale of measurement as the dependent variable.
 }
-}}% survival
+}}% pscr
 
 
 \section{\pkg{rms} package}{
