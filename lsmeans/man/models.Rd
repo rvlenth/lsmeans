@@ -139,6 +139,18 @@ Any grid point that is non-estimable by either the location or the scale model (
 Tests and confidence intervals are asymptotic.}
 }}% ordinal
 
+
+\section{\pkg{pscr} package}{
+\describe{
+\item{zeroinfl}{
+An optional \code{mode} argument is provided with possible values \code{"response"} (the default), \code{"count"}, or \code{"zero"}. These essentially correspond to the same options for \code{type} in \code{\link[pscr]{predict.zeroinfl}}, \emph{except} the results are not back-transformed for 
+\code{"count"} or \code{"zero"}. (To also back-transform, also specify \code{type = "response"}; or later, create a back-transformed version via \code{\link{regrid}}, or use \code{\link{summary}} with \code{type = "response"}.) 
+
+With \code{mode = "count"}, the predicted log count is used. With \code{mode = "zero"}, the linear predictor (according to the \code{link} used, e.g., logit) for the probability of zero is used. With \code{mode = "response"} or unspecified \code{mode}, the results consist of predictions of the mean of the zero-inflated distribution, i.e., \eqn{(1-P(0))*count}; these results are already converted to the dependent variable's scale.
+}
+}}% survival
+
+
 \section{\pkg{rms} package}{
 \describe{
 \item{Potential masking issue}{
