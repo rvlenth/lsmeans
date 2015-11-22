@@ -4,6 +4,8 @@
 \alias{lsm.options}
 \alias{get.lsm.option}
 \alias{defaults}
+\alias{pmm.options}
+\alias{get.pmm.option}
 
 \title{
 Set or retrieve options for objects and summaries in \pkg{lsmeans}
@@ -12,13 +14,16 @@ Set or retrieve options for objects and summaries in \pkg{lsmeans}
 Objects of class \code{ref.grid} or \code{lsmobj} contain several settings in their \code{"misc"} slot that affect primarily the 
 defaults used by \code{\link{summary}}. This \code{update} method allows them to be changed more safely than by modifying this slot directly. 
 
-In addition, the user may set defaults for all objects using \samp{options(lsmeans = ...)}, or more conveniently using the \code{lsm.options} function documented here.
+In addition, the user may set defaults for all objects using \samp{options(lsmeans = ...)}, or more conveniently using the \code{lsm.options} and \code{get.lsm.option} functions documented here (or its courtesy wrappers, \code{pmm.options} and \code{get.pmm.option} for those who dislike the \sQuote{least-squares means} terminology).
 }
 \usage{
 \S3method{update}{ref.grid}(object, ..., silent = FALSE)
 
 lsm.options(...)
 get.lsm.option(x, default = lsmeans::defaults[[x]])
+
+pmm.options(...)
+get.pmm.option(...)
 }
 \arguments{
   \item{object}{An object of class \code{ref.grid} (or its extension, \code{lsmobj})

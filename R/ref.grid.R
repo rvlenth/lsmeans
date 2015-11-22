@@ -458,7 +458,7 @@ defaults = list(
 ### Primary reason to do this is with transform = TRUE, then can 
 ### work with linear functions of the transformed predictions
 regrid = function(object, transform = TRUE) {
-    est = .est.se.df(object, do.se = FALSE)
+    est = .est.se.df(object, do.se = TRUE) ###FALSE)
     estble = !(is.na(est[[1]]))
     object@V = vcov(object)[estble, estble, drop=FALSE]
     object@bhat = est[[1]]
@@ -476,6 +476,19 @@ regrid = function(object, transform = TRUE) {
         if (!is.null(inm))
             object@misc$estName = inm
         object@misc$tran = object@misc$inv.lbl = NULL
+        # override the df function
+        df = est$df
+        if (length(unique(df)) == 1) {
+            object@dfargs = list(df = df[1])
+            object@dffun = function(k, dfargs) dfargs$df
+        }
+        else { # use containment df
+            object@dfargs = list(df = df)
+            object@dffun = function(k, dfargs) {
+                idx = which(zapsmall(k) != 0)
+                ifelse(length(idx) == 0, NA, min(dfargs$df[idx]))
+            }
+        }
     }
     # Nix out things that are no longer needed or valid
     object@grid$.offset. = object@misc$offset.mult =

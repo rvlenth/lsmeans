@@ -1,18 +1,14 @@
-# Preliminary Support for ZIP models
+# Support for zeroinfl and hurdle models
 
 # zeroinfl objects (pscr package)
 
-recover.data.zeroinfl = function(object, mode = c("response", "count", "zero"), ...) {
+recover.data.zeroinfl = function(object, mode = c("mean", "count", "zero"), ...) {
     fcall = object$call
     mode = match.arg(mode)
     if (mode %in% c("count", "zero"))
         trms = delete.response(terms(object, model = mode))
-    else {
-        trms = delete.response(terms(object, model = "count"))
-        zv = all.vars(delete.response(terms(object, model = "zero")))
-        if (length(zv) > 0)
-            trms = update(trms, reformulate(zv))
-    }
+    else ### mode = "mean"
+        trms = delete.response(object$terms$full)
     recover.data(fcall, trms, object$na.action, ...)
 }
 
