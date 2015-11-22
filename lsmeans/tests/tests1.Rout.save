@@ -1,5 +1,5 @@
 
-R Under development (unstable) (2015-08-28 r69202) -- "Unsuffered Consequences"
+R version 3.2.2 (2015-08-14) -- "Fire Safety"
 Copyright (C) 2015 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
@@ -433,19 +433,20 @@ wool = B:
  M       3.332706 0.1206070 38 3.088550 3.576862
  H       2.933453 0.1229958 38 2.684461 3.182445
 
+Results are given on the log scale. 
 Confidence level used: 0.95 
 > summary(warp.lsm5, type = "resp")
 wool = A:
- tension lsresponse       SE df lower.CL upper.CL
- L         45.32245 8.277551 38 31.31426 65.59711
- M         22.17601 2.883144 38 17.04430 28.85278
- H         21.25321 2.756618 38 16.34524 27.63489
+ tension response       SE df lower.CL upper.CL
+ L       45.32245 8.277551 38 31.31426 65.59711
+ M       22.17601 2.883144 38 17.04430 28.85278
+ H       21.25321 2.756618 38 16.34524 27.63489
 
 wool = B:
- tension lsresponse       SE df lower.CL upper.CL
- L         26.63919 3.467596 38 20.46816 34.67077
- M         28.01405 3.378691 38 21.94524 35.76116
- H         18.79240 2.311387 38 14.65030 24.10561
+ tension response       SE df lower.CL upper.CL
+ L       26.63919 3.467596 38 20.46816 34.67077
+ M       28.01405 3.378691 38 21.94524 35.76116
+ H       18.79240 2.311387 38 14.65030 24.10561
 
 Confidence level used: 0.95 
 > 
@@ -462,6 +463,7 @@ Confidence level used: 0.95
  3       2.751535 0.1458650 NA  2.465645  3.037425
 
 Results are averaged over the levels of: treatment 
+Results are given on the log scale. 
 Confidence level used: 0.95 
 > # un-log the results to obtain rates
 > summary(lsm.D93, type = "resp")
@@ -549,4 +551,4 @@ Confidence level used: 0.95
 > 
 > proc.time()
    user  system elapsed 
-   1.01    0.32    2.84 
+   1.10    0.09    1.37 

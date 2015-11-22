@@ -6,10 +6,13 @@
 \alias{lsmeans.character.ref.grid}
 \alias{lstrends}
 \alias{lsmobj}
+\alias{pmmeans}
+\alias{pmtrends}
+\alias{pmmobj}
 
-\title{Least-squares means}
+\title{Least-squares means (or predicted marginal means)}
 \description{
-Compute least-squares means for specified factors or factor combinations in a linear model,
+Compute least-squares means (predicted marginal means) for specified factors or factor combinations in a linear model,
 and optionally comparisons or contrasts among them.
 }
 \usage{
@@ -30,6 +33,10 @@ and optionally comparisons or contrasts among them.
 lstrends(model, specs, var, delta.var = 0.01 * rng, data, ...)
 
 lsmobj(bhat, V, levels, linfct, df = NA, post.beta = matrix(NA), ...)
+
+pmmeans(...)
+pmtrends(...)
+pmmobj(...)
 }
 \arguments{
 \item{object}{
@@ -89,7 +96,9 @@ The value of \emph{h} to use in forming the difference quotient \emph{(f(x+h) - 
 
 
 \details{
-Least-squares means are predictions from a linear model over a \emph{reference grid}, or marginal averages thereof. They have been popularized by \pkg{SAS} (SAS Institute, 2012). The \code{\link{ref.grid}} function identifies/creates the reference grid upon which \code{lsmeans} is based. 
+Least-squares means (also called predicted marginal means) are predictions from a linear model over a \emph{reference grid}, or marginal averages thereof. They have been popularized by \pkg{SAS} (SAS Institute, 2012). The \code{\link{ref.grid}} function identifies/creates the reference grid upon which \code{lsmeans} is based.
+
+For those who prefer the term \dQuote{predicted marginal means}, courtesy wrappers \code{pmmeans}, \code{pmtrends}, and \code{pmmobj} are provided that behave identically to those that start with \code{ls}, except that estimates are relabeled accordingly (e.g., \code{lsmean} becomes \code{pmmean}).
 
 If \code{specs} is a \code{formula}, it should be of the form \code{contr ~ specs | by}. The formula is parsed and then used as the arguments \code{contr}, \code{specs}, and \code{by} as indicated. The left-hand side is optional, but if specified it should be the name of a contrast family (e.g., \code{pairwise}) or of a sub-list of \code{contr.list}. Operators like \code{*} or \code{:} are necessary to delineate names in the formulas, but otherwise are ignored.
 
@@ -165,9 +174,10 @@ Oats.lme <- lme(yield ~ factor(nitro) + Variety,
 test(Oats.anal)                # Uses 1st element by default
 confint(Oats.anal, which = 4)  # or confint(Oats.anal[[4]])
 
+# Using 'pmmeans' wrapper ...
 # These two calls apply the "bonf" adjustment to different elements...
-lsmeans(warp.lm, eff ~ wool, adjust = "bonf") 
-lsmeans(warp.lm, eff ~ wool, options = list(adjust = "bonf"))
+pmmeans(warp.lm, eff ~ wool, adjust = "bonf") 
+pmmeans(warp.lm, eff ~ wool, options = list(adjust = "bonf"))
 # Advice: Do one thing at a time if you want non-default adjustments
 #   e.g., wool.lsm <- lsmeans(warp.lm, ~ wool)
 #         summary(wool.lsm, adjust = "bonf")
@@ -210,11 +220,11 @@ n <-    c(44,   11,   37,   24)
 se2 = s^2 / n
 Satt.df <- function(x, dfargs)
     sum(x * dfargs$v)^2 / sum((x * dfargs$v)^2 / (dfargs$n - 1))
-city.lsm <- lsmobj(bhat = ybar, V = diag(se2),
+city.pmm <- pmmobj(bhat = ybar, V = diag(se2),
     levels = list(city = LETTERS[1:4]), linfct = diag(c(1,1,1,1)),
     df = Satt.df, dfargs = list(v = se2, n = n), estName = "mean")
-city.lsm
-contrast(city.lsm, "revpairwise")
+city.pmm
+contrast(city.pmm, "revpairwise")
     
     
 # See also many other examples in documentation for 

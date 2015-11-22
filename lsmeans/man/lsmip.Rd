@@ -1,9 +1,10 @@
 \name{lsmip}
 \alias{lsmip}
 \alias{lsmip.default}
-%- Also NEED an '\alias' for EACH other topic documented here.
+\alias{pmmip}
+
 \title{
-Least-squares means interaction plot
+Least-squares (predicted marginal) means interaction plot
 }
 \description{
 This function creates an interaction plot of the least-squares means based on a fitted model and a simple formula specification.
@@ -12,6 +13,8 @@ This function creates an interaction plot of the least-squares means based on a 
 \method{lsmip}{default}(object, formula, type,
     pch = c(1,2,6,7,9,10,15:20), 
     lty = 1, col = NULL, plotit = TRUE, ...)
+    
+pmmip(...)    
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -44,6 +47,8 @@ Additional arguments passed to \code{\link{lsmeans}} or to \code{\link[lattice]{
 \details{
 If \code{object} is a fitted model, \code{\link{lsmeans}} is called with an appropriate specification to obtain least-squares means for each combination of the factors present in \code{formula} (in addition, any arguments in \code{\dots} that match \code{at}, \code{trend}, \code{cov.reduce}, or \code{fac.reduce} are passed to \code{lsmeans}).
 Otherwise, if \code{object} is an \code{lsmobj} object, its first element is used, and it must contain one \code{lsmean} value for each combination of the factors present in \code{formula}.
+
+The wrapper \code{pmmip} is provided for those who prefer the term \sQuote{predicted marginal means}.
 }
 \value{
 (Invisibly), a \code{\link{data.frame}} with the table of least-squares means that were plotted, with an additional \code{"lattice"} attribute containing the \code{trellis} object for the plot.
