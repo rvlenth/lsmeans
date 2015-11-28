@@ -10,6 +10,8 @@ Changelog for 'lsmeans' package
     Added courtesy wrappers pmmeans, pmtreans, pmmip, ... for 
         those who prefer "predicted marginal means" to
         "least-squares means". Output is re-labeled as well.
+    Export a few hidden fcns of possible use to package developers
+### TO DO - update "extending" vignette
     
 
 2.20-23

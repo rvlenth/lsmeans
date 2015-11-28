@@ -40,7 +40,6 @@ if (requireNamespace("coda", quietly = TRUE)) {
 # Visible exports
 exportPattern("*.lsmc")  #all contrast fcns
 export(
-    .aovlist.dffun,
     All.vars,
     as.glht,
     contrast,
@@ -67,6 +66,14 @@ export(
     regrid,
     test
 )
+
+# hidden functions of possible use to other package developers
+export(
+    .aovlist.dffun,
+    .get.offset,
+    .my.vcov
+)    
+
 
 # S3 methods for recover.data and lsm.basis that are needed by other packages
 S3method(recover.data, call)

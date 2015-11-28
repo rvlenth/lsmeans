@@ -293,7 +293,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     covs.d = names(data)[!isfac]
     
     lbls = attr(trms, "term.labels")
-    M = model.frame(trms, data)
+    M = model.frame(trms, head(data, 2)) #### just need a couple rows
     isfac = sapply(M, function(x) inherits(x, "factor"))
     
     # Character vector of terms in the model frame that are factors ...

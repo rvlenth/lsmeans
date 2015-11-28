@@ -140,15 +140,18 @@ Tests and confidence intervals are asymptotic.}
 }}% ordinal
 
 
-\section{\pkg{pscr} package}{
+\section{\pkg{pscl} package}{
 \describe{
 \item{zeroinfl}{
 An optional \code{mode} argument is provided with possible values \code{"mean"} (the default), \code{"count"}, or \code{"zero"}. 
 With \code{mode = "count"}, the count model is used, and results are thus predicted log counts (add \code{type = "response"} to obtain predicted counts). 
 With \code{mode = "zero"}, the zero model is used, and results are in terms of the link function (e.g., logit) of the probability of zero (add \code{type = "response"} to obtain predicted probabilities). 
 With \code{mode = "mean"} or unspecified \code{mode}, the results consist of predictions of the mean of the zero-inflated distribution, i.e., \eqn{(1-P(0))*count}; these results are already converted to the same scale of measurement as the dependent variable.
+
+If the \code{vcov.} argument is used (see details in \code{\link{ref.grid}}), it must yield a matrix of the same size as would be obtained using \code{\link[pscl]{vcov.zeroinfl}} with its \code{model} argument set to \code{("full", "count", "zero")} in respective correspondence with \code{mode} of \code{("mean", "count", "zero")}.
+If \code{vcov.} is a function, it must support the \code{model} argument of \code{vcov.zeroinfl}. 
 }
-}}% pscr
+}}% pscl
 
 
 \section{\pkg{rms} package}{
