@@ -103,11 +103,11 @@ lsm.basis.hurdle = function(object, trms, xlev, grid,
         p1 = switch(object$dist$count,
                 poisson = 1 - exp(-mu1),
                 negbin = 1 - (theta1 / (mu1 + theta1))^theta1,
-                geometric = theta1 / (1 + theta1)  )
+                geometric = 1 / (1 + mu1)  )
         dp1 = switch(object$dist$count,
                 poisson = mu1 * exp(-mu1),
                 negbin = mu1 * (theta1 / (mu1 + theta1))^(1 + theta1),
-                geometric = mu1 / (1 + theta1)^2  )
+                geometric = mu1 / (1 + mu1)^2  )
         
         trms2 = delete.response(terms(object, model = "zero"))
         off2 = .get.offset(trms2, grid)
@@ -123,12 +123,12 @@ lsm.basis.hurdle = function(object, trms, xlev, grid,
                 binomial = mu2,
                 poisson = 1 - exp(-mu2),
                 negbin = 1 - (theta2 / (mu2 + theta2))^theta2,
-                geometric = theta2 / (1 + theta2)  )
+                geometric = 1 / (1 + mu2)  )
         dp2 = switch(object$dist$zero,
                 binomial = stats::make.link(object$link)$mu.eta(lp2),
                 poisson = mu2 * exp(-mu2),
                 negbin = mu2 * (theta2 /(mu2 + theta2))^(1 + theta2),
-                geometric = mu2 / (1 + theta2)^2)
+                geometric = 1 / (1 + mu2)^2)
 
         if (mode == "mean") {
             bhat = p2 * mu1 / p1
