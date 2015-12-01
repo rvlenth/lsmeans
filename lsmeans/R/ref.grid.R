@@ -42,7 +42,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         else if (inherits(cvr, "formula")) {
             if (length(cvr) < 3)
                 stop("Formulas in 'cov.reduce' must be two-sided")
-            lhs = All.vars(cvr)[1]
+            lhs = .all.vars(cvr)[1]
             dep.x[[lhs]] <<- cvr
             cvr = mean 
         }
@@ -130,7 +130,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
 
     # resolve any covariate formulas
     for (xnm in names(dep.x)) {
-        if (!all(All.vars(dep.x[[xnm]]) %in% names(grid)))
+        if (!all(.all.vars(dep.x[[xnm]]) %in% names(grid)))
             stop("Formulas in 'cov.reduce' must predict covariates actually in the model")
         xmod = lm(dep.x[[xnm]], data = data)
         grid[[xnm]] = predict(xmod, newdata = grid)
@@ -144,7 +144,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     form = attr(data, "call")$formula
     if (is.null(misc$tran) && (length(form) > 2)) { # No link fcn, but response may be transformed
         lhs = form[-3] ####form[[2]]
-        tran = setdiff(All.vars(lhs, functions = TRUE), c(All.vars(lhs), "~", "cbind"))
+        tran = setdiff(.all.vars(lhs, functions = TRUE), c(.all.vars(lhs), "~", "cbind"))
         if(length(tran) == 1) {
             misc$tran = tran
             misc$inv.lbl = "response"
@@ -306,7 +306,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     if(length(cterms) == 0) 
         return(cterms)
     # (else) Strip off the function calls
-    cvars = lapply(cterms, function(x) All.vars(reformulate(x)))
+    cvars = lapply(cterms, function(x) .all.vars(reformulate(x)))
     
     # Exclude any variables that are already factors
     intersect(unique(unlist(cvars)), covs.d)
@@ -469,7 +469,7 @@ regrid = function(object, transform = TRUE) {
         object@nbasis = object@linfct[, !estble, drop = FALSE]
     if(transform && !is.null(object@misc$tran)) {
         link = attr(est, "link")
-        D = diag(link$mu.eta(object@bhat[estble]))
+        D = .diag(link$mu.eta(object@bhat[estble]))
         object@bhat = link$linkinv(object@bhat)
         object@V = D %*% tcrossprod(object@V, D)
         inm = object@misc$inv.lbl

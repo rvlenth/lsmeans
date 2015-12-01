@@ -55,7 +55,7 @@ lsm.basis.multinom = function(object, trms, xlev, grid,
         exp.psi = exp(linfct[rows, , drop = FALSE] %*% object@bhat)
         p = as.numeric(exp.psi / sum(exp.psi))
         bhat[rows] = p
-        A = diag(p) - outer(p, p)    # partial derivs
+        A = .diag(p) - outer(p, p)    # partial derivs
         linfct[rows, ] = A %*% linfct[rows, ]
     }
     misc$postGridHook = misc$tran = misc$inv.lbl = NULL

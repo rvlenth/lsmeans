@@ -44,11 +44,11 @@ function(object, specs, contr.list, trend, ...) {
     
     if(length(specs) == 2) { # just a rhs
         by = .find.by(as.character(specs[2]))
-        lsmeans(object, All.vars(specs), by = by, ...)
+        lsmeans(object, .all.vars(specs), by = by, ...)
     }
     else {
-#        lsms = lsmeans(object, All.vars(specs[-2]), ...)
-        contr.spec = All.vars(specs[-3])[1]
+#        lsms = lsmeans(object, .all.vars(specs[-2]), ...)
+        contr.spec = .all.vars(specs[-3])[1]
         by = .find.by(as.character(specs[3]))
         # Handle old-style case where contr is a list of lists
         if (!missing(contr.list)) {
@@ -56,7 +56,7 @@ function(object, specs, contr.list, trend, ...) {
             if (!is.null(cmat))
                 contr.spec = cmat
         }
-        lsmeans(object, specs = All.vars(specs[-2]), 
+        lsmeans(object, specs = .all.vars(specs[-2]), 
                 by = by, contr = contr.spec, ...)
     }
 }
@@ -159,14 +159,14 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
         if (is.matrix(weights)) {
             wtrow = 0
             fac.reduce = function(coefs) {
-                wtmat = diag(weights[wtrow+1, ]) / sum(weights[wtrow+1, ])
+                wtmat = .diag(weights[wtrow+1, ]) / sum(weights[wtrow+1, ])
                 ans = apply(wtmat %*% coefs, 2, sum)
                 wtrow <<- (1 + wtrow) %% nrow(weights)
                 ans
             }
         }
         else if (is.numeric(weights)) {
-            wtmat = diag(weights)
+            wtmat = .diag(weights)
             wtsum = sum(weights)
             if (wtsum <= 1e-8) wtsum = NA
             fac.reduce = function(coefs) {
@@ -188,7 +188,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     if (!missing(weights) && (weights == "fq"))
         K = plyr::alply(row.idx, use.mars, function(idx) {
             fq = RG@grid[[".wgt."]][idx]
-            apply(diag(fq) %*% RG@linfct[idx, , drop=FALSE], 2, sum) / sum(fq)
+            apply(.diag(fq) %*% RG@linfct[idx, , drop=FALSE], 2, sum) / sum(fq)
         })
     else
         K = plyr::alply(row.idx, use.mars, function(idx) {
@@ -253,7 +253,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
 .find.by = function(rhs) {
     b = strsplit(rhs, "\\|")[[1]]
     if (length(b) > 1) 
-        All.vars(as.formula(paste("~",b[2])))
+        .all.vars(as.formula(paste("~",b[2])))
     else NULL
 }
 
@@ -314,7 +314,7 @@ contrast.ref.grid = function(object, method = "eff", by, adjust, offset = NULL,
     # If you ever want to expand to irregular grids, this block will
     # have to change, but everything else is probably OK.
     else {
-        tcmat = kronecker(diag(rep(1,length(by.rows))), t(cmat))
+        tcmat = kronecker(.diag(rep(1,length(by.rows))), t(cmat))
         linfct = tcmat %*% object@linfct[unlist(by.rows), ]
         tmp = expand.grid(con= names(cmat), by = seq_len(length(by.rows)))###unique(by.id))
         grid = data.frame(.contrast. = tmp$con)
@@ -512,7 +512,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
     fcn = NULL   # differential
     if (is.null(x)) {
         fcn = var
-        var = All.vars(as.formula(paste("~",var)))
+        var = .all.vars(as.formula(paste("~",var)))
         if (length(var) > 1)
             stop("Can only support a function of one variable")
         else {
@@ -585,7 +585,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
 .some.term.contains = function(facs, terms) {
     for (trm in attr(terms, "term.labels")) {
         if(all(sapply(facs, function(f) length(grep(f,trm))>0)))
-            if (length(All.vars(as.formula(paste("~",trm)))) > length(facs)) 
+            if (length(.all.vars(as.formula(paste("~",trm)))) > length(facs)) 
                 return(TRUE)
     }
     return(FALSE)

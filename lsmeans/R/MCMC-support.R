@@ -20,7 +20,7 @@ as.mcmc.ref.grid = function(x, names = TRUE, ...) {
 # Currently, data is required, as call is not stored
 recover.data.MCMCglmm = function(object, data, ...) {    
     # if a multivariate response, stack the data with `trait` variable
-    yvars = All.vars(update(object$Fixed$formula, ". ~ 1"))
+    yvars = .all.vars(update(object$Fixed$formula, ". ~ 1"))
     if(length(yvars) > 1) {
 #        for (v in yvars) data[[v]] = NULL
         dat = data
@@ -30,7 +30,7 @@ recover.data.MCMCglmm = function(object, data, ...) {
     }
     attr(data, "call") = object$Fixed
     attr(data, "terms") = trms = delete.response(terms(object$Fixed$formula))
-    attr(data, "predictors") = All.vars(delete.response(trms))
+    attr(data, "predictors") = .all.vars(delete.response(trms))
     attr(data, "responses") = yvars
     data
 }

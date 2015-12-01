@@ -73,7 +73,7 @@ lsm.basis.default = function(object, trms, xlev, grid, ...) {
 # Later addition: na.action arg req'd - vector of row indexes removed due to NAs
 recover.data.call = function(object, trms, na.action, data = NULL, params = NULL, ...) {
     fcall = object # because I'm easily confused
-    vars = setdiff(All.vars(trms), params)
+    vars = setdiff(.all.vars(trms), params)
     if (length(vars) == 0)
         return("Model must have at least one predictor")
     tbl = data
@@ -104,7 +104,7 @@ recover.data.call = function(object, trms, na.action, data = NULL, params = NULL
     
     attr(tbl, "call") = object # the original call
     attr(tbl, "terms") = trms
-    attr(tbl, "predictors") = setdiff(All.vars(delete.response(trms)), params)
+    attr(tbl, "predictors") = setdiff(.all.vars(delete.response(trms)), params)
     attr(tbl, "responses") = setdiff(vars, union(attr(tbl, "predictors"), params))
     tbl
 }
@@ -695,7 +695,7 @@ lsm.basis.gam = function(object, trms, xlev, grid, ...) {
 
 ## Alternative to all.vars, but keeps vars like foo$x and foo[[1]] as-is
 ##   Passes ... to all.vars
-All.vars = function(expr, retain = c("\\$", "\\[\\[", "\\]\\]"), ...) {
+.all.vars = function(expr, retain = c("\\$", "\\[\\[", "\\]\\]"), ...) {
     if (!inherits(expr, "formula")) {
         expr = try(eval(expr), silent = TRUE)
         if(inherits(expr, "try-error")) {
@@ -712,3 +712,18 @@ All.vars = function(expr, retain = c("\\$", "\\[\\[", "\\]\\]"), ...) {
         vars = gsub(repl[i], retain[i], vars)
     vars
 }
+
+
+### Not-so-damn-smart replacement of diag() that will 
+### not be so quick to assume I want an identity matrix
+### returns matrix(x) when x is a scalar
+.diag = function(x, nrow, ncol) {
+    if(is.matrix(x))
+        diag(x)
+    else if((length(x) == 1) && missing(nrow) && missing(ncol)) 
+        matrix(x)
+    else 
+        diag(x, nrow, ncol)
+}
+
+
