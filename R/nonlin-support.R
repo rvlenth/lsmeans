@@ -44,7 +44,7 @@ recover.data.nlme = function(object, param, ...) {
     fcall$weights = NULL
     #trms = delete.response(terms(update(terms(object), form)))
     trms = delete.response(terms(form))
-    if (length(All.vars(trms)) == 0)
+    if (length(.all.vars(trms)) == 0)
         return(paste("No predictors for '", param, "' in fixed model", sep = ""))
     recover.data(fcall, trms, object$na.action, ...)
 }

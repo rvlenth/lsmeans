@@ -40,7 +40,6 @@ if (requireNamespace("coda", quietly = TRUE)) {
 # Visible exports
 exportPattern("*.lsmc")  #all contrast fcns
 export(
-    All.vars,
     as.glht,
     contrast,
     defaults,
@@ -69,7 +68,9 @@ export(
 
 # hidden functions of possible use to other package developers
 export(
+    .all.vars,
     .aovlist.dffun,
+    .diag,
     .get.offset,
     .my.vcov
 )    

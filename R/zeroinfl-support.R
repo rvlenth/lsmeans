@@ -47,10 +47,10 @@ lsm.basis.zeroinfl = function(object, trms, xlev, grid,
         mu2 = object$linkinv(lp2)
         mu2prime = stats::make.link(object$link)$mu.eta(lp2)
         
-        delta = diag(mu1) %*% cbind(diag(1 - mu2) %*% X1, diag(-mu2prime) %*% X2)
+        delta = .diag(mu1) %*% cbind(.diag(1 - mu2) %*% X1, .diag(-mu2prime) %*% X2)
         V = delta %*% tcrossprod(.pscl.vcov(object, model = "full", ...), delta)
         bhat = (1 - mu2) * mu1
-        X = diag(1, length(bhat))
+        X = .diag(1, length(bhat))
         
         misc = list(estName = "response", offset.mult = 0)
     }
@@ -132,16 +132,16 @@ lsm.basis.hurdle = function(object, trms, xlev, grid,
 
         if (mode == "mean") {
             bhat = p2 * mu1 / p1
-            delta = cbind(diag(bhat*(1 - mu1 * dp1 / p1)) %*% X1,
-                          diag(mu1 * dp2 / p1) %*% X2)
+            delta = cbind(.diag(bhat*(1 - mu1 * dp1 / p1)) %*% X1,
+                          .diag(mu1 * dp2 / p1) %*% X2)
         }
         else {  ## mode == "prob.ratio"
             bhat = p2 / p1
-            delta = cbind(diag(-p2 * dp1 / p1^2) %*% X1,
-                          diag(dp2 / p1) %*% X2)
+            delta = cbind(.diag(-p2 * dp1 / p1^2) %*% X1,
+                          .diag(dp2 / p1) %*% X2)
         }
         V = delta %*% tcrossprod(.pscl.vcov(object, model = "full", ...), delta)
-        X = diag(1, length(bhat))
+        X = .diag(1, length(bhat))
         
         misc = list(estName = mode, offset.mult = 0)
     }
