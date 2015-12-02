@@ -19,6 +19,7 @@ rbind.ref.grid = function(..., deparse.level = 1, adjust = "mvt") {
     bnms = unlist(lapply(objs, function(o) o@misc$by.vars))
     grids = lapply(objs, function(o) o@grid)
     gnms = unique(c(bnms, unlist(lapply(grids, names))))
+    gnms = setdiff(gnms, c(".wgt.", ".offset.")) # exclude special names
     grid = data.frame(.tmp. = seq_len(n <- nrow(obj@linfct)))
     for (g in gnms)
         grid[[g]] = rep(".", n)
@@ -28,20 +29,12 @@ rbind.ref.grid = function(..., deparse.level = 1, adjust = "mvt") {
         rows = n.before + seq_along(g[[1]])
         n.before = max(rows)
         for (nm in names(g))
-            grid[rows, nm] = as.character(g[[nm]])
+            grid[rows, nm] = g[[nm]] ####as.character(g[[nm]])
     }
     obj@grid = grid
     update(obj, pri.vars = gnms, by.vars = NULL, adjust = adjust,
            famSize = round((1 + sqrt(1 + 8*n)) / 2, 3),
            estType = "contrast", infer = c(FALSE, TRUE))
-}
-
-### Needed for compatibility with with R 3.1.3 and earlier
-rbind = function(...) {
-    if (inherits(..1, "ref.grid"))
-        rbind.ref.grid(...)
-    else
-        base::rbind(...)
 }
 
 

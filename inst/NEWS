@@ -1,9 +1,9 @@
 Changelog for 'lsmeans' package
 
-2.20-29
+2.20-30
     Changed implementation of pbkrtest.limit - now based on
         number of rows of design matrix.
-    Added support for "zeroinfl" class (pscl package)
+    Added support for "hurdle" and zeroinfl" classes (pscl package)
     In 'regrid', dffun now implements a containment method
     Additional annotation to clarify when results are on the
         linear-predictor scale.
@@ -11,6 +11,7 @@ Changelog for 'lsmeans' package
         those who prefer "predicted marginal means" to
         "least-squares means". Output is re-labeled as well.
     Export a few hidden fcns of possible use to package developers
+    Miscellaneous bug fixes
 ### TO DO - update "extending" vignette
     
 

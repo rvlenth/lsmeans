@@ -123,6 +123,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     
     # Figure out the structure of the grid
     wgt = RG@grid[[".wgt."]]
+    if(all(zapsmall(wgt) == 0)) wgt = wgt + 1 ### repl all zero wgts with 1
     dims = sapply(RG@levels, length)
     row.idx = array(seq_len(nrow(RG@linfct)), dims)
     use.mars = match(facs, names(RG@levels)) # which margins to use
