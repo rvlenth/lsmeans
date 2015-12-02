@@ -1,13 +1,28 @@
-# Support for zeroinfl and hurdle models
+# Support for zeroinfl and hurdle models (pscl [& future countreg package?])
 
-# zeroinfl objects (pscl package)
+# We'll support two optional arguments:
+# mode     -- type of result required
+# lin.pred -- TRUE:  keep linear predictor and link
+#             FALSE: back-transform (default)
+#
+# With lin.pred = FALSE and mode %in% c("response", "count", "zero"), we
+# will return comparable results to predict(..., type = mode)
+# with mode = "prob0", same results as predict(..., type = "prob")[, 1]
+#
+# lin.pred only affects results for mode %in% c("count", "zero"). 
+# When lin.pred = TRUE, we get the actual linear predictor and link function
+# for that part of the model.
 
-recover.data.zeroinfl = function(object, mode = c("mean", "count", "zero"), ...) {
+
+
+# ----- zeroinfl objects -----
+
+recover.data.zeroinfl = function(object, mode = c("response", "count", "zero", "prob0"), ...) {
     fcall = object$call
     mode = match.arg(mode)
     if (mode %in% c("count", "zero"))
         trms = delete.response(terms(object, model = mode))
-    else ### mode = "mean"
+    else ### mode = %in% c("response", "prob0")
         trms = delete.response(object$terms$full)
     # following seems to be needed in order for offsets to be supported
     # attr(trms, ".Environment")$offset = stats::offset
@@ -16,7 +31,7 @@ recover.data.zeroinfl = function(object, mode = c("mean", "count", "zero"), ...)
 
 
 lsm.basis.zeroinfl = function(object, trms, xlev, grid, 
-        mode = c("mean", "count", "zero"), ...) 
+        mode = c("response", "count", "zero", "prob0"), lin.pred = FALSE, ...) 
 {
     mode = match.arg(mode)
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
@@ -29,8 +44,17 @@ lsm.basis.zeroinfl = function(object, trms, xlev, grid,
             misc = list(tran = "log", inv.lbl = "count")
         else
             misc = list(tran = object$link, inv.lbl = "prob")
+        if (!lin.pred) { # back-transform the results
+            lp = as.numeric(X %*% bhat + .get.offset(trms, grid))
+            lnk = make.link(misc$tran)
+            bhat = lnk$linkinv(lp)
+            delta = .diag(lnk$mu.eta(lp)) %*% X
+            V = delta %*% tcrossprod(V, delta)
+            X = diag(1, length(bhat))
+            misc = list(offset.mult = 0)
+        }
     }
-    else {   ### mode = "mean"
+    else { 
         trms1 = delete.response(terms(object, model = "count"))
         off1 = .get.offset(trms1, grid)
         contr1 = object$contrasts[["count"]]
@@ -47,15 +71,25 @@ lsm.basis.zeroinfl = function(object, trms, xlev, grid,
         mu2 = object$linkinv(lp2)
         mu2prime = stats::make.link(object$link)$mu.eta(lp2)
         
-        delta = .diag(mu1) %*% cbind(.diag(1 - mu2) %*% X1, .diag(-mu2prime) %*% X2)
-        V = delta %*% tcrossprod(.pscl.vcov(object, model = "full", ...), delta)
-        bhat = (1 - mu2) * mu1
-        X = .diag(1, length(bhat))
-        
-        misc = list(estName = "response", offset.mult = 0)
+        if(mode == "response") {
+            delta = .diag(mu1) %*% cbind(.diag(1 - mu2) %*% X1, .diag(-mu2prime) %*% X2)
+            V = delta %*% tcrossprod(.pscl.vcov(object, model = "full", ...), delta)
+            bhat = (1 - mu2) * mu1
+        }
+        else { # mode = "prob0" -- for SE we're just gonna use SE from zero part
+            delta = .diag(mu2prime) %*% X2
+            V = delta %*% tcrossprod(.pscl.vcov(object, model = "zero", ...), delta)
+            p0 = switch(object$dist,
+                    poisson = exp(-mu1),
+                    negbin = {th = object$theta$count; (th / (th + mu1))^th},
+                    geometric = 1 / (1 + mu1)  )
+            bhat = (1 - mu2) * p0 + mu2
+        }
+        X = diag(1, length(bhat))
+        misc = list(offset.mult = 0)
     }
     nbasis = estimability::all.estble
-    dffun = function(k, dfargs) object$df.residual
+    dffun = function(k, dfargs) NA
     dfargs = list()
     list(X = X, bhat = bhat, nbasis = nbasis, V = V, 
          dffun = dffun, dfargs = dfargs, misc = misc)
@@ -65,7 +99,7 @@ lsm.basis.zeroinfl = function(object, trms, xlev, grid,
 
 #### Support for hurdle models
 
-recover.data.hurdle = function(object, mode = c("mean", "count", "zero", "prob.ratio"), ...) {
+recover.data.hurdle = function(object, mode = c("response", "count", "zero", "prob0"), ...) {
     fcall = object$call
     mode = match.arg(mode)
     if (mode %in% c("count", "zero"))
@@ -79,20 +113,38 @@ recover.data.hurdle = function(object, mode = c("mean", "count", "zero", "prob.r
 
 # see expl notes afterward for notations in some of this
 lsm.basis.hurdle = function(object, trms, xlev, grid, 
-                              mode = c("mean", "count", "zero", "prob.ratio"), ...) 
+                            mode = c("response", "count", "zero", "prob0"), 
+                            lin.pred = FALSE, ...) 
 {
     mode = match.arg(mode)
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
-    if (mode %in% c("count", "zero")) {
-        contr = object$contrasts[[mode]]
+    if ((lin.pred && mode %in% c("count", "zero")) || (!lin.pred && mode %in% c("count", "prob0"))) {
+        model = ifelse(mode == "count", "count", "zero")
+        contr = object$contrasts[[model]]
         X = model.matrix(trms, m, contrasts.arg = contr)
-        bhat = coef(object, model = mode)
-        V = .pscl.vcov(object, model = mode, ...)
-        misc = switch(object$dist[[mode]],
+        bhat = coef(object, model = model)
+        V = .pscl.vcov(object, model = model, ...)
+        misc = switch(object$dist[[model]],
                         binomial = list(tran = object$link, inv.lbl = "prob"),
                         list(tran = "log", inv.lbl = "count"))
-     }
-    else {   ### mode %in% c("mean", "prob.ratio")
+        if (!lin.pred) { # back-transform
+            lp = as.numeric(X %*% bhat + .get.offset(trms, grid))
+            lnk = make.link(misc$tran)
+            bhat = lnk$linkinv(lp)
+            if (mode != "prob0") {
+               delta = .diag(lnk$mu.eta(lp)) %*% X
+            }
+            else {
+                bhat = 1 - .prob.gt.0(object$dist$zero, bhat, object$theta["zero"])
+                db = - .dprob.gt.0(object$dist$zero, bhat, object$theta["zero"], misc$tran, lp)
+                delta = .diag(db) %*% X
+            }
+            V = delta %*% tcrossprod(V, delta)
+            X = diag(1, length(bhat))
+            misc = list(offset.mult = 0)
+        }
+    }
+    else {   ### "zero" or "response" with implied lin.pred = FALSE
         trms1 = delete.response(terms(object, model = "count"))
         off1 = .get.offset(trms1, grid)
         contr1 = object$contrasts[["count"]]
@@ -100,15 +152,9 @@ lsm.basis.hurdle = function(object, trms, xlev, grid,
         b1 = coef(object, model = "count")
         mu1 = as.numeric(exp(X1 %*% b1 + off1))
         theta1 = object$theta["count"]
-        p1 = switch(object$dist$count,
-                poisson = 1 - exp(-mu1),
-                negbin = 1 - (theta1 / (mu1 + theta1))^theta1,
-                geometric = 1 - 1 / (1 + mu1)  )
-        dp1 = switch(object$dist$count,
-                poisson = mu1 * exp(-mu1),
-                negbin = mu1 * (theta1 / (mu1 + theta1))^(1 + theta1),
-                geometric = mu1 / (1 + mu1)^2  )
-        
+        p1 = .prob.gt.0(object$dist$count, mu1, theta1)
+        dp1 = .dprob.gt.0(object$dist$count, mu1, theta1, "", 0) # binomial won't happen
+
         trms2 = delete.response(terms(object, model = "zero"))
         off2 = .get.offset(trms2, grid)
         contr2 = object$contrasts[["zero"]]
@@ -119,23 +165,15 @@ lsm.basis.hurdle = function(object, trms, xlev, grid,
                      binomial = object$linkinv(lp2),
                      exp(lp2)  )
         theta2 = object$theta["zero"]
-        p2 = switch(object$dist$zero,
-                binomial = mu2,
-                poisson = 1 - exp(-mu2),
-                negbin = 1 - (theta2 / (mu2 + theta2))^theta2,
-                geometric = 1 - 1 / (1 + mu2)  )
-        dp2 = switch(object$dist$zero,
-                binomial = stats::make.link(object$link)$mu.eta(lp2),
-                poisson = mu2 * exp(-mu2),
-                negbin = mu2 * (theta2 /(mu2 + theta2))^(1 + theta2),
-                geometric = mu2 / (1 + mu2)^2  )
+        p2 = .prob.gt.0(object$dist$zero, mu2, theta2)
+        dp2 = .dprob.gt.0(object$dist$zero, mu2, theta2, object$link, lp2)
 
-        if (mode == "mean") {
+        if (mode == "response") {
             bhat = p2 * mu1 / p1
             delta = cbind(.diag(bhat*(1 - mu1 * dp1 / p1)) %*% X1,
                           .diag(mu1 * dp2 / p1) %*% X2)
         }
-        else {  ## mode == "prob.ratio"
+        else {  ## mode == "zero"
             bhat = p2 / p1
             delta = cbind(.diag(-p2 * dp1 / p1^2) %*% X1,
                           .diag(dp2 / p1) %*% X2)
@@ -152,6 +190,25 @@ lsm.basis.hurdle = function(object, trms, xlev, grid,
          dffun = dffun, dfargs = dfargs, misc = misc)
 }
 
+# utility for prob (Y > 0 | dist, mu, theta)
+.prob.gt.0 = function(dist, mu, theta) {
+    switch(dist,
+       binomial = mu,
+       poisson = 1 - exp(-mu),
+       negbin = 1 - (theta / (mu + theta))^theta,
+       geometric = 1 - 1 / (1 + mu)
+    )
+}
+
+# utility for d/d(eta) prob (Y > 0 | dist, mu, theta)
+.dprob.gt.0 = function(dist, mu, theta, link, lp) {
+    switch(dist,
+       binomial = stats::make.link(link)$mu.eta(lp),
+       poisson = mu * exp(-mu),
+       negbin = mu * (theta /(mu + theta))^(1 + theta),
+       geometric = mu / (1 + mu)^2  
+    )
+}
 
 # special version of .my.vcov that accepts (and requires!) model argument
 .pscl.vcov = function(object, model, vcov. = stats::vcov, ...) {

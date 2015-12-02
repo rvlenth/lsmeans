@@ -59,7 +59,7 @@ export(
     pmmip,
     pmm.options,
     pmtrends,
-    rbind, # my own version that overrides one in methods
+    ###rbind, # my own version that overrides one in methods
     recover.data,
     ref.grid,
     regrid,
