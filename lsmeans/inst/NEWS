@@ -1,6 +1,6 @@
 Changelog for 'lsmeans' package
 
-2.20-30
+2.20-31
     Changed implementation of pbkrtest.limit - now based on
         number of rows of design matrix.
     Added support for "hurdle" and zeroinfl" classes (pscl package)
@@ -11,9 +11,9 @@ Changelog for 'lsmeans' package
         those who prefer "predicted marginal means" to
         "least-squares means". Output is re-labeled as well.
     Export a few hidden fcns of possible use to package developers
-    Miscellaneous bug fixes
-### TO DO - update "extending" vignette
-    
+    Updates to "extending" vignette
+    Miscellaneous bug fixes, including repair to d.f. method from `regrid`
+
 
 2.20-23
     Added 'get.lsm.option()', works like 'getOption()' but with defaults
