@@ -20,13 +20,6 @@ Type 'q()' to quit R.
 > require(lsmeans)
 Loading required package: lsmeans
 Loading required package: estimability
-
-Attaching package: 'lsmeans'
-
-The following object is masked from 'package:base':
-
-    rbind
-
 > 
 > # ---------- multivariate ---------------------------------
 > 
@@ -551,4 +544,4 @@ Confidence level used: 0.95
 > 
 > proc.time()
    user  system elapsed 
-   1.10    0.09    1.37 
+   1.07    0.14    1.25 

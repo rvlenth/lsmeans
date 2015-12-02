@@ -2,7 +2,7 @@
 \alias{recover.data}
 \alias{recover.data.call}
 \alias{lsm.basis}
-\alias{All.vars}
+%%\alias{.all.vars} % documented in the vignette
 %%\alias{nonest.basis} % moved to estimability package
 %%\alias{is.estble}
 
@@ -20,8 +20,8 @@ recover.data(object, ...)
     data = NULL, params = NULL, ...)
 
 lsm.basis(object, trms, xlev, grid, ...)
-
-All.vars(expr, retain = c("\\\\$", "\\\\[\\\\[", "\\\\]\\\\]"), ...)
+%%%
+%%%.all.vars(expr, retain = c("\\\\$", "\\\\[\\\\[", "\\\\]\\\\]"), ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -36,8 +36,8 @@ An object returned from a model-fitting function.}
   model formula that are \emph{not} predictors. An example would be a   
   variable \code{knots} specifying the knots to use in a spline model.
 }
-  \item{expr}{A formula}
-  \item{retain}{Character vector of operators to retain (escaped as for \code{\link{gsub}})}
+%  \item{expr}{A formula}
+%  \item{retain}{Character vector of operators to retain (escaped as for \code{\link{gsub}})}
   \item{\dots}{Additional arguments passed to other methods.}
 }
 
@@ -65,7 +65,7 @@ The models already supported are detailed in \code{\link{models}}. Some packages
 \item{dffun}{A function of \code{(k, dfargs)} that returns the degrees of freedom associated with \code{sum(k * bhat)}.}
 \item{dfargs}{A \code{list} containing additional arguments needed for \code{dffun}.}
 
-\code{All.vars} is an enhancement of \code{\link{all.vars}}, whereby the operators specified in \code{retain} are left intact. Thus, \code{All.vars(foo$y ~ bar[[2]])} returns \code{"foo$y", "bar[[2]]"}, whereas \code{all.vars} returns \code{"foo", "y", "bar"}
+%%%\code{.all.vars} is an enhancement of \code{\link{all.vars}}, whereby the operators specified in \code{retain} are left intact. Thus, \code{All.vars(foo$y ~ bar[[2]])} returns \code{"foo$y", "bar[[2]]"}, whereas \code{all.vars} returns \code{"foo", "y", "bar"}
 }
 
 %\references{}
@@ -74,6 +74,10 @@ The models already supported are detailed in \code{\link{models}}. Some packages
 Some models may need something other than standard linear estimates and standard errors. If so, custom functions may be pointed to via the items \code{misc$estHook}, \code{misc$vcovHook} and \code{misc$postGridHook}. If just the name of the hook function is provided as a character string, then it is retrieved using \code{\link{get}}.
 
 The \code{estHook} function should have arguments \samp{(object, do.se, tol, ...)} where \code{object} is the \code{ref.grid} or \code{lsmobj} object, \code{do.se} is a logical flag for whether to return the standard error, and \code{tol} is the tolerance for assessing estimability. It should return a matrix with 3 columns: the estimates, standard errors (\code{NA} when \code{do.se==FALSE}), and degrees of freedom (\code{NA} for asymptotic). The number of rows should be the same as \samp{object@linfct}. The \code{vcovHook} function should have arguments \samp{(object, tol, ...)} as described. It should return the covariance matrix for the estimates. Finally, \code{postGridHook}, if present, is called at the very end of \code{ref.grid}; it takes one argument, the constructed \code{object}, and should return a suitably modified\code{ref.grid} object.
+}
+
+\section{Additional functions}{
+A few additional functions used in the \pkg{lsmeans} codebase are exported as they may be useful to package developers. See details near the end of the vignette \code{"extending"}.
 }
 
 \author{
@@ -101,13 +105,6 @@ Russell V. Lenth
         warpsing.lm$xlevels, grid)
 } % end dontrun
 
-# Compare results of all.vars and All.vars
-form = log(cows$weight) ~ factor(bulls[[3]]) * herd$breed
-all.vars(form)
-All.vars(form)
-
-all.vars(form, functions = TRUE) ## same as all.names(form, unique = TRUE)
-All.vars(form, functions = TRUE)
 }
 
 

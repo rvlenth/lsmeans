@@ -54,13 +54,14 @@ lsm.basis.zeroinfl = function(object, trms, xlev, grid,
             misc = list(offset.mult = 0)
         }
     }
-    else { 
+    else { ## "response", "prob0"
         trms1 = delete.response(terms(object, model = "count"))
         off1 = .get.offset(trms1, grid)
         contr1 = object$contrasts[["count"]]
         X1 = model.matrix(trms1, m, contrasts.arg = contr1)
         b1 = coef(object, model = "count")
-        mu1 = as.numeric(exp(X1 %*% b1 + off1))
+        lp1 = as.numeric(X1 %*% b1 + off1)
+        mu1 = exp(lp1)
         
         trms2 = delete.response(terms(object, model = "zero"))
         off2 = .get.offset(trms2, grid)
@@ -73,18 +74,15 @@ lsm.basis.zeroinfl = function(object, trms, xlev, grid,
         
         if(mode == "response") {
             delta = .diag(mu1) %*% cbind(.diag(1 - mu2) %*% X1, .diag(-mu2prime) %*% X2)
-            V = delta %*% tcrossprod(.pscl.vcov(object, model = "full", ...), delta)
             bhat = (1 - mu2) * mu1
         }
-        else { # mode = "prob0" -- for SE we're just gonna use SE from zero part
-            delta = .diag(mu2prime) %*% X2
-            V = delta %*% tcrossprod(.pscl.vcov(object, model = "zero", ...), delta)
-            p0 = switch(object$dist,
-                    poisson = exp(-mu1),
-                    negbin = {th = object$theta$count; (th / (th + mu1))^th},
-                    geometric = 1 / (1 + mu1)  )
+        else { # mode = "prob0"
+            p0 = 1 - .prob.gt.0(object$dist, mu1, object$theta)
+            dp0 = - .dprob.gt.0(object$dist, mu1, object$theta, "log", lp1)
             bhat = (1 - mu2) * p0 + mu2
+            delta = cbind(.diag((1 - mu2) * dp0) %*% X1, .diag(mu2prime * (1 - p0)) %*% X2)
         }
+        V = delta %*% tcrossprod(.pscl.vcov(object, model = "full", ...), delta)
         X = diag(1, length(bhat))
         misc = list(offset.mult = 0)
     }
