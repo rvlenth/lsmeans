@@ -151,8 +151,6 @@ The option \code{lin.pred = TRUE} only applies to \code{mode = "count"} and \cod
 
 If the \code{vcov.} argument is used (see details in \code{\link{ref.grid}}), it must yield a matrix of the same size as would be obtained using \code{\link[pscl]{vcov.hurdle}} or \code{\link[pscl]{vcov.zeroinfl}} with its \code{model} argument set to \code{("full", "count", "zero")} in respective correspondence with \code{mode} of \code{("mean", "count", "zero")}.
 If \code{vcov.} is a function, it must support the \code{model} argument.
-
-Currently, to streamline the code, standard errors are not exactly correct for \code{zeroinfl} models with \code{mode = "prob0"}, as we simply report the same SEs as for \code{mode = "zero"}.
 }
 }}% pscl
 
