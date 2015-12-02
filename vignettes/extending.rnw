@@ -141,7 +141,7 @@ Before explaining it, let's verify that it works:
 <<>>=
 lsmeans(fake.lts, ~ B | A)
 @
-Hooray! Note the results are comparable to those we had for "fake.rlm", albeit the standard errors are quite a bit smaller.
+Hooray! Note the results are comparable to those we had for "fake.rlm", albeit the standard errors are quite a bit smaller. (In fact, the SEs could be misleading; a better method for estimating covariances should probably be implemented, but that is beyond the scope of this vignette.)
 
 \subsection{Dissecting \code{lsm.basis.lqs}}
 Let's go through the listing of this method, by line numbers.
@@ -160,9 +160,10 @@ There is a subtlety you need to know regarding estimability. Suppose the model i
 \item[10:] Return these results in a named list.
 \end{itemize}
 
+\ifx %---------- This subsection removed as it's extra fluff -------------
 \subsection{The ``honest'' version}
 Because of the inadequacies mentioned above for estimating the covariance matrix, then---lacking any better estimate---I think it's probably better to set it and the degrees of freedom to "NA"s. We will still be able to get the LS~means and contrasts thereof, but no standard errors or tests. With that in mind, here's a replacement version:
-<<>>=
+%<<>>=
 lsm.basis.lqs = function(object, trms, xlev, grid, ...) {
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = object$contrasts)
@@ -172,11 +173,12 @@ lsm.basis.lqs = function(object, trms, xlev, grid, ...) {
     dffun = function(k, dfargs) NA
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=list())
 }
-@
+%@
 And here is a test:
-<<>>=
+%<<>>=
 lsmeans(fake.lts, pairwise ~ B)
-@
+%@
+\fi % ----------- end of cut ---------------------------
 
 \section{Hook functions}
 Most linear models supported by \lsm{} have straightforward structure: Regression coefficients, their covaraince matrix, and a set of linear functions that define the reference grid. However, a few are more complex. An example is the \dqt{clm} class in the \pkg{ordinal} package, which allows a scale model in addition to the location model. When a scale model is used, the scale parameters are included in the model matrix, regression coefficients, and covariance matrix, and we can't just use the usual matrix operations to obtain estimates and standard errors. To facilitate using custom routines for these tasks, the "lsm.basis.clm" function includes, in its "misc" part, the names (as character constants) of two ``hook'' functions: "misc$estHook" has the name of the function to call when computing estimates, standard errors, and degrees of freedom (for the"summary" method); and "misc$vcovHook" has the name of the function to call to obtain the covariance matrix of the grid values (used by the "vcov" method). These functions are called in lieu of the usual built-in routines for these purposes, and return the appropriately sized matrices. 
@@ -185,6 +187,27 @@ In addition, you may want to apply some form of special post-processing after th
 
 \section{Exported methods}
 For package developers' convenience, \pkg{lsmeans} exports some of its S3 methods for "recover.data" and/or "lsm.basis"---use \code{methods(\dqt{recover.data})} and \code{methods(\dqt{lsm.basis})} to discover which ones. It may be that all you need is to invoke one of those methods and perhaps make some small changes---especially if your model-fitting algorithm makes heavy use of an existing model type supported by \pkg{lsmeans}. Contact me if you need \pkg{lsmeans} to export some additional methods for your use.
+
+A few additional functions are exported because they may be useful to developers. They are as follows:
+\begin{description}
+\item[\code{.all.vars(expr, retain)}] Some users of your package may include "$" or "[[]]" operators in their model formulas. If you need to get the variable names, "base::all.vars" will probably not give you what you need. Here is an example:
+<<>>=
+form = ~ data$x + data[[5]]
+base::all.vars(form)
+lsmeans::.all.vars(form)
+@
+The "retain" argument may be used to specify regular expressions for patterns to retain as parts of variable names.
+\item[\code{.diag(x, nrow, ncol)}]
+The base "diag" function has a booby trap whereby, for example, "diag(57.6)" returns a $57\times 57$ identity matrix rather than a $1\times1$ matrix with $57.6$ as its only element. But "lsmeans::.diag(57.6)" will return the latter. The function works identically to "diag" except for the identity-matrix trap.
+\item[\code{.aovlist.dffun(k, dfargs)}] This function is exported because it is needed for computing degrees of freedom for models fitted using "aov", but it may be useful for other cases where Satterthwaite degrees-of-freedom calculations are needed. It requires the "dfargs" slot to contain analogous contents.
+\item[\code{.get.offset(terms, grid)}] If "terms" is a model formula containing an "offset" call, this is will compute that offset in the context of "grid" (a "data.frame").
+<<>>=
+.get.offset(terms(~ speed + offset(.03*breaks)), head(warpbreaks))
+@
+\item[\code{.my.vcov(object, ...)}]
+In a call to "ref.grid", "lsmeans", etc., the user may use "vcov." to specify an alternative function or matrix to use as the covariance matrix of the fixed-effects coefficients. This function supports that feature. Calling ".my.vcov" in place of the "vcov" method will substitute the user's "vcov." when it is present in "...".
+
+\end{description}
 
 
 \section{Conclusions}
