@@ -24,8 +24,10 @@ recover.data.zeroinfl = function(object, mode = c("response", "count", "zero", "
         trms = delete.response(terms(object, model = mode))
     else ### mode = %in% c("response", "prob0")
         trms = delete.response(object$terms$full)
-    # following seems to be needed in order for offsets to be supported
-    # attr(trms, ".Environment")$offset = stats::offset
+    # Make sure there's an offset function available
+    env = new.env(parent = attr(trms, ".Environment"))
+    env$offset = function(x) x
+    attr(trms, ".Environment") = env
     recover.data(fcall, trms, object$na.action, ...)
 }
 
@@ -104,8 +106,10 @@ recover.data.hurdle = function(object, mode = c("response", "count", "zero", "pr
         trms = delete.response(terms(object, model = mode))
     else ### mode = "mean" or "prob.ratio"
         trms = delete.response(object$terms$full)
-    # needed in order for offsets to be supported
-    # attr(trms, ".Environment")$offset = stats::offset
+    # Make sure there's an offset function available
+    env = new.env(parent = attr(trms, ".Environment"))
+    env$offset = function(x) x
+    attr(trms, ".Environment") = env
     recover.data(fcall, trms, object$na.action, ...)
 }
 

@@ -1,6 +1,6 @@
 Changelog for 'lsmeans' package
 
-2.20-31
+2.21
     Changed implementation of pbkrtest.limit - now based on
         number of rows of design matrix.
     Added support for "hurdle" and zeroinfl" classes (pscl package)
