@@ -1,5 +1,8 @@
 Changelog for 'lsmeans' package
 
+2.21-1
+    Changed R dependency to >= 3.2; needed for rbind support
+
 2.21
     Changed implementation of pbkrtest.limit - now based on
         number of rows of design matrix.
