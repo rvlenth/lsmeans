@@ -2,6 +2,9 @@
 ^.*\.Rproj$
 ^\.svn$
 
+# Bibliography that is needed but not allowed...
+using-lsmeans.bbl
+
 #Deprecated
 KRstuff.R
 old-lsmeans.R
