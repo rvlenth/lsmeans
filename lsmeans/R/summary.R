@@ -139,8 +139,9 @@
     adj.meths = c("sidak", "tukey", "scheffe", "dunnettx", "mvt", "bonferroni", "none")
     k = pmatch(tolower(adjust), adj.meths)
     if(is.na(k)) {
-        k = which(adj.meths == "none")
-        mesg = "Confidence levels are NOT adjusted for multiplicity"
+        k = which(adj.meths == "bonferroni") ###none")
+        ###mesg = paste("\"", adjust, "\" adjustment is not valid for CIs: used bonferroni instead", sep = "")
+        ###mesg = "Confidence levels are NOT adjusted for multiplicity"
     }
     adjust = adj.meths[k]
     if ((fam.info[3] != 3) && adjust == "tukey") # not pairwise
@@ -416,7 +417,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     
     if(infer[1]) { # add CIs
         acv = .adj.critval(level, result$df, adjust, fam.info, side, corrmat)
-        adjust = acv$adjust
+        ###adjust = acv$adjust # in older versions, I forced same adj method for tests
         cv = acv$cv
         cv = switch(side + 2, cbind(-Inf, cv), cbind(-cv, cv), cbind(-cv, Inf))
         cnm = if (zFlag) c("asymp.LCL", "asymp.UCL") else c("lower.CL","upper.CL")

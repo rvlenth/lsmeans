@@ -109,7 +109,7 @@ The \code{adjust} argument specifies a multiplicity adjustment for tests or conf
 \item{\code{"none"}}{Makes no adjustments to the \eqn{p} values.}
 } % end \describe {}
 
-For P-value adjustments only, the other Bonferroni-inequality-based adjustment methods in \code{\link{p.adjust}} are also available. If a \code{p.adjust.methods} method is specified for confidence limits, they are left unadjusted and an annotation is added that says so.
+For P-value adjustments only, the other Bonferroni-inequality-based adjustment methods in \code{\link{p.adjust}} are also available. If a \code{p.adjust.methods} method other than \code{"bonferroni"} or \code{"none"} is specified for confidence limits, the straight Bonferoni adjustment is used instead.
 Also, if an adjustment method is not appropriate (e.g., using \code{"tukey"} with one-sided tests, or with results that are not pairwise comparisons), a more appropriate method (usually \code{"sidak"}) is substituted. 
 
 In some cases, confidence and \eqn{p}-value adjustments are only approximate -- especially when the degrees of freedom or standard errors vary greatly within the family of tests. The \code{"mvt"} method is always the correct one-step adjustment, but it can be very slow. One may use \code{\link{as.glht}} with methods in the \pkg{multcomp} package to obtain non-conservative multi-step adjustments to tests.

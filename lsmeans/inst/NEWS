@@ -1,5 +1,11 @@
 Changelog for 'lsmeans' package
 
+2.21-2
+    If confidence intervals are requested and 'adjust' doesn't make
+        sense (e.g., "fdr"), we now default to "bonferroni" instead 
+        of "none", and don't override the adjustment made for tests.
+        
+
 2.21-1
     Changed R dependency to >= 3.2; needed for rbind support
 
