@@ -35,7 +35,10 @@ Arguments specifying elements' names and their new values.
   \item{x}{Character string holding an option name for \code{lsm.options}.}
   \item{default}{Return value if \code{x} is not found.}
 }
+
 \details{
+
+\subsection{Using \code{update}}{
 In \code{update}, the names in \code{\dots} are partially matched against those that are valid, and if a match is found, it adds or replaces the current setting. The valid names are
 
 \describe{
@@ -74,19 +77,25 @@ In \code{update}, the names in \code{\dots} are partially matched against those 
 \item{(any slot name)}{If the name matches an element of \code{slotNames(object)}, that slot is replaced by the supplied value, if it is of the required class (otherwise an error occurs). Note that all the other possibilities above refer to elements of \code{misc}; hence, you probably don't want to replace \code{misc} itself. The user must be very careful in replacing slots because they are interrelated; for example, the \code{levels} and \code{grid} slots must involve the same variable names, and the lengths and dimensions of \code{grid}, \code{linfct}, \code{bhat}, and \code{V} must conform. 
 }
 } % end \describe
+} % end subsection
 
+\subsection{Using \code{lsm.options}}{
 In \code{lsm.options}, we may set or change the default values for the above attributes in the \code{lsmeans} option list(see \code{\link{options}}). Currently, the following elements of this list are used if specified:
 \describe{
-\item{\code{ref.grid}}{A named \code{list} of defaults for objects created by \code{\link{ref.grid}}. This could affect other iobjects as well. For example, if \code{lsmeans} is called with a fitted model object, it calls \code{ref.grid} and this option will affect the resulting \code{lsmobj} object.}
+\item{\code{ref.grid}}{A named \code{list} of defaults for objects created by \code{\link{ref.grid}}. This could affect other objects as well. For example, if \code{lsmeans} is called with a fitted model object, it calls \code{ref.grid} and this option will affect the resulting \code{lsmobj} object.}
 \item{\code{lsmeans}}{A named \code{list} of defaults for objects created by \code{\link{lsmeans}} (or \code{\link{lstrends}}).}
 \item{\code{contrast}}{A named \code{list} of defaults for objects created by \code{\link{contrast}} (or \code{\link{pairs}}).}
 \item{\code{summary}}{A named \code{list} of defaults used by the methods \code{\link{summary}}, \code{\link{predict}}, and \code{\link{lsmip}}. The only option that can affect the latter two is \code{"predict.method"}.}
 \item{\code{estble.tol}}{Tolerance for determining estimability in rank-deficient cases. If absent, the value in \code{lsmeans::defaults$estble.tol)} is used.}
+\item{(others)}{Other options may be accessed by support code for particular model classes (see \code{\link{models}}). For example, the \code{disable.pbkrtest} and \code{pbkrtest.limit} options affect whether approximate degrees of freedom are computed for \code{lmerMod} objects (\pkg{lme4} package).}
 } % end \describe
+} % end subsection
+
 } % end details
 \value{
-\code{update} returns a copy of \code{object} with its \code{"misc"} slot modified. \code{lsm.options} returns the current options (same as the result of \samp{getOption("lsmeans")}).
+\code{update} returns a copy of \code{object} with its \code{"misc"} slot modified (and perhaps other slots). \code{lsm.options} returns the current options (same as the result of \samp{getOption("lsmeans")}).
 }
+
 
 \author{
 Russell V. Lenth
