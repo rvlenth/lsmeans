@@ -71,6 +71,8 @@ In \code{update}, the names in \code{\dots} are partially matched against those 
 
 \item{\code{methDesc}}{(\code{character}) is a string that may be used for creating names for a list of \code{lsmobj} objects. }
 
+\item{(any slot name)}{If the name matches an element of \code{slotNames(object)}, that slot is replaced by the supplied value, if it is of the required class (otherwise an error occurs). Note that all the other possibilities above refer to elements of \code{misc}; hence, you probably don't want to replace \code{misc} itself. The user must be very careful in replacing slots because they are interrelated; for example, the \code{levels} and \code{grid} slots must involve the same variable names, and the lengths and dimensions of \code{grid}, \code{linfct}, \code{bhat}, and \code{V} must conform. 
+}
 } % end \describe
 
 In \code{lsm.options}, we may set or change the default values for the above attributes in the \code{lsmeans} option list(see \code{\link{options}}). Currently, the following elements of this list are used if specified:

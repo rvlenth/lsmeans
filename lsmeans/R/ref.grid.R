@@ -391,9 +391,11 @@ vcov.ref.grid = function(object, ...) {
 # Method to alter contents of misc slot
 update.ref.grid = function(object, ..., silent = FALSE) {
     args = list(...)
-    valid.choices = c("adjust","alpha","avgd.over","by.vars","df",
+    valid.misc = c("adjust","alpha","avgd.over","by.vars","df",
         "initMesg","estName","estType","famSize","infer","inv.lbl",
         "level","methdesc","predict.type","pri.vars","tran")
+    valid.slots = slotNames(object)
+    valid.choices = union(valid.misc, valid.slots)
     misc = object@misc
     for (nm in names(args)) {
         fullname = try(match.arg(nm, valid.choices), silent=TRUE)
@@ -403,15 +405,19 @@ update.ref.grid = function(object, ..., silent = FALSE) {
                     paste(valid.choices, collapse=", "))
         }
         else {
-            if (fullname == "by.vars") {
-                allvars = union(misc$pri.vars, misc$by.vars)
-                misc$pri.vars = setdiff(allvars, args[[nm]])
+            if (fullname %in% valid.slots)
+                slot(object, fullname) = args[[nm]]
+            else {
+                if (fullname == "by.vars") {
+                    allvars = union(misc$pri.vars, misc$by.vars)
+                    misc$pri.vars = setdiff(allvars, args[[nm]])
+                }
+                if (fullname == "pri.vars") {
+                    allvars = union(misc$pri.vars, misc$by.vars)
+                    misc$by.vars = setdiff(allvars, args[[nm]])
+                }
+                misc[[fullname]] = args[[nm]]
             }
-            if (fullname == "pri.vars") {
-                allvars = union(misc$pri.vars, misc$by.vars)
-                misc$by.vars = setdiff(allvars, args[[nm]])
-            }
-            misc[[fullname]] = args[[nm]]
         }
     }
     object@misc = misc
