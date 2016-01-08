@@ -1,6 +1,6 @@
 Changelog for 'lsmeans' package
 
-2.21-5
+2.21-6
     If confidence intervals are requested and 'adjust' doesn't make
         sense (e.g., "fdr"), we now default to "bonferroni" instead 
         of "none", and don't override the adjustment made for tests.
@@ -9,6 +9,7 @@ Changelog for 'lsmeans' package
         facilitating generation of interaction contrasts.
     Improvements to 'test' with 'joint = TRUE'
     Better error message in cases where no estimates are produced.
+    Basic support for 'betareg' objects
 * TODO: fix vignette section on contrasts of contrasts    
         
 
