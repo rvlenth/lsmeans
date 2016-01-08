@@ -17,6 +17,11 @@
 # 2.13: Revised to call w/ just object instead of all those args (except linfct)
 #   Also moved offset comps to here, and provided for misc$estHook
 .est.se.df = function(object, do.se=TRUE, tol = get.lsm.option("estble.tol")) {
+    if (nrow(object@grid) == 0) {
+        result = data.frame(NA, NA, NA)
+        names(result) = c(object@misc$estName, "SE", "df")
+        return(result[-1, ])
+    }
     misc = object@misc
     if (!is.null(hook <- misc$estHook)) {
         if (is.character(hook)) hook = get(hook)
@@ -45,7 +50,7 @@
     }
     result = as.data.frame(result)
     names(result) = c(misc$estName, "SE", "df")
-    
+
     if (!is.null(misc$tran) && (misc$tran != "none")) {
         if(is.character(misc$tran)) {
             link = try(make.link(misc$tran), silent=TRUE)

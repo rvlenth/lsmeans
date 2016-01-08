@@ -329,6 +329,9 @@ contrast.ref.grid = function(object, method = "eff", by, adjust, offset = NULL,
     cmat = method(levs, ...)
     if (!is.data.frame(cmat))
         stop("Contrast function must provide a data.frame")
+    else if(ncol(cmat) == 0)
+        warning("No contrasts were generated! Perhaps only one lsmean is involved.\n",
+             "  This can happen, for example, when your predictors are not factors.")
     else if (nrow(cmat) != nrow(args))
         stop("Nonconforming number of contrast coefficients")
     
