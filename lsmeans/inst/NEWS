@@ -1,10 +1,14 @@
 Changelog for 'lsmeans' package
 
-2.21-3
+2.21-5
     If confidence intervals are requested and 'adjust' doesn't make
         sense (e.g., "fdr"), we now default to "bonferroni" instead 
         of "none", and don't override the adjustment made for tests.
     'update.ref.grid' now also allows directly replacing slots.
+    A new 'interaction' argument is added to 'contrast', thus 
+        facilitating generation of interaction contrasts.
+    Improvements to 'test' with 'joint = TRUE'
+* TODO: fix vignette secion on contrasts of contrasts    
         
 
 2.21-1
