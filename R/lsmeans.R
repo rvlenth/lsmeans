@@ -262,18 +262,22 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
 contrast = function(object, ...)
     UseMethod("contrast")
 
-contrast.ref.grid = function(object, method = "eff", by, adjust, offset = NULL,
-        name = "contrast", options = getOption("lsmeans")$contrast, 
-        interaction, ...) 
+contrast.ref.grid = function(object, method = "eff", interaction = FALSE, 
+        by, adjust, offset = NULL, name = "contrast", 
+        options = getOption("lsmeans")$contrast, ...) 
 {
     if(missing(by)) 
         by = object@misc$by.vars
     if(length(by) == 0) # character(0) --> NULL
         by = NULL
 
-    if (!missing(interaction)) {
+    if (is.logical(interaction) && interaction)
+        interaction = method
+    if (!is.logical(interaction)) { # i.e., interaction is not FALSE
         if (!is.character(interaction))
             stop("interaction requires named contrast function(s)")
+        if(missing(adjust))
+            adjust = "none"
         vars = names(object@levels)
         k = length(vars)
         if(!is.null(by)) {
