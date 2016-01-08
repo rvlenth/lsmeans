@@ -19,7 +19,7 @@ These methods provide for analyses of \code{ref.grid} objects, or follow-up anal
 }
 \usage{
 \method{contrast}{ref.grid}(object, method = "eff", by, adjust, 
-    offset = NULL, name = "contrast", options = getOption("lsmeans")$contrast, ...)
+    offset = NULL, name = "contrast", options = getOption("lsmeans")$contrast, interaction, ...)
 \method{contrast}{lsm.list}(object, ..., which = 1)
 
 \method{test}{ref.grid}(object, null = 0, joint = FALSE,
@@ -35,7 +35,7 @@ These methods provide for analyses of \code{ref.grid} objects, or follow-up anal
 An object of class \code{"ref.grid"} or its extension, \code{"lsmobj"}.
 }
   \item{method}{
-Character value giving the root name of a contast method (e.g. \code{"pairwise"}). Alternatively, a named list of contrast coefficients that must each conform to the number of least-squares means in each \code{by} group. This is just like the \code{contr} argument in \code{\link{lsmeans}}. To identify the available methods, see \preformatted{ls("package:lsmeans", pat=".lsmc")} You may define your own \code{.lsmc} function and use its root name as \code{method}. 
+Character value giving the root name of a contast method (e.g. \code{"pairwise"}). Alternatively, a named list of contrast coefficients that must each conform to the number of least-squares means in each \code{by} group. This is just like the \code{contr} argument in \code{\link{lsmeans}}. To identify the available methods, see \preformatted{ls("package:lsmeans", pat=".lsmc")} You may define your own \code{.lsmc} function and use its root name as \code{method}. If \code{interaction} is non-missing, this argument is ignored.
 }
   \item{by}{
 Character names of variable(s) to be used for ``by'' groups. The contrasts or joint tests will be evaluated separately for each combination of these variables. If \code{object} was created with by groups, those are used unless overridden. Use \code{by = NULL} to use no by groups at all.
@@ -49,6 +49,7 @@ Method to use for adjusting \emph{P} values. This is passed to \code{\link[lsmea
   or subsequent contrasts of the returned object.
 }
   \item{options}{If non-\code{NULL}, a named \code{list} of arguments to pass to \code{\link{update}}, just after the object is constructed.}
+  \item{interaction}{Character vector. If this is specified, \code{method} is ignored. Instead, interaction contrasts are computed: One factor at a time, contrasts are generated for each factor not in the \code{by} list, and these contrasts are applied to the object (the first time around) or to the previous result (subsequently). The final result comprises contrasts of contrasts, or, equivalently, products of contrasts for the factors involved. Processing is done in the order of appearance in \code{object@levels}, and the elements of \code{interaction} (recycled as needed) are used in order as the \code{method}.}
   \item{joint}{Logical value. If \code{FALSE}, the arguments are passed to \code{\link{summary}} with \code{infer=c(FALSE,TRUE)}. If \code{TRUE}, a joint test of the hypothesis L beta = null is performed, where L is \code{object@linfct} and beta is the vector of fixed effects estimated by \code{object@betahat}. This will be either an \emph{F} test or a chi-square (Wald) test depending on whether degrees of freedom are available.}
   \item{rows}{Integer values. The rows of L to be tested in the joint test. If missing, all rows of L are used. If not missing, \code{by} variables are ignored.}
   \item{null}{Numeric value specifying the null value(s) being tested against. It may be either a single value, in which case it is used as the null value for all linear functions under test; or a numeric vector of length equal to the number of linear functions.}
