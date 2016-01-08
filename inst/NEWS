@@ -8,7 +8,8 @@ Changelog for 'lsmeans' package
     A new 'interaction' argument is added to 'contrast', thus 
         facilitating generation of interaction contrasts.
     Improvements to 'test' with 'joint = TRUE'
-* TODO: fix vignette secion on contrasts of contrasts    
+    Better error message in cases where no estimates are produced.
+* TODO: fix vignette section on contrasts of contrasts    
         
 
 2.21-1
