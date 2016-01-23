@@ -10,6 +10,7 @@ Changelog for 'lsmeans' package
     Improvements to 'test' with 'joint = TRUE'
     Better error message in cases where no estimates are produced.
     Basic support for 'betareg' objects
+    'xtable' methods added for ref.grid and summary.ref.grid
 * TODO: fix vignette section on contrasts of contrasts    
         
 

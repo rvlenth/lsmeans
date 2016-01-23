@@ -55,3 +55,20 @@ lsm.basis.betareg = function(object, trms, xlev, grid,
     object@misc$postGridHook = NULL
     regrid(object, transform = TRUE)
 }
+
+
+### predict methods
+# link: X%*%beta + off_m
+# response: mu = h_m(link)
+# 
+# phi.link: Z%*%gamma + off_p
+# precision: phi = h_p(phi.link)
+# 
+# variance: mu*(1 - mu) / (1 + phi)
+# quantile: qbeta(p, mu*phi, (1 - mu)*phi)
+#
+# Defns:
+#   phi = a + b
+#   mu = a / (a + b)
+# so that phi*mu = a and phi*(1 - mu) = b,
+#   Variance = ab / [(a + b)^2 * (a + b + 1)]

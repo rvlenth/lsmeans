@@ -36,6 +36,9 @@ if (requireNamespace("coda", quietly = TRUE)) {
     S3method(as.mcmc, ref.grid)
 }
 
+if (requireNamespace("xtable", quietly = TRUE)) {
+    importFrom(xtable, xtable, xtableList)
+}
 
 # Visible exports
 exportPattern("*.lsmc")  #all contrast fcns
@@ -150,6 +153,8 @@ S3method(update, ref.grid)
 
 S3method(vcov, ref.grid)
 
+S3method(xtable, ref.grid)
+S3method(xtable, summary.ref.grid)
 
 
 # interim support for old lsmeans function
