@@ -67,8 +67,7 @@ Harvey W (1960).
 \bibitem[{Harvey(1976)}]{Har76}
 Harvey W (1976).
 \newblock \enquote{Use of the {HARVEY} Procedure.}
-\newblock In \emph{{SUGI} Proceedings}.
-\newblock
+\newblock In \enquote{{SUGI} Proceedings,}
   \urlprefix\url{http://www.sascommunity.org/sugi/SUGI76/Sugi-76-20%20Harvey.pdf}.
 
 \bibitem[{Harvey(1977)}]{Har77}
@@ -107,8 +106,7 @@ Pinheiro J, Bates D, {R-core} (2013).
 \bibitem[{{SAS Institute Inc.}(2012)}]{SAS12}
 {SAS Institute Inc} (2012).
 \newblock \enquote{\code{LSMEANS} Statement.}
-\newblock In \emph{{\proglang{SAS/STAT}(R)} 9.3 User's Guide}.
-\newblock
+\newblock In \enquote{{\proglang{SAS/STAT}(R)} 9.3 User's Guide,}
   \urlprefix\url{http://support.sas.com/documentation/cdl/en/statug/63962/HTML/default/viewer.htm#statug_introcom_a0000003362.htm}.
 
 \bibitem[{Schuirmann(1987)}]{Sch87}

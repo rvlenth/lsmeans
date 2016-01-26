@@ -2,6 +2,9 @@
 ^.*\.Rproj$
 ^\.svn$
 
+# Not yet ready for prime time
+xtable-method.R
+
 # Bibliography that is needed but not allowed...
 using-lsmeans.bbl
 
@@ -9,9 +12,6 @@ using-lsmeans.bbl
 KRstuff.R
 old-lsmeans.R
 lsmeans-changes.rnw
-
-# Not yet ready for prime time
-#multinom-support.R
 
 # New devel stuff
 test-data.R

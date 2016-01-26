@@ -243,7 +243,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
         # TO DO: provide for passing dots to cld                
             return(cld(result, by = by))
         }
-        ctrs = contrast(result, method = contr, by, ...)
+        ctrs = contrast(result, method = contr, by = by, ...)
         .cls.list("lsm.list", lsmeans = result, contrasts = ctrs)
     }
 }
@@ -278,6 +278,7 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
             stop("interaction requires named contrast function(s)")
         if(missing(adjust))
             adjust = "none"
+        by = NULL
         vars = names(object@levels)
         k = length(vars)
         if(!is.null(by)) {
