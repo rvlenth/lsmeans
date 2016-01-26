@@ -27,25 +27,58 @@ lsm.basis.betareg = function(object, trms, xlev, grid,
         mode = c("response", "link", "precision", "phi.link", "variance", "quantile"), 
         quantile = .5, ...) {
     mode = match.arg(mode)
-    if (mode %in% c("variance", "quantile"))
-        stop(paste0('"', mode, '" mode is not yet supported.'))
+#     if (mode %in% c("variance", "quantile"))
+#         stop(paste0('"', mode, '" mode is not yet supported.'))
     
     # figure out which parameters we need
     model = if (mode %in% c("response", "link")) "mean"
         else if (mode %in% c("precision", "phi.link")) "precision"
         else "full"
-    V = vcov(object, model = model)
+    V = .pscl.vcov(object, model = model) # borrowed from pscl methods
     bhat = coef(object, model = model)
     
-    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
-    X = model.matrix(trms, m, contrasts.arg = object$contrasts[[model]])
-    
     nbasis = estimability::all.estble
-    misc = list(tran = object$link[[model]]$name)
     dffun = function(k, dfargs) NA
     dfargs = list()
-    if (mode %in% c("response", "precision")) {
-        misc$postGridHook = ".betareg.pg"
+    
+    
+    if (mode %in% c("response", "link", "precision", "phi.link")) {
+        m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+        X = model.matrix(trms, m, contrasts.arg = object$contrasts[[model]])
+        misc = list(tran = object$link[[model]]$name)
+        if (mode %in% c("response", "precision")) {
+            misc$postGridHook = ".betareg.pg"
+        }
+    }
+    else { ### (mode %in% c("variance", "quantile"))
+        m.trms = delete.response(terms(object, "mean"))
+        m.m = model.frame(m.trms, grid, na.action = na.pass, xlev = xlev)
+        X = model.matrix(m.trms, m.m, contrasts.arg = object$contrasts$mean)
+        m.idx = seq_len(ncol(X))
+        m.lp = as.numeric(X %*% bhat[m.idx] + .get.offset(m.trms, grid))
+        mu = object$link$mean$linkinv(m.lp)
+            
+        p.trms = delete.response(terms(object, "precision"))
+        p.m = model.frame(m.trms, grid, na.action = na.pass, xlev = xlev)
+        Z = model.matrix(p.trms, p.m, contrasts.arg = object$contrasts$precision)
+        p.lp = as.numeric(Z %*% bhat[-m.idx] + .get.offset(p.trms, grid))
+        phi = object$link$precision$linkinv(p.lp)
+        
+        if (mode == "variance") {
+            bhat = mu * (1 - mu) / (1 + phi)
+            dbhat.dm = (1 - 2 * mu) / (1 + phi)
+            dbhat.dp = -bhat / (1 + phi)
+            delta = cbind(diag(dbhat.dm) %*% X, diag(dbhat.dp) %*% Z)
+            V = delta %*% tcrossprod(V, delta)
+            misc = list()
+        }
+        else {  ### (mode = "quantile")
+            bhat = as.numeric(sapply(quantile, function(q)
+                qbeta(q, phi * mu, phi * (1 - mu))))
+            V = matrix(NA, nrow = length(bhat), ncol = length(bhat))
+            misc = list(ylevs = list(quantile = quantile))
+        }
+        X = diag(1, length(bhat))
     }
     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=misc)
 }
