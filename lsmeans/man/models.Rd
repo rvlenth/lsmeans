@@ -29,6 +29,13 @@ Additional models can be supported by writing appropriate \code{recover.data} an
 %%%Support for the \code{full.model} element of these objects is the same as that for \code{merMod} in the \pkg{lme4} package -- see below. However, for \pkg{afex} versions 0.10-113 and earlier, the \code{data} argument is required in calls to \code{lsmeans} or \code{ref.grid}, as the information about the original dataset is not preserved in the object.}
 
 
+\section{\pkg{betareg} package}{
+\describe{
+\item{betareg}{The additional \code{mode} argument has possible values of \code{"response"}, \code{"link"}, \code{"precision"}, \code{"phi.link"}, \code{"variance"}, and \code{"quantile"}, which have the same meaning as the \code{type} argument in \code{predict.betareg} -- with the addition that \code{"phi.link"} is like \code{"link"}, but for the precision portion of the model. When \code{mode = "quantile"} is specified, the additional argument \code{quantile} (a numeric scalar or vector) specifies which quantile(s) to compute; the default is 0.5 (the median). Also in \code{"quantile"} mode, an additional variable \code{quantile} is added to the reference grid, and its levels are the values supplied.
+}
+}}% betareg
+
+
 \section{\pkg{CARBayes} package}{
 \describe{
 \item{carbayes}{The user \emph{must} supply (via the \code{data} argument) the dataset used in fitting the model. As with other MCMC-based objects, the summaries and such are frequentist, but the \code{as.mcmc} method provides a posterior sample of the desired quantities.}

@@ -3,7 +3,7 @@
 # Imports
 # From default packages (new req from CRAN, July 2015)
 importFrom("graphics", "pairs")
-importFrom("stats", "as.formula", "coef", "complete.cases", "confint", "cov", "cov2cor", "delete.response", "deriv", "family", "lm", "make.link", "model.frame", "model.matrix", "na.omit", "na.pass", "p.adjust", "p.adjust.methods", "pchisq", "pf", "poly", "predict", "pt", "ptukey", "qf", "qt", "qtukey", "reformulate", "terms", "uniroot", "update", "vcov")
+importFrom("stats", "as.formula", "coef", "complete.cases", "confint", "cov", "cov2cor", "delete.response", "deriv", "family", "lm", "make.link", "model.frame", "model.matrix", "na.omit", "na.pass", "p.adjust", "p.adjust.methods", "pchisq", "pf", "poly", "predict", "pt", "ptukey", "qbeta", "qf", "qt", "qtukey", "reformulate", "terms", "uniroot", "update", "vcov")
 importFrom("utils", "head", "installed.packages", "str")
 importFrom("nlme", "fixef")
 
@@ -36,9 +36,10 @@ if (requireNamespace("coda", quietly = TRUE)) {
     S3method(as.mcmc, ref.grid)
 }
 
-if (requireNamespace("xtable", quietly = TRUE)) {
-    importFrom(xtable, xtable, xtableList)
-}
+# When xtable>=1.8-2 is on CRAN, we can uncomment this and remove the xtable support from Rbuildignore
+#if (requireNamespace("xtable", quietly = TRUE)) {
+#    importFrom(xtable, xtable, xtableList)
+#}
 
 # Visible exports
 exportPattern("*.lsmc")  #all contrast fcns
@@ -153,8 +154,8 @@ S3method(update, ref.grid)
 
 S3method(vcov, ref.grid)
 
-S3method(xtable, ref.grid)
-S3method(xtable, summary.ref.grid)
+#S3method(xtable, ref.grid)
+#S3method(xtable, summary.ref.grid)
 
 
 # interim support for old lsmeans function

@@ -63,6 +63,10 @@ Other information: \tab See DESCRIPTION\cr
 }
 
 \references{
+Russell V. Lenth (2016)
+Least-Squares Means: The R Package lsmeans.
+\emph{Journal of Statistical Software}, 69(1), 1-33. doi:10.18637/jss.v069.i01
+  
 Searle S.R. Speed F.M. Milliken G.A. (1980) 
 Population marginal means in the linear model: An alternative to least squares means. 
 \emph{The American Statistician} \bold{34}(4), 216-221.

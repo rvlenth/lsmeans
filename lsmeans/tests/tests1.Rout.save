@@ -1,6 +1,6 @@
 
-R version 3.2.2 (2015-08-14) -- "Fire Safety"
-Copyright (C) 2015 The R Foundation for Statistical Computing
+R Under development (unstable) (2016-01-25 r70000) -- "Unsuffered Consequences"
+Copyright (C) 2016 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -145,24 +145,28 @@ P value adjustment: tukey method for comparing a family of 3 estimates
 > 
 > # Joint tests
 > test(warp.pairs, joint = TRUE)  # all 6 but reduces to 4
-Note: Rows are linearly dependent - df are reduced accordingly
-       F df1 df2 p.value
-A 9.7089   2  37  0.0004
-B 2.4711   2  37  0.0983
+There are linearly dependent rows - df are reduced accordingly
+ wool df1 df2     F p.value
+ A      2  37 9.709  0.0004
+ B      2  37 2.471  0.0983
+
 > 
 > test(warp.pairs, joint = TRUE, rows = 1:3)  # just wool A
-Note: Rows are linearly dependent - df are reduced accordingly
-              F df1 df2 p.value
-sel.rows 9.7089   2  37   4e-04
+There are linearly dependent rows - df are reduced accordingly
+ df1 df2     F p.value
+   2  37 9.709  0.0004
+
 > 
 > test(warp.pairs, joint = TRUE, rows = 2:3)  # just wool A but not lin dep
-              F df1 df2 p.value
-sel.rows 9.7089   2  37   4e-04
+ df1 df2     F p.value
+   2  37 9.709  0.0004
+
 >                                             # should be identical result
 > 
 > test(warp.pairs, joint = TRUE, rows = 4:5)  # just wool B
-              F df1 df2 p.value
-sel.rows 2.4711   2  37  0.0983
+ df1 df2     F p.value
+   2  37 2.471  0.0983
+
 > 
 > 
 > # Test different ways of accessing data
@@ -544,4 +548,4 @@ Confidence level used: 0.95
 > 
 > proc.time()
    user  system elapsed 
-   1.07    0.14    1.25 
+   1.01    0.20    2.76 

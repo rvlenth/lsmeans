@@ -321,7 +321,7 @@ cld(org.mlsm, sort = FALSE)
 
 
 
-\section{Contrasts of contrasts}
+\section{Contrasts of contrasts (interaction contrasts)}
 With the preceding model, we might want to compare the two varieties on each day:
 <<>>=
 org.vardiff <- update(pairs(org.mlsm, by = "day"), by = NULL)
@@ -332,8 +332,10 @@ cld(org.vardiff)
 @
 There is little evidence of variety differences, nor that these differences vary from day to day.
 
-
-
+A newer feature of the "contrast" function is the optional "interaction" argument, which may be used to specify interaction contrasts by naming which contrast to use for each variable (in the order of appearance in the grid). In a similar example to the above, suppose we want to compare each polynomial contrast in "day" between the two varieties:
+<<>>=
+contrast(org.mlsm, interaction = c("poly", "pairwise"))
+@
 
 \section[Interfacing with multcomp]{Interfacing with \pkg{multcomp}}
 The \pkg{multcomp} package \citep{multc} supports more options for simultaneous inference than are available in \lsm{}. Its "glht" (general linear hypothesis testing) function and associated \dqt{glht} class are similar in some ways to "lsmeans" and \dqt{lsmobj} objects, respectively. So \lsm{} provides an "as.glht" function to do the conversion.
@@ -393,6 +395,8 @@ anova(Oats.lmer)
 @
 Apparently, the interaction is not needed. But perhaps we can further simplify the model by using only a linear or quadratic trend in "nitro". We can find out by looking at polynomial contrasts:
 <<oatcontr, eval=FALSE>>=
+### We disable pbkrtest temporarily due to a bug in version 0.4.5.
+lsm.options(disable.pbkrtest = TRUE) 
 contrast(lsmeans(Oats.lmer, "nitro"), "poly")
 @
 %%% Fake the warning message

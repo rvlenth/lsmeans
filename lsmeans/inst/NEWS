@@ -1,6 +1,6 @@
 Changelog for 'lsmeans' package
 
-2.21-7
+2.22
     If confidence intervals are requested and 'adjust' doesn't make
         sense (e.g., "fdr"), we now default to "bonferroni" instead 
         of "none", and don't override the adjustment made for tests.
@@ -10,11 +10,8 @@ Changelog for 'lsmeans' package
     Improvements to 'test' with 'joint = TRUE'
     Better error message in cases where no estimates are produced.
     Basic support for 'betareg' objects
-    'xtable' methods added for ref.grid and summary.ref.grid.
     CITATION file added to reflect related JSS article.
-* TODO: fix vignette section on contrasts of contrasts
-* TODO: document betareg support
-        
+
 
 2.21-1
     Changed R dependency to >= 3.2; needed for rbind support

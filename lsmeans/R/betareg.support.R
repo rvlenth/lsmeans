@@ -74,7 +74,7 @@ lsm.basis.betareg = function(object, trms, xlev, grid,
         }
         else {  ### (mode = "quantile")
             bhat = as.numeric(sapply(quantile, function(q)
-                qbeta(q, phi * mu, phi * (1 - mu))))
+                stats::qbeta(q, phi * mu, phi * (1 - mu))))
             V = matrix(NA, nrow = length(bhat), ncol = length(bhat))
             misc = list(ylevs = list(quantile = quantile))
         }

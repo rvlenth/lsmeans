@@ -1,8 +1,8 @@
 Package: lsmeans
 Type: Package
 Title: Least-Squares Means
-Version: 2.21-7
-Date: 2016-01-23
+Version: 2.22
+Date: 2016-01-26
 Authors@R: c(person("Russell", "Lenth", role = c("aut", "cre"), 
     email = "russell-lenth@uiowa.edu"),
   person("Maxime", "Herv\\'e", role = "ctb"))
@@ -10,7 +10,7 @@ Depends: estimability, methods, R (>= 3.0)
 Suggests: car, lattice, MCMCpack, mediation, multcompView, ordinal, pbkrtest (>= 0.4-1),
           CARBayes, coxme, gee, geepack, glmmADMB, lme4.0, lme4, MASS, MCMCglmm, nnet, pscl, survival
 Imports: graphics, stats, utils, nlme,
-         coda (>= 0.17), multcomp, plyr, mvtnorm, xtable (>= 1.8-2)
+         coda (>= 0.17), multcomp, plyr, mvtnorm
 Additional_repositories: http://glmmadmb.r-forge.r-project.org/repos, http://lme4.0.r-forge.r-project.org/repos
 LazyData: yes
 ByteCompile: yes
