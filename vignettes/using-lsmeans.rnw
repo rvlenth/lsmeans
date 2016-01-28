@@ -395,7 +395,6 @@ anova(Oats.lmer)
 @
 Apparently, the interaction is not needed. But perhaps we can further simplify the model by using only a linear or quadratic trend in "nitro". We can find out by looking at polynomial contrasts:
 <<oatcontr, eval=FALSE>>=
-### We disable pbkrtest temporarily due to a bug in version 0.4.5.
 lsm.options(disable.pbkrtest = TRUE) 
 contrast(lsmeans(Oats.lmer, "nitro"), "poly")
 @

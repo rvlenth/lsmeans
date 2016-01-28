@@ -1,5 +1,8 @@
 Changelog for 'lsmeans' package
 
+2.22-1
+    Added xtable support
+
 2.22
     If confidence intervals are requested and 'adjust' doesn't make
         sense (e.g., "fdr"), we now default to "bonferroni" instead 

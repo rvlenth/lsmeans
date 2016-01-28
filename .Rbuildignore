@@ -3,7 +3,7 @@
 ^\.svn$
 
 # Not yet ready for prime time
-xtable-method.R
+### Now ready: xtable-method.R
 
 # Bibliography that is needed but not allowed...
 using-lsmeans.bbl
