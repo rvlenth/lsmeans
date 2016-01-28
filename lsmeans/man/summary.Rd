@@ -14,8 +14,8 @@
 \alias{as.mcmc}
 \alias{as.mcmc.ref.grid}
 \alias{[.ref.grid}
-%\alias{xtable.ref.grid}
-%\alias{xtable.summary.ref.grid}
+\alias{xtable.ref.grid}
+\alias{xtable.summary.ref.grid}
 
 
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -40,10 +40,10 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 \method{print}{ref.grid}(x, ...)
 \method{print}{summary.ref.grid}(x, ..., digits = NULL, quote = FALSE, right = TRUE)
 
-%\method{xtable}{ref.grid}(x, caption = NULL, label = NULL, align = NULL, 
-%    digits = NULL, display = NULL, auto = FALSE, ...)
-%\method{xtable}{summary.ref.grid}(x, caption = NULL, label = NULL, align = NULL, 
-%    digits = NULL, display = NULL, auto = FALSE, ...)
+\method{xtable}{ref.grid}(x, caption = NULL, label = NULL, align = NULL, 
+    digits = NULL, display = NULL, auto = FALSE, ...)
+\method{xtable}{summary.ref.grid}(x, caption = NULL, label = NULL, align = NULL, 
+    digits = NULL, display = NULL, auto = FALSE, ...)
 
 \method{plot}{lsmobj}(x, y, type, intervals = TRUE, comparisons = FALSE,
     alpha = 0.05, adjust = "tukey", int.adjust, ...)
@@ -95,9 +95,8 @@ The object to be subsetted, printed, plotted, or converted.
   \item{int.adjust}{the multiplicity adjustment method for the plotted confidence intervals; if missing, it defaults to the object's internal \code{adjust} setting (see \code{\link{update}}). (Note: the \code{adjust} argument in \code{plot} sets the adjust method for the comparison arrows, not the confidennce intervals.)}
   \item{transform}{Logical value; if true, the inverse transformation is applied to the estimates in the grid}
   \item{names}{Logical scalar or vector specifying whether variable names are appended to levels in the column labels for the \code{as.mcmc} result -- e.g., column names of \code{treat A} and \code{treat B} versus  just \code{A} and \code{B}. When there is more than one variable involved, the elements of \code{names} are used cyclically.}
-%\item{\dots, digits, quote, right, caption, label, align, display, auto, xlab, ylab, layout}
-  \item{\dots, digits, quote, right, xlab, ylab, layout}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, 
-%\code{\link{xtable}}, 
+\item{\dots, digits, quote, right, caption, label, align, display, auto, xlab, ylab, layout}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, 
+\code{\link{xtable}}, 
 \code{\link{update}}, or \code{\link{dotplot}} as appropriate. If not specified, appropriate defaults are used. For example, the default \code{layout} is one column of horizontal panels or one row of vertical panels.}
 }
 \details{
