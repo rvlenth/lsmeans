@@ -1,7 +1,19 @@
 Changelog for 'lsmeans' package
 
-2.22-1
+2.22-3
     Added xtable support
+    Corrected bug in rbind.ref.grid that caused error when rank-deficient
+    In summary.ref.grid with type = "response", ensured CIs are never 
+        reversed and SEs are always nonnegative
+    Fixed a bug in reverse-transforming estimates and CIs when the
+        a linear predictor is invalid (e.g., a negative sqrt)
+    Greatly increased transformation capabilities via 'make.tran'
+    Made messages more explicit about which transformation is/was used
+*** TODO: make lsm() more robust, e.g. permit "at"
+*** TODO: class and print method for xtable
+*** TODO: Rd file for make.tran
+*** TODO: Update vignette for make.tran and xtable
+
 
 2.22
     If confidence intervals are requested and 'adjust' doesn't make

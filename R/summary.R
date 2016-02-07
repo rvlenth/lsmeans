@@ -8,7 +8,6 @@
     else 0
 }
 
-
 # utility fcn to get est's, std errors, and df
 # new arg: do.se -- if FALSE, just do the estimates and return 0 for se and df
 # returns a data.frame with an add'l "link" attribute if misc$tran is non-null
@@ -52,13 +51,16 @@
     names(result) = c(misc$estName, "SE", "df")
 
     if (!is.null(misc$tran) && (misc$tran != "none")) {
-        if(is.character(misc$tran)) {
-            link = try(make.link(misc$tran), silent=TRUE)
-            if (!inherits(link, "try-error"))
-                attr(result, "link") = link
-        }
+        link = if(is.character(misc$tran))
+            .make.link(misc$tran)
         else if (is.list(misc$tran))
-            attr(result, "link") = misc$tran
+            misc$tran
+        else 
+            NULL
+        
+        if (!is.null(link) && is.null(link$name))
+                link$name = "linear-predictor"
+        attr(result, "link") = link
     }
     result
 }
@@ -374,6 +376,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     
     zFlag = (all(is.na(result$df)))
     inv = (type == "response") # flag to inverse-transform
+    link = attr(result, "link")
     
     if ((length(infer) == 0) || !is.logical(infer)) 
         infer = c(FALSE, FALSE)
@@ -381,15 +384,12 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
         infer = c(infer,infer)
     
     if(inv && !is.null(object@misc$tran)) {
-        link = attr(result, "link")
         if (!is.null(object@misc$inv.lbl))
             names(result)[1] = object@misc$inv.lbl
         else
             names(result)[1] = "lsresponse"
     }
-    else
-        link = NULL
-    
+
     attr(result, "link") = NULL
     estName = names(result)[1]
     
@@ -397,10 +397,13 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     
     ### Add an annotation when we show results on lp scale and
     ### there is a transformation
-    if (!inv && !is.null(linkName <- object@misc$tran)) {
-        if (!is.character(linkName))
-            linkName = "linear predictor (not response)"
-        mesg = c(mesg, paste("Results are given on the", linkName, "scale."))
+    if (!inv && !is.null(link)) {
+        mesg = c(mesg, paste("Results are given on the", link$name, "(not the response) scale."))
+    }
+    if (inv && !is.null(link$unknown)) {
+        mesg = c(mesg, paste0('Unknown transformation "', link$name, '": no transformation done'))
+        inv = FALSE
+        link = NULL
     }
     
     # et = 1 if a prediction, 2 if a contrast (or unmatched or NULL), 3 if pairs
@@ -428,11 +431,14 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
         cnm = if (zFlag) c("asymp.LCL", "asymp.UCL") else c("lower.CL","upper.CL")
         result[[cnm[1]]] = result[[1]] + cv[, 1]*result$SE
         result[[cnm[2]]] = result[[1]] + cv[, 2]*result$SE
-        if (!is.null(link)) {
-            result[[cnm[1]]] = link$linkinv(result[[cnm[1]]])
-            result[[cnm[2]]] = link$linkinv(result[[cnm[2]]])
-        }
         mesg = c(mesg, paste("Confidence level used:", level), acv$mesg)
+        if (inv) {
+            clims = with(link, cbind(linkinv(result[[cnm[1]]]), linkinv(result[[cnm[2]]])))
+            idx = if (all(clims[ ,1] <= clims[, 2])) 1:2 else 2:1
+            result[[cnm[1]]] = clims[, idx[1]]
+            result[[cnm[2]]] = clims[, idx[2]]
+            mesg = c(mesg, paste("Intervals are back-transformed from the", link$name, "scale"))
+        }
     }
     if(infer[2]) { # add tests
         if (!all(null == 0)) {
@@ -461,11 +467,11 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
         if(tail != 0) 
             mesg = c(mesg, paste("P values are ", ifelse(tail<0,"left-","right-"),"tailed", sep=""))
         if (!is.null(link)) 
-            mesg = c(mesg, "Tests are performed on the linear-predictor scale")
+            mesg = c(mesg, paste("Tests are performed on the", link$name, "scale"))
     }
-    if (!is.null(link)) {
-        result[["SE"]] = link$mu.eta(result[[1]]) * result[["SE"]]
-        result[[1]] = link$linkinv(result[[1]])
+    if (inv) {
+        result[["SE"]] = with(link, abs(mu.eta(result[[1]]) * result[["SE"]]))
+        result[[1]] = with(link, linkinv(result[[1]]))
     }
     
     if (length(object@misc$avgd.over) > 0)
