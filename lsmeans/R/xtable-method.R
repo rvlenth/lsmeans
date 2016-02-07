@@ -21,16 +21,12 @@ xtable.summary.ref.grid = function (x, caption = NULL, label = NULL, align = NUL
             xList[[i]] = as.data.frame(xList[[i]][, -byc, drop = FALSE])
         }
         attr(xList, "subheadings") = labs
-        attr(xList, "message") = attr(x, "mesg")
-        xList = xtable::xtableList(xList, caption = caption, label = label, 
-                            align = align, digits = digits, display = display, 
-                            auto = auto, ...)
     }
     else {
-        xList = as.data.frame(x)
-        xList = xtable::xtable(xList, caption = caption, 
-                                   label = label, align = align, digits = digits, display = display, 
-                                   auto = auto, ...)
+        xList = list(as.data.frame(x))
     }
-    return(xList)
+    attr(xList, "message") = attr(x, "mesg")
+    xtable::xtableList(xList, caption = caption, label = label, 
+       align = align, digits = digits, display = display, 
+       auto = auto, ...)
 }

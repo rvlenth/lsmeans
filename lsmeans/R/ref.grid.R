@@ -146,6 +146,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         lhs = form[-3] ####form[[2]]
         tran = setdiff(.all.vars(lhs, functions = TRUE), c(.all.vars(lhs), "~", "cbind"))
         if(length(tran) == 1) {
+            if (tran == "linkfun")
+                tran = as.list(environment(trms))
             misc$tran = tran
             misc$inv.lbl = "response"
         }
@@ -359,7 +361,8 @@ str.ref.grid <- function(object, ...) {
         cat("\n")
     }
     if(!is.null(tran <- object@misc$tran)) {
-        if (is.list(tran)) tran = "custom - see slot(, \"misc\")$tran"
+        if (is.list(tran)) 
+            tran = ifelse(is.null(tran$name), "custom - see slot(, \"misc\")$tran", tran$name)
         cat(paste("Transformation:", dQuote(tran), "\n"))
     }
 }
@@ -476,7 +479,8 @@ regrid = function(object, transform = TRUE) {
     if(transform && !is.null(object@misc$tran)) {
         link = attr(est, "link")
         D = .diag(link$mu.eta(object@bhat[estble]))
-        object@bhat = link$linkinv(object@bhat)
+        object@bhat = sapply(object@bhat, function(x) 
+            ifelse(link$valideta(x), link$linkinv(x), 0))
         object@V = D %*% tcrossprod(object@V, D)
         inm = object@misc$inv.lbl
         if (!is.null(inm))
