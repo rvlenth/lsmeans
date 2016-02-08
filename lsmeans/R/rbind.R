@@ -31,10 +31,13 @@ rbind.ref.grid = function(..., deparse.level = 1, adjust = "mvt") {
         for (nm in names(g))
             grid[rows, nm] = as.character(g[[nm]])
     }
+    avgd.over = unique(unlist(lapply(objs, function(o) o@misc$avgd.over)))
+    attr(avgd.over, "qualifier") = " some or all of"
     obj@grid = grid
     update(obj, pri.vars = gnms, by.vars = NULL, adjust = adjust,
            famSize = round((1 + sqrt(1 + 8*n)) / 2, 3),
-           estType = "contrast", infer = c(FALSE, TRUE))
+           estType = "contrast", infer = c(FALSE, TRUE),
+           avgd.over = avgd.over)
 }
 
 

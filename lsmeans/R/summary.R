@@ -474,10 +474,12 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
         result[[1]] = with(link, linkinv(result[[1]]))
     }
     
-    if (length(object@misc$avgd.over) > 0)
-        mesg = c(paste("Results are averaged over the levels of:",
+    if (length(object@misc$avgd.over) > 0) {
+        qual = attr(object@misc$avgd.over, "qualifier")
+        if (is.null(qual)) qual = ""
+        mesg = c(paste0("Results are averaged over", qual, " the levels of: ",
                        paste(object@misc$avgd.over, collapse = ", ")), mesg)
-    
+    }
     summ = cbind(lbls, result)
     attr(summ, "estName") = estName
     attr(summ, "clNames") = cnm  # will be NULL if infer[1] is FALSE

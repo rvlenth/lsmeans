@@ -26,7 +26,18 @@ xtable.summary.ref.grid = function (x, caption = NULL, label = NULL, align = NUL
         xList = list(as.data.frame(x))
     }
     attr(xList, "message") = attr(x, "mesg")
-    xtable::xtableList(xList, caption = caption, label = label, 
+    result = xtable::xtableList(xList, caption = caption, label = label, 
        align = align, digits = digits, display = display, 
        auto = auto, ...)
+    class(result) = c("xtable.lsm", "xtableList")
+    result
 }
+
+# My own print method
+print.xtable.lsm = function(x, include.rownames = FALSE, 
+                            sanitize.message.function = footnotesize,
+                            ...)
+{
+    footnotesize = function(x) paste0("{\\footnotesize ", x, "}")
+    invisible(print.xtableList(x, include.rownames = include.rownames, sanitize.message.function = sanitize.message.function, ...))
+}    
