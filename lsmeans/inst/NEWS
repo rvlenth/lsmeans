@@ -12,7 +12,6 @@ Changelog for 'lsmeans' package
     Made messages more explicit about which transformation is/was used
 *** TODO: make lsm() more robust, e.g. permit "at"
 *** TODO: class and print method for xtable
-*** TODO: Rd file for xtable and make.tran
 *** TODO: Update vignette for make.tran and xtable
 
 

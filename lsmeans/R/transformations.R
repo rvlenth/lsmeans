@@ -23,6 +23,17 @@
              tmp },
          `/` = .make.link("inverse"),
          reciprocal = .make.link("inverse"),
+         log10 = list(
+             linkinv = function(eta) 10^eta,
+             mu.eta = 10^eta * log(10),
+             name = "log10"
+         ),
+         log2 = list(
+             linkinv = function(eta) 2^eta,
+             mu.eta = 2^eta * log(2),
+             name = "log2"
+         ),
+         arcsine = make.tran("arcsine"),
          { # default if not included, flags it as unknown
              tmp = stats::make.link("identity")
              tmp$unknown = TRUE
@@ -37,7 +48,7 @@
 # Returns a list like stats::make.link, but often with an additional "param" member
 # types:
 #       glog: log(mu + param)
-make.tran = function(type = c("genlog", "power", "boxcox", "arcsin"), param = 1) {
+make.tran = function(type = c("genlog", "power", "boxcox", "arcsine"), param = 1) {
     type = match.arg(type)
     switch(type,
         genlog = list(
@@ -71,12 +82,12 @@ make.tran = function(type = c("genlog", "power", "boxcox", "arcsin"), param = 1)
                 name = paste0("Box-Cox (lambda = ", round(param, 3), ")") 
             )
         },
-        arcsin = list(
+        arcsine = list(
             linkfun = function(mu) asin(sqrt(mu)),
             linkinv = function(eta) sin(pmax(pmin(eta, pi/2), 0))^2,
             mu.eta = function(eta) sin(2*pmax(pmin(eta, pi/2), 0)),
             valideta = function(eta) all(eta <= pi/2) && all(eta >= 0),
-            name = "arcsin(sqrt(mu))"
+            name = "asin(sqrt(mu))"
         )
     )
 }
