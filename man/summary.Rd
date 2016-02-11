@@ -41,9 +41,12 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 \method{print}{summary.ref.grid}(x, ..., digits = NULL, quote = FALSE, right = TRUE)
 
 \method{xtable}{ref.grid}(x, caption = NULL, label = NULL, align = NULL, 
-    digits = NULL, display = NULL, auto = FALSE, ...)
+    digits = 4, display = NULL, auto = FALSE, ...)
 \method{xtable}{summary.ref.grid}(x, caption = NULL, label = NULL, align = NULL, 
-    digits = NULL, display = NULL, auto = FALSE, ...)
+    digits = 4, display = NULL, auto = FALSE, ...)
+\method{print}{xtable.lsm}(x, type = getOption("xtable.type", "latex"),
+    include.rownames = FALSE, sanitize.message.function = footnotesize,
+    ...)
 
 \method{plot}{lsmobj}(x, y, type, intervals = TRUE, comparisons = FALSE,
     alpha = 0.05, adjust = "tukey", int.adjust, ...)
@@ -95,8 +98,8 @@ The object to be subsetted, printed, plotted, or converted.
   \item{int.adjust}{the multiplicity adjustment method for the plotted confidence intervals; if missing, it defaults to the object's internal \code{adjust} setting (see \code{\link{update}}). (Note: the \code{adjust} argument in \code{plot} sets the adjust method for the comparison arrows, not the confidennce intervals.)}
   \item{transform}{Logical value; if true, the inverse transformation is applied to the estimates in the grid}
   \item{names}{Logical scalar or vector specifying whether variable names are appended to levels in the column labels for the \code{as.mcmc} result -- e.g., column names of \code{treat A} and \code{treat B} versus  just \code{A} and \code{B}. When there is more than one variable involved, the elements of \code{names} are used cyclically.}
-\item{\dots, digits, quote, right, caption, label, align, display, auto, xlab, ylab, layout}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, 
-\code{\link{xtable}}, 
+\item{\dots, digits, quote, right, caption, label, align, display, auto, type, include.rownames, sanitize.message.function, xlab, ylab, layout}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, 
+\code{\link{xtableList}}, \code{\link{print.xtableList}},
 \code{\link{update}}, or \code{\link{dotplot}} as appropriate. If not specified, appropriate defaults are used. For example, the default \code{layout} is one column of horizontal panels or one row of vertical panels.}
 }
 \details{
@@ -122,6 +125,9 @@ For P-value adjustments only, the other Bonferroni-inequality-based adjustment m
 Also, if an adjustment method is not appropriate (e.g., using \code{"tukey"} with one-sided tests, or with results that are not pairwise comparisons), a more appropriate method (usually \code{"sidak"}) is substituted. 
 
 In some cases, confidence and \eqn{p}-value adjustments are only approximate -- especially when the degrees of freedom or standard errors vary greatly within the family of tests. The \code{"mvt"} method is always the correct one-step adjustment, but it can be very slow. One may use \code{\link{as.glht}} with methods in the \pkg{multcomp} package to obtain non-conservative multi-step adjustments to tests.
+
+\bold{\code{xtable}-related methods:}
+The \code{\link{xtable}} methods actually use \code{\link{xtableList}}, because of the ability to display messages such as those for P-value adjustments, and return an extension of \code{"xtableList"} named \code{"xtable.lsm"}. The number of digits defaults to 4; however, degrees of freedom and \emph{t} ratios are always formatted independently of \code{digits}.
 
 \bold{\code{rbind} and \code{[} methods:}
 \code{rbind} can be used to combine two or more reference grids into one. The \code{"["} method for \code{ref.grid}s may be used to obtain a subset. The primary reason for doing this would be to redefine the family of tests to which a P-value adjustment method applies. In \code{rbind}, the variables defined in the objects' grids are merged into one grid, and the returned object has no \dQuote{by} variables and the multiplicity adjustment method set to \code{"mvt"} (as this is likely the only appropriate one).

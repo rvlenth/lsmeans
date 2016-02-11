@@ -42,7 +42,7 @@ Arguments specifying elements' names and their new values.
 In \code{update}, the names in \code{\dots} are partially matched against those that are valid, and if a match is found, it adds or replaces the current setting. The valid names are
 
 \describe{
-\item{\code{tran}}{(\code{list} or \code{character}) specifies the transformation which, when inverted, determines the results displayed by \code{\link{summary}}, \code{\link{predict}}, or \code{\link{lsmip}} when \code{type="response"}. The value may be the name of a standard transformation from \code{\link{make.link}}, or, for a custom transformation, a \code{list} containing at least the functions \code{linkinv} (the inverse of the transformation) and \code{mu.eta} (the derivative thereof). See the Examples. }
+\item{\code{tran}}{(\code{list} or \code{character}) specifies the transformation which, when inverted, determines the results displayed by \code{\link{summary}}, \code{\link{predict}}, or \code{\link{lsmip}} when \code{type="response"}. The value may be the name of a standard transformation from \code{\link{make.link}} or additional ones supported by name, such as \code{log2}; or, for a custom transformation, a \code{list} containing at least the functions \code{linkinv} (the inverse of the transformation) and \code{mu.eta} (the derivative thereof). The \code{\link{make.tran}} function returns such lists for a number of popular transformations. See the help page of \code{\link{make.tran}} for details as well as information on the additional named transformations that are supported. }
 
 \item{\code{estName}}{(\code{character}) is the column label used for displaying predictions or LS means.}
 
@@ -107,7 +107,7 @@ Unlike the \code{update} method for model classes (\code{lm}, \code{glm}, etc.),
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{summary}}
+\code{\link{summary}}, \code{link{make.tran}}
 }
 \examples{
 # An altered log transformation

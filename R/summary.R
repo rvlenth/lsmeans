@@ -507,6 +507,7 @@ print.summary.ref.grid = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) 
     x.save = x
     if (!is.null(x$df)) x$df = round(x$df, 2)
     if (!is.null(x$t.ratio)) x$t.ratio = round(x$t.ratio, 3)
+    if (!is.null(x$z.ratio)) x$z.ratio = round(x$z.ratio, 3)
     if (!is.null(x$p.value)) {
         fp = x$p.value = format(round(x$p.value,4), nsmall=4, sci=FALSE)
         x$p.value[fp=="0.0000"] = "<.0001"

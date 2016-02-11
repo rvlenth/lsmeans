@@ -137,6 +137,7 @@ S3method(predict, ref.grid)
 S3method(print, ref.grid)
 S3method(print, summary.ref.grid)
 S3method(print, lsm.list)
+S3method(print, xtable.lsm)
 
 S3method(rbind, ref.grid)
 
