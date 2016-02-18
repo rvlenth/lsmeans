@@ -4,7 +4,7 @@
 \title{
 Response transformations
 }
-\describe{
+\description{
 Create the needed information to perform transformations of the response variable, including inverting the transformation and estimating variances of back-transformed predictions via the delta method. \code{make.tran} is similar to \code{\link{make.link}}, but it covers additional transformations. The result can be used as an environment in which the model is fitted, or as the \code{tran} argument in \code{\link{update.ref.grid}} (when the given transformation was already applied in an existing model).
 }
 \usage{
@@ -25,7 +25,7 @@ A parameter for the transformation. See Details.
 \details{
 The functions \code{\link{lsmeans}}, \code{\link{ref.grid}}, and related ones automatically detect response transformations that are recognized by examining the model formula. Certain standard ones such as \code{log} and \code{sqrt} -- especially ones commonly also used as link functions in generalized linear models --  are recognized by name and supported via \code{\link{make.link}}. The \pkg{lsmeans} package recognizes a few others (such as \code{log10}) by name, as listed in Usage. 
 
-Support of named transformations is not enough for more general transformations; so a \code{ref.grid} or \code{lsmobj} object may also be modified via \code{\link{update}} so that its \code{tran} component is a list of functions like those returned by \code{make.link}. The \code{make.tran} function extends the capabilities of \code{make.link}, and allows for a wider selection of response transformations. If the returned list, say \cdoe{tran.result}, is used as an environment within which the model is fitted, and the response is transformed using the function \code{linkfun}, \code{ref.grid} recognizes this and automatically substitutes \code{tran.result} as its \code{tran} component.
+Support of named transformations is not enough for more general transformations; so a \code{ref.grid} or \code{lsmobj} object may also be modified via \code{\link{update}} so that its \code{tran} component is a list of functions like those returned by \code{make.link}. The \code{make.tran} function extends the capabilities of \code{make.link}, and allows for a wider selection of response transformations. If the returned list, say \code{tran.result}, is used as an environment within which the model is fitted, and the response is transformed using the function \code{linkfun}, \code{ref.grid} recognizes this and automatically substitutes \code{tran.result} as its \code{tran} component.
 
 It is also possible that an existing fitted model has a response transformation available as a supported named transformation or supported by \code{make.tran}. In that case, it is not necessary to re-fit the model; instead, update the result of \code{ref.grid} or \code{lsmeans} with the appropriate transformation name or list.
 
@@ -36,7 +36,8 @@ Most of the transformations available in "make.tran" require a parameter, specif
 \item{\code{boxcox}}{The Box-Cox transformation (unscaled by the geometric mean): \eqn{(y^p - 1) / p} when \eqn{p} is nonzero, \eqn{log(y)} when \eqn{p=0}}
 \item{\code{arcsine}}{Arcsin-square-root transformation: \eqn{sin^(-1)y^{1/2)}. This requires no parameters, and is also available as a named transformation.}
 }
-}
+}} % end of \details
+
 \value{
 A \code{list} having at least the same elements as that returned by \code{\link{make.link}}. The \code{linkfun} component is the transformation itself. 
 }
