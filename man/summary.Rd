@@ -16,6 +16,7 @@
 \alias{[.ref.grid}
 \alias{xtable.ref.grid}
 \alias{xtable.summary.ref.grid}
+\alias{print.xtable.lsm}
 
 
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -127,7 +128,7 @@ Also, if an adjustment method is not appropriate (e.g., using \code{"tukey"} wit
 In some cases, confidence and \eqn{p}-value adjustments are only approximate -- especially when the degrees of freedom or standard errors vary greatly within the family of tests. The \code{"mvt"} method is always the correct one-step adjustment, but it can be very slow. One may use \code{\link{as.glht}} with methods in the \pkg{multcomp} package to obtain non-conservative multi-step adjustments to tests.
 
 \bold{\code{xtable}-related methods:}
-The \code{\link{xtable}} methods actually use \code{\link{xtableList}}, because of the ability to display messages such as those for P-value adjustments, and return an extension of \code{"xtableList"} named \code{"xtable.lsm"}. The number of digits defaults to 4; however, degrees of freedom and \emph{t} ratios are always formatted independently of \code{digits}.
+The \code{\link{xtable}} methods actually use \code{\link{xtableList}}, because of the ability to display messages such as those for P-value adjustments. These methods return an object of class \code{"xtable.lsm"} -- an extension of \code{"xtableList"}. Unlike other \code{xtable} methods, the number of digits defaults to 4; and degrees of freedom and \emph{t} ratios are always formatted independently of \code{digits}. The \code{print} method uses \code{\link{print.xtableList}}, and any \code{\dots} arguments are passed there.
 
 \bold{\code{rbind} and \code{[} methods:}
 \code{rbind} can be used to combine two or more reference grids into one. The \code{"["} method for \code{ref.grid}s may be used to obtain a subset. The primary reason for doing this would be to redefine the family of tests to which a P-value adjustment method applies. In \code{rbind}, the variables defined in the objects' grids are merged into one grid, and the returned object has no \dQuote{by} variables and the multiplicity adjustment method set to \code{"mvt"} (as this is likely the only appropriate one).
@@ -161,7 +162,7 @@ When the object's \code{post.beta} slot is non-trivial, \code{as.mcmc} will retu
 }
 
 \value{
-The \code{summary} method for \code{"ref.grid"} objects returns an object of class \code{"summary.ref.grid"}, which extends \code{"data.frame"}. \code{plot} returns an object of class \code{"trellis"}. \code{vcov} returns the covariance matrix of the product of the object's \code{linfct} and \code{bhat} slots. \code{as.mcmc} returns a \pkg{coda} \code{mcmc} object.
+The \code{summary} method for \code{"ref.grid"} objects returns an object of class \code{"summary.ref.grid"}, which extends \code{"data.frame"}. \code{xtable} returns an object of class \code{"xtable.lsm"}, as explained in details. \code{plot} returns an object of class \code{"trellis"}. \code{vcov} returns the covariance matrix of the product of the object's \code{linfct} and \code{bhat} slots. \code{as.mcmc} returns a \pkg{coda} \code{mcmc} object.
 }
 %%\references{}
 \author{

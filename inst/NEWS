@@ -1,7 +1,7 @@
 Changelog for 'lsmeans' package
 
 2.22-4
-    Added xtable support
+    Added xtable support (actually uses xtableList)
     Corrected bugs in rbind.ref.grid that caused error when rank-deficient,
         and incorrectly reported 'avgd.over' information
     In summary.ref.grid with type = "response", ensured CIs are never 
@@ -11,7 +11,6 @@ Changelog for 'lsmeans' package
     Greatly increased transformation capabilities via 'make.tran'
     Made messages more explicit about which transformation is/was used
 *** TODO: make lsm() more robust, e.g. permit "at"
-*** TODO: class and print method for xtable
 *** TODO: Update vignette for make.tran and xtable
 
 
