@@ -48,38 +48,75 @@
 # Returns a list like stats::make.link, but often with an additional "param" member
 # types:
 #       glog: log(mu + param)
-make.tran = function(type = c("genlog", "power", "boxcox", "arcsine"), param = 1) {
+make.tran = function(type = c("genlog", "power", "boxcox", "sympower", "arcsine"), param = 1) {
     type = match.arg(type)
+    origin = 0
+    mu.lbl = "mu"
+    if (length(param) > 1) {
+        origin = param[2]
+        param = param[1]
+        mu.lbl = paste0("(mu - ", round(origin, 3), ")")
+    }
     switch(type,
-        genlog = list(
-            linkfun = function(mu) log(mu + param),
-             linkinv = function(eta) exp(eta) - param,
-             mu.eta = function(eta) exp(eta),
-             valideta = function(eta) all(eta > -param),
-             param = param,
-             name = paste0("log(mu + ", round(param,3), ")")
-        ),
+        genlog = {
+            if((origin < 0) || (origin == 1))
+                stop('"genlog" transformation must have a positive base != 1')
+            logbase = ifelse(origin == 0, 1, log(origin))
+            xlab = ifelse(origin == 0, "", paste0(" (base ", round(origin, 3), ")"))
+            list(linkfun = function(mu) log(pmax(mu + param, 0)) / logbase,
+                 linkinv = function(eta) pmax(exp(logbase * eta), .Machine$double.eps) - param,
+                 mu.eta = function(eta) logbase * pmax(exp(logbase * eta), .Machine$double.eps),
+                 valideta = function(eta) TRUE,
+                 param = c(param, origin),
+                 name = paste0("log(mu + ", round(param,3), ")", xlab)
+            )
+        },
         power = {
-            if (param == 0) return(stats::make.link("log"))
-            list(
-                linkfun = function(mu) mu^param,
-                linkinv = function(eta) pmax(eta, 0)^(1/param),
+            if (param == 0) {
+                if(origin == 0) make.link("log")
+                else make.tran("genlog", -origin)
+            }
+            else list(
+                linkfun = function(mu) pmax(mu - origin, 0)^param,
+                linkinv = function(eta) origin + pmax(eta, 0)^(1/param),
                 mu.eta = function(eta) pmax(eta, 0)^(1/param - 1) / param,
                 valideta = function(eta) all(eta > 0),
-                param = param,
-                name = paste0("mu^(", round(param,3), ")")
+                param = c(param, origin),
+                name = ifelse(param > 0, 
+                              paste0(mu.lbl, "^", round(param,3)),
+                              paste0(mu.lbl, "^(", round(param,3), ")"))
             )
         },
         boxcox = {
+            if (param == 0) {
+                result = if(origin == 0) make.link("log")
+                         else make.tran("genlog", -origin)
+                return (result)
+            }
             min.eta = ifelse(param > 0, -1 / param, -Inf)
-            if (param == 0) stats::make.link("log")
-            else list(
-                linkfun = function(mu) (mu^param - 1) / param,
-                linkinv = function(eta) (1 + param * pmax(eta, min.eta))^(1/param),
+            xlab = ifelse(origin == 0, "", paste0(" with origin at ", round(origin, 3)))
+            list(
+                linkfun = function(mu) ((mu - origin)^param - 1) / param,
+                linkinv = function(eta) origin + (1 + param * pmax(eta, min.eta))^(1/param),
                 mu.eta = function(eta) (1 + param * pmax(eta, min.eta))^(1/param - 1),
                 valideta = function(eta) all(eta > min.eta),
-                param = param,
-                name = paste0("Box-Cox (lambda = ", round(param, 3), ")") 
+                param = c(param, origin),
+                name = paste0("Box-Cox (lambda = ", round(param, 3), ")", xlab)
+            )
+        },
+        sympower = {
+            if (param <= 0) 
+                stop('"sympower" transformation requires positive param')
+            if (origin == 0) 
+                mu.lbl = paste0("(", mu.lbl, ")")
+            absmu.lbl = gsub("\\(|\\)", "|", mu.lbl)
+            list(
+                linkfun = function(mu) sign(mu - origin) * abs(mu - origin)^param,
+                linkinv = function(eta) origin + sign(eta) * abs(eta)^(1/param),
+                mu.eta = function(eta) (abs(eta))^(1/param - 1),
+                valideta = function(eta) all(eta > min.eta),
+                param = c(param, origin),
+                name = paste0(absmu.lbl, "^", round(param,3), " * sign", mu.lbl)
             )
         },
         arcsine = list(
