@@ -377,7 +377,9 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     zFlag = (all(is.na(result$df)))
     inv = (type == "response") # flag to inverse-transform
     link = attr(result, "link")
-    
+    if (inv && is.null(link))
+        inv = FALSE
+
     if ((length(infer) == 0) || !is.logical(infer)) 
         infer = c(FALSE, FALSE)
     if(length(infer == 1)) 

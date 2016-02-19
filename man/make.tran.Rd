@@ -8,10 +8,10 @@ Response transformations
 Create the needed information to perform transformations of the response variable, including inverting the transformation and estimating variances of back-transformed predictions via the delta method. \code{make.tran} is similar to \code{\link{make.link}}, but it covers additional transformations. The result can be used as an environment in which the model is fitted, or as the \code{tran} argument in \code{\link{update.ref.grid}} (when the given transformation was already applied in an existing model).
 }
 \usage{
-make.tran(type = c("genlog", "power", "boxcox", "sympower", "arcsine"), param = 1)
+make.tran(type = c("genlog", "power", "boxcox", "sympower", "asin.sqrt"), param = 1)
 
 # Additional named transformations not requiring make.tran:
-#   "reciprocal"  "log2"   "log10"  "arcsine"
+#   "reciprocal"  "log2"   "log10"   "asin.sqrt"
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -23,8 +23,13 @@ Numeric parameter for the transformation. Optionally, it may be a vector of two 
 }
 }
 \details{
-The functions \code{\link{lsmeans}}, \code{\link{ref.grid}}, and related ones automatically detect response transformations that are recognized by examining the model formula. Certain standard ones such as \code{log} and \code{sqrt} -- especially ones commonly also used as link functions in generalized linear models --  are recognized by name and supported via \code{\link{make.link}}. The \pkg{lsmeans} package recognizes a few others (such as \code{log10}) by name, as listed in Usage. 
-
+The functions \code{\link{lsmeans}}, \code{\link{ref.grid}}, and related ones automatically detect response transformations that are recognized by examining the model formula. Certain standard ones such as \code{log} and \code{sqrt} -- especially ones commonly also used as link functions in generalized linear models --  are recognized by name and supported via \code{\link{make.link}}. The \pkg{lsmeans} package recognizes a few others by name:
+\describe{
+\item{\code{"reciprocal"}}{Alias for \code{"inverse"}}
+\item{\code{"log2"}}{Base-2 logarithm}
+\item{\code{"log10"}}{Base-10 logarithm}
+\item{\code{"asin.sqrt"}}{\eqn{sin^(-1)(y^1/2)} where \eqn{y} is in the interval [0,1] (see also \code{make.tran})}
+}
 Support of named transformations is not enough for more general transformations; so a \code{ref.grid} or \code{lsmobj} object may also be modified via \code{\link{update}} so that its \code{tran} component is a list of functions like those returned by \code{make.link}. The \code{make.tran} function extends the capabilities of \code{make.link}, and allows for a wider selection of response transformations. If the returned list, say \code{tran.result}, is used as an environment within which the model is fitted, and the response is transformed using the function \code{linkfun}, \code{ref.grid} recognizes this and automatically substitutes \code{tran.result} as its \code{tran} component.
 
 It is also possible that an existing fitted model has a response transformation available as a supported named transformation or supported by \code{make.tran}. In that case, it is not necessary to re-fit the model; instead, update the result of \code{ref.grid} or \code{lsmeans} with the appropriate transformation name or list.
@@ -37,7 +42,7 @@ The \code{type} argument specifies the following transformations:
 \item{\code{"boxcox"}}{The Box-Cox transformation (unscaled by the geometric mean): \eqn{(y^p - 1) / p}, where \eqn{y > 0}. When \eqn{p = 0}, \eqn{log(y)} is used.}
 \item{\code{"sympower"}}{A symmetrized power transformation on the whole real line:
 \eqn{abs(y)^p * sign(y)}. There are no restrictions on \eqn{y}, but we require \eqn{p > 0} in order for the transformation to be monotone and continuous.}
-\item{\code{"arcsine"}}{Arcsin-square-root transformation: \eqn{sin^(-1)y^{1/2)}. This requires no parameters, and is also available as a named transformation.}
+\item{\code{"asin.sqrt"}}{Arcsin-square-root transformation: \eqn{sin^(-1)(y/p)^{1/2)}. Typically, the parameter \eqn{p} is equal to 1 for a fraction, or 100 for a percentage.}
 }
 The user may include a second element in \code{param} to specify an alternative origin (other than zero) for the \code{"power"}, \code{"boxcox"}, or \code{"sympower"} transformations. For example, \samp{type = "power", param = c(1.5, 4)} specifies the transformation \eqn{(y - 4)^1.5}. 
 In the \code{"genpower"} transformation, a second \code{param} element may be used to specify a base other than the default natural logarithm. For example, \samp{type = "genlog", param = c(.5, 10)} specifies the \eqn{log_10(y + .5)} transformation.
