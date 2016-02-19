@@ -33,13 +33,14 @@
              mu.eta = 2^eta * log(2),
              name = "log2"
          ),
-         arcsine = make.tran("arcsine"),
+         asin.sqrt = make.tran("asin.sqrt"),
          { # default if not included, flags it as unknown
              tmp = stats::make.link("identity")
              tmp$unknown = TRUE
              tmp$name = link
              tmp
-         }
+         },
+         `asin.sqrt./` = .make.link("asin.sqrt")
     )
     result
 }
@@ -48,7 +49,7 @@
 # Returns a list like stats::make.link, but often with an additional "param" member
 # types:
 #       glog: log(mu + param)
-make.tran = function(type = c("genlog", "power", "boxcox", "sympower", "arcsine"), param = 1) {
+make.tran = function(type = c("genlog", "power", "boxcox", "sympower", "asin.sqrt"), param = 1) {
     type = match.arg(type)
     origin = 0
     mu.lbl = "mu"
@@ -110,21 +111,22 @@ make.tran = function(type = c("genlog", "power", "boxcox", "sympower", "arcsine"
             if (origin == 0) 
                 mu.lbl = paste0("(", mu.lbl, ")")
             absmu.lbl = gsub("\\(|\\)", "|", mu.lbl)
-            list(
-                linkfun = function(mu) sign(mu - origin) * abs(mu - origin)^param,
-                linkinv = function(eta) origin + sign(eta) * abs(eta)^(1/param),
-                mu.eta = function(eta) (abs(eta))^(1/param - 1),
-                valideta = function(eta) all(eta > min.eta),
-                param = c(param, origin),
-                name = paste0(absmu.lbl, "^", round(param,3), " * sign", mu.lbl)
+            list(linkfun = function(mu) sign(mu - origin) * abs(mu - origin)^param,
+                 linkinv = function(eta) origin + sign(eta) * abs(eta)^(1/param),
+                 mu.eta = function(eta) (abs(eta))^(1/param - 1),
+                 valideta = function(eta) all(eta > min.eta),
+                 param = c(param, origin),
+                 name = paste0(absmu.lbl, "^", round(param,3), " * sign", mu.lbl)
             )
         },
-        arcsine = list(
-            linkfun = function(mu) asin(sqrt(mu)),
-            linkinv = function(eta) sin(pmax(pmin(eta, pi/2), 0))^2,
-            mu.eta = function(eta) sin(2*pmax(pmin(eta, pi/2), 0)),
-            valideta = function(eta) all(eta <= pi/2) && all(eta >= 0),
-            name = "asin(sqrt(mu))"
-        )
+        asin.sqrt = {
+            mu.lbl = ifelse(param == 1, "mu", paste0("mu/", round(param,3)))
+            list(linkfun = function(mu) asin(sqrt(mu/param)),
+                 linkinv = function(eta) param * sin(pmax(pmin(eta, pi/2), 0))^2,
+                 mu.eta = function(eta) param * sin(2*pmax(pmin(eta, pi/2), 0)),
+                 valideta = function(eta) all(eta <= pi/2) && all(eta >= 0),
+                 name = paste0("asin(sqrt(", mu.lbl, "))")
+            )
+        }
     )
 }

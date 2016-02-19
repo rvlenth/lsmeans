@@ -145,7 +145,9 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     if (is.null(misc$tran) && (length(form) > 2)) { # No link fcn, but response may be transformed
         lhs = form[-3] ####form[[2]]
         tran = setdiff(.all.vars(lhs, functions = TRUE), c(.all.vars(lhs), "~", "cbind"))
-        if(length(tran) == 1) {
+        if(length(tran) > 0) {
+            tran = paste(tran, collapse = ".")  
+            # length > 1: Almost certainly unsupported, but facilitates a more informative error message
             if (tran == "linkfun")
                 tran = as.list(environment(trms))
             misc$tran = tran
