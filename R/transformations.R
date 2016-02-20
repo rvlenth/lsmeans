@@ -34,13 +34,19 @@
              name = "log2"
          ),
          asin.sqrt = make.tran("asin.sqrt"),
+         `asin.sqrt./` = .make.link("asin.sqrt"),
+         asinh.sqrt = list(
+             linkinv = function(eta) sinh(eta)^2,
+             mu.eta = function(eta) sinh(2 * eta),
+             name = "asinh(sqrt(mu))"
+         ),
+         
          { # default if not included, flags it as unknown
              tmp = stats::make.link("identity")
              tmp$unknown = TRUE
              tmp$name = link
              tmp
-         },
-         `asin.sqrt./` = .make.link("asin.sqrt")
+         }
     )
     result
 }

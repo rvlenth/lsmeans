@@ -11,7 +11,7 @@ Create the needed information to perform transformations of the response variabl
 make.tran(type = c("genlog", "power", "boxcox", "sympower", "asin.sqrt"), param = 1)
 
 # Additional named transformations not requiring make.tran:
-#   "reciprocal"  "log2"   "log10"   "asin.sqrt"
+#   "reciprocal"  "log2"   "log10"   "asin.sqrt"   "asinh.sqrt"
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -29,6 +29,7 @@ The functions \code{\link{lsmeans}}, \code{\link{ref.grid}}, and related ones au
 \item{\code{"log2"}}{Base-2 logarithm}
 \item{\code{"log10"}}{Base-10 logarithm}
 \item{\code{"asin.sqrt"}}{\eqn{sin^(-1)(y^1/2)} where \eqn{y} is in the interval [0,1] (see also \code{make.tran})}
+\item{\code{"asinh.sqrt"}}{\eqn{sinh^(-1)(y^1/2)}}
 }
 Support of named transformations is not enough for more general transformations; so a \code{ref.grid} or \code{lsmobj} object may also be modified via \code{\link{update}} so that its \code{tran} component is a list of functions like those returned by \code{make.link}. The \code{make.tran} function extends the capabilities of \code{make.link}, and allows for a wider selection of response transformations. If the returned list, say \code{tran.result}, is used as an environment within which the model is fitted, and the response is transformed using the function \code{linkfun}, \code{ref.grid} recognizes this and automatically substitutes \code{tran.result} as its \code{tran} component.
 
