@@ -58,6 +58,16 @@
         else 
             NULL
         
+        if (is.list(link)) {  # See if multiple of link is requested
+            if (!is.null(misc$tran.mult))
+                link$mult = misc$tran.mult
+            if (!is.null(link$mult))
+                link = with(link, list(
+                    linkinv = function(eta) linkinv(eta / mult),
+                    mu.eta = function(eta) mu.eta(eta / mult) / mult,
+                    name = paste0(round(mult, 3), "*", name)))
+        }
+        
         if (!is.null(link) && is.null(link$name))
                 link$name = "linear-predictor"
         attr(result, "link") = link
