@@ -5,6 +5,11 @@
 ##     unknown = TRUE, name = link
 ## In addition, I make all links truly monotone on (-Inf, Inf) in
 ##     lieu of valideta
+##
+## Extensions to make.link results:
+##     unknown: set to TRUE if link is unknown
+##     mult: scalar multiple of transformation
+##
 .make.link = function(link) {
     if (link %in% c("logit", "probit", "cauchit", "cloglog", "identity", "log"))
         result = stats::make.link(link)
@@ -34,12 +39,17 @@
              name = "log2"
          ),
          asin.sqrt = make.tran("asin.sqrt"),
-         `asin.sqrt./` = .make.link("asin.sqrt"),
+         `asin.sqrt./` = make.tran("asin.sqrt", 100),
          asinh.sqrt = list(
              linkinv = function(eta) sinh(eta)^2,
              mu.eta = function(eta) sinh(2 * eta),
              name = "asinh(sqrt(mu))"
          ),
+         `+.sqrt` = {
+             tmp = .make.link("sqrt")
+             tmp$mult = 2
+             tmp
+         },
          
          { # default if not included, flags it as unknown
              tmp = stats::make.link("identity")

@@ -411,7 +411,7 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
             misc$tran = "log"
         }
         else
-            misc$tran = NULL
+            misc$tran = misc$tran.mult = NULL
     }
     
     object@roles$predictors = "contrast"
@@ -600,7 +600,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
     .zaptran = function(obj) {
         if (is(obj, "ref.grid") && !is.null(obj@misc$tran)) {
             obj@misc$orig.tran = result@misc$tran
-            obj@misc$tran = NULL
+            obj@misc$tran = obj@misc$tran.mult = NULL
         }
         obj
     }

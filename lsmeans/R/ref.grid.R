@@ -148,6 +148,15 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         if(length(tran) > 0) {
             tran = paste(tran, collapse = ".")  
             # length > 1: Almost certainly unsupported, but facilitates a more informative error message
+            
+            # Look for a multiplier, e.g. 2*sqrt(y)
+            tst = strsplit(strsplit(as.character(form[2]), "\\(")[[1]][1], "\\*")[[1]]
+            if(length(tst) > 1) {
+                mul = suppressWarnings(as.numeric(tst[1]))
+                if(!is.na(mul))
+                    misc$tran.mult = mul
+                tran = gsub("\\*\\.", "", tran)
+            }
             if (tran == "linkfun")
                 tran = as.list(environment(trms))
             misc$tran = tran
@@ -365,6 +374,8 @@ str.ref.grid <- function(object, ...) {
     if(!is.null(tran <- object@misc$tran)) {
         if (is.list(tran)) 
             tran = ifelse(is.null(tran$name), "custom - see slot(, \"misc\")$tran", tran$name)
+        if (!is.null(mul <- object@misc$tran.mult))
+            tran = paste0(mul, "*", tran)
         cat(paste("Transformation:", dQuote(tran), "\n"))
     }
 }
@@ -398,7 +409,7 @@ update.ref.grid = function(object, ..., silent = FALSE) {
     args = list(...)
     valid.misc = c("adjust","alpha","avgd.over","by.vars","df",
         "initMesg","estName","estType","famSize","infer","inv.lbl",
-        "level","methdesc","predict.type","pri.vars","tran")
+        "level","methdesc","predict.type","pri.vars","tran","tran.mult")
     valid.slots = slotNames(object)
     valid.choices = union(valid.misc, valid.slots)
     misc = object@misc
@@ -487,7 +498,7 @@ regrid = function(object, transform = TRUE) {
         inm = object@misc$inv.lbl
         if (!is.null(inm))
             object@misc$estName = inm
-        object@misc$tran = object@misc$inv.lbl = NULL
+        object@misc$tran = object@misc$tran.mult = object@misc$inv.lbl = NULL
         # override the df function
         df = est$df
         if (length(unique(df)) == 1) {
