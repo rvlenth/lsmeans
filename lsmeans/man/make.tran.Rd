@@ -10,8 +10,7 @@ Create the needed information to perform transformations of the response variabl
 \usage{
 make.tran(type = c("genlog", "power", "boxcox", "sympower", "asin.sqrt"), param = 1)
 
-# Additional named transformations not requiring make.tran:
-#   "reciprocal"  "log2"   "log10"   "asin.sqrt"   "asinh.sqrt"
+# See Details for additional auto-detected transformations
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -23,17 +22,11 @@ Numeric parameter for the transformation. Optionally, it may be a vector of two 
 }
 }
 \details{
-The functions \code{\link{lsmeans}}, \code{\link{ref.grid}}, and related ones automatically detect response transformations that are recognized by examining the model formula. Certain standard ones such as \code{log} and \code{sqrt} -- especially ones commonly also used as link functions in generalized linear models --  are recognized by name and supported via \code{\link{make.link}}. The \pkg{lsmeans} package recognizes a few others by name:
-\describe{
-\item{\code{"reciprocal"}}{Alias for \code{"inverse"}}
-\item{\code{"log2"}}{Base-2 logarithm}
-\item{\code{"log10"}}{Base-10 logarithm}
-\item{\code{"asin.sqrt"}}{\eqn{sin^(-1)(y^1/2)} where \eqn{y} is in the interval [0,1] (see also \code{make.tran})}
-\item{\code{"asinh.sqrt"}}{\eqn{sinh^(-1)(y^1/2)}}
-}
-Support of named transformations is not enough for more general transformations; so a \code{ref.grid} or \code{lsmobj} object may also be modified via \code{\link{update}} so that its \code{tran} component is a list of functions like those returned by \code{make.link}. The \code{make.tran} function extends the capabilities of \code{make.link}, and allows for a wider selection of response transformations. If the returned list, say \code{tran.result}, is used as an environment within which the model is fitted, and the response is transformed using the function \code{linkfun}, \code{ref.grid} recognizes this and automatically substitutes \code{tran.result} as its \code{tran} component.
+The functions \code{\link{lsmeans}}, \code{\link{ref.grid}}, and related ones automatically detect response transformations that are recognized by examining the model formula. These are \code{log}, \code{log2}, \code{log10}, \code{sqrt}, \code{logit}, \code{probit}, \code{cauchit}, \code{cloglog}; as well as (for a response variable \code{y}) \code{asin(sqrt(y))}, \code{asinh(sqrt(y))}, and \code{sqrt(y) + sqrt(y+1)}. In addition, any constant multiple of these (e.g., \code{2*sqrt(y)}) is auto-detected and appropriately scaled (see also the \code{tran.mult} argument in \code{\link{update.ref.grid}}).
 
-It is also possible that an existing fitted model has a response transformation available as a supported named transformation or supported by \code{make.tran}. In that case, it is not necessary to re-fit the model; instead, update the result of \code{ref.grid} or \code{lsmeans} with the appropriate transformation name or list.
+A few additional character strings may be supplied as the \code{tran} argument in \code{\link{update.ref.grid}}: \code{"identity"}, \code{"1/mu^2"}, \code{"inverse"}, \code{"reciprocal"}, \code{"asin.sqrt"}, and \code{"asinh.sqrt"}.
+
+More general transformations may be provided as a list of functions and supplied as the \code{tran} argument as documented in \code{\link{update.ref.grid}}. The \code{make.tran} function returns a suitable list of functions for several popular transformations. Besides being usable with \code{update}, the user may use this list as an enclosing environment in fitting the model itself, in which case the transformation is auto-detected when the special name \code{linkfun} (the transformation itself) is used as the response transformation in the call. See the examples below.
 
 Most of the transformations available in "make.tran" require a parameter, specified in \code{param}; we use \eqn{p} to denote this parameter, and \eqn{y} to denote the response variable, in subsequent expressions. 
 The \code{type} argument specifies the following transformations:
@@ -46,7 +39,9 @@ The \code{type} argument specifies the following transformations:
 \item{\code{"asin.sqrt"}}{Arcsin-square-root transformation: \eqn{sin^(-1)(y/p)^{1/2)}. Typically, the parameter \eqn{p} is equal to 1 for a fraction, or 100 for a percentage.}
 }
 The user may include a second element in \code{param} to specify an alternative origin (other than zero) for the \code{"power"}, \code{"boxcox"}, or \code{"sympower"} transformations. For example, \samp{type = "power", param = c(1.5, 4)} specifies the transformation \eqn{(y - 4)^1.5}. 
-In the \code{"genpower"} transformation, a second \code{param} element may be used to specify a base other than the default natural logarithm. For example, \samp{type = "genlog", param = c(.5, 10)} specifies the \eqn{log_10(y + .5)} transformation.
+In the \code{"genpower"} transformation, a second \code{param} element may be used to specify a base other than the default natural logarithm. For example, \samp{type = "genlog", param = c(.5, 10)} specifies the \eqn{log10(y + .5)} transformation.
+
+For purposes of back-transformation, the \samp{sqrt(y) + sqrt(y+1)} transformation is treated exactly the same way as \samp{2*sqrt(y)}, because both are regarded as estimates of \eqn{2\sqrt\mu}.
 }} % end of \details
 
 \value{
@@ -57,7 +52,7 @@ A \code{list} having at least the same elements as that returned by \code{\link{
 Russell V. Lenth
 }
 \note{
-We modify certain \code{make.link} results in transformations where there is a restriction on valid prediction values, so that reasonable inverse predictions are obtained for no matter what. For example, if a \code{sqrt} transformation was used but a predicted value is negative, the inverse transformation is zero rather than the square of the prediction. A side effect of this is that it is possible for one or both confidence limits, or even a standard error, to be zero.
+We modify certain \code{\link{make.link}} results in transformations where there is a restriction on valid prediction values, so that reasonable inverse predictions are obtained for no matter what. For example, if a \code{sqrt} transformation was used but a predicted value is negative, the inverse transformation is zero rather than the square of the prediction. A side effect of this is that it is possible for one or both confidence limits, or even a standard error, to be zero.
 }
 
 \seealso{
