@@ -1,6 +1,6 @@
 Changelog for 'lsmeans' package
 
-2.22-4
+2.22-5
     Added xtable support (actually uses xtableList)
     Corrected bugs in rbind.ref.grid that caused error when rank-deficient,
         and incorrectly reported 'avgd.over' information
