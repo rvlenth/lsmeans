@@ -13,8 +13,12 @@ lsm <- function(...) {
 
 # New S3 method for lsmlf objects
 glht.lsmlf <- function(model, linfct, ...) {
-    # Just grab the arguments passed to lsm and call lsmeans
-    linfct$object <- ref.grid(model)
+    # Pass the arguments we should pass to ref.grid:
+    args = linfct
+    args[[1]] = model
+    names(args)[1] = "object"
+    # Now pass the ref.grid to lsmeans:
+    linfct$object <- do.call("ref.grid", args)
     lsmo <- do.call("lsmeans", linfct)
     if (is.list(lsmo)) 
         lsmo = lsmo[[length(lsmo)]]
@@ -104,8 +108,26 @@ modelparm.lsmwrap <- function(model, coef., vcov., df, ...) {
 }
 
 # S3 methods for glht.list
+
+### Doesn't work so excluded...
+# cld.glht.list = function(object, ...)
+#     lapply(object, cld, ...)
+
+coef.glht.list = function(object, ...)
+    lapply(object, coef, ...)
+
+confint.glht.list = function(object, ...)
+    lapply(object, confint, ...)
+
+plot.glht.list = function(object, ...)
+    lapply(object, plot, ...)
+
 summary.glht.list = function(object, ...)
     lapply(object, summary, ...)
+
+vcov.glht.list = function(object, ...)
+    lapply(object, vcov, ...)
+
 
 
 

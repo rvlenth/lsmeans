@@ -1,6 +1,6 @@
 Changelog for 'lsmeans' package
 
-2.22-5
+2.22-6
     Added xtable support (actually uses xtableList)
     Corrected bugs in rbind.ref.grid that caused error when rank-deficient,
         and incorrectly reported 'avgd.over' information
@@ -12,7 +12,9 @@ Changelog for 'lsmeans' package
     Made messages more explicit about which transformation is/was used
     Renamed 'adjustSigma' to 'sigmaAdjust' in 'lme' support to avoid
         a conflict with 'adjust'
-*** TODO: make lsm() more robust, e.g. permit "at"
+    Improvements to lsm() which previously did not pass arguments like
+        'at' and 'by' to ref.grid
+    Added glht.list methods: coef, confint, plot, vcov
 *** TODO: Update vignette for make.tran and xtable
 
 

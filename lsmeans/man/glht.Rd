@@ -5,7 +5,11 @@
 \alias{as.glht}
 \alias{as.glht.ref.grid}
 \alias{as.glht.lsm.list}
+\alias{coef.glht.list}
+\alias{confint.glht.list}
+\alias{plot.glht.list}
 \alias{summary.glht.list}
+\alias{vcov.glht.list}
 \alias{pmm}
 
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -19,7 +23,11 @@ These functions and methods provide an interface between \pkg{lsmeans} and the \
 \method{as.glht}{ref.grid}(object, ...)
 \method{as.glht}{lsm.list}(object, ..., which = 1)
 
+\method{coef}{glht.list}(object, ...)
+\method{confint}{glht.list}(object, ...)
+\method{plot}{glht.list}(object, ...)
 \method{summary}{glht.list}(object, ...)
+\method{vcov}{glht.list}(object, ...)
 
 lsm(...)
 pmm(...)
@@ -36,10 +44,10 @@ Additional arguuments to other methods.
 \details{
 \code{lsm} (and \code{pmm}, which is identical) are meant to be called only \emph{from} \code{"glht"} as its second (\code{linfct}) argument. It works similarly to \code{\link[multcomp]{mcp}} except with \code{specs} (and optionally \code{by} and \code{contr} arguments) provided as in a call to \code{\link{lsmeans}} or \code{pmmeans}. 
 
-When there is a non-\code{NULL} \code{by} variable (either explicitly or implicitly), each ``by'' group is passed separately to \code{glht} and returned as a \code{list} of \code{"glht"} objects. For convenience, this is classed as \code{"glht.list"} and a \code{summary} method is provided.
+When there is a non-\code{NULL} \code{by} variable (either explicitly or implicitly), each ``by'' group is passed separately to \code{glht} and returned as a \code{list} of \code{"glht"} objects. For convenience, this is classed as \code{"glht.list"}, and appropriate methods \code{coef}, \code{confint}, \code{plot}, \code{summary}, and \code{vcov} are provided.
 }
 \value{
-\code{as.glht} returns an object of class \code{\link[multcomp]{glht}}, or of class \code{glht.list} if \code{by} is non-\code{NULL}. The latter is simply a list of \code{glht} objects but it has its own \code{summary} method which returns a list of \code{summary.glht} objects. 
+\code{as.glht} returns an object of class \code{\link[multcomp]{glht}}, or of class \code{glht.list} if \code{by} is non-\code{NULL}. The latter is simply a list of \code{glht} objects, and the provided methods \code{coef}, \code{confint}, \code{plot}, \code{summary}, and \code{vcov} simply \code{\link{lapply}} the corresponding methods for class \code{"glht"}. 
 }
 %\references{}
 \author{
