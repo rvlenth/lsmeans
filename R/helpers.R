@@ -295,13 +295,13 @@ recover.data.lme = function(object, data, ...) {
     recover.data(fcall, delete.response(terms(object)), object$na.action, data = data, ...)
 }
 
-lsm.basis.lme = function(object, trms, xlev, grid, adjustSigma = TRUE, ...) {
+lsm.basis.lme = function(object, trms, xlev, grid, sigmaAdjust = TRUE, ...) {
     contrasts = object$contrasts
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
     X = model.matrix(trms, m, contrasts.arg = contrasts)
     bhat = nlme::fixef(object)
     V = .my.vcov(object, ...)
-    if (adjustSigma && object$method == "ML") 
+    if (sigmaAdjust && object$method == "ML") 
         V = V * object$dims$N / (object$dims$N - nrow(V))
     misc = list()
     if (!is.null(object$family)) {
@@ -658,8 +658,8 @@ lsm.basis.gam = function(object, trms, xlev, grid, ...) {
 #     recover.data(fcall, delete.response(terms(object$lme)), object$lme$na.action, ...)
 # }
 # 
-# lsm.basis.gamm = function (object, trms, xlev, grid, adjustSigma = TRUE, ...) {
-#     lsm.basis(object$lme, trms, xlev, grid, adjustSigma, ...)
+# lsm.basis.gamm = function (object, trms, xlev, grid, sigmaAdjust = TRUE, ...) {
+#     lsm.basis(object$lme, trms, xlev, grid, sigmaAdjust, ...)
 #     # Doesn't work because needs the matrices in object$lme$data
 # }
 
