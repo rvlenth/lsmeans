@@ -145,7 +145,6 @@ S3method(str, ref.grid)
 S3method(str, lsm.list)
 
 S3method(summary, ref.grid)
-S3method(summary, glht.list)
 S3method(summary, lsm.list)
 
 S3method(test, ref.grid)
@@ -157,6 +156,16 @@ S3method(vcov, ref.grid)
 
 S3method(xtable, ref.grid)
 S3method(xtable, summary.ref.grid)
+
+
+# Support for my glht.list objects (cede to Torsten if he wants 'em in multcomp)
+# DOESN'T WORK: S3method(cld, glht.list)
+S3method(coef, glht.list)
+S3method(confint, glht.list)
+S3method(plot, glht.list)
+# NOT NEEDED: S3method(print, glht.list)
+S3method(summary, glht.list)
+S3method(vcov, glht.list)
 
 
 # interim support for old lsmeans function
