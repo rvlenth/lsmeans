@@ -10,6 +10,8 @@ Changelog for 'lsmeans' package
         a linear predictor is invalid (e.g., a negative sqrt)
     Greatly increased transformation capabilities via 'make.tran'
     Made messages more explicit about which transformation is/was used
+    Renamed 'adjustSigma' to 'sigmaAdjust' in 'lme' support to avoid
+        a conflict with 'adjust'
 *** TODO: make lsm() more robust, e.g. permit "at"
 *** TODO: Update vignette for make.tran and xtable
 
