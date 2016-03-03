@@ -364,7 +364,7 @@ summary(days.glht)
 That is, the \dqt{mvt} adjust method in \lsm{} is the same as the default single-step $P$~value adjustment in \pkg{multcomp}.
 
 
-One additional detail: If there is a "by" variable in effect, "glht" or "as.glht" returns a "list" of "glht" objects---one for each "by" level. There is a courtesy "summary" method for this \dqt{glht.list} class to make things a bit more user-friendly. Recall the earlier example result "org.lsm", which contains information for LS~means for three "day"s at each of two values of "price2". Suppose we are interested in pairwise comparisons of these LS~means, by "price2". If we call
+One additional detail: If there is a "by" variable in effect, "glht" or "as.glht" returns a "list" of "glht" objects---one for each "by" level. There are courtesy "coef", "confint", "plot", "summary", and "vcov" methods for this \dqt{glht.list} class to make things a bit more user-friendly. Recall the earlier example result "org.lsm", which contains information for LS~means for three "day"s at each of two values of "price2". Suppose we are interested in pairwise comparisons of these LS~means, by "price2". If we call
 <<eval=FALSE>>=
 summary(as.glht(pairs(org.lsm)))
 @
@@ -453,6 +453,7 @@ Note that the first model fits the cell means perfectly, so its plot is truly an
 
 
 \section{Transformations}
+\subsection{Automatic support for transformations}
 When a transformation or link function is used in fitting a model, "ref.grid" (also called by "lsmeans") stores that information in the returned object, as seen in this example:
 <<>>=
 str(Oats.lsm2)
@@ -463,9 +464,10 @@ summary(Oats.lsm2, type = "response")
 @
 It is important to realize that the statistical inferences are all done \emph{before} reversing the transformation. Thus, $t$ ratios are based on the linear predictors and will differ from those computed using the printed estimates and standard errors. Likewise, confidence intervals are computed on the linear-predictor scale, then the endpoints are back-transformed.
 
-This kind of automatic support for transformations is available only for certain standard transformations, namely those supported by the "make.link" function in the \pkg{stats} package. Others require more work---see the documentation for "update" for details.
+This kind of automatic support is available for most popular response transformations such as "log", "log10", "asin(sqrt())", and many others. The Details section for \verb|help("make.tran")| provides a complete list. It is also possible to support custom transformations via the "tran" argument in the "update" method---see its help page.
 
-
+\subsection{Using \code{make.tran}}
+The "make.tran" function provides support for yet more popular types of transformations, especially those that require specifying one or more parameters. Examples are general power transformations, Box-Cox transformations, and transformations with a shifted origin such as "log(y + a)".
 
 
 
