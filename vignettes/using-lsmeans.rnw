@@ -395,7 +395,6 @@ anova(Oats.lmer)
 @
 Apparently, the interaction is not needed. But perhaps we can further simplify the model by using only a linear or quadratic trend in "nitro". We can find out by looking at polynomial contrasts:
 <<oatcontr, eval=FALSE>>=
-lsm.options(disable.pbkrtest = TRUE) 
 contrast(lsmeans(Oats.lmer, "nitro"), "poly")
 @
 %%% Fake the warning message
@@ -464,11 +463,62 @@ summary(Oats.lsm2, type = "response")
 @
 It is important to realize that the statistical inferences are all done \emph{before} reversing the transformation. Thus, $t$ ratios are based on the linear predictors and will differ from those computed using the printed estimates and standard errors. Likewise, confidence intervals are computed on the linear-predictor scale, then the endpoints are back-transformed.
 
-This kind of automatic support is available for most popular response transformations such as "log", "log10", "asin(sqrt())", and many others. The Details section for \verb|help("make.tran")| provides a complete list. It is also possible to support custom transformations via the "tran" argument in the "update" method---see its help page.
+This kind of automatic support is available for most popular response transformations such as "log", "log10", and even transformations like "asin(sqrt())" and "sqrt(y)+sqrt(y+1)". The Details section for \verb|help("make.tran")| provides a complete list. It is also possible to support custom transformations via the "tran" argument in the "update" method---see its help page.
 
 \subsection{Using \code{make.tran}}
-The "make.tran" function provides support for yet more popular types of transformations, especially those that require specifying one or more parameters. Examples are general power transformations, Box-Cox transformations, and transformations with a shifted origin such as "log(y + a)".
+The "make.tran" function provides support for yet more popular types of transformations, particularly those that require specifying one or more parameters. Examples are general power transformations, Box-Cox transformations, and transformations with a shifted origin such as "log(y + a)". Details may of course be found via \verb|help("make.tran")|. The function returns a "list" of functions, compatible with what is returned by "make.link" in the \pkg{stats} package. The latter is intended primarily for use with generalized linear models, and "make.tran" extends such capabilities to other response transformations.
 
+There are two basic ways to use "make.tran": retrospectively on an existing model, and prospectively in fitting a new model. Here is an example of retrospective use, where the $\log(y+5)$ transformation was used. This transformation is not auto-detected.
+<<>>=
+Oats.log1 <- lmer(log(yield + 5) ~ Variety + factor(nitro) 
+                  + (1|Block/Variety), data = Oats)
+( Oats.rg1 <- update(ref.grid(Oats.log1), 
+                    tran = make.tran("genlog", 5)) )
+@
+Here, we created a reference grid for the model, then updated it with its "tran" component set to the result of "make.tran" for a generalized log transformation with parameter 5. This updated reference grid has all the information needed to back-transform the results to the original "yield" scale:
+<<>>=
+round(predict(Oats.rg1, type = "response"), 1)
+@
+
+Using "make.tran" prospectively makes use of the fact that the transformation itself is included in the returned list as a function named "linkfun" (somewhat oddly named due to the fact that "make.tran" mimics the functionality of "make.link"). When a model is fitted with "linkfun" as the transformation, its enclosing environment is automatically used to obtain the transformation definitions. For illustration, consider a rather far-fetched transformation:
+<<>>=
+my.tran <- make.tran("boxcox", c(.567, 10))
+my.tran$linkfun(10:15)
+@
+This specifies a Box-Cox transformation with the origin shifted to $10$:%
+\footnote{To obtain an ordinary Box-Cox transformation, provide just one parameter: \code{make.tran(\dqt{boxcox}, .567)}.}
+\[ 
+    h(y) = \frac{(y-10)^{.567} - 1}{1 - .567}
+\]
+If we use "my.tran" as an enclosing environment for fitting the model, the transformation is saved automatically:
+<<>>=
+Oats.bc <- with(my.tran, lmer(linkfun(yield) ~ Variety + factor(nitro)
+                              + (1|Block/Variety), data = Oats))
+( rg.bc <- ref.grid(Oats.bc) )
+round(predict(rg.bc, type = "response"), 1)
+@
+
+\subsection{Using \code{regrid}}
+The "regrid" function may be used to, in essence, give a new beginning to an existing reference grid (or "lsmobj"), most redefined on the response scale (i.e., back-transformed). Consider the preceding Box-Cox example, after applying "regrid":
+<<>>=
+rg.bc.regrid <- regrid(rg.bc)
+@
+By default, the estimates are back-transformed to the response scale. In a "regrid" result, the "linfct" slot (linear functions) become the identity matrix, and the "bhat" slot (regression coefficients) become the predictions at each grid point:
+<<>>=
+round(rg.bc.regrid@bhat, 1)
+@
+which matches the predictions shown previously.
+
+The interesting thing is what happens if we subsequently obtain LS~means. Compare these results:
+<<>>=
+summary(lsmeans(rg.bc, "Variety"), type = "response")
+lsmeans(rg.bc.regrid, "Variety")
+@
+Why are the answers somewhat different? Recall that LS~means are obtained via equally-weighted averages of predictions. In the first "lsmeans" call, the predictions, on the Box-Cox scale, are averaged together and then back-transformed to the response scale; whereas in the second "lsmeans" call, the predictions being averaged were already on the response scale. Since the Box-Cox transformation is nonlinear, averaging then back-transforming is not the same as back-transforming then averaging.
+
+Even the degrees of freedom (d.f.) differ in the two results, because degrees-of-freedom calculations take place on the linear-predictor scale. Once results are back-transformed, "regrid" ``freezes'' the calculated degrees of freedom for each prediction. Subsequently, a containment method is used whereby the returned d.f.\ is the minimum d.f.\ of predictions involved in each LS~mean.
+
+Some users prefer averaging the predictions on the response scale, and now you see that the way to make that happen is through the "regrid" function.
 
 
 \section{More on tests}

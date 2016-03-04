@@ -15,6 +15,8 @@ Changelog for 'lsmeans' package
     Improvements to lsm() which previously did not pass arguments like
         'at' and 'by' to ref.grid
     Added glht.list methods: coef, confint, plot, vcov
+    'using-lsmeans' vignette updated to include more information on
+        'xtable', 'make.tran', and 'regrid'
 *** TODO: Update vignette for make.tran and xtable
 
 
