@@ -283,15 +283,27 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         if (is.character(hook))
             hook = get(hook)
         result@misc$postGridHook = NULL
-        hook(result)
+        result = hook(result)
     }
-    else
-        result
+    
+    .save.ref.grid(result)
+    result
 }
 
 
 #### End of ref.grid ------------------------------------------
 
+# local utility to identify ref.grid that is not an lsmobj
+.is.true.ref.grid = function(object) {
+    is(object, "ref.grid") && !is(object, "lsmobj")
+}
+
+# local utility to save each newly constructed ref.grid, if enabled
+# Goes into global environment unless .Last.ref.grid is found further up
+.save.ref.grid = function(object) {
+    if(get.lsm.option("save.ref.grid") && .is.true.ref.grid(object))
+        assign(".Last.ref.grid", object, inherits = TRUE)
+}
 
 
 
@@ -464,7 +476,8 @@ get.lsm.option = function(x, default = lsmeans::defaults[[x]]) {
 defaults = list(
     estble.tol = 1e-8,        # tolerance for estimability checks
     disable.pbkrtest = FALSE, # whether to bypass pbkrtest routines for lmerMod
-    pbkrtest.limit = 3000     # limit on N for enabling adj V
+    pbkrtest.limit = 3000,    # limit on N for enabling adj V
+    save.ref.grid = TRUE      # save new ref.grid in .Last.ref.grid
 )
 
 # Utility that returns TRUE if getOption("lsmeans")[[opt]] is TRUE
@@ -496,7 +509,8 @@ regrid = function(object, transform = c("response", "log", "none"), inv.log.lbl 
     
     # override the df function
     df = est$df
-    if (diff(range(df)) < .001) {
+    test.df = diff(range(df))
+    if (is.na(test.df) || test.df < .001) {
         object@dfargs = list(df = mean(df))
         object@dffun = function(k, dfargs) dfargs$df
     }

@@ -1,5 +1,6 @@
 \name{ref.grid}
 \alias{ref.grid}
+\alias{.Last.ref.grid}
 
 
 % handy for extra documentation...
@@ -15,6 +16,8 @@ Using a fitted model object, determine a reference grid for which least-squares 
 \usage{
 ref.grid(object, at, cov.reduce = mean, mult.name, mult.levs, 
     options = get.lsm.option("ref.grid"), data, type, ...)
+    
+.Last.ref.grid
 }
 
 \arguments{
@@ -51,9 +54,11 @@ Only the complete cases in \code{data} are used, so it may be necessary to exclu
 Using \code{data} can also help save computing, especially when the dataset is large. In any case, \code{data} must represent all factor levels used in fitting the model. It \emph{cannot} be used as an alternative to \code{at}. (Note: If there is a pattern of \code{NAs} that caused one or more factor levels to be excluded when fitting the model, then \code{data} should also exclude those levels.)
 
 By default, the variance-covariance matrix for the fixed effects is obtained from \code{object}, usually via its \code{\link{vcov}} method. However, the user may override this via a \code{vcov.} argument, specifying a matrix or a function. If a matrix, it must be square and of the same dimension and parameter order of the fixed efefcts. If a function, must return a suitable matrix when it is called with \code{object} as its only argument.
+
+The most recent result of \code{ref.grid}, whether called directly or indirectly via \code{\link{lsmeans}}, \code{\link{lstrends}}, or some other function that calls one of these, is saved in the user's environment as \code{.Last.ref.grid}. This facilitates checking what reference grid was used, or reusing the same reference grid for further calculations. This automatic saving is enabled by default, but may be disabled via \samp{lsm.options(save.ref.grid = FALSE)}, and re-enabled by specifying \code{TRUE}.
 } % --- end of details
 
-\value{An S4 object of class \code{"ref.grid"} (see \code{\link{ref.grid-class}}). These objects encapsulate everything needed to do calculations and inferences for least-squares means, and contain nothing that depends on the model-fitting procedure.
+\value{An S4 object of class \code{"ref.grid"} (see \code{\link{ref.grid-class}}). These objects encapsulate everything needed to do calculations and inferences for least-squares means, and contain nothing that depends on the model-fitting procedure. As a side effect, the result is also saved as \code{.Last.ref.grid} (in the global environment, unless this variable is found in another position).
 }
 
 
