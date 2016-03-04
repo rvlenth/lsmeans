@@ -56,7 +56,7 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 
 \method{vcov}{ref.grid}(object, ...)
 
-regrid (object, transform = TRUE)
+regrid (object, transform = c("response", "log", "none"), inv.log.lbl = "response")
 
 \method{as.mcmc}{ref.grid}(x, names = TRUE, ...)
 }
@@ -96,8 +96,9 @@ The object to be subsetted, printed, plotted, or converted.
   \item{intervals}{If \code{TRUE}, confidence intervals are plotted for each estimate}
   \item{comparisons}{If \code{TRUE}, \dQuote{comparison arrows} are added to the plot, in such a way that the degree to which arrows overlap reflects as much as possible the significance of the comparison of the two estimates.}
   \item{alpha}{The \code{alpha} argument to use in constructing comparison arrows.}
-  \item{int.adjust}{the multiplicity adjustment method for the plotted confidence intervals; if missing, it defaults to the object's internal \code{adjust} setting (see \code{\link{update}}). (Note: the \code{adjust} argument in \code{plot} sets the adjust method for the comparison arrows, not the confidennce intervals.)}
-  \item{transform}{Logical value; if true, the inverse transformation is applied to the estimates in the grid}
+  \item{int.adjust}{the multiplicity adjustment method for the plotted confidence intervals; if missing, it defaults to the object's internal \code{adjust} setting (see \code{\link{update}}). (Note: the \code{adjust} argument in \code{plot} sets the adjust method for the comparison arrows, not the confidence intervals.)}
+  \item{transform}{Character value. If \code{"response"}, the inverse transformation is applied to the estimates in the grid; if \code{"log"}, the results are formulated as if the response had been \code{log}-transformed; if \code{"none"}, predictions thereof are on the same scale as in \code{object}, and any internal transformation information is preserved. For compatibility with past versions, \code{transform} may also be logical; \code{TRUE} is taken as \code{"response"}, and \code{FALSE} as \code{"none"}.}
+  \item{inv.log.lbl}{Character value. This applies only when \code{transform = "log"}, and is used to label the predictions if subsequently summarized with \code{type = "response"}.}
   \item{names}{Logical scalar or vector specifying whether variable names are appended to levels in the column labels for the \code{as.mcmc} result -- e.g., column names of \code{treat A} and \code{treat B} versus  just \code{A} and \code{B}. When there is more than one variable involved, the elements of \code{names} are used cyclically.}
 \item{\dots, digits, quote, right, caption, label, align, display, auto, type, include.rownames, sanitize.message.function, xlab, ylab, layout}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, 
 \code{\link{xtableList}}, \code{\link{print.xtableList}},

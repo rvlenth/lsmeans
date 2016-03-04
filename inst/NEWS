@@ -17,7 +17,9 @@ Changelog for 'lsmeans' package
     Added glht.list methods: coef, confint, plot, vcov
     'using-lsmeans' vignette updated to include more information on
         'xtable', 'make.tran', and 'regrid'
-*** TODO: Update vignette for make.tran and xtable
+*** TODO: Update vignette for regrid with "log", and xtable
+*** TODO: Add "log" option to regrid
+*** TODO: Fix 'type' arg in lsmeans.ref.grid
 
 
 2.22
