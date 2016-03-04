@@ -520,6 +520,24 @@ Even the degrees of freedom (d.f.) differ in the two results, because degrees-of
 
 Some users prefer averaging the predictions on the response scale, and now you see that the way to make that happen is through the "regrid" function.
 
+\subsection{Reverse-engineering a log transformation}
+When a response has been log-transformed, then there are useful special properties of back-transformed summaries:
+\begin{itemize}
+\item LS~means, when back-transformed to the response scale, are actually the \emph{geometric} means of the response-scale predictions.
+\item A difference of two LS~means on the log scale, after back-transforming, becomes an estimate of the \emph{ratio} of the two geometric means. Such comparisons via ratios can be quite useful for positive responses.
+\end{itemize}
+
+The "regrid" function provides a \dqt{log} option that recomputes the reference grid \emph{as if} the response transformation had been the natural logarithm. We can then take advantage of the above special properties of log-transformed responses. The only proviso is that, on the response scale,  all of the reference-grid predictions must be positive.
+
+To illustrate, we revisit the above Box-Cox model once again, and regrid it on the log scale:
+<<>>=
+rg.log <- regrid(rg.bc, "log")
+lsm.log <- lsmeans(rg.log, "Variety")
+summary(lsm.log, type = "response")
+summary(pairs(lsm.log), type = "response")
+@
+The LS~means shown are the geometric means of the predictions, as opposed to the arithmetic means obtained from "rg.bc.regrid". And the pairwise comparisons come out as ratios of these.
+
 
 \section{More on tests}
 \def\tj{\theta^{(j)}}%%% Notation for this section only

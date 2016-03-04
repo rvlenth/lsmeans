@@ -607,6 +607,9 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
     
     RG@linfct = newlf
     RG@roles$trend = var
+    
+    .save.ref.grid(.zaptran(RG))  # save in .Last.ref.grid, if enabled
+    
     args = list(object=RG, specs=specs, ...)
     args$at = args$cov.reduce = args$mult.levs = args$vcov. = NULL
     result = do.call("lsmeans", args)
