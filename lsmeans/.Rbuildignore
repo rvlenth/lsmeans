@@ -3,10 +3,18 @@
 ^\.svn$
 
 # Not yet ready for prime time
-### Now ready: xtable-method.R
 
 # Bibliography that is needed but not allowed...
 using-lsmeans.bbl
+
+# Vignette intermediate files
+vignettes/*.pdf
+vignettes/*.tex
+vignettes/*.aux
+vignettes/*.log
+vignettes/*.gz
+
+
 
 #Deprecated
 KRstuff.R
