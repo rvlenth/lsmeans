@@ -479,7 +479,11 @@ defaults = list(
 ### Returned ref.grid object has linfct = I and bhat = estimates
 ### Primary reason to do this is with transform = TRUE, then can 
 ### work with linear functions of the transformed predictions
-regrid = function(object, transform = TRUE) {
+regrid = function(object, transform = c("response", "log", "none"), inv.log.lbl = "response") {
+    if (is.logical(transform))   # for backward-compatibility
+        transform = ifelse(transform, "response", "none")
+    else
+        transform = match.arg(transform)
     est = .est.se.df(object, do.se = TRUE) ###FALSE)
     estble = !(is.na(est[[1]]))
     object@V = vcov(object)[estble, estble, drop=FALSE]
@@ -489,7 +493,22 @@ regrid = function(object, transform = TRUE) {
         object@nbasis = estimability::all.estble
     else
         object@nbasis = object@linfct[, !estble, drop = FALSE]
-    if(transform && !is.null(object@misc$tran)) {
+    
+    # override the df function
+    df = est$df
+    if (diff(range(df)) < .001) {
+        object@dfargs = list(df = mean(df))
+        object@dffun = function(k, dfargs) dfargs$df
+    }
+    else { # use containment df
+        object@dfargs = list(df = df)
+        object@dffun = function(k, dfargs) {
+            idx = which(zapsmall(k) != 0)
+            ifelse(length(idx) == 0, NA, min(dfargs$df[idx]))
+        }
+    }
+    
+    if(transform %in% c("response", "log") && !is.null(object@misc$tran)) {
         link = attr(est, "link")
         D = .diag(link$mu.eta(object@bhat[estble]))
         object@bhat = sapply(object@bhat, function(x) 
@@ -499,19 +518,13 @@ regrid = function(object, transform = TRUE) {
         if (!is.null(inm))
             object@misc$estName = inm
         object@misc$tran = object@misc$tran.mult = object@misc$inv.lbl = NULL
-        # override the df function
-        df = est$df
-        if (length(unique(df)) == 1) {
-            object@dfargs = list(df = df[1])
-            object@dffun = function(k, dfargs) dfargs$df
-        }
-        else { # use containment df
-            object@dfargs = list(df = df)
-            object@dffun = function(k, dfargs) {
-                idx = which(zapsmall(k) != 0)
-                ifelse(length(idx) == 0, NA, min(dfargs$df[idx]))
-            }
-        }
+    }
+    if (transform == "log") {
+        D = .diag(1/object@bhat)
+        object@V = D %*% tcrossprod(object@V, D)
+        object@bhat = log(object@bhat)
+        object@misc$tran = "log"
+        object@misc$inv.lbl = inv.log.lbl
     }
     # Nix out things that are no longer needed or valid
     object@grid$.offset. = object@misc$offset.mult =
