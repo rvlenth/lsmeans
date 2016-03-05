@@ -13,6 +13,10 @@ vignettes/*.tex
 vignettes/*.aux
 vignettes/*.log
 vignettes/*.gz
+vignettes/*.idx
+vignettes/*.ilg
+vignettes/*.ind
+
 
 
 
