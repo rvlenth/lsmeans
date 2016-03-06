@@ -464,7 +464,7 @@ lsm.options = function(...) {
 }
 
 # equivalent of getOption()
-get.lsm.option = function(x, default = lsmeans::defaults[[x]]) {
+get.lsm.option = function(x, default = defaults.lsm[[x]]) {
     opts = getOption("lsmeans", list())
     if(is.null(default) || x %in% names(opts))
         opts[[x]]
@@ -473,7 +473,7 @@ get.lsm.option = function(x, default = lsmeans::defaults[[x]]) {
 }
 
 ### Exported defaults for certain options
-defaults = list(
+defaults.lsm = list(
     estble.tol = 1e-8,        # tolerance for estimability checks
     disable.pbkrtest = FALSE, # whether to bypass pbkrtest routines for lmerMod
     pbkrtest.limit = 3000,    # limit on N for enabling adj V

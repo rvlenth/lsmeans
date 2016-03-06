@@ -7,13 +7,14 @@
 # Bibliography that is needed but not allowed...
 using-lsmeans.bbl
 
-# Vignette intermediate files
+# Vignette intermediate files (also in svn ignore list)
 vignettes/*.pdf
 vignettes/*.tex
 vignettes/*.aux
 vignettes/*.log
 vignettes/*.gz
 vignettes/*.idx
+vignettes/*.blg
 vignettes/*.ilg
 vignettes/*.ind
 
