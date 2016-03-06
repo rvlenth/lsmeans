@@ -19,9 +19,8 @@ Changelog for 'lsmeans' package
     'using-lsmeans' vignette updated to include more information on
         'xtable', 'make.tran', and 'regrid'
     Added .Last.ref.grid feature and lsm.option "save.ref.grid"
-*** TODO: Update vignette for regrid with "log", and xtable
-*** TODO: Add "log" option to regrid
-*** TODO: Fix 'type' arg in lsmeans.ref.grid
+*** TODO: Update vignette for regrid with xtable
+*** TODO: Save one-sided test info?
 
 
 2.22

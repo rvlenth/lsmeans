@@ -45,7 +45,7 @@ exportPattern("*.lsmc")  #all contrast fcns
 export(
     as.glht,
     contrast,
-    defaults,
+    defaults.lsm,
     get.lsm.option,
     get.pmm.option,
     lsm,
