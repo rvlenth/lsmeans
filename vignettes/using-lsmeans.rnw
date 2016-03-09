@@ -440,8 +440,8 @@ Remember that "nitro" is now used as a quantitative predictor.\ixsub{factors}{wi
 But for comparing with the previous model, we want to see predictions at the four unique "nitro" values rather than at the average of "nitro". This may be done using "at" as illustrated earlier, or a shortcut is to specify \wixcode{cov.reduce} as "FALSE", which tells "ref.grid" to use all the unique values of numeric predictors.
 <<>>=
 Oats.lsm2 <- lsmeans(Oats.lmer2, ~ nitro | Variety, cov.reduce = FALSE)
-Oats.lsm2
 @
+The results are displayed as an export table in Table~\ref{xtable:example}, page~\pageref{xtable:example} (see the next section).
 These LS~means follow the same quadratic trend for each variety, but with different intercepts.\footnote{%
 This is the promised example where our generalization of \cite{Sea80}'s definition of LS~means makes sense. Suppose we want to compare the LS~means for \code{Variety} with those in the original model \code{Oats.lmer} where \code{nitro} was a factor, we want to average equally over the four \code{nitro} levels, even though \code{nitro} is a covariate in this second model.}\ixsub{reference grid}{altered for quantitative factor}
 
@@ -449,8 +449,19 @@ Fractional \wixsub{degrees of freedom}{fractional} are displayed in these result
 
 
 
+\section{Additional display methods}
+\subsection{Export tables}\ix{export tables}
+The \pkg{lsmeans} package provides an \wixcode{xtable} method \citep{xtable} that works with "lsmobj", "ref.grid", and "summary.ref.grid" objects. (It actually uses the \wixcode{xtableList} interface; see the \ixpkg{xtable} documentation for details.) This is quite useful if you want a nicely formatted table, especially using \wixcode{Sweave} or \wixcode{knitr}. To illustrate, we display the "Oats.lsm2" object just created.
+<<results = tex>>=
+library("xtable")
+xtbl <- xtable(Oats.lsm2, caption = "Example using \\texttt{xtable}",
+    label = "xtable:example")
+print(xtbl, table.placement = "t")    
+cat("See Table~\\ref{xtable:example}.\n")
+@
 
-\section{Displaying LS means graphically}\ixsub{graphical displays}{interaction plot}
+
+\subsection{Displaying LS means graphically}\ixsub{graphical displays}{interaction plot}
 We have already seen the use of the "plot" function to display confidence intervals and/or comparison arrows.
 The \lsm{} package also includes a function \wixcode{lsmip} that displays predictions in an interaction-plot-like manner.\ix{interaction plot} It uses a formula of the form
 \begin{Sinput}
@@ -505,7 +516,7 @@ Oats.log1 <- lmer(log(yield + 5) ~ Variety + factor(nitro)
                     tran = make.tran("genlog", 5)) )
 @
 Here, we created a reference grid for the model, then updated it with its "tran" component set to the result of "make.tran" for a generalized log transformation with parameter 5.
-\ixcode{update}{tran@\code{tran}}
+\ixcodesub{update}{tran@\code{tran}}
 This updated reference grid has all the information needed to back-transform the results to the original "yield" scale:
 <<>>=
 round(predict(Oats.rg1, type = "response"), 1)

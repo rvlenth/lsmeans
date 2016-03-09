@@ -20,7 +20,6 @@ Changelog for 'lsmeans' package
         'xtable', 'make.tran', and 'regrid'
     'using-lsmeans' now also has a comprehensive index
     Added .Last.ref.grid feature and lsm.option "save.ref.grid"
-*** TODO: Update vignette for regrid with xtable
 *** TODO: Save one-sided test info?
 
 

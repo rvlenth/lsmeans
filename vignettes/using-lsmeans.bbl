@@ -1,4 +1,4 @@
-\begin{thebibliography}{18}
+\begin{thebibliography}{19}
 \newcommand{\enquote}[1]{``#1''}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
@@ -22,6 +22,12 @@ Brader T, Valentino N, Suhay E (2008).
   group cues, and immigration threat.}
 \newblock \emph{American Journal of Political Science}, \textbf{52}(4),
   959--978.
+
+\bibitem[{Dahl(2016)}]{xtable}
+Dahl DB (2016).
+\newblock \emph{xtable: Export Tables to LaTeX or HTML}.
+\newblock R package version 1.8-2/r110,
+  \urlprefix\url{https://R-Forge.R-project.org/projects/xtable/}.
 
 \bibitem[{Fox(2003)}]{effects}
 Fox J (2003).
