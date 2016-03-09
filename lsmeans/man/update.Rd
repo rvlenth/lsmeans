@@ -3,7 +3,7 @@
 \alias{update.ref.grid}
 \alias{lsm.options}
 \alias{get.lsm.option}
-\alias{defaults}
+\alias{defaults.lsm}
 \alias{pmm.options}
 \alias{get.pmm.option}
 
@@ -20,7 +20,7 @@ In addition, the user may set defaults for all objects using \samp{options(lsmea
 \S3method{update}{ref.grid}(object, ..., silent = FALSE)
 
 lsm.options(...)
-get.lsm.option(x, default = lsmeans::defaults[[x]])
+get.lsm.option(x, default = defaults.lsm[[x]])
 
 pmm.options(...)
 get.pmm.option(...)
@@ -68,6 +68,12 @@ In \code{update}, the names in \code{\dots} are partially matched against those 
 
 \item{\code{df}}{(numeric) overrides the default degrees of freedom with a specified single value.}
 
+\item{\code{null}}{(numeric) null hypothesis for \code{summary} or \code{test} (taken to be zero if missing).}
+
+\item{\code{side}}{(numeric or character) \code{side} specification for for \code{summary} or \code{test} (taken to be zero if missing).}
+
+\item{\code{delta}}{(numeric) \code{delta} specification for \code{summary} or \code{test} (taken to be zero if missing).}
+
 \item{\code{predict.type}}{(character) sets the default method of displaying predictions in \code{\link{summary}}, \code{\link{predict}}, and \code{\link{lsmip}}. Valid values are \code{"link"} (with synonyms \code{"lp"} and \code{"linear"}), or \code{"response"}.}
 
 \item{\code{avgd.over}}{(\code{character)} vector) are the names of the variables whose levels are averaged over in obtaining marginal averages of predictions, i.e., LS means. Changing this might produce a misleading printout, but setting it to \code{character(0)} will suppress the \dQuote{averaged over} message in the summary.}
@@ -88,7 +94,7 @@ In \code{lsm.options}, we may set or change the default values for the above att
 \item{\code{lsmeans}}{A named \code{list} of defaults for objects created by \code{\link{lsmeans}} (or \code{\link{lstrends}}).}
 \item{\code{contrast}}{A named \code{list} of defaults for objects created by \code{\link{contrast}} (or \code{\link{pairs}}).}
 \item{\code{summary}}{A named \code{list} of defaults used by the methods \code{\link{summary}}, \code{\link{predict}}, and \code{\link{lsmip}}. The only option that can affect the latter two is \code{"predict.method"}.}
-\item{\code{estble.tol}}{Tolerance for determining estimability in rank-deficient cases. If absent, the value in \code{lsmeans::defaults$estble.tol)} is used.}
+\item{\code{estble.tol}}{Tolerance for determining estimability in rank-deficient cases. If absent, the value in \code{defaults.lsm$estble.tol)} is used.}
 \item{(others)}{Other options may be accessed by support code for particular model classes (see \code{\link{models}}). For example, the \code{disable.pbkrtest} and \code{pbkrtest.limit} options affect whether approximate degrees of freedom are computed for \code{lmerMod} objects (\pkg{lme4} package).}
 } % end \describe
 } % end subsection
@@ -109,7 +115,7 @@ Unlike the \code{update} method for model classes (\code{lm}, \code{glm}, etc.),
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{summary}}, \code{link{make.tran}}
+\code{\link{summary}}, \code{\link{make.tran}}
 }
 \examples{
 # An altered log transformation
@@ -130,6 +136,7 @@ lsm.options(ref.grid = list(level = .90),
 # AS WELL AS lsmeans called with a model object (since it creates a 
 # reference grid). In addition, when we call 'contrast', 'pairs', etc.,
 # confidence intervals rather than tests are displayed by default.
+}
 
 \dontrun{
 lsm.options(disable.pbkrtest = TRUE)
@@ -140,7 +147,8 @@ lsm.options(disable.pbkrtest = TRUE)
 # See tolerance being used for determining estimability
 get.lsm.option("estble.tol")
 }
-}
+
+
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{ models }

@@ -28,7 +28,7 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 }
 \usage{
 \method{summary}{ref.grid}(object, infer, level, adjust, by, type, df, 
-    null = 0, delta = 0, side = 0, ...)
+    null, delta, side, ...)
 
 \method{predict}{ref.grid}(object, type, ...)
 
@@ -78,7 +78,9 @@ Character value naming the method used to adjust \eqn{p} values or confidence li
 Character name(s) of variables to use for grouping. This affects the family of tests considered in adjusted \emph{P} values. The printed display of the summary is grouped by the \code{by} variables.
 }
   \item{type}{
-Type of prediction desired. This only has an effect if there is a known transformation or link function. \code{"response"} specifies that the inverse transformation be applied. Other valid values are \code{"link"}, \code{"lp"}, and \code{"linear"}; these are equivalent, and request that results be shown for the linear predictor. The default is \code{"link"}, unless the \code{"predict.type"} option is in force; see \code{\link{lsm.options}}.
+Type of prediction desired (except in \code{print.xtable}). This only has an effect if there is a known transformation or link function. \code{"response"} specifies that the inverse transformation be applied. Other valid values are \code{"link"}, \code{"lp"}, and \code{"linear"}; these are equivalent, and request that results be shown for the linear predictor. The default is \code{"link"}, unless the \code{"predict.type"} option is in force; see \code{\link{lsm.options}}.
+
+Note that \code{type} is also an argument for the \code{print.xtable} method; it is passed to \code{\link[xtable]{print.xtableList}} in the \pkg{xtable} package.
 }
   \item{df}{
 If non-missing a constant number of degrees of freedom to use in constructing confidence intervals and \emph{P} values (\code{NA} specifies asymptotic results).
@@ -100,13 +102,13 @@ The object to be subsetted, printed, plotted, or converted.
   \item{transform}{Character value. If \code{"response"}, the inverse transformation is applied to the estimates in the grid; if \code{"log"}, the results are formulated as if the response had been \code{log}-transformed; if \code{"none"}, predictions thereof are on the same scale as in \code{object}, and any internal transformation information is preserved. For compatibility with past versions, \code{transform} may also be logical; \code{TRUE} is taken as \code{"response"}, and \code{FALSE} as \code{"none"}.}
   \item{inv.log.lbl}{Character value. This applies only when \code{transform = "log"}, and is used to label the predictions if subsequently summarized with \code{type = "response"}.}
   \item{names}{Logical scalar or vector specifying whether variable names are appended to levels in the column labels for the \code{as.mcmc} result -- e.g., column names of \code{treat A} and \code{treat B} versus  just \code{A} and \code{B}. When there is more than one variable involved, the elements of \code{names} are used cyclically.}
-\item{\dots, digits, quote, right, caption, label, align, display, auto, type, include.rownames, sanitize.message.function, xlab, ylab, layout}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, 
+\item{\dots, digits, quote, right, caption, label, align, display, auto, include.rownames, sanitize.message.function, xlab, ylab, layout}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, 
 \code{\link{xtableList}}, \code{\link{print.xtableList}},
 \code{\link{update}}, or \code{\link{dotplot}} as appropriate. If not specified, appropriate defaults are used. For example, the default \code{layout} is one column of horizontal panels or one row of vertical panels.}
 }
 \details{
 \bold{Defaults:}
-The \code{misc} slot in \code{object} contains default values for \code{by}, \code{infer}, \code{level}, \code{adjust}, and \code{type}. These defaults vary depending on the code that created the object. The \code{\link{update}} method may be used to change these defaults. In addition, any options set using \samp{lsm.options(summary=...)} will trump those stored in the object's \code{misc} slot.
+The \code{misc} slot in \code{object} contains default values for \code{by}, \code{infer}, \code{level}, \code{adjust}, \code{type}, \code{null}, \code{side}, and \code{delta}. These defaults vary depending on the code that created the object. The \code{\link{update}} method may be used to change these defaults. In addition, any options set using \samp{lsm.options(summary=...)} will trump those stored in the object's \code{misc} slot.
 
 \bold{Transformations and links:}
 With \code{type="response"}, the transformation assumed can be found in \samp{object@misc$tran}, and its label, for the summary is in \samp{object@misc$inv.lbl}. At this time, \code{tran} must be one of the named transformations valid for \code{\link{make.link}}. Any \eqn{t} or \eqn{z} tests are still performed on the scale of the linear predictor, not the inverse-transformed one. Similarly, confidence intervals are computed on the linear-predictor scale, then inverse-transformed.

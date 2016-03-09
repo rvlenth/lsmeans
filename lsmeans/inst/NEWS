@@ -1,6 +1,6 @@
 Changelog for 'lsmeans' package
 
-2.22-7
+2.23
     Added xtable support (actually uses xtableList)
     Corrected bugs in rbind.ref.grid that caused error when rank-deficient,
         and incorrectly reported 'avgd.over' information
@@ -20,7 +20,7 @@ Changelog for 'lsmeans' package
         'xtable', 'make.tran', and 'regrid'
     'using-lsmeans' now also has a comprehensive index
     Added .Last.ref.grid feature and lsm.option "save.ref.grid"
-*** TODO: Save one-sided test info?
+    Expanded options to include null, side, and delta
 
 
 2.22

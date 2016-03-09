@@ -177,14 +177,8 @@ test(Oats.anal)                # Uses 1st element by default
 confint(Oats.anal, which = 4)  # or confint(Oats.anal[[4]])
 
 # Using 'pmmeans' wrapper ...
-# These two calls apply the "bonf" adjustment to different elements...
-pmmeans(warp.lm, eff ~ wool, adjust = "bonf") 
-pmmeans(warp.lm, eff ~ wool, options = list(adjust = "bonf"))
-# Advice: Do one thing at a time if you want non-default adjustments
-#   e.g., wool.lsm <- lsmeans(warp.lm, ~ wool)
-#         summary(wool.lsm, adjust = "bonf")
-#         contrast(wool.lsm, "eff", adjust = "sidak")
-
+pmmeans(warp.lm, ~ wool, 
+    options = list(infer = c(TRUE, TRUE), null = 22, side = ">"))
 
 ### Weights
 # See what's being averaged over in the above

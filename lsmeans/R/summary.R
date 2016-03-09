@@ -348,7 +348,39 @@ predict.ref.grid <- function(object, type, ...) {
 
 # S3 summary method
 summary.ref.grid <- function(object, infer, level, adjust, by, type, df, 
-                             null = 0, delta = 0, side = 0, ...) {
+                             null, delta, side, ...) {
+    ### For missing arguments, get from misc, else default    
+    if(missing(infer))
+        infer = object@misc$infer
+    if(missing(level))
+        level = object@misc$level
+    if(missing(adjust))
+        adjust = object@misc$adjust
+    if(missing(by))
+        by = object@misc$by.vars
+    
+    if (missing(type))
+        type = .get.predict.type(object@misc)
+    else
+        type = .validate.type(type)
+    
+    if(missing(df)) 
+        df = object@misc$df
+    if(!is.null(df))
+        object@dffun = function(k, dfargs) df
+    
+    # for missing args that default to zero unless provided or in misc slot
+    .nul.eq.zero = function(val) {
+        if(is.null(val)) 0
+        else val
+    }
+    if(missing(null))
+        null = .nul.eq.zero(object@misc$null)
+    if(missing(delta))
+        delta = .nul.eq.zero(object@misc$delta)
+    if(missing(side))
+        side = .nul.eq.zero(object@misc$side)
+    
     # update with any "summary" options
     opt = get.lsm.option("summary")
     if(!is.null(opt)) {
@@ -356,9 +388,6 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
         object = do.call("update.ref.grid", opt)
     }
     
-    if(missing(df)) df = object@misc$df
-    if(!is.null(df))
-        object@dffun = function(k, dfargs) df
     
     # reconcile all the different ways we could specify the alternative
     # ... and map each to one of the first 3 subscripts
@@ -372,17 +401,6 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     lblnms = setdiff(names(object@grid), 
                      c(object@roles$responses, ".offset.", ".wgt."))
     lbls = object@grid[lblnms]
-    
-    ### implement my 'variable defaults' scheme    
-    if(missing(infer)) infer = object@misc$infer
-    if(missing(level)) level = object@misc$level
-    if(missing(adjust)) adjust = object@misc$adjust
-    if(missing(by)) by = object@misc$by.vars
-    
-    if (missing(type))
-        type = .get.predict.type(object@misc)
-    else
-        type = .validate.type(type)
     
     zFlag = (all(is.na(result$df)))
     inv = (type == "response") # flag to inverse-transform

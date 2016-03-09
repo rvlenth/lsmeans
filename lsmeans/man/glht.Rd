@@ -25,7 +25,7 @@ These functions and methods provide an interface between \pkg{lsmeans} and the \
 
 \method{coef}{glht.list}(object, ...)
 \method{confint}{glht.list}(object, ...)
-\method{plot}{glht.list}(object, ...)
+\method{plot}{glht.list}(x, ...)
 \method{summary}{glht.list}(object, ...)
 \method{vcov}{glht.list}(object, ...)
 
@@ -33,7 +33,7 @@ lsm(...)
 pmm(...)
 }
 \arguments{
-  \item{object}{
+  \item{object, x}{
 An object of the required class.
 }
   \item{which}{Numeric index of which element of the \code{lsm.list} to use.}

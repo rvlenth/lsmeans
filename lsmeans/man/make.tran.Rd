@@ -66,7 +66,7 @@ bctran <- make.tran("boxcox", 0.368)
 warp.bc <- with(bctran, 
     lm(linkfun(breaks) ~ wool * tension, data = warpbreaks))
 # Obtain back-transformed LS means:    
-lsmeans(warp.bc, type = "response")
+lsmeans(warp.bc, ~ tension | wool, type = "response")
 
 \dontrun{
 # An existing model 'mod' was fitted with a log(y + 1) transformation...
