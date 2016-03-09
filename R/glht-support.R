@@ -119,8 +119,8 @@ coef.glht.list = function(object, ...)
 confint.glht.list = function(object, ...)
     lapply(object, confint, ...)
 
-plot.glht.list = function(object, ...)
-    lapply(object, plot, ...)
+plot.glht.list = function(x, ...)
+    lapply(x, plot, ...)
 
 summary.glht.list = function(object, ...)
     lapply(object, summary, ...)

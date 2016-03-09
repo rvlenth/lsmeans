@@ -37,10 +37,10 @@ xtable.summary.ref.grid = function (x, caption = NULL, label = NULL,
     result = xtable::xtableList(xList, caption = caption, label = label, 
        align = align, digits = digits, display = display, 
        auto = auto, ...)
-    digits = digits(result[[1]])
+    digits = xtable::digits(result[[1]])
     
     # format df and t ratios
-    digits = digits(result[[1]])
+    digits = xtable::digits(result[[1]])
     i = which(names(x) == "df")
     if (length(i) > 0) {
         dfd = ifelse(all(zapsmall(x$df - round(x$df)) == 0), 0, 2)
@@ -49,7 +49,7 @@ xtable.summary.ref.grid = function (x, caption = NULL, label = NULL,
     i = which(names(x) %in% c("t.ratio", "z.ratio"))
     if (length(i) > 0) digits[i + 1 - length(byv)] = 3
     for (i in seq_along(result))
-        digits(result[[i]]) = digits
+        xtable::digits(result[[i]]) = digits
     
     class(result) = c("xtable.lsm", "xtableList")
     result
@@ -65,6 +65,6 @@ print.xtable.lsm = function(x, type = getOption("xtable.type", "latex"),
         html = function(x) paste0("<font size = -1>", x, "</font>"),
         latex = function(x) paste0("{\\footnotesize ", x, "}"),
         function(x) x )
-    invisible(print.xtableList(x, include.rownames = include.rownames, 
+    invisible(xtable::print.xtableList(x, include.rownames = include.rownames, 
         sanitize.message.function = sanitize.message.function, ...))
 }

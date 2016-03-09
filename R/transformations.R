@@ -30,12 +30,12 @@
          reciprocal = .make.link("inverse"),
          log10 = list(
              linkinv = function(eta) 10^eta,
-             mu.eta = 10^eta * log(10),
+             mu.eta = function(eta) 10^eta * log(10),
              name = "log10"
          ),
          log2 = list(
              linkinv = function(eta) 2^eta,
-             mu.eta = 2^eta * log(2),
+             mu.eta = function(eta) 2^eta * log(2),
              name = "log2"
          ),
          asin.sqrt = make.tran("asin.sqrt"),

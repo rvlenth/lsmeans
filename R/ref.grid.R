@@ -419,9 +419,9 @@ vcov.ref.grid = function(object, ...) {
 # Method to alter contents of misc slot
 update.ref.grid = function(object, ..., silent = FALSE) {
     args = list(...)
-    valid.misc = c("adjust","alpha","avgd.over","by.vars","df",
+    valid.misc = c("adjust","alpha","avgd.over","by.vars","delta","df",
         "initMesg","estName","estType","famSize","infer","inv.lbl",
-        "level","methdesc","predict.type","pri.vars","tran","tran.mult")
+        "level","methdesc","null","predict.type","pri.vars","side","tran","tran.mult")
     valid.slots = slotNames(object)
     valid.choices = union(valid.misc, valid.slots)
     misc = object@misc

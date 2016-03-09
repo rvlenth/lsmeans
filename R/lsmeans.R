@@ -107,7 +107,7 @@ lsmeans.list = function(object, specs, ...) {
 
 # Generic for after we've gotten specs in character form
 lsmeans.character = function(object, specs, ...) {
-    UseMethod("lsmeans.character")####, object)
+    UseMethod("lsmeans.character")
 }
 
 # Needed for model objects
@@ -263,8 +263,8 @@ contrast = function(object, ...)
     UseMethod("contrast")
 
 contrast.ref.grid = function(object, method = "eff", interaction = FALSE, 
-        by, adjust, offset = NULL, name = "contrast", 
-        options = getOption("lsmeans")$contrast, ...) 
+        by, offset = NULL, name = "contrast", 
+        options = getOption("lsmeans")$contrast, adjust, ...) 
 {
     if(missing(by)) 
         by = object@misc$by.vars
@@ -413,6 +413,9 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
         else
             misc$tran = misc$tran.mult = NULL
     }
+    
+    # ensure we don't inherit inappropriate settings
+    misc$null = misc$delta = misc$side = NULL
     
     object@roles$predictors = "contrast"
     levels = list()
