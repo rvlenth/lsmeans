@@ -8,7 +8,11 @@
 #     FALSE - same as function(x) sort(unique(x))
 
 ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, 
-                     options = get.lsm.option("ref.grid"), data, type, ...) {
+                     options = get.lsm.option("ref.grid"), data, type, 
+                     transform = c("none", "response", "log"), ...) 
+{
+    transform = match.arg(transform)
+    
     # recover the data
     if (missing(data)) {
         data = try(recover.data (object, data = NULL, ...))
@@ -285,6 +289,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         result@misc$postGridHook = NULL
         result = hook(result)
     }
+    if(transform != "none")
+        result = regrid(result, transform = transform)
     
     .save.ref.grid(result)
     result
@@ -492,7 +498,9 @@ defaults.lsm = list(
 ### Returned ref.grid object has linfct = I and bhat = estimates
 ### Primary reason to do this is with transform = TRUE, then can 
 ### work with linear functions of the transformed predictions
-regrid = function(object, transform = c("response", "log", "none"), inv.log.lbl = "response") {
+regrid = function(object, transform = c("response", "log", "none"), 
+    inv.log.lbl = "response", predict.type) 
+{
     if (is.logical(transform))   # for backward-compatibility
         transform = ifelse(transform, "response", "none")
     else
@@ -533,9 +541,17 @@ regrid = function(object, transform = c("response", "log", "none"), inv.log.lbl 
             object@misc$estName = inm
         object@misc$tran = object@misc$tran.mult = object@misc$inv.lbl = NULL
     }
-    if (transform == "log") {
-        D = .diag(1/object@bhat)
-        object@V = D %*% tcrossprod(object@V, D)
+    if (transform == "log") { # from prev block, we now have stuff on response scale
+        incl = which(object@bhat > 0)
+        if (length(incl) < length(object@bhat)) {
+            message("Non-positive response predictions are flagged as non-estimable")
+            tmp = seq_along(object@bhat)
+            excl = tmp[-incl]
+            object@bhat[excl] = NA
+            object@nbasis = sapply(excl, function(ii) 0 + (tmp == ii))
+        }
+        D = .diag(1/object@bhat[incl])
+        object@V = D %*% tcrossprod(object@V[incl, incl, drop = FALSE], D)
         object@bhat = log(object@bhat)
         object@misc$tran = "log"
         object@misc$inv.lbl = inv.log.lbl
@@ -543,6 +559,8 @@ regrid = function(object, transform = c("response", "log", "none"), inv.log.lbl 
     # Nix out things that are no longer needed or valid
     object@grid$.offset. = object@misc$offset.mult =
         object@misc$estHook = object@misc$vcovHook = NULL
+    if(!missing(predict.type))
+        object = update(object, predict.type = predict.type)
     object
 }
 

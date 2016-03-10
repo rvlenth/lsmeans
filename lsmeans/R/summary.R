@@ -464,7 +464,9 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
         mesg = c(mesg, paste("Confidence level used:", level), acv$mesg)
         if (inv) {
             clims = with(link, cbind(linkinv(result[[cnm[1]]]), linkinv(result[[cnm[2]]])))
-            idx = if (all(clims[ ,1] <= clims[, 2])) 1:2 else 2:1
+            tmp = apply(clims, 1, function(x) { 
+                z = diff(x); ifelse(is.na(z), 0, z) })
+            idx = if (all(tmp >= 0)) 1:2 else 2:1
             result[[cnm[1]]] = clims[, idx[1]]
             result[[cnm[2]]] = clims[, idx[2]]
             mesg = c(mesg, paste("Intervals are back-transformed from the", link$name, "scale"))

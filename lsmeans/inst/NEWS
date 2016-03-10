@@ -1,5 +1,9 @@
 Changelog for 'lsmeans' package
 
+2.23-1
+    More graceful handling of mu.hat <= 0 in regrid(., "log")
+    Added 'predict.type' argument to 'regrid'
+
 2.23
     Added xtable support (actually uses xtableList)
     Corrected bugs in rbind.ref.grid that caused error when rank-deficient,
