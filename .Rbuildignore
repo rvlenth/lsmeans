@@ -6,6 +6,7 @@
 
 # Bibliography that is needed but not allowed...
 using-lsmeans.bbl
+using-lsmeans.blg
 
 # Vignette intermediate files (also in svn ignore list)
 vignettes/*.pdf
