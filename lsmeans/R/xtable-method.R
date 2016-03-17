@@ -44,7 +44,7 @@ xtable.summary.ref.grid = function (x, caption = NULL, label = NULL,
     i = which(names(x) == "df")
     if (length(i) > 0) {
         dfd = ifelse(all(zapsmall(x$df - round(x$df)) == 0), 0, 2)
-        digits[i + 1 - length(byv)] = dfd
+        digits[i + 1 - length(byv)] = ifelse(is.na(dfd), 0, dfd)
     }
     i = which(names(x) %in% c("t.ratio", "z.ratio"))
     if (length(i) > 0) digits[i + 1 - length(byv)] = 3

@@ -47,6 +47,7 @@
         if (!is.null(object@grid$.offset.))
             result[, 1] = result[, 1] + object@grid$.offset.
     }
+    result[1] = as.numeric(result[1]) # silly bit of code to avoid getting a data.frame of logicals if all are NA
     result = as.data.frame(result)
     names(result) = c(misc$estName, "SE", "df")
 

@@ -533,8 +533,7 @@ regrid = function(object, transform = c("response", "log", "none"),
     if(transform %in% c("response", "log") && !is.null(object@misc$tran)) {
         link = attr(est, "link")
         D = .diag(link$mu.eta(object@bhat[estble]))
-        object@bhat = sapply(object@bhat, function(x) 
-            ifelse(link$valideta(x), link$linkinv(x), 0))
+        object@bhat = link$linkinv(object@bhat)
         object@V = D %*% tcrossprod(object@V, D)
         inm = object@misc$inv.lbl
         if (!is.null(inm))
