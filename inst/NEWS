@@ -3,6 +3,7 @@ Changelog for 'lsmeans' package
 2.23-1
     More graceful handling of mu.hat <= 0 in regrid(., "log")
     Added 'predict.type' argument to 'regrid'
+    Bug fixes related to the case where all estimates are NA
 
 2.23
     Added xtable support (actually uses xtableList)
