@@ -10,7 +10,7 @@ Extract and display information on all pairwise comparisons of least-squares mea
 
 \usage{
 \method{cld}{ref.grid}(object, details = FALSE, sort = TRUE, by, alpha = 0.05, 
-    Letters = c("1234567890", LETTERS, letters), ...)
+    Letters = c("1234567890", LETTERS, letters), reversed = FALSE, ...)
 \method{cld}{lsm.list}(object, ..., which = 1)    
 }
 
@@ -19,13 +19,14 @@ Extract and display information on all pairwise comparisons of least-squares mea
   \item{details}{Logical value determining whether detailed
   information on tests of pairwise comparisons is displayed}
   \item{sort}{Logical value determining whether the LS means are 
-  sorted before the comparisons are produced}
+  sorted before the comparisons are produced. When \code{sort} is \code{TRUE}, the results are displayed in increasing order if \code{reversed} is \code{FALSE} (the default), or in decreasing order if \code{reversed} is \code{TRUE}.}
   \item{by}{Character value giving the name or names of variables by which separate  
   families of comparisons are tested. 
   If \code{NULL}, all means are compared. If missing, and a \code{by} variable was used in creating \code{object}, it is used as the \code{by} variable in \code{cld}.}
   \item{alpha}{Numeric value giving the significance level for the comparisons}
   \item{Letters}{Character vector of letters to use in the display.
   Any strings of length greater than 1 are expanded into individual characters}
+  \item{reversed}{Logical value (passed to \code{\link[multcompView]{multcompLetters}} in the \pkg{multcompView} package.) If \code{TRUE}, the order of use of the letters is reversed. In addition, if both \code{sort} and \code{reversed} are \code{TRUE}, the sort order of results is reversed.}
   \item{\dots}{Arguments passed to \code{\link{contrast}} (for example, an \code{adjust} method)}
   \item{which}{When \code{object} is a list, this determines which element is analyzed.}
 }

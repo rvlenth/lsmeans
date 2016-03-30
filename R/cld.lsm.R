@@ -1,6 +1,6 @@
 # Runs the function multicompLetters from the multcompView package
 # returns an error if not installed
-.mcletters = function(..., Letters=c("1234567890",LETTERS,letters)) {
+.mcletters = function(..., Letters=c("1234567890",LETTERS,letters), reversed=FALSE) {
     if(!requireNamespace("multcompView", quietly = TRUE)) {
         message("The 'multcompView' package must be installed to use cld methods")
         return (list(monospacedLetters = "?"))
@@ -11,7 +11,7 @@
         sapply(seq_len(nchar(stg)), function(i) substr(stg, i, i))
     })))
     
-    result = multcompView::multcompLetters(..., Letters=Letters)
+    result = multcompView::multcompLetters(..., Letters=Letters, reversed=reversed)
     if (is.null(result$monospacedLetters))
         result$monospacedLetters = result$Letters
     result
@@ -20,7 +20,8 @@
 # S3 method for ref.grid
 cld.ref.grid = function(object, details=FALSE, sort=TRUE, 
                     by, alpha=.05, 
-                    Letters = c("1234567890",LETTERS,letters), ...) {
+                    Letters = c("1234567890",LETTERS,letters), 
+                    reversed=FALSE, ...) {
     lsmtbl = summary(object, ...)
     if(missing(by)) 
         by = object@misc$by.vars
@@ -72,13 +73,17 @@ cld.ref.grid = function(object, details=FALSE, sort=TRUE,
     for (i in seq_len(length(by.rows))) {
         pb = p.boo[by.rows[[i]]]
         names(pb) = labs
-        mcl = .mcletters(pb, Letters=Letters)$monospacedLetters
+        mcl = .mcletters(pb, Letters = Letters, reversed = reversed)$monospacedLetters
         ltrs[by.out[[i]]] = paste(" ", mcl, sep="")
     }
     # any missing estimates get blanks...
     ltrs[excl.rows] = ""
     
     lsmtbl[[".group"]] = ltrs
+    if(sort && reversed) for (i in seq_len(length(by.out))) {
+        r = by.out[[i]]
+        lsmtbl[r, ] = lsmtbl[rev(r), ]
+    }
     
     attr(lsmtbl, "mesg") = c(attr(lsmtbl,"mesg"), attr(pwtbl, "mesg"), 
                              paste("significance level used: alpha =", alpha))
