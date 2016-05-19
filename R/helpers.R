@@ -83,24 +83,25 @@ recover.data.call = function(object, trms, na.action, data = NULL, params = NULL
         fcall$drop.unused.levels = TRUE
         fcall[[1L]] = as.name("model.frame")
         fcall$xlev = NULL # we'll ignore xlev
-        fcall$na.action = na.omit
-        ### I once had a reason to put one var on the left, but don't remember why
-        ### Now it messes up if there's a '$' in that term
-        #         if (length(vars) > 1) 
-        #             form = reformulate(vars[-1], response = vars[1])
-        #         else
+        # If we have an explicit list of cases to exclude, let everything through now
+        if (!is.null(na.action))
+            fcall$na.action = na.pass
+        else  # exclude incomplete cases
+            fcall$na.action = na.omit
         form = reformulate(vars)
         fcall$formula = update(trms, form)
         env = environment(trms)
         if (is.null(env)) 
             env = parent.frame()
         tbl = eval(fcall, env, parent.frame())
+        
+        # Now we can drop na.action's rows
         if (!is.null(na.action))
             tbl = tbl[-(na.action),  , drop=FALSE]
     }
     
     else
-        fcall$data = tbl[complete.cases(data), , drop=FALSE]
+        tbl = tbl[complete.cases(tbl), , drop=FALSE]
     
     attr(tbl, "call") = object # the original call
     attr(tbl, "terms") = trms
@@ -290,8 +291,11 @@ recover.data.lme = function(object, data, ...) {
     fcall = object$call
     if (!is.null(fcall$weights))
         fcall$weights = nlme::varWeights(object$modelStruct)
-    if(is.null(data)) # lme objects actually have the data, so use it!
+    if(is.null(data)) { # lme objects actually have the data, so use it!
         data = object$data
+        if (!is.null(object$na.action))
+            data = data[-object$na.action, , drop = FALSE]
+    }
     recover.data(fcall, delete.response(terms(object)), object$na.action, data = data, ...)
 }
 
