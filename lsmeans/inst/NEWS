@@ -1,10 +1,14 @@
 Changelog for 'lsmeans' package
 
-2.23-2
+2.23-3
     More graceful handling of mu.hat <= 0 in regrid(., "log")
     Added 'predict.type' argument to 'regrid'
     Bug fixes related to the case where all estimates are NA
     Addition of 'reversed' argument to 'cld'
+    Bug fixes for na.action handling. Results may now differ somewhat
+        from past versions, especially if you have covariates
+* TODO: Incorporate lmerTest Satterthwaite code        
+
 
 2.23
     Added xtable support (actually uses xtableList)
