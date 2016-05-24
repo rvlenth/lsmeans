@@ -602,7 +602,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, ...) {
     # remove transformation from object
     .zaptran = function(obj) {
         if (is(obj, "ref.grid") && !is.null(obj@misc$tran)) {
-            obj@misc$orig.tran = result@misc$tran
+            obj@misc$orig.tran = obj@misc$tran
             obj@misc$tran = obj@misc$tran.mult = NULL
         }
         obj
