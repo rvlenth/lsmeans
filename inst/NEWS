@@ -8,6 +8,7 @@ Changelog for 'lsmeans' package
     Bug fixes for na.action handling. Results may now differ somewhat
         from past versions, especially if you have covariates
     Fixed bug in 'lstrends' when there is a response transformation
+    Fixed new bug that popped up when tbl_df objects are used
 * TODO: Incorporate lmerTest Satterthwaite code        
 
 
