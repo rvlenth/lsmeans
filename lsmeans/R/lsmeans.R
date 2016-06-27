@@ -182,7 +182,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     levs = list()
     for (f in facs) {
         levs[[f]] = RG@levels[[f]]
-        if (is.null(levs[[f]]))
+        if (!(f %in% names(levs)))  ###(is.null(levs[[f]]))
             stop(paste("No variable named", f, "in the reference grid"))
     }
     combs = do.call("expand.grid", levs)
@@ -392,7 +392,7 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     if (!is.null(attr(cmat, "offset")))
         offset = attr(cmat, "offset")
     if (!is.null(offset)) {
-        if(is.null(grid[[".offset."]]))
+        if(!(".offset." %in% names(grid)))  ###if(is.null(grid[[".offset."]]))
             grid[[".offset."]] = 0
             grid[[".offset."]] = grid[[".offset."]] + rep(offset, length(by.rows))
     }
