@@ -182,7 +182,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     levs = list()
     for (f in facs) {
         levs[[f]] = RG@levels[[f]]
-        if (!(f %in% names(levs)))  ###(is.null(levs[[f]]))
+        if (!hasName(levs, f))
             stop(paste("No variable named", f, "in the reference grid"))
     }
     combs = do.call("expand.grid", levs)
@@ -203,7 +203,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
         message("NOTE: Results may be misleading due to involvement in interactions")
     
     # Figure offset, if any
-    if (".offset." %in% names(RG@grid)) {
+    if (hasName(RG@grid, ".offset.")) {
         combs[[".offset."]] = as.numeric(plyr::aaply(row.idx, use.mars, function(idx)
             fac.reduce(as.matrix(RG@grid[idx, ".offset.", drop=FALSE]))))
     }
@@ -343,7 +343,7 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     if (is.null(by)) {
         linfct = t(cmat) %*% object@linfct
         grid = data.frame(.contrast.=names(cmat))
-        if (".offset." %in% names(object@grid))
+        if (hasName(object@grid, ".offset."))
             grid[[".offset."]] = t(cmat) %*% object@grid[[".offset."]]
     }
     
@@ -362,7 +362,7 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
         for (v in by)
             xlevs[[v]] = rep(bylevs[row.1st, v], each=n.each)
         grid = cbind(grid, as.data.frame(xlevs))
-        if (".offset." %in% names(object@grid))
+        if (hasName(object@grid, ".offset."))
             grid[[".offset."]] = tcmat %*% object@grid[unlist(by.rows), ".offset."]
     }
     
@@ -392,9 +392,9 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     if (!is.null(attr(cmat, "offset")))
         offset = attr(cmat, "offset")
     if (!is.null(offset)) {
-        if(!(".offset." %in% names(grid)))  ###if(is.null(grid[[".offset."]]))
+        if(!hasName(grid, ".offset."))
             grid[[".offset."]] = 0
-            grid[[".offset."]] = grid[[".offset."]] + rep(offset, length(by.rows))
+        grid[[".offset."]] = grid[[".offset."]] + rep(offset, length(by.rows))
     }
     misc$adjust = adjust
     misc$infer = c(FALSE, TRUE)
