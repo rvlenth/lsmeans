@@ -70,7 +70,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     cr = function(x, nm) {
         if (is.function(cov.reduce))
             cov.reduce(x)
-        else if (nm %in% names(cov.reduce)) ###(!is.null(cov.reduce[[nm]]))
+        else if (hasName(cov.reduce, nm))
             cov.reduce[[nm]](x)
         else
             mean(x)
@@ -97,7 +97,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     
         # Now go thru and find reference levels...
         # mentioned in 'at' list but not coerced
-        if (!(nm %in% coerced) && !missing(at) && (nm %in% names(at))) ###!is.null(at[[nm]]))
+        if (!(nm %in% coerced) && !missing(at) && (hasName(at, nm)))
             ref.levels[[nm]] = at[[nm]]
         # factors not in 'at'
         else if (is.factor(x))
@@ -235,7 +235,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     }
 
     ### --- Determine weights for each grid point --- (added ver.2.11), updated ver.2.14 to include weights
-    if (!("(weights)" %in% names(data)))
+    if (!hasName(data, "(weights)"))
         data[["(weights)"]] = 1
     nms = union(names(xlev), coerced) # only factors, no covariates or mult.resp
     # originally, I used 'plyr::count', but there are probs when there is a 'freq' variable
@@ -369,7 +369,7 @@ str.ref.grid <- function(object, ...) {
     cat(paste("'", class(object)[1], "' object with variables:\n", sep=""))
     for (nm in union(object@roles$predictors, union(object@roles$multresp, object@roles$responses))) {
         cat(paste("    ", nm, " = ", sep = ""))
-        if (nm %in% names(object@matlevs)) {
+        if (hasName(object@matlevs, nm)) {
             if (nm %in% object@roles$responses)
                 cat("multivariate response with means: ")
             else
@@ -472,7 +472,7 @@ lsm.options = function(...) {
 # equivalent of getOption()
 get.lsm.option = function(x, default = defaults.lsm[[x]]) {
     opts = getOption("lsmeans", list())
-    if(is.null(default) || x %in% names(opts))
+    if(is.null(default) || hasName(opts, x))
         opts[[x]]
     else 
         default
