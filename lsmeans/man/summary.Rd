@@ -127,7 +127,7 @@ The \code{adjust} argument specifies a multiplicity adjustment for tests or conf
 \item{\code{"none"}}{Makes no adjustments to the \eqn{p} values.}
 } % end \describe {}
 
-For P-value adjustments only, the other Bonferroni-inequality-based adjustment methods in \code{\link{p.adjust}} are also available. If a \code{p.adjust.methods} method other than \code{"bonferroni"} or \code{"none"} is specified for confidence limits, the straight Bonferoni adjustment is used instead.
+For P-value adjustments only, the Bonferroni-inequality-based adjustment methods in \code{\link{p.adjust}} are also available (currently, these include \code{"holm"}, \code{"hochberg"}, \code{"hommel"}, \code{"bonferroni"}, \code{"BH"}, \code{"BY"}, \code{"fdr"}, and \code{"none"}). If a \code{p.adjust.methods} method other than \code{"bonferroni"} or \code{"none"} is specified for confidence limits, the straight Bonferoni adjustment is used instead.
 Also, if an adjustment method is not appropriate (e.g., using \code{"tukey"} with one-sided tests, or with results that are not pairwise comparisons), a more appropriate method (usually \code{"sidak"}) is substituted. 
 
 In some cases, confidence and \eqn{p}-value adjustments are only approximate -- especially when the degrees of freedom or standard errors vary greatly within the family of tests. The \code{"mvt"} method is always the correct one-step adjustment, but it can be very slow. One may use \code{\link{as.glht}} with methods in the \pkg{multcomp} package to obtain non-conservative multi-step adjustments to tests.
@@ -176,7 +176,7 @@ Russell V. Lenth
 %\note{}
 
 \seealso{
-Methods for the closely related \code{"lsmobj"} class can be found in \code{\link[lsmeans]{contrast}}, \code{\link[lsmeans]{cld}}, and \code{\link[lsmeans]{glht}}. Also, \code{\link{test}} and \code{\link{confint}} are essentially front-ends for \code{summary}, so additional examples may be found there.
+Methods for the closely related \code{"lsmobj"} class can be found in \code{\link[lsmeans]{contrast}}, \code{\link[lsmeans]{cld}}, and \code{\link[lsmeans]{glht}}. For more on Bonferroni-based P-value adjustments, see \code{\link{p.adjust}}. Also, \code{\link{test}} and \code{\link{confint}} are essentially front-ends for \code{summary}, so additional examples may be found there.
 }
 \examples{
 require(lsmeans)
