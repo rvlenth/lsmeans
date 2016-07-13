@@ -481,6 +481,7 @@ get.lsm.option = function(x, default = defaults.lsm[[x]]) {
 ### Exported defaults for certain options
 defaults.lsm = list(
     estble.tol = 1e-8,        # tolerance for estimability checks
+    disable.satterth = TRUE,  # for now, keep the old K-R method as default
     disable.pbkrtest = FALSE, # whether to bypass pbkrtest routines for lmerMod
     pbkrtest.limit = 3000,    # limit on N for enabling adj V
     save.ref.grid = TRUE      # save new ref.grid in .Last.ref.grid
@@ -488,7 +489,7 @@ defaults.lsm = list(
 
 # Utility that returns TRUE if getOption("lsmeans")[[opt]] is TRUE
 .lsm.is.true = function(opt) {
-    x = get.lsm.option(opt, FALSE)
+    x = get.lsm.option(opt)
     if (is.logical(x))  x
     else FALSE
 }
