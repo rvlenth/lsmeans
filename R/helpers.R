@@ -180,33 +180,47 @@ lsm.basis.merMod = function(object, trms, xlev, grid, vcov., ...) {
     else
         V = as.matrix(.my.vcov(object, vcov.))
     dfargs = misc = list()
+    
     if (lme4::isLMM(object)) {
-        pbdis = .lsm.is.true("disable.pbkrtest")
-        Nlim = get.lsm.option("pbkrtest.limit")
-        objN = lme4::getME(object, "N")
-        toobig = objN > Nlim
-        if (!pbdis && !toobig && requireNamespace("pbkrtest") && missing(vcov.)) {
-            dfargs = list(unadjV = V, 
-                adjV = pbkrtest::vcovAdj.lmerMod(object, 0))
-            V = as.matrix(dfargs$adjV)
-            tst = try(pbkrtest::Lb_ddf)
-            if(class(tst) != "try-error")
-                dffun = function(k, dfargs) pbkrtest::Lb_ddf (k, dfargs$unadjV, dfargs$adjV)
+        satdis = .lsm.is.true("disable.satterth")
+        if (!satdis) {
+            if (requireNamespace("lmerTest")) {
+                dfargs = list(object = object)
+                dffun = function(k, dfargs) lmerTest::calcSatterth(dfargs$object, k)$denom
+            }
             else {
+                message("Install package 'lmerTest' to obtain Satterthwaite degrees of freedom")
                 dffun = function(k, dfargs) NA
-                warning("To obtain d.f., install 'pbkrtest' version 0.4-1 or later")
             }
         }
         else {
-            if(!pbdis && !("pbkrtest" %in% row.names(installed.packages())))
-                message("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
-            else if(toobig)
-                message("Note: Adjusted covariance and degrees-of-freedom calculations have been\n",
-                        "disabled because the number of observations exceeds ", Nlim, ".\n",
-                        "Standard errors and tests may be more biased than if they were adjusted.\n",
-                        "To enable adjustments, set lsm.options(pbkrtest.limit = ", objN, ") or larger,\n",
-                        "but be warned that this may result in large computation time and memory use.")
-            dffun = function(k, dfargs) NA
+            pbdis = .lsm.is.true("disable.pbkrtest")
+            Nlim = get.lsm.option("pbkrtest.limit")
+            objN = lme4::getME(object, "N")
+            toobig = objN > Nlim
+            if (!pbdis && !toobig && requireNamespace("pbkrtest") && missing(vcov.)) {
+                dfargs = list(unadjV = V, 
+                              adjV = pbkrtest::vcovAdj.lmerMod(object, 0))
+                V = as.matrix(dfargs$adjV)
+                tst = try(pbkrtest::Lb_ddf)
+                if(class(tst) != "try-error")
+                    dffun = function(k, dfargs) pbkrtest::Lb_ddf (k, dfargs$unadjV, dfargs$adjV)
+                else {
+                    dffun = function(k, dfargs) NA
+                    warning("To obtain d.f., install 'pbkrtest' version 0.4-1 or later")
+                }
+            }
+            else {
+                if(!pbdis && !("pbkrtest" %in% row.names(installed.packages())))
+                    message("Install package 'pbkrtest' to obtain bias corrections and degrees of freedom")
+                else if(toobig)
+                    message("Note: Adjusted covariance and degrees-of-freedom calculations have been\n",
+                            "disabled because the number of observations exceeds ", Nlim, ".\n",
+                            "Standard errors and tests may be more biased than if they were adjusted.\n",
+                            "To enable adjustments, set lsm.options(pbkrtest.limit = ", objN, ") or larger,\n",
+                            "but be warned that this may result in large computation time and memory use.")
+                dffun = function(k, dfargs) NA
+            }
         }
     }
     else if (lme4::isGLMM(object)) {
