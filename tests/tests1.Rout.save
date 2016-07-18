@@ -1,5 +1,5 @@
 
-R Under development (unstable) (2016-03-09 r70294) -- "Unsuffered Consequences"
+R Under development (unstable) (2016-07-15 r70918) -- "Unsuffered Consequences"
 Copyright (C) 2016 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
@@ -89,15 +89,15 @@ Confidence level used: 0.95
 > ( warp.lsm <- lsmeans(warp.lm, "tension", by = "wool") )
 wool = A:
  tension lsmean SE df asymp.LCL asymp.UCL
- L       NA     NA NA        NA        NA
- M       NA     NA NA        NA        NA
- H       NA     NA NA        NA        NA
+ L           NA NA NA        NA        NA
+ M           NA NA NA        NA        NA
+ H           NA NA NA        NA        NA
 
 wool = B:
  tension lsmean SE df asymp.LCL asymp.UCL
- L       NA     NA NA        NA        NA
- M       NA     NA NA        NA        NA
- H       NA     NA NA        NA        NA
+ L           NA NA NA        NA        NA
+ M           NA NA NA        NA        NA
+ H           NA NA NA        NA        NA
 
 Confidence level used: 0.95 
 > # (Nothing is estimable)
@@ -198,7 +198,7 @@ Confidence level used: 0.95
 > detach("warp")
 > # won't work if detached
 > try(lsmeans(warp.lm3, "tension")) 
-Error in eval(expr, envir, enclos) : object 'x1' not found
+Error in eval(predvars, data, env) : object 'x1' not found
 Error in ref.grid(object = structure(list(coefficients = structure(c(39.9798298407202,  : 
   Perhaps a 'data' or 'params' argument is needed
 > 
@@ -558,4 +558,4 @@ Confidence level used: 0.95
 > 
 > proc.time()
    user  system elapsed 
-   1.04    0.29    2.92 
+   2.29    0.48    4.48 

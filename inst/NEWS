@@ -1,5 +1,7 @@
 Changelog for 'lsmeans' package
 
+*TODO: Update vignette for regrid
+
 2.23-5
     More graceful handling of mu.hat <= 0 in regrid(., "log")
     Added 'predict.type' argument to 'regrid'
@@ -9,7 +11,8 @@ Changelog for 'lsmeans' package
         from past versions, especially if you have covariates
     Fixed bug in 'lstrends' when there is a response transformation
     Fixed new bug that popped up when tbl_df objects are used
-    Preliminary code to allow Satterthwaite method from lmerTest        
+    Under-the-radar support for Satterthwaite method from lmerTest.
+        To try it: `lsm.options(disable.satterth = FALSE)`
 
 
 2.23
