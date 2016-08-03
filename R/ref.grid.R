@@ -466,7 +466,10 @@ lsm.options = function(...) {
     for (nm in names(newopts))
         opts[[nm]] = newopts[[nm]]
     options(lsmeans = opts)
-    invisible(opts)
+    if (length(newopts) > 0)
+        invisible(opts)
+    else
+        opts
 }
 
 # equivalent of getOption()
