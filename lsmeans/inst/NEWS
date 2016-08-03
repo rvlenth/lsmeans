@@ -1,6 +1,11 @@
 Changelog for 'lsmeans' package
 
 *TODO: Update vignette for regrid
+        cpglmm models?
+        
+2.23-6
+    lsm.options now returns the options visibly if no arguments are 
+        provided
 
 2.23-5
     More graceful handling of mu.hat <= 0 in regrid(., "log")

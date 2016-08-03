@@ -101,7 +101,7 @@ In \code{lsm.options}, we may set or change the default values for the above att
 
 } % end details
 \value{
-\code{update} returns a copy of \code{object} with its \code{"misc"} slot modified (and perhaps other slots). \code{lsm.options} returns the current options (same as the result of \samp{getOption("lsmeans")}).
+\code{update} returns a copy of \code{object} with its \code{"misc"} slot modified (and perhaps other slots). \code{lsm.options} returns the current options (same as the result of \samp{getOption("lsmeans")}) -- invisibly, unless called with no arguments.
 }
 
 
