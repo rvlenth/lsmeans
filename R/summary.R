@@ -22,6 +22,7 @@
         return(result[-1, ])
     }
     misc = object@misc
+
     if (!is.null(hook <- misc$estHook)) {
         if (is.character(hook)) hook = get(hook)
         result = hook(object, do.se=do.se, tol=tol)

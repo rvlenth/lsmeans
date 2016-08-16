@@ -2,10 +2,15 @@ Changelog for 'lsmeans' package
 
 *TODO: Update vignette for regrid
         cpglmm models?
+*TODO: Update vignette for lstrends?       
         
-2.23-6
+2.23-7
     lsm.options now returns the options visibly if no arguments are 
         provided
+    S4 class definitions modernized to use `slots` instead of 
+        `representation`
+    lstrends now correctly handles response transformations when 
+        constructed with type = "response"
 
 2.23-5
     More graceful handling of mu.hat <= 0 in regrid(., "log")

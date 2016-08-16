@@ -30,7 +30,7 @@ and optionally comparisons or contrasts among them.
 \method{lsmeans}{formula}(object, specs, contr.list, trend, ...)
 ## (used when 'specs' is a 'formula')
 
-lstrends(model, specs, var, delta.var = 0.01 * rng, data, ...)
+lstrends(model, specs, var, delta.var = 0.01 * rng, data, type = "link", ...)
 
 lsmobj(bhat, V, levels, linfct, df = NA, post.beta = matrix(NA), ...)
 
@@ -85,6 +85,7 @@ The user may specify some monotone function of one variable, e.g., \code{var = "
 The value of \emph{h} to use in forming the difference quotient \emph{(f(x+h) - f(x))/h}. Changing it (especially changing its sign) may be necessary to avoid numerical problems such as logs of negative numbers. The default value is 1/100 of the range of \code{var} over the dataset.
 }
 \item{data}{As in \code{\link{ref.grid}}, you may use this argument to supply the dataset used in fitting the model, for situations where it is not possible to reconstruct the data. Otherwise, leave it missing.}
+\item{type}{When the model handed to \code{lstrends} has a response transformation, then specifying \code{type = "response"} will cause \code{lstrends} to calculate the trends after back-transforming to the response scale. With \code{type = "link"}, the trends are calculated on the scale of the linear predictor, without back-transforming it.}
 \item{bhat}{Numeric. Vector of regression coefficients.}
 \item{V}{Square matrix. Covariance matrix of \code{bhat}}
 \item{levels}{Named list or vector. Levels of factor(s) that define the estimates defined by \code{linfct}. If not a list, we assume one factor named \code{"level"}}

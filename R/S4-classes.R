@@ -2,7 +2,7 @@
 
 
 ### ref.grid object -- for a reference grid
-setClass("ref.grid", representation (
+setClass("ref.grid", slots = c(
     model.info = "list",
     roles = "list",
     grid = "data.frame", 
@@ -30,4 +30,8 @@ setClass("ref.grid", representation (
 # In general its 'grid' will correspond to some set of 
 # linear functions of grid points
 setClass("lsmobj", contains="ref.grid")
+
+# ### lstobj class -- for objects from lstrends
+# # Additional slot 'deriv' holds the values from mu.eta() from the associated lsmeans
+# setClass("lstobj", slots = c(deriv = "numeric"), contains = "lsmobj")
 
