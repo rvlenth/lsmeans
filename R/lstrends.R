@@ -67,8 +67,8 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, type = "link", .
     RG@roles$trend = var
     RG@misc$tran = RG@misc$tran.mult = NULL
     RG@misc$initMesg = ifelse(is.null(lsmean),
-                              "trends are based on the transformed scale",
-                              "trends are based on the response scale, after back-transforming")
+                              "Trends are based on the transformed scale",
+                              "Trends are based on the response scale, after back-transforming")
     
     # Create a possibly object, using results from associated lsmeans object
     .lsmobj = function(obj, lsm) {
