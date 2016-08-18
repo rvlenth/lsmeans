@@ -146,6 +146,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     misc = basis$misc
     
     form = attr(data, "call")$formula
+    if (is.null(form))  ## desperation move in case there's no "formula"; it's probably the 1st arg (2nd in call)
+        form = attr(data, "call")[[2]]
     if (is.null(misc$tran) && (length(form) > 2)) { # No link fcn, but response may be transformed
         lhs = form[-3] ####form[[2]]
         tran = setdiff(.all.vars(lhs, functions = TRUE), c(.all.vars(lhs), "~", "cbind"))
