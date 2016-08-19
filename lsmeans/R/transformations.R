@@ -45,6 +45,11 @@
              mu.eta = function(eta) sinh(2 * eta),
              name = "asinh(sqrt(mu))"
          ),
+         exp = list(
+           linkinv = function(eta) log(eta),
+           mu.eta = function(eta) 1/eta,
+           name = "exp"
+         ),
          `+.sqrt` = {
              tmp = .make.link("sqrt")
              tmp$mult = 2
