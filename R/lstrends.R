@@ -65,10 +65,14 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, type = "link", .
     # Now replace linfct w/ difference quotient
     RG@linfct = newlf
     RG@roles$trend = var
+    if(hasName(RG@misc, "tran")) {
+        tran = RG@misc$tran
+        if (is.list(tran)) tran = tran$name
+        RG@misc$initMesg = ifelse(is.null(lsmean),
+          paste("Trends are based on the", tran, "(transformed) scale"),
+          paste("Trends are obtained after back-transforming from the", tran, "scale"))
+    }
     RG@misc$tran = RG@misc$tran.mult = NULL
-    RG@misc$initMesg = ifelse(is.null(lsmean),
-                              "Trends are based on the transformed scale",
-                              "Trends are based on the response scale, after back-transforming")
     
     # Create a possibly object, using results from associated lsmeans object
     .lsmobj = function(obj, lsm) {
