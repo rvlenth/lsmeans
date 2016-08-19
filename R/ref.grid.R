@@ -145,18 +145,19 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     
     misc = basis$misc
     
-    form = attr(data, "call")$formula
-    if (is.null(form))  ## desperation move in case there's no "formula"; it's probably the 1st arg (2nd in call)
-        form = attr(data, "call")[[2]]
-    if (is.null(misc$tran) && (length(form) > 2)) { # No link fcn, but response may be transformed
-        lhs = form[-3] ####form[[2]]
+    ### Figure out if there is a response transformation...
+    # next stmt assumes that model formula is 1st argument (2nd element) in call.
+    # if not, we probably get an error or something that isn't a formula
+    # and it is silently ignored
+    lhs = try(eval(attr(data, "call")[[2]][-3]), silent = TRUE)
+    if (is.null(misc$tran) && (inherits(lhs, "formula"))) { # No link fcn, but response may be transformed
         tran = setdiff(.all.vars(lhs, functions = TRUE), c(.all.vars(lhs), "~", "cbind"))
         if(length(tran) > 0) {
             tran = paste(tran, collapse = ".")  
             # length > 1: Almost certainly unsupported, but facilitates a more informative error message
             
             # Look for a multiplier, e.g. 2*sqrt(y)
-            tst = strsplit(strsplit(as.character(form[2]), "\\(")[[1]][1], "\\*")[[1]]
+            tst = strsplit(strsplit(as.character(lhs[2]), "\\(")[[1]][1], "\\*")[[1]]
             if(length(tst) > 1) {
                 mul = suppressWarnings(as.numeric(tst[1]))
                 if(!is.na(mul))

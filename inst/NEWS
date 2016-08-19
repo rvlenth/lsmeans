@@ -5,7 +5,7 @@ Changelog for 'lsmeans' package
 *TODO: Update vignette for lstrends?
 *TODO: Any new updates in lmerTest?
         
-2.23-7
+2.23-8
     lsm.options now returns the options visibly if no arguments are 
         provided
     S4 class definitions modernized to use `slots` instead of 
