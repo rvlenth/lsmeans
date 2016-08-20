@@ -11,7 +11,7 @@ Changelog for 'lsmeans' package
     S4 class definitions modernized to use `slots` instead of 
         `representation`
     lstrends now correctly handles response transformations when 
-        constructed with type = "response"
+        constructed with transform = "response"
     ref.grid and related functions previously did not detect response
         transformations when model call has no argument named "formula" 
         (e.g., nlme::lme(fixed, random, ...) didn't work)

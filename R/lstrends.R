@@ -2,7 +2,8 @@
 
 
 ### lstrends function
-lstrends = function(model, specs, var, delta.var=.01*rng, data, type = "link", ...) {
+lstrends = function(model, specs, var, delta.var=.01*rng, data, 
+                    transform = c("none", "response"), ...) {
     estName = paste(var, "trend", sep=".") # Do now as I may replace var later
     
     if (missing(data)) {
@@ -55,9 +56,9 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, type = "link", .
     args = list(object=RG, specs=specs, ...)
     args$at = args$cov.reduce = args$mult.levs = args$vcov. = NULL
     
-    type = .validate.type(type)
-    # Save corresp lsmeans object if there is a transformation - needed later if summarizing trends w/ type = "response"
-    if ((type == "response") && hasName(RG@misc, "tran"))
+    transform = match.arg(transform)
+    # Save corresp lsmeans object if there is a transformation 
+    if ((transform == "response") && hasName(RG@misc, "tran"))
         lsmean = do.call(lsmeans, args)
     else
         lsmean = NULL
@@ -76,7 +77,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, type = "link", .
     
     # Create a possibly object, using results from associated lsmeans object
     .lsmobj = function(obj, lsm) {
-        if (is(obj, "ref.grid") && !is.null(lsm)) { # happens only for tran present, type = "resp"
+        if (is(obj, "ref.grid") && !is.null(lsm)) { # happens only for tran present, transform = "resp"
             prd = .est.se.df(lsm, do.se = FALSE)
             lnk = attr(prd, "link")
             deriv = lnk$mu.eta(prd[[1]])
@@ -108,55 +109,3 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data, type = "link", .
     result
 }
 
-# # predict method
-# predict.lstobj = function(object, type, ...) {
-#     if (missing(type))
-#         type = .get.predict.type(object@misc)
-#     else
-#         type = .validate.type(type)
-#     object@misc$tran = NULL
-#     if (type == "response" && (length(object@deriv) > 0))
-#         object@linfct = diag(object@deriv) %*% object@linfct
-#     
-#     predict.ref.grid(object, type = "link", ...)
-# }
-# 
-# 
-# 
-# summary.lstobj = function(object, type, ...) {
-#     if (missing(type))
-#         type = .get.predict.type(object@misc)
-#     else
-#         type = .validate.type(type)
-#     object@misc$tran = NULL
-#     if (type == "response") {
-#         if(length(object@deriv) > 0) {
-#             object@linfct = diag(object@deriv) %*% object@linfct
-#             annot = "Trends are derived from the back-transformed response"
-#         }
-#         else
-#             annot = "Trends are obtained without back-transforming"
-#     }
-#     else
-#         annot = NULL
-#     
-#     result = summary.ref.grid(object, ..., type = "link")
-#     if(!is.null(annot))
-#         attr(result, "mesg") = c(attr(result, "mesg"), annot)
-#     result
-# }
-# 
-# 
-# # lsmip method
-# lsmip.lstobj = function(object, formula, type, ...) {
-#     if (missing(type))
-#         type = .get.predict.type(object@misc)
-#     else
-#         type = .validate.type(type)
-#     object@misc$tran = NULL
-#     if (type == "response" && (length(object@deriv) > 0))
-#         object@linfct = diag(object@deriv) %*% object@linfct
-#     
-#     lsmip.default(object, formula, type = "link", ...)
-# }
-# 

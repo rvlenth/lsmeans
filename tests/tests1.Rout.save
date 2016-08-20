@@ -198,7 +198,7 @@ Confidence level used: 0.95
 > detach("warp")
 > # won't work if detached
 > try(lsmeans(warp.lm3, "tension")) 
-Error in eval(predvars, data, env) : object 'x1' not found
+Error in eval(expr, envir, enclos) : object 'x1' not found
 Error in ref.grid(object = structure(list(coefficients = structure(c(39.9798298407202,  : 
   Perhaps a 'data' or 'params' argument is needed
 > 
