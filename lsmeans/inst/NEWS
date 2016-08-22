@@ -3,10 +3,9 @@ Changelog for 'lsmeans' package
 *TODO: Update vignette for regrid
         cpglmm models?
 *TODO: Update vignette for lstrends?
-*TODO: Fix lstrends to save diff-quot in .Last.ref.grid
 *TODO: Any new updates in lmerTest?
         
-2.23-8
+2.23-9
     lsm.options now returns the options visibly if no arguments are 
         provided
     S4 class definitions modernized to use `slots` instead of 

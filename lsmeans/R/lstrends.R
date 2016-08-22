@@ -29,8 +29,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data,
     rng = diff(range(x))
     if (delta.var == 0)  stop("Provide a nonzero value of 'delta.var'")
     
-    RG = ref.grid(model, data = data, ...)
-    .save.ref.grid(RG)  # save in .Last.ref.grid, if enabled
+    RG = orig.rg = ref.grid(model, data = data, ...)
     
     grid = RG@grid
     if (!is.null(mr <- RG@roles$multresp)) {
@@ -51,17 +50,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data,
         newlf = (basis$X - RG@linfct) / diffl
     }
     
-    
-    # args for lsmeans calls
-    args = list(object=RG, specs=specs, ...)
-    args$at = args$cov.reduce = args$mult.levs = args$vcov. = NULL
-    
     transform = match.arg(transform)
-    # Save corresp lsmeans object if there is a transformation 
-    if ((transform == "response") && hasName(RG@misc, "tran"))
-        lsmean = do.call(lsmeans, args)
-    else
-        lsmean = NULL
     
     # Now replace linfct w/ difference quotient
     RG@linfct = newlf
@@ -69,43 +58,24 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data,
     if(hasName(RG@misc, "tran")) {
         tran = RG@misc$tran
         if (is.list(tran)) tran = tran$name
-        RG@misc$initMesg = ifelse(is.null(lsmean),
-          paste("Trends are based on the", tran, "(transformed) scale"),
-          paste("Trends are obtained after back-transforming from the", tran, "scale"))
-    }
-    RG@misc$tran = RG@misc$tran.mult = NULL
-    
-    # Create a possibly object, using results from associated lsmeans object
-    .lsmobj = function(obj, lsm) {
-        if (is(obj, "ref.grid") && !is.null(lsm)) { # happens only for tran present, transform = "resp"
-            prd = .est.se.df(lsm, do.se = FALSE)
+        if (transform == "response") {
+            prd = .est.se.df(RG, do.se = FALSE)
             lnk = attr(prd, "link")
             deriv = lnk$mu.eta(prd[[1]])
-            obj@linfct = diag(deriv) %*% obj@linfct
+            RG@linfct = diag(deriv) %*% RG@linfct
+            RG@misc$initMesg = paste("Trends are obtained after back-transforming from the", tran, "scale")
         }
-        obj
+        else
+            RG@misc$initMesg = paste("Trends are based on the", tran, "(transformed) scale")
     }
+   
+    RG@misc$tran = RG@misc$tran.mult = NULL
     
-    args$object = RG
-    result = do.call("lsmeans", args)
+    .save.ref.grid(RG)  # save in .Last.ref.grid, if enabled
     
-    if (is.list(result)) {
-        names(result)[1] = "lstrends"
-        if (is(result[[1]], "ref.grid")) {
-            result[[1]]@misc$estName = estName
-            result[[1]]@misc$estType = "prediction"
-            result[[1]]@misc$methDesc = "trends"
-            for (i in seq_along(result))
-                result[[i]] = .lsmobj(result[[i]], lsmean)
-        }
-    }
-    else {
-        result@misc$estName = estName
-        result@misc$estType = "prediction"
-        result@misc$methDesc = "trends"
-        result = .lsmobj(result, lsmean)
-    }
-    
-    result
+    # args for lsmeans calls
+    args = list(object=RG, specs=specs, ...)
+    args$at = args$cov.reduce = args$mult.levs = args$vcov. = args$data = args$trend = NULL
+    do.call("lsmeans", args)
 }
 
