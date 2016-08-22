@@ -72,10 +72,10 @@ Note: If weights were used in fitting the model, then weight totals are used in 
 If \code{weights} is used, \code{fac.reduce} is ignored. 
 }
 \item{trend}{
-Including this argument is an alternative way of calling \code{lstrends} with it as its \code{var} argument.
+Including this argument is an alternative way of calling \code{lstrends} with \code{trend} as its \code{var} argument and \code{object} as its \code{model}.
 }
 \item{model}{
-A supported model object.
+A supported model object (\emph{not} a \code{ref.grid}).
 }
 \item{var}{
 Character giving the name of a variable with respect to which a difference quotient of the linear predictors is computed. In order for this to be useful, \code{var} should be a numeric predictor that interacts with at least one factor in \code{specs}. Then instead of computing least-squares means, we compute and compare the slopes of the \code{var} trend over levels of the specified other predictor(s). As in least-squares means, marginal averages are computed when some variables in the reference grid are excluded for the specification.
@@ -116,7 +116,7 @@ When \code{specs} is a \code{character} vector or one-sided formula, an object o
 
 When \code{specs} is a \code{list} or a \code{formula} having a left-hand side, the eturn value is an \code{lsm.list} object, which is simply a \code{list} of \code{lsmobj} objects. Methods for \code{lsm.list} objects are the same as those for \code{lsmobj}, but they apply to only one member of the list, determined by its \code{which} argument.
 
-\bold{Side effect:} When \code{object} is a model, a reference grid is constructed and it is saved as \code{.Last.ref.grid} in the user's enironment (unless this is disabled via \samp{lsm.option(save.ref.grid = FALSE)}). This makes it possible to check what reference grid was used, or to use it as the \code{object} in future \code{lsmeans} calls (and bypass reconstructing it). Similarly, \code{lstrends} also saves its reference grid (but for predicting difference quotients) in the same variable.
+\bold{Side effect:} When \code{object} is a model, a reference grid is constructed and it is saved as \code{.Last.ref.grid} in the user's enironment (unless this is disabled via \samp{lsm.option(save.ref.grid = FALSE)}). This makes it possible to check what reference grid was used, or to use it as the \code{object} in future \code{lsmeans} calls (and bypass reconstructing it). Similarly, \code{lstrends} also saves its reference grid (but for predicting difference quotients) as \code{.Last.ref.grid}.
 }
 
 \note{If the model formula contains variables that are not predictors (e.g., degree of a polynomial, knots for a spline, etc.), you must add a \code{params} argument to the call}
