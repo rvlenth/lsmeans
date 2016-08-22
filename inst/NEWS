@@ -3,6 +3,7 @@ Changelog for 'lsmeans' package
 *TODO: Update vignette for regrid
         cpglmm models?
 *TODO: Update vignette for lstrends?
+*TODO: Fix lstrends to save diff-quot in .Last.ref.grid
 *TODO: Any new updates in lmerTest?
         
 2.23-8
@@ -12,6 +13,8 @@ Changelog for 'lsmeans' package
         `representation`
     lstrends now correctly handles response transformations when 
         constructed with transform = "response"
+    lsmeans with a 'trend' argument can now have character 'specs',
+        and is generally more robust to user errors.
     ref.grid and related functions previously did not detect response
         transformations when model call has no argument named "formula" 
         (e.g., nlme::lme(fixed, random, ...) didn't work)

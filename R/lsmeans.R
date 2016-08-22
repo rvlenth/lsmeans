@@ -111,13 +111,29 @@ lsmeans.character = function(object, specs, ...) {
 }
 
 # Needed for model objects
-lsmeans.character.default = function(object, specs, ...)
-    lsmeans.default(object, specs, ...)
+lsmeans.character.default = function(object, specs, trend, ...) {
+    if (!missing(trend))
+        lstrends(object, specs, var = trend, ...)
+    else
+        lsmeans.default(object, specs, ...)
+}
 
 # Method for a ref.grid -- all methods will get us here eventually
 lsmeans.character.ref.grid = function(object, specs, by = NULL, 
          fac.reduce = function(coefs) apply(coefs, 2, mean), 
-         contr, options = getOption("lsmeans")$lsmeans, weights, ...) {
+         contr, options = getOption("lsmeans")$lsmeans, weights, trend, ...) {
+    
+    if (!missing(trend)) {
+        stop("Trend results require supplying the model object itself, not a reference grid")
+        # message("Re-fitting the model. Avoid this by calling lsmeans with the model object.")
+        # cl = match.call()
+        # cl[[1]] = as.name("lstrends")
+        # cl$model = object@model.info$call
+        # cl$var = trend
+        # cl$object = cl$trend = NULL
+        # return(eval(cl))
+    }
+    
     RG = object
     facs = union(specs, by)
     
