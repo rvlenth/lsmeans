@@ -5,7 +5,7 @@ Changelog for 'lsmeans' package
 *TODO: Update vignette for lstrends?
 *TODO: Any new updates in lmerTest?
         
-2.23-9
+2.23-10
     lsm.options now returns the options visibly if no arguments are 
         provided
     S4 class definitions modernized to use `slots` instead of 
@@ -17,6 +17,9 @@ Changelog for 'lsmeans' package
     ref.grid and related functions previously did not detect response
         transformations when model call has no argument named "formula" 
         (e.g., nlme::lme(fixed, random, ...) didn't work)
+    New option "lmer.df" and corresponding 'mode' argument for 'merMod'
+        objects, allows user to specify Satterthwaite (new default), 
+        K-R, or asymptotic degrees of freedom.
 
 
 2.23-5
