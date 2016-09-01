@@ -487,7 +487,7 @@ get.lsm.option = function(x, default = defaults.lsm[[x]]) {
 ### Exported defaults for certain options
 defaults.lsm = list(
     estble.tol = 1e-8,        # tolerance for estimability checks
-    disable.satterth = TRUE,  # for now, keep the old K-R method as default
+    lmer.df = "satterth",     # Use Satterthwaite method for df
     disable.pbkrtest = FALSE, # whether to bypass pbkrtest routines for lmerMod
     pbkrtest.limit = 3000,    # limit on N for enabling adj V
     save.ref.grid = TRUE      # save new ref.grid in .Last.ref.grid

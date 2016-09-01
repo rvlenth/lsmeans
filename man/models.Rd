@@ -73,12 +73,12 @@ If a matrix or function is supplied as \code{vcov.method}, it is interpreted as 
 
 \section{\pkg{lme4} package}{
 \describe{
-\item{lmerMod}{If the \pkg{pbkrtest} package is installed, degrees of freedom for confidence intervals and tests are obtained using its \code{\link[pbkrtest]{ddf_Lb}} function, and the covariance matrix is adjusted using \code{\link[pbkrtest]{vcovAdj}}.
-If \pkg{pbkrtest} is not installed, the covariance matrix is not adjusted, degrees of freedom are set to \code{NA}, and asymptotic results are displayed. 
+\item{lmerMod}{There is an optional \code{mode} argument that defaults to \code{get.lsm.option("lmer.df")} (which in turn defaults to \code{"satterthwaite"}). The possible values are "satterthwaite", "kendall-rogers", and "asymptotic" (these are partially matched and case-insensitive). With \code{"satterthwaite"}, d.f. are obtained using code from the \pkg{lmerTest} package, if installed. With \code{"kendall-rogers"}, d.f. are obtained using code from the \pkg{pbkrtest} package, if installed. With \code{"asymptotic"}, or if the needed package is not installed, d.f. are set to \code{NA}.
 
-The user may disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbkrtest=TRUE)} (this does not disable the \pkg{pbkrtest} package entirely, just its use in \pkg{lsmeans}). The \code{df} argument may be used to specify some other degrees of freedom. Specifying \code{df} is \emph{not} equivalent to disabling \pkg{pbkrtest}, because if not disabled, the covariance matrix is still adjusted.
+A by-product of the Kendall-Rogers method is that the covariance matrix is adjusted using \code{\link[pbkrtest]{vcovAdj}}. This can require considerable computation; so to avoid that overhead, the user should opt for the Satterthwaite or asymptotic method; or, for backward compatibility, may disable the use of \pkg{pbkrtest} via \samp{lsm.options(disable.pbkrtest=TRUE)} (this does not disable the \pkg{pbkrtest} package entirely, just its use in \pkg{lsmeans}). The computation time required depends roughly on the number of observations, \emph{N}, in the design matrix (because a major part of the computation involves inverting an \emph{N x N} matrix). Thus, \pkg{pbkrtest} is automatically disabled if \emph{N} exceeds the value of \code{get.lsm.option("pbkrtest.limit")}. If desired, the user may use \code{lsm.options} to adjust this limit from the default of 3000.
 
-On a related matter: for very large objects, computation time or memory use may be excessive. The amount required depends roughly on the number of observations, \emph{N}, in the design matrix (because a major part of the computation involves inverting an \emph{N x N} matrix). Thus, \pkg{pbkrtest} is automatically disabled if \emph{N} exceeds the value of \code{get.lsm.option("pbkrtest.limit")}. If desired, the user may use \code{lsm.options} to adjust this limit from the default of 3000.}
+The \code{df} argument may be used to specify some other degrees of freedom. Note that if \code{df} and \code{method = "satterthwaite"} are both specified, the covariance matrix is adjusted but the K-R degrees of freedom are not used.
+}
 \item{glmerMod}{No degrees of freedom are available for these objects, so tests and confidence intervals are asymptotic.}
 }}% lme4
 

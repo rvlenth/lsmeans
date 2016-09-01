@@ -174,7 +174,7 @@ recover.data.merMod = function(object, ...) {
                  attr(object@frame, "na.action"), ...)
 }
 
-lsm.basis.merMod = function(object, trms, xlev, grid, vcov., ...) {
+lsm.basis.merMod = function(object, trms, xlev, grid, vcov., mode = get.lsm.option("lmer.df"), ...) {
     if (missing(vcov.))
         V = as.matrix(vcov(object))
     else
@@ -182,18 +182,19 @@ lsm.basis.merMod = function(object, trms, xlev, grid, vcov., ...) {
     dfargs = misc = list()
     
     if (lme4::isLMM(object)) {
-        satdis = .lsm.is.true("disable.satterth")
-        if (!satdis) {
+        mode = match.arg(tolower(mode), c("satterthwaite", "kendall-rogers", "asymptotic"))
+        
+        if (mode == "satterthwaite") {
             if (requireNamespace("lmerTest")) {
                 dfargs = list(object = object)
                 dffun = function(k, dfargs) lmerTest::calcSatterth(dfargs$object, k)$denom
             }
             else {
                 message("Install package 'lmerTest' to obtain Satterthwaite degrees of freedom")
-                dffun = function(k, dfargs) NA
+                mode = "asymptotic"
             }
         }
-        else {
+        else if (mode == "kendall-rogers") {
             pbdis = .lsm.is.true("disable.pbkrtest")
             Nlim = get.lsm.option("pbkrtest.limit")
             objN = lme4::getME(object, "N")
@@ -206,7 +207,7 @@ lsm.basis.merMod = function(object, trms, xlev, grid, vcov., ...) {
                 if(class(tst) != "try-error")
                     dffun = function(k, dfargs) pbkrtest::Lb_ddf (k, dfargs$unadjV, dfargs$adjV)
                 else {
-                    dffun = function(k, dfargs) NA
+                    mode = "asymptotic"
                     warning("To obtain d.f., install 'pbkrtest' version 0.4-1 or later")
                 }
             }
@@ -219,9 +220,13 @@ lsm.basis.merMod = function(object, trms, xlev, grid, vcov., ...) {
                             "Standard errors and tests may be more biased than if they were adjusted.\n",
                             "To enable adjustments, set lsm.options(pbkrtest.limit = ", objN, ") or larger,\n",
                             "but be warned that this may result in large computation time and memory use.")
-                dffun = function(k, dfargs) NA
+                mode = "asymptotic"
             }
         }
+        if (mode == "asymptotic") {
+            dffun = function(k, dfargs) NA
+        }
+        misc$initMesg = paste("Degrees-of-freedom method:", mode)
     }
     else if (lme4::isGLMM(object)) {
         dffun = function(k, dfargs) NA
