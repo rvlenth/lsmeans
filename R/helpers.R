@@ -100,8 +100,10 @@ recover.data.call = function(object, trms, na.action, data = NULL, params = NULL
             tbl = tbl[-(na.action),  , drop=FALSE]
     }
     
-    else
+    else {
+        tbl = tbl[, vars, drop = FALSE]
         tbl = tbl[complete.cases(tbl), , drop=FALSE]
+    }
     
     attr(tbl, "call") = object # the original call
     attr(tbl, "terms") = trms
@@ -315,7 +317,7 @@ recover.data.lme = function(object, data, ...) {
         if (!is.null(object$na.action))
             data = data[-object$na.action, , drop = FALSE]
     }
-    recover.data(fcall, delete.response(terms(object)), object$na.action, data = data, ...)
+    recover.data(fcall, delete.response(terms(object)), numeric(0), data = data, ...)
 }
 
 lsm.basis.lme = function(object, trms, xlev, grid, sigmaAdjust = TRUE, ...) {
