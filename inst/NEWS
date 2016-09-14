@@ -21,7 +21,9 @@ Changelog for 'lsmeans' package
     New option "lmer.df" and corresponding 'mode' argument for 'merMod'
         objects, allows user to specify Satterthwaite (new default), 
         K-R, or asymptotic degrees of freedom.
-    Fixed bug in recover.data.call with incorrect complete.cases call
+    Fixed bug in recover.data.call with incorrect call to 'complete.cases'
+        This fix could change the reference values for covariates from 
+        past results - especially for lme models or where 'data' is used
 
 
 2.23-5
