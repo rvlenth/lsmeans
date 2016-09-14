@@ -4,8 +4,9 @@ Changelog for 'lsmeans' package
         cpglmm models?
 *TODO: Update vignette for lstrends?
 *TODO: Any new updates in lmerTest?
+*TODO: df argument doesn't work
         
-2.23-10
+2.23-11
     lsm.options now returns the options visibly if no arguments are 
         provided
     S4 class definitions modernized to use `slots` instead of 
@@ -20,6 +21,7 @@ Changelog for 'lsmeans' package
     New option "lmer.df" and corresponding 'mode' argument for 'merMod'
         objects, allows user to specify Satterthwaite (new default), 
         K-R, or asymptotic degrees of freedom.
+    Fixed bug in recover.data.call with incorrect complete.cases call
 
 
 2.23-5
