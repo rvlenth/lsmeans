@@ -71,6 +71,7 @@ lsm.basis.default = function(object, trms, xlev, grid, ...) {
 # For model objects, call this with the object's call and its terms component
 # Late addition: if data is non-null, use it in place of recovered data
 # Later addition: na.action arg req'd - vector of row indexes removed due to NAs
+#    na.action is ignored when data is non-NULL
 recover.data.call = function(object, trms, na.action, data = NULL, params = NULL, ...) {
     fcall = object # because I'm easily confused
     vars = setdiff(.all.vars(trms), params)
@@ -101,7 +102,7 @@ recover.data.call = function(object, trms, na.action, data = NULL, params = NULL
     }
     
     else {
-        tbl = tbl[, vars, drop = FALSE]
+        tbl = tbl[, vars, drop = FALSE] # consider only the variables actually needed
         tbl = tbl[complete.cases(tbl), , drop=FALSE]
     }
     
