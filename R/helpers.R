@@ -185,7 +185,7 @@ lsm.basis.merMod = function(object, trms, xlev, grid, vcov., mode = get.lsm.opti
     dfargs = misc = list()
     
     if (lme4::isLMM(object)) {
-        mode = match.arg(tolower(mode), c("satterthwaite", "kendall-rogers", "asymptotic"))
+        mode = match.arg(tolower(mode), c("satterthwaite", "kenward-roger", "asymptotic"))
         
         if (mode == "satterthwaite") {
             if (requireNamespace("lmerTest")) {
@@ -197,7 +197,7 @@ lsm.basis.merMod = function(object, trms, xlev, grid, vcov., mode = get.lsm.opti
                 mode = "asymptotic"
             }
         }
-        else if (mode == "kendall-rogers") {
+        else if (mode == "kenward-roger") {
             pbdis = .lsm.is.true("disable.pbkrtest")
             Nlim = get.lsm.option("pbkrtest.limit")
             objN = lme4::getME(object, "N")

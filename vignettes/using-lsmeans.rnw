@@ -441,16 +441,15 @@ But for comparing with the previous model, we want to see predictions at the fou
 <<>>=
 Oats.lsm2 <- lsmeans(Oats.lmer2, ~ nitro | Variety, cov.reduce = FALSE)
 @
-The results are displayed as an export table in Table~\ref{xtable:example}, page~\pageref{xtable:example} (see the next section).
+The results are displayed as an export table (see Section~\ref{xtsect}) in Table~\ref{xtable:example}, page~\pageref{xtable:example}.
 These LS~means follow the same quadratic trend for each variety, but with different intercepts.\footnote{%
 This is the promised example where our generalization of \cite{Sea80}'s definition of LS~means makes sense. Suppose we want to compare the LS~means for \code{Variety} with those in the original model \code{Oats.lmer} where \code{nitro} was a factor, we want to average equally over the four \code{nitro} levels, even though \code{nitro} is a covariate in this second model.}\ixsub{reference grid}{altered for quantitative factor}
 
-Fractional \wixsub{degrees of freedom}{fractional} are displayed in these results. These are obtained from the \wixpkg{pbkrtest} package \citep{pbkrt}, and they use the \wix{Kenward-Rogers method}. (The degrees of freedom for the polynomial contrasts were also obtained from \pkg{pbkrtest}, but the results turn out to be integers.)
-
+Fractional \wixsub{degrees of freedom}{fractional} are displayed in these results. These are obtained by default using the Satterthwaite method, using routines in the \wixpkg{lmerTest} package \citep{lmert}. Adding the argument \code{mode = \dqt{kenward-roger}} to the \code{lsmeans} call will cause the degrees of freedom to be computed using instead the Kenward-Roger (K-R) method from the \wixpkg{pbkrtest} package \citep{pbkrt}, which also implements, as a side-effect, a bias adjustment in the estimated covariances (and hence standard errors). The K-R method is probably preferable, but it requires a lot more computation, and hence is no longer the default. A third option is to specify \code{mode = \dqt{asymptotic}}, for which all the degrees of freedom are set to \code{NA}---producing $z$~tests rather than $t$~tests. You may change the default via \code{lsm.options(lmer.df = \emph{\dqt{desired default}})}. These \code{mode} settings are partially matched, so \code{mode = \dqt{k}} is actually good enough.
 
 
 \section{Additional display methods}
-\subsection{Export tables}\ix{export tables}
+\subsection{Export tables}\ix{export tables}\label{xtsect}
 The \pkg{lsmeans} package provides an \wixcode{xtable} method \citep{xtable} that works with "lsmobj", "ref.grid", and "summary.ref.grid" objects. (It actually uses the \wixcode{xtableList} interface; see the \ixpkg{xtable} documentation for details.) This is quite useful if you want a nicely formatted table, especially using \wixcode{Sweave} or \wixcode{knitr}. To illustrate, we display the "Oats.lsm2" object just created.
 <<results = tex>>=
 library("xtable")

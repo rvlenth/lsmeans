@@ -44,7 +44,7 @@ The \code{\link{as.glht}} function and \code{\link{glht}} method for \code{lsmob
 \section{Additional information}{
 Examples and discussion are available via \code{vignette("using-lsmeans", package="lsmeans")}.
 
-Some features of the \pkg{lsmeans} require (or are enhanced by) additional packages that are loaded when needed. Since they are not \dQuote{required} packages, they are not automatically installed with \pkg{lsmeans}. We highly recommend that users also install the following packages: \pkg{multcomp} (if \code{\link{cld}}, \code{\link{glht}}, or \code{\link{as.glht}} are to be used), \pkg{multcompView} (for \code{\link{cld}}), \pkg{lattice} (for \code{\link{plot}} and \code{\link{lsmip}}), and \pkg{pbkrtest} (for models fitted by the \pkg{lme4} package).
+Some features of the \pkg{lsmeans} require (or are enhanced by) additional packages that are loaded when needed. Since they are not \dQuote{required} packages, they are not automatically installed with \pkg{lsmeans}. We highly recommend that users also install the following packages: \pkg{multcomp} (if \code{\link{cld}}, \code{\link{glht}}, or \code{\link{as.glht}} are to be used), \pkg{multcompView} (for \code{\link{cld}}), \pkg{lattice} (for \code{\link{plot}} and \code{\link{lsmip}}), and \pkg{lmerTest} or \pkg{pbkrtest} (for models fitted by the \pkg{lme4} package).
 
 Starting with \pkg{lsmeans} version 2, a new object framework based on \emph{reference grids} is used that increases flexibility and provides for extending its capabilities to additional model objects. Use \code{vignette("lsmeans-changes")} for information on the user impact of these changes.
 

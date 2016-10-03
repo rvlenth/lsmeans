@@ -3,10 +3,9 @@ Changelog for 'lsmeans' package
 *TODO: Update vignette for regrid
         cpglmm models?
 *TODO: Update vignette for lstrends?
-*TODO: Any new updates in lmerTest?
 *TODO: df argument doesn't work
         
-2.23-11
+2.23-12
     lsm.options now returns the options visibly if no arguments are 
         provided
     S4 class definitions modernized to use `slots` instead of 
