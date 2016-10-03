@@ -1,5 +1,5 @@
 
-R Under development (unstable) (2016-07-15 r70918) -- "Unsuffered Consequences"
+R Under development (unstable) (2016-10-02 r71437) -- "Unsuffered Consequences"
 Copyright (C) 2016 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
@@ -198,7 +198,7 @@ Confidence level used: 0.95
 > detach("warp")
 > # won't work if detached
 > try(lsmeans(warp.lm3, "tension")) 
-Error in eval(expr, envir, enclos) : object 'x1' not found
+Error in eval(predvars, data, env) : object 'x1' not found
 Error in ref.grid(object = structure(list(coefficients = structure(c(39.9798298407202,  : 
   Perhaps a 'data' or 'params' argument is needed
 > 
@@ -387,36 +387,68 @@ Confidence level used: 0.95
 Conf-level adjustment: dunnettx method for 2 estimates 
 > 
 > # lstrends
-> warp.lm4 <- lm(breaks ~ tension*wool*x1, data = warp)
+> warp.lm4 <- lm(log(breaks) ~ tension*wool*x1, data = warp)
 > lstrends(warp.lm4, ~tension|wool, var = "x1")
 wool = A:
- tension   x1.trend        SE df    lower.CL  upper.CL
- L       -8.5838732 2.4676060 34 -13.5986519 -3.569095
- M        1.9790186 1.0485628 34  -0.1519173  4.109955
- H        0.8789257 0.8971595 34  -0.9443218  2.702173
+ tension    x1.trend         SE df     lower.CL    upper.CL
+ L       -0.20402014 0.10134674 34 -0.409981497 0.001941214
+ M        0.08236286 0.04306539 34 -0.005156549 0.169882263
+ H        0.04675497 0.03684713 34 -0.028127400 0.121637343
 
 wool = B:
- tension   x1.trend        SE df    lower.CL  upper.CL
- L        1.5806866 1.2949710 34  -1.0510111  4.212384
- M        1.0019960 0.7825624 34  -0.5883621  2.592354
- H        0.3217596 0.6650664 34  -1.0298180  1.673337
+ tension    x1.trend         SE df     lower.CL    upper.CL
+ L        0.06079456 0.05318559 34 -0.047291572 0.168880693
+ M        0.03676248 0.03214052 34 -0.028554928 0.102079881
+ H        0.01436618 0.02731486 34 -0.041144293 0.069876660
 
+Trends are based on the log (transformed) scale 
+Confidence level used: 0.95 
+> lstrends(warp.lm4, ~tension|wool, var = "x1", transform = "response")
+wool = A:
+ tension    x1.trend        SE df    lower.CL  upper.CL
+ L       -11.0371815 5.4827056 34 -22.1793798 0.1050168
+ M         1.6835245 0.8802711 34  -0.1054016 3.4724507
+ H         0.9777406 0.7705476 34  -0.5882005 2.5436817
+
+wool = B:
+ tension    x1.trend        SE df    lower.CL  upper.CL
+ L         1.6678054 1.4590651 34  -1.2973716 4.6329825
+ M         1.0345211 0.9044562 34  -0.8035551 2.8725972
+ H         0.2665878 0.5068716 34  -0.7634991 1.2966748
+
+Trends are obtained after back-transforming from the log scale 
 Confidence level used: 0.95 
 > 
-> # exotic chain rule example
+> # exotic chain rule examples
 > lstrends(warp.lm4, ~tension|wool, var = "sqrt(x1-7)")
 wool = A:
- tension sqrt(x1-7).trend        SE df    lower.CL  upper.CL
- L             -55.891528 16.067137 34 -88.5438789 -23.23918
- M              12.885835  6.827428 34  -0.9891679  26.76084
- H               5.722883  5.841607 34  -6.1486912  17.59446
+ tension sqrt(x1-7).trend        SE df    lower.CL   upper.CL
+ L            -1.32842099 0.6598914 34 -2.66948167 0.01263968
+ M             0.53628307 0.2804084 34 -0.03357545 1.10614160
+ H             0.30443213 0.2399199 34 -0.18314382 0.79200808
 
 wool = B:
- tension sqrt(x1-7).trend        SE df    lower.CL  upper.CL
- L              10.292206  8.431847 34  -6.8433695  27.42778
- M               6.524221  5.095440 34  -3.8309581  16.87940
- H               2.095049  4.330397 34  -6.7053764  10.89547
+ tension sqrt(x1-7).trend        SE df    lower.CL   upper.CL
+ L             0.39584705 0.3463034 34 -0.30792605 1.09962015
+ M             0.23936875 0.2092742 34 -0.18592755 0.66466505
+ H             0.09354145 0.1778532 34 -0.26789974 0.45498264
 
+Trends are based on the log (transformed) scale 
+Confidence level used: 0.95 
+> lstrends(warp.lm4, ~tension|wool, var = "sqrt(x1-7)", transform = "response")
+wool = A:
+ tension sqrt(x1-7).trend        SE df     lower.CL   upper.CL
+ L             -71.865569 35.699128 34 -144.4149266  0.6837877
+ M              10.961807  5.731643 34   -0.6862935 22.6099068
+ H               6.366289  5.017209 34   -3.8299059 16.5624831
+
+wool = B:
+ tension sqrt(x1-7).trend        SE df     lower.CL   upper.CL
+ L              10.859456  9.500301 34   -8.4474784 30.1663901
+ M               6.735999  5.889118 34   -5.2321277 18.7041260
+ H               1.735813  3.300355 34   -4.9713144  8.4429412
+
+Trends are obtained after back-transforming from the log scale 
 Confidence level used: 0.95 
 > 
 > 
@@ -484,7 +516,7 @@ Intervals are back-transformed from the log scale
 > 
 > # un-log some comparisons to obtain ratios
 > summary(contrast(lsm.D93, "trt.vs.ctrl", ref = 2), 
-+ 	type = "resp", adjust = "none")
++     type = "resp", adjust = "none")
  contrast rate.ratio        SE df z.ratio p.value
  1 - 2         1.575 0.3184189 NA   2.247  0.0246
  3 - 2         1.175 0.2527659 NA   0.750  0.4535
@@ -558,4 +590,4 @@ Confidence level used: 0.95
 > 
 > proc.time()
    user  system elapsed 
-   2.29    0.48    4.48 
+   2.68    0.17    2.84 

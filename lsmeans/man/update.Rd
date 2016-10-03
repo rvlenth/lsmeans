@@ -95,7 +95,7 @@ In \code{lsm.options}, we may set or change the default values for the above att
 \item{\code{contrast}}{A named \code{list} of defaults for objects created by \code{\link{contrast}} (or \code{\link{pairs}}).}
 \item{\code{summary}}{A named \code{list} of defaults used by the methods \code{\link{summary}}, \code{\link{predict}}, and \code{\link{lsmip}}. The only option that can affect the latter two is \code{"predict.method"}.}
 \item{\code{estble.tol}}{Tolerance for determining estimability in rank-deficient cases. If absent, the value in \code{defaults.lsm$estble.tol)} is used.}
-\item{(others)}{Other options may be accessed by support code for particular model classes (see \code{\link{models}}). For example, the \code{disable.pbkrtest} and \code{pbkrtest.limit} options affect whether approximate degrees of freedom are computed for \code{lmerMod} objects (\pkg{lme4} package).}
+\item{(others)}{Other options may be accessed by support code for particular model classes (see \code{\link{models}}). For example, the \code{lmer.df}, \code{disable.pbkrtest}, and \code{pbkrtest.limit} options affect how degrees of freedom are computed for \code{lmerMod} objects (\pkg{lme4} package).}
 } % end \describe
 } % end subsection
 

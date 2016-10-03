@@ -114,11 +114,13 @@ summary(glht(warp.lm2, lsm(eff ~ tension | wool)))
 confint(contrast(warp.lsm2, "trt.vs.ctrl1"))
 
 # lstrends
-warp.lm4 <- lm(breaks ~ tension*wool*x1, data = warp)
+warp.lm4 <- lm(log(breaks) ~ tension*wool*x1, data = warp)
 lstrends(warp.lm4, ~tension|wool, var = "x1")
+lstrends(warp.lm4, ~tension|wool, var = "x1", transform = "response")
 
-# exotic chain rule example
+# exotic chain rule examples
 lstrends(warp.lm4, ~tension|wool, var = "sqrt(x1-7)")
+lstrends(warp.lm4, ~tension|wool, var = "sqrt(x1-7)", transform = "response")
 
 
 
@@ -141,7 +143,7 @@ summary(lsm.D93, type = "resp")
 
 # un-log some comparisons to obtain ratios
 summary(contrast(lsm.D93, "trt.vs.ctrl", ref = 2), 
-	type = "resp", adjust = "none")
+    type = "resp", adjust = "none")
 
 
 # weighting

@@ -59,7 +59,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data,
         tran = RG@misc$tran
         if (is.list(tran)) tran = tran$name
         if (transform == "response") {
-            prd = .est.se.df(RG, do.se = FALSE)
+            prd = .est.se.df(orig.rg, do.se = FALSE)
             lnk = attr(prd, "link")
             deriv = lnk$mu.eta(prd[[1]])
             RG@linfct = diag(deriv) %*% RG@linfct
@@ -70,6 +70,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data,
     }
    
     RG@misc$tran = RG@misc$tran.mult = NULL
+    RG@misc$estName = estName
     
     .save.ref.grid(RG)  # save in .Last.ref.grid, if enabled
     

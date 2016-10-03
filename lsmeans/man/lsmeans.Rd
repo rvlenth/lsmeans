@@ -21,7 +21,7 @@ and optionally comparisons or contrasts among them.
 
 \method{lsmeans}{character.ref.grid}(object, specs, by = NULL, 
     fac.reduce = function(coefs) apply(coefs, 2, mean), contr, 
-    options = getOption("lsmeans")$lsmeans, weights, ...)
+    options = getOption("lsmeans")$lsmeans, weights, trend, ...)
 ## (used when 'object' is a 'ref.grid' and 'specs' is 'character')
     
 \method{lsmeans}{list}(object, specs, ...)
