@@ -145,7 +145,7 @@ Since the reference grid\ixsub{reference grid}{defined} is fundamental, it is ou
 \end{itemize}
 So the reference grid depends on both the model and the dataset.
 
-\subsection{Example: Orange sales}\index{Examples!Orange sales}
+\subsection{Example: Orange sales}\index{Examples!orange sales}
 To illustrate, consider the \wixcode{oranges} data provided with \lsm{}.  This dataset has sales of two varieties of oranges (response variables "sales1" and "sales2") at 6 stores (factor "store"), over a period of 6 days (factor "day"). The prices of the oranges (covariates "price1" and "price2") fluctuate in the different stores and the different days. There is just one observation on each store on each day.
 
 For starters, let's consider an additive covariance model for sales of the first variety, with the two factors and both "price1" and "price2" as covariates (since the price of the other variety could also affect sales).
@@ -407,7 +407,7 @@ which removes the "by" grouping \emph{before} the pairwise comparisons are gener
 
 
 
-\section{A new example: Oat yields}\index{Examples!Oat yields}\index{Examples!split-plot experiment}
+\section{A new example: Oat yields}\index{Examples!oat yields}\index{Examples!split-plot experiment}
 Orange-sales illustrations are probably getting tiresome. To illustrate some new features, let's turn to a new example.
 The \wixcode{Oats} dataset in the \wixpkg{nlme} package \citep{nlme} has the results of a split-plot experiment discussed in \citet{Yat35}. The experiment was conducted on six blocks (factor "Block"). Each block was divided into three plots, which were randomized to three varieties (factor "Variety") of oats. Each plot was divided into subplots and randomized to four levels of nitrogen (variable "nitro"). The response, "yield", was measured once on each subplot after a suitable growing period.
 
@@ -581,6 +581,10 @@ summary(pairs(lsm.log), type = "response")
 @
 The LS~means shown are the geometric means of the predictions, as opposed to the arithmetic means obtained above from "rg.bc.regrid". And the pairwise comparisons come out as ratios of these.
 
+\subsection{The \code{transform} argument}\ixcodesub{transform}{in \code{ref.grid} or \code{lsmeans}}
+For convenience, the user may use a "transform" argument to re-grid as part of a "ref.grid" or "lsmeans" call. For example, \verb|lsmeans(Oats.bc, "Variety", transform = "response")| is equivalent to \verb|lsmeans(rg.bc.regrid, "Variety")| but without needing the two code steps previously used to produce "rg.bc" and "rg.bc.regrid".
+
+
 
 \section{More on tests}
 \def\tj{\theta^{(j)}}%%% Notation for this section only
@@ -625,11 +629,11 @@ We find strong evidence that, with the stated threshold of .25, Golden Rain is n
 
 
 \section{Trends}\ix{trends, estimating and comparing}\ix{slopes, estimating and comparing}
-\index{Examples!Chick weights}\index{Examples!comparing trends}
+\index{Examples!chick weights}\index{Examples!comparing trends}
 The \lsm{} package provides a function \wixcode{lstrends} for estimating and comparing the slopes of fitted lines (or curves). To illustrate, consider the built-in R dataset \wixcode{ChickWeight} which has data on the growths of newly hatched chicks under four different diets. The following code produces the display in \Fig{chick-plot}.
 <<chick-plot, fig=TRUE, include=FALSE, height=3.5, width=8>>=
 require("lattice")
-xyplot(weight~Time | Diet, groups = ~ Chick, data = ChickWeight, 
+xyplot(weight ~ Time | Diet, groups = ~ Chick, data = ChickWeight, 
     type = "o", layout=c(4, 1))
 @
 \begin{figure}
@@ -637,22 +641,29 @@ xyplot(weight~Time | Diet, groups = ~ Chick, data = ChickWeight,
 \caption{Growth curves of chicks, dataset \texttt{ChickWeight}.}\label{chick-plot}
 \end{figure}
 
-Let us fit a model to these data using random slopes for each chick and allowing for a different average slope for each diet:
+Let us fit a model to these data using random slopes for each chick and allowing for a different average slope for each diet (a square-root transformation straightens-out the curves somewhat):
 <<>>=
-Chick.lmer <- lmer(weight ~ Diet * Time + (0 + Time | Chick), 
+Chick.lmer <- lmer(sqrt(weight) ~ Diet * Time + (0 + Time | Chick), 
     data = ChickWeight)
 @
 We can then call \wixcode{lstrends} (or, its anti-SAS alias, \wixcode{pmtrends}) to estimate and compare the average slopes for each diet.
 <<>>=
-( Chick.lst <- lstrends (Chick.lmer, ~ Diet, var = "Time") )
+Chick.lst <- lstrends (Chick.lmer, ~ Diet, var = "Time")
 @
-Here we obtain estimates and pairwise comparisons of the slopes using a compact letter display.
+Now, let's summarize the estimated trends and pairwise comparisons of these slopes using a compact letter display.
 <<>>=
 cld (Chick.lst)
 @
 According to the Tukey~HSD comparisons (with default significance level of $.05$), there are two groupings of slopes: Diet~1's mean slope is significantly less than $3$ or $4$'s, Diet~2's slope is not distinguished from any other.
 
-Note: "lstrends" computes a difference quotient based on two slightly different reference grids. Thus, it must be called with a model object, not a "ref.grid" object.
+Because of the response transformation, the slopes we just computed are for trends on the square-root-weight scale. If you want the trends on the actual weight scale after back-transforming, that is possible via the "transform" argument:\ixcodesub{lstrends}{with response transformation}\ixcodesub{transform}{in \code{lstrends}}
+<<>>=
+lstrends(Chick.lmer, ~ Diet | Time, var = "Time", 
+    transform = "response", at = list(Time = c(5, 15)))
+@
+We specified two different "Time" values to emphasize that after back-transforming, the slopes are different at each "Time", whereas (by the model specification) the slopes don't depend on "Time" when we leave it on the square-root scale.
+
+Note: "lstrends" computes a difference quotient based on two slightly different reference grids. Thus, if it it must be called with a model object, not a "ref.grid" object.
 \ixsub{reference grid}{difference quotient of two}
 
 

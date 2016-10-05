@@ -8,10 +8,14 @@
 #     FALSE - same as function(x) sort(unique(x))
 
 ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, 
-                     options = get.lsm.option("ref.grid"), data, type, 
+                     options = get.lsm.option("ref.grid"), data, df, type, 
                      transform = c("none", "response", "log"), ...) 
 {
     transform = match.arg(transform)
+    if (!missing(df)) {
+        if(is.null(options)) options = list()
+        options$df = df
+    }
     
     # recover the data
     if (missing(data)) {

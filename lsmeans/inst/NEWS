@@ -2,24 +2,28 @@ Changelog for 'lsmeans' package
 
 *TODO: Update vignette for regrid
         cpglmm models?
-*TODO: Update vignette for lstrends?
-*TODO: df argument doesn't work
-        
-2.23-12
+
+2.24
     lsm.options now returns the options visibly if no arguments are 
         provided
     S4 class definitions modernized to use `slots` instead of 
         `representation`
+    'ref.grid' gets a new 'transform' argument that can be used instead
+        of following it with a call to 'regrid'
     lstrends now correctly handles response transformations when 
         constructed with transform = "response"
     lsmeans with a 'trend' argument can now have character 'specs',
         and is generally more robust to user errors.
     ref.grid and related functions previously did not detect response
-        transformations when model call has no argument named "formula" 
+        transformations when model call had no argument named "formula" 
         (e.g., nlme::lme(fixed, random, ...) didn't work)
-    New option "lmer.df" and corresponding 'mode' argument for 'merMod'
+    New option 'lmer.df' and corresponding 'mode' argument for 'merMod'
         objects, allows user to specify Satterthwaite (new default), 
         K-R, or asymptotic degrees of freedom.
+        CAUTION: This may alter the results obtained by default with 
+            'merMod' objects. Use 'lsm.options(lmer.df = "ken")' if you 
+            want the same behavior as before
+    Added a 'df' argument to 'ref.grid' to make it more user-friendly
     Fixed bug in recover.data.call with incorrect call to 'complete.cases'
         This fix could change the reference values for covariates from 
         past results - especially for lme models or where 'data' is used

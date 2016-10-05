@@ -15,7 +15,7 @@ Using a fitted model object, determine a reference grid for which least-squares 
 }
 \usage{
 ref.grid(object, at, cov.reduce = mean, mult.name, mult.levs, 
-    options = get.lsm.option("ref.grid"), data, type, 
+    options = get.lsm.option("ref.grid"), data, df, type, 
     transform = c("none", "response", "log"), ...)
     
 .Last.ref.grid
@@ -40,6 +40,7 @@ Any \code{cov.reduce} specification for a covariate also named in \code{at} is i
   \item{mult.levs}{A named list of levels for the dimensions of a multivariate response. If there is more than one element, the combinations of levels are used, in \code{\link{expand.grid}} order. The (total) number of levels must match the number of dimensions. If \code{mult.name} is specified, this argument is ignored.}
   \item{options}{If non-\code{NULL}, a named \code{list} of arguments to pass to \code{\link{update}}, just after the object is constructed.}
   \item{data}{A \code{data.frame} to use to obtain information about the predictors (e.g. factor levels). If missing, then \code{\link{recover.data}} is used to attempt to reconstruct the data.}
+  \item{df}{This is a courtesy shortcut, equivalent to specifying \code{options(df = df)}. See \code{\link{update}}.}
   \item{type}{If provided, this is saved as the \code{"predict.type"} setting. See \code{\link{update}}}
   \item{transform}{If other than \code{"none"}, the reference grid is reconstructed via \code{\link{regrid}} with the given \code{transform} argument. See Details.}
   \item{\dots}{Optional arguments passed to \code{\link{lsm.basis}}, such as \code{vcov.} (see Details below) or options for certain models (see \link{models}).}
