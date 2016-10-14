@@ -26,6 +26,7 @@ Changelog for 'lsmeans' package
     Fixed bug in recover.data.call with incorrect call to 'complete.cases'
         This fix could change the reference values for covariates from 
         past results - especially for lme models or where 'data' is used
+    Misc. minor bug fixes and code improvements
 
 
 2.23-5
