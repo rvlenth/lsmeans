@@ -335,7 +335,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     isfac = sapply(M, function(x) inherits(x, "factor"))
     
     # Character vector of terms in the model frame that are factors ...
-    facs.m = names(M)[isfac]
+    facs.m = names(M)[as.logical(isfac)]
     
     # Exclude the terms that are already factors
     # What's left will be things like "factor(dose)", "interact(dose,treat)", etc
