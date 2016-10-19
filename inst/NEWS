@@ -13,6 +13,11 @@ Changelog for 'lsmeans' package
         constructed with transform = "response"
     lsmeans with a 'trend' argument can now have character 'specs',
         and is generally more robust to user errors.
+    contrast() now handles log and logit models somewhat differently:
+      - inverse transformations are labeled as ratios whenever all the
+        linear functions sum to 0 (previously just pairwise comparisons)
+      - contrasts of logits are now annotated as being on the 
+        "log odds ratio" scale
     ref.grid and related functions previously did not detect response
         transformations when model call had no argument named "formula" 
         (e.g., nlme::lme(fixed, random, ...) didn't work)
