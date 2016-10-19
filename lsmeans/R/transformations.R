@@ -14,15 +14,18 @@
     if (link %in% c("logit", "probit", "cauchit", "cloglog", "identity", "log"))
         result = stats::make.link(link)
     else result = switch(link,
-         sqrt = { tmp = make.link("sqrt") 
+         sqrt = { 
+             tmp = make.link("sqrt") 
              tmp$linkinv = function(eta) pmax(0, eta)^2
              tmp$mu.eta = function(eta) 2*pmax(0, eta)
              tmp },
-         `1/mu^2` = { tmp = make.link("1/mu^2") 
+         `1/mu^2` = { 
+             tmp = make.link("1/mu^2") 
              tmp$linkinv = function(eta) 1/sqrt(pmax(0, eta))
              tmp$mu.eta = function(eta) -1/(2*pmax(0, eta)^1.5)
              tmp },
-         inverse = { tmp = make.link("inverse") 
+         inverse = { 
+             tmp = make.link("inverse") 
              tmp$linkinv = function(eta) 1/pmax(0, eta)
              tmp$mu.eta = function(eta) -1/pmax(0, eta)^2
              tmp },
@@ -53,6 +56,11 @@
          `+.sqrt` = {
              tmp = .make.link("sqrt")
              tmp$mult = 2
+             tmp
+         },
+         log.o.r. = {
+             tmp = make.link("log")
+             tmp$name = "log odds ratio"
              tmp
          },
          

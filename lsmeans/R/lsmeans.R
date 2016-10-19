@@ -419,13 +419,26 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     # zap the transformation info except in very special cases
     if (!is.null(misc$tran)) {
         misc$orig.tran = misc$tran
-        # anything other than (-1,0,1)?
-        non.comp = setdiff(zapsmall(unique(as.matrix(cmat))), c(-1,0,1)) 
-        if(length(non.comp) == 0 && (misc$tran %in% c("log", "logit"))) {
+# --- previous code        
+#         # anything other than (-1,0,1)?
+#         non.comp = setdiff(zapsmall(unique(as.matrix(cmat))), c(-1,0,1)) 
+#         if(length(non.comp) == 0 && (misc$tran %in% c("log", "logit"))) {
+#             misc$orig.inv.lbl = misc$inv.lbl
+#             misc$inv.lbl = ifelse(misc$tran == "logit", "odds.ratio", 
+#                                   paste(misc$inv.lbl,"ratio",sep="."))
+#             misc$tran = "log"
+#         }
+# Replacement 2016-10-19:
+        true.con = all(zapsmall(apply(cmat, 2, sum)) == 0) # each set of coefs sums to 0
+        if (true.con && misc$tran == "log") {
             misc$orig.inv.lbl = misc$inv.lbl
-            misc$inv.lbl = ifelse(misc$tran == "logit", "odds.ratio", 
-                                  paste(misc$inv.lbl,"ratio",sep="."))
+            misc$inv.lbl = paste(misc$inv.lbl,"ratio",sep=".")
             misc$tran = "log"
+        }
+        else if (true.con && misc$tran == "logit") {
+            misc$orig.inv.lbl = misc$inv.lbl
+            misc$inv.lbl = "odds.ratio"
+            misc$tran = "log.o.r."
         }
         else
             misc$tran = misc$tran.mult = NULL
