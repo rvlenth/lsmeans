@@ -32,10 +32,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     
     trms = attr(data, "terms")
     
-    # find out if any variables are coerced to factors
-    ### OLD VERSION: anm = all.names(attr(data, "terms"))    
-    ###              coerced = anm[1 + grep("factor|ordered", anm)]
-    coerced = .find.coerced(trms, data)
+    # find out if any variables are coerced to factors or vice versa
+    coerced = .find.coerced(trms, data) # now list with members 'factors' and 'covariates'
     
     # convenience function
     sort.unique = function(x) sort(unique(x))
@@ -95,16 +93,16 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         x = data[[nm]]
         
         # Save the original levels of factors, no matter what
-        if (is.factor(x))
+        if (is.factor(x) && !(nm %in% coerced$covariates))
             xlev[[nm]] = levels(factor(x))
             # (applying factor drops any unused levels)
     
         # Now go thru and find reference levels...
-        # mentioned in 'at' list but not coerced
-        if (!(nm %in% coerced) && !missing(at) && (hasName(at, nm)))
+        # mentioned in 'at' list but not coerced factor
+        if (!(nm %in% coerced$factors) && !missing(at) && (hasName(at, nm)))
             ref.levels[[nm]] = at[[nm]]
         # factors not in 'at'
-        else if (is.factor(x))
+        else if (is.factor(x) && !(nm %in% coerced$covariates))
             ref.levels[[nm]] = levels(factor(x))
         else if (is.character(x))
             ref.levels[[nm]] = sort.unique(x)
@@ -120,12 +118,12 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         else {
             # single numeric pred but coerced to a factor - use unique values
             # even if in 'at' list. We'll fix this up later
-            if (nm %in% coerced)            
+            if (nm %in% coerced$factors)            
                 ref.levels[[nm]] = sort.unique(x)
             
             # Ordinary covariates - summarize
             else 
-                ref.levels[[nm]] = cr(x, nm)
+                ref.levels[[nm]] = cr(as.numeric(x), nm)
         }
     }
     
@@ -209,7 +207,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
 # So we now need to subset the rows of the grid and linfct based on 'at'
 
     problems = if (!missing(at)) 
-        intersect(c(multresp, coerced), names(at)) 
+        intersect(c(multresp, coerced$factors), names(at)) 
     else character(0)
     if (length(problems > 0)) {
         incl.flags = rep(TRUE, nrow(grid))
@@ -244,7 +242,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     ### --- Determine weights for each grid point --- (added ver.2.11), updated ver.2.14 to include weights
     if (!hasName(data, "(weights)"))
         data[["(weights)"]] = 1
-    nms = union(names(xlev), coerced) # only factors, no covariates or mult.resp
+    nms = union(names(xlev), coerced$factors) # only factors, no covariates or mult.resp
     # originally, I used 'plyr::count', but there are probs when there is a 'freq' variable
     id = plyr::id(data[, nms, drop = FALSE], drop = TRUE)
     uid = !duplicated(id)
@@ -321,8 +319,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
 
 
 # This function figures out which covariates in a model 
-# have been coerced to factors. Does NOT rely on the names of
-# functions like 'factor' or 'interaction' as we use actual results
+# have been coerced to factors. And also which factors have been coerced
+# to be covariates
 .find.coerced = function(trms, data) {
     isfac = sapply(data, function(x) inherits(x, "factor"))
     
@@ -336,18 +334,24 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     
     # Character vector of terms in the model frame that are factors ...
     facs.m = names(M)[as.logical(isfac)]
+    covs.m = setdiff(names(M), facs.m)
     
     # Exclude the terms that are already factors
     # What's left will be things like "factor(dose)", "interact(dose,treat)", etc
-    cterms = setdiff(facs.m, facs.d)
+    cfac = setdiff(facs.m, facs.d)
+    if(length(cfac) != 0) {
+        cvars = lapply(cfac, function(x) .all.vars(reformulate(x))) # Strip off the function calls
+        cfac = intersect(unique(unlist(cvars)), covs.d) # Exclude any variables that are already factors
+    }
     
-    if(length(cterms) == 0) 
-        return(cterms)
-    # (else) Strip off the function calls
-    cvars = lapply(cterms, function(x) .all.vars(reformulate(x)))
+    # Do same with covariates
+    ccov = setdiff(covs.m, covs.d)
+    if(length(ccov) > 0) {
+        cvars = lapply(ccov, function(x) .all.vars(reformulate(x)))
+        ccov = intersect(unique(unlist(cvars)), facs.d)
+    }
     
-    # Exclude any variables that are already factors
-    intersect(unique(unlist(cvars)), covs.d)
+    list(factors = cfac, covariates = ccov)
 }
 
 # calculate the offset for the given grid

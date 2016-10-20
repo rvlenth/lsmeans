@@ -21,6 +21,9 @@ Changelog for 'lsmeans' package
     ref.grid and related functions previously did not detect response
         transformations when model call had no argument named "formula" 
         (e.g., nlme::lme(fixed, random, ...) didn't work)
+    Now can handle not only models where covariates are made into factors,
+        but ones where factors are made into covariates, e.g.,
+        y ~ factor(x) + unclass(trt)
     New option 'lmer.df' and corresponding 'mode' argument for 'merMod'
         objects, allows user to specify Satterthwaite (new default), 
         K-R, or asymptotic degrees of freedom.
