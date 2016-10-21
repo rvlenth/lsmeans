@@ -780,7 +780,7 @@ with(nutrition, tapply(gain, race, mean))
 
 \subsection{Alternative covariate adjustments}\ix{covariate adjustments}
 \index{Example!framing experiment}
-The \wixcode{framing} data in the \pkg{mediation} package has the results of an experiment conducted by \cite{Bra08} where subjects were given the opportunity to send a message to Congress regarding immigration. However, before being offered this, some subjects ("treat=1") were first shown a news story that portrays Latinos in a negative way. Besides the binary response (whether or not they elected to send a message), we also measured "emp", the subjects' emotional state after the treatment was applied. There are various demographic variables as well.
+The \wixcode{framing} data in the \pkg{mediation} package has the results of an experiment conducted by \cite{Bra08} where subjects were given the opportunity to send a message to Congress regarding immigration. However, before being offered this, some subjects ("treat=1") were first shown a news story that portrays Latinos in a negative way. Besides the binary response (whether or not they elected to send a message), we also measured "emo", the subjects' emotional state after the treatment was applied. There are various demographic variables as well.
 
 Before fitting a logistic regression model, I will change the labels for "educ" to shorter strings.
 <<>>=
