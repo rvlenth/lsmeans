@@ -1,7 +1,5 @@
 Changelog for 'lsmeans' package
 
-*TODO: cpglmm models?
-
 2.24
     lsm.options now returns the options visibly if no arguments are 
         provided
@@ -34,6 +32,8 @@ Changelog for 'lsmeans' package
     Fixed bug in recover.data.call with incorrect call to 'complete.cases'
         This fix could change the reference values for covariates from 
         past results - especially for lme models or where 'data' is used
+    Addition to "extending" vignette illustrating how the 'rsm' package
+        supports 'lsmeans'
     Misc. minor bug fixes and code improvements
 
 
