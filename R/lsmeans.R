@@ -137,6 +137,12 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
     RG = object
     facs = union(specs, by)
     
+    if ((length(facs) == 1) && (facs == "1")) {  ### just want grand mean
+        RG@levels[["1"]] = "overall"
+        RG@grid[ ,"1"] = 1
+    }
+    
+    
     # Figure out the structure of the grid
     wgt = RG@grid[[".wgt."]]
     if(all(zapsmall(wgt) == 0)) wgt = wgt + 1 ### repl all zero wgts with 1

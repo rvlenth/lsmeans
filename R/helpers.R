@@ -75,9 +75,11 @@ lsm.basis.default = function(object, trms, xlev, grid, ...) {
 recover.data.call = function(object, trms, na.action, data = NULL, params = NULL, ...) {
     fcall = object # because I'm easily confused
     vars = setdiff(.all.vars(trms), params)
-    if (length(vars) == 0)
-        return("Model must have at least one predictor")
     tbl = data
+    if (length(vars) == 0) {
+        tbl = data.frame(c(1,1))
+        vars = names(tbl) = 1
+    }
     if (is.null(tbl)) {
         m = match(c("formula", "data", "subset", "weights"), names(fcall), 0L)
         fcall = fcall[c(1L, m)]
@@ -736,6 +738,7 @@ lsm.basis.gam = function(object, trms, xlev, grid, ...) {
     retain = gsub("\\\\", "", retain)
     for (i in seq_along(retain))
         vars = gsub(repl[i], retain[i], vars)
+    if(length(vars) == 0) vars = "1"   # no vars ---> intercept
     vars
 }
 
