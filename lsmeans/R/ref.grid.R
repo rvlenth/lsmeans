@@ -322,6 +322,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
 # have been coerced to factors. And also which factors have been coerced
 # to be covariates
 .find.coerced = function(trms, data) {
+    if (ncol(data) == 0) 
+        return(list(factors = integer(0), covariates = integer(0)))
     isfac = sapply(data, function(x) inherits(x, "factor"))
     
     # Character vectors of factors and covariates in the data...
