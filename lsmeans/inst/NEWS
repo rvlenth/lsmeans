@@ -4,6 +4,7 @@ Changelog for 'lsmeans' package
     Now supports models with just the intercept
     Added support for lsmeans(model, ~1) or lsmeans(model, "1")
         so that you may obtain the average over all factors.
+    Corrected bug in lme support when data are subsetted
 
 2.24
     lsm.options now returns the options visibly if no arguments are 

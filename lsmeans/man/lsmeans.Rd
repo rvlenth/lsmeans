@@ -102,7 +102,9 @@ Least-squares means (also called predicted marginal means) are predictions from 
 
 For those who prefer the term \dQuote{predicted marginal means}, courtesy wrappers \code{pmmeans}, \code{pmtrends}, and \code{pmmobj} are provided that behave identically to those that start with \code{ls}, except that estimates are relabeled accordingly (e.g., \code{lsmean} becomes \code{pmmean}).
 
-If \code{specs} is a \code{formula}, it should be of the form \code{contr ~ specs | by}. The formula is parsed and then used as the arguments \code{contr}, \code{specs}, and \code{by} as indicated. The left-hand side is optional, but if specified it should be the name of a contrast family (e.g., \code{pairwise}) or of a sub-list of \code{contr.list}. Operators like \code{*} or \code{:} are necessary to delineate names in the formulas, but otherwise are ignored.
+If \code{specs} is a \code{formula}, it should be of the form \code{~ specs}, \code{~ specs | by}, \code{contr ~ specs}, or \code{contr ~ specs | by}. The formula is parsed and the variables therein are used as the arguments \code{specs}, \code{by}, and \code{contr} as indicated. The left-hand side is optional, but if specified it should be the name of a contrast family (e.g., \code{pairwise}) or of a sub-list of \code{contr.list}. Operators like \code{*} or \code{:} are necessary to delineate names in the formulas, but otherwise are ignored.
+
+In the special case where the mean (or weighted mean) of all the predictions is desired, specify \code{specs} as \code{~ 1} or \code{"1"}.
 
 A number of standard contrast families are provided. They can be identified as functions having names ending in \code{.lsmc} -- use 
 \preformatted{ls("package:lsmeans", pat=".lsmc")} 
@@ -188,6 +190,10 @@ lsmeans(Oats.lme, ~ nitro, cov.reduce = FALSE, weights = "show.levels")
 
 # Give three times the weight to Marvellous
 lsmeans(Oats.lme, ~ nitro, cov.reduce = FALSE, weights = c(1,3,1))
+
+# Overall mean
+lsmeans(Oats.lme, ~ 1, weights = "equal")
+lsmeans(Oats.lme, "1", weights = "cells")
 
 
 ### Model with a quadratic trend for 'nitro'
