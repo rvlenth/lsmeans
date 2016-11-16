@@ -1,3 +1,5 @@
+%    Copyright (c) 2012-2016 Russell V. Lenth                                %
+
 \name{summary}
 \alias{summary}
 \alias{summary.ref.grid}

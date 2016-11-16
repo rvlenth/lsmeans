@@ -1,3 +1,5 @@
+%    Copyright (c) 2012-2016 Russell V. Lenth                                %
+
 \name{MOats}
 \alias{MOats}
 \docType{data}
