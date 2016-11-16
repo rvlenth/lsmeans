@@ -1,6 +1,8 @@
+%    Copyright (c) 2012-2016 Russell V. Lenth                                %
+
 \name{make.tran}
 \alias{make.tran}
-%- Also NEED an '\alias' for EACH other topic documented here.
+
 \title{
 Response transformations
 }

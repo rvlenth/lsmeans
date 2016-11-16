@@ -1,3 +1,5 @@
+%    Copyright (c) 2012-2016 Russell V. Lenth                                %
+
 \name{ref.grid}
 \alias{ref.grid}
 \alias{.Last.ref.grid}
