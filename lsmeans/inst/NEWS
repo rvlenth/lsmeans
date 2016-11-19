@@ -6,7 +6,7 @@ Changelog for 'lsmeans' package
         so that you may obtain the average over all factors.
     Corrected bug in lme support when data are subsetted
     Updated and clarified license info to make it more compatible
-        with those of packages that depend on this one
+        with licenses of packages that depend on this one
 
 2.24
     lsm.options now returns the options visibly if no arguments are 
