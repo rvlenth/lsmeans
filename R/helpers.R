@@ -202,7 +202,7 @@ recover.data.merMod = function(object, ...) {
 
 lsm.basis.merMod = function(object, trms, xlev, grid, vcov., mode = get.lsm.option("lmer.df"), ...) {
     if (missing(vcov.))
-        V = as.matrix(vcov(object))
+        V = as.matrix(vcov(object, correlation = FALSE))
     else
         V = as.matrix(.my.vcov(object, vcov.))
     dfargs = misc = list()
