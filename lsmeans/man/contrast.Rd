@@ -31,6 +31,8 @@ These methods provide for analyses of \code{ref.grid} objects, or follow-up anal
 \method{confint}{ref.grid}(object, parm, level = 0.95, ...)
 
 \method{pairs}{ref.grid}(x, reverse = FALSE, ...)
+
+\method{coef}{ref.grid}(object, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -82,6 +84,8 @@ When using \code{test} to do a joint test of L beta = null, an error is thrown i
 The ``grid'' for the returned value is simply the set of variables that identify the results. For example, \code{contrast}'s return value is a reference grid for one factor named \code{contrast}.
 
 \code{confint} and \code{test} (when \code{Joint==FALSE}) return an object of class \code{summary.ref.grid}. When \code{JOINT==TRUE}, \code{test} returns a \code{"summary.ref.grid"} object (extends \code{"data.frame"})  with the test statistic, degrees of freedom, and \emph{P} value for each \code{by} group.
+
+The \code{coef} method returns a matrix of contrast coefficients, if the object was produced by \code{contrast} or one of its relatives. Each row of this matrix contains the coefficients that were applied to the original object from which contrasts were computed. If \code{object} was not produced via contrasts, \code{NULL} is returned, along with a message. 
 }
 %\references{}
 \author{
@@ -119,7 +123,10 @@ contrast(warp.lsm,
 contrast(warp.lsm, "consec", by = NULL)
 
 # Interaction contrasts (comparisons of linear and quadratic contrasts)
-contrast(warp.lsm, interaction = c("poly", "consec"), by = NULL)
+(int.con <- contrast(warp.lsm, interaction = c("poly", "consec"), by = NULL))
+
+# See the contrast coefficients used by the previous call
+cbind(levels(warp.lsm), t(coef(int.con)))
     
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

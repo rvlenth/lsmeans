@@ -1,5 +1,10 @@
 Changelog for 'lsmeans' package
 
+2.25-2
+    Added 'levels' method for 'ref.grid' to show predictor combinations that 
+        define the grid.
+    Added 'coef' method for 'ref.grid', returns matrix of contrast coefficients
+
 2.25
     Now supports models with just the intercept
     Added support for lsmeans(model, ~1) or lsmeans(model, "1")

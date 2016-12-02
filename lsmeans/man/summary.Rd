@@ -19,6 +19,7 @@
 \alias{xtable.ref.grid}
 \alias{xtable.summary.ref.grid}
 \alias{print.xtable.lsm}
+\alias{levels.ref.grid}
 
 
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -35,6 +36,8 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 \method{predict}{ref.grid}(object, type, ...)
 
 \method{str}{ref.grid}(object, ...)
+
+\method{levels}{ref.grid}(x, ...)
 
 \method{rbind}{ref.grid}(..., deparse.level = 1, adjust = "mvt")
 
@@ -111,7 +114,7 @@ The object to be subsetted, printed, plotted, or converted.
 \code{\link{update}}, or \code{\link{dotplot}} as appropriate. If not specified, appropriate defaults are used. For example, the default \code{layout} is one column of horizontal panels or one row of vertical panels.}
 }
 \details{
-\bold{Defaults:}
+\bold{Defaults for summarization, etc.:}
 The \code{misc} slot in \code{object} contains default values for \code{by}, \code{infer}, \code{level}, \code{adjust}, \code{type}, \code{null}, \code{side}, and \code{delta}. These defaults vary depending on the code that created the object. The \code{\link{update}} method may be used to change these defaults. In addition, any options set using \samp{lsm.options(summary=...)} will trump those stored in the object's \code{misc} slot.
 
 \bold{Transformations and links:}
@@ -133,6 +136,9 @@ For P-value adjustments only, the Bonferroni-inequality-based adjustment methods
 Also, if an adjustment method is not appropriate (e.g., using \code{"tukey"} with one-sided tests, or with results that are not pairwise comparisons), a more appropriate method (usually \code{"sidak"}) is substituted. 
 
 In some cases, confidence and \eqn{p}-value adjustments are only approximate -- especially when the degrees of freedom or standard errors vary greatly within the family of tests. The \code{"mvt"} method is always the correct one-step adjustment, but it can be very slow. One may use \code{\link{as.glht}} with methods in the \pkg{multcomp} package to obtain non-conservative multi-step adjustments to tests.
+
+\bold{Information:}
+The \code{str} method outputs a very brief summary of the object, whereas \code{levels} produces a \code{data.frame} containing the combinations of levels of predictor values that define the reference grid.
 
 \bold{\code{xtable}-related methods:}
 The \code{\link{xtable}} methods actually use \code{\link{xtableList}}, because of the ability to display messages such as those for P-value adjustments. These methods return an object of class \code{"xtable.lsm"} -- an extension of \code{"xtableList"}. Unlike other \code{xtable} methods, the number of digits defaults to 4; and degrees of freedom and \emph{t} ratios are always formatted independently of \code{digits}. The \code{print} method uses \code{\link{print.xtableList}}, and any \code{\dots} arguments are passed there.
@@ -185,6 +191,7 @@ require(lsmeans)
 warp.lm <- lm(breaks ~ wool * tension, data = warpbreaks)
 warp.rg <- ref.grid(warp.lm)
 str(warp.rg)
+levels(warp.rg)
 
 summary(warp.rg)
 
