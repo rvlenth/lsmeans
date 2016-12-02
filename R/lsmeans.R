@@ -331,12 +331,18 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
             k = k - length(by)
         }
         interaction = rep(interaction, k)[1:k]
+        tcm = NULL
         for (i in k:1) {
             nm = paste(vars[i], interaction[i], sep = "_")
             object = contrast.ref.grid(object, interaction[i], by = vars[-i], name = nm)
+            if(is.null(tcm))
+                tcm = object@misc$con.coef
+            else
+                tcm = object@misc$con.coef %*% tcm
             vars[i] = nm
         }
         object = update(object, by = by, adjust = adjust, ...)
+        object@misc$con.coef = tcm
         if(!is.null(options)) {
             options$object = object
             object = do.call(update.ref.grid, options)
@@ -377,6 +383,7 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     
     # Get the contrasts; this should be a data.frame
     cmat = method(levs, ...)
+    tcmat = t(cmat)
     if (!is.data.frame(cmat))
         stop("Contrast function must provide a data.frame")
     else if(ncol(cmat) == 0)
@@ -386,10 +393,11 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
         stop("Nonconforming number of contrast coefficients")
     
     if (is.null(by)) {
-        linfct = t(cmat) %*% object@linfct
+        linfct = tcmat %*% object@linfct
         grid = data.frame(.contrast.=names(cmat))
         if (hasName(object@grid, ".offset."))
             grid[[".offset."]] = t(cmat) %*% object@grid[[".offset."]]
+        by.rows = list(seq_along(object@linfct[ , 1]))
     }
     
     # NOTE: The kronecker thing here is nice and efficient but depends
@@ -397,9 +405,9 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     # If you ever want to expand to irregular grids, this block will
     # have to change, but everything else is probably OK.
     else {
-        tcmat = kronecker(.diag(rep(1,length(by.rows))), t(cmat))
-        linfct = tcmat %*% object@linfct[unlist(by.rows), ]
-        tmp = expand.grid(con= names(cmat), by = seq_len(length(by.rows)))###unique(by.id))
+        tcmat = kronecker(.diag(rep(1,length(by.rows))), tcmat)
+        linfct = tcmat %*% object@linfct[unlist(by.rows), , drop = FALSE]
+        tmp = expand.grid(con = names(cmat), by = seq_len(length(by.rows)))###unique(by.id))
         grid = data.frame(.contrast. = tmp$con)
         n.each = ncol(cmat)
         row.1st = sapply(by.rows, function(x) x[1])
@@ -445,6 +453,11 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     misc$adjust = adjust
     misc$infer = c(FALSE, TRUE)
     misc$by.vars = by
+    # save contrast coefs
+    by.cols = seq_len(ncol(tcmat))
+    if(!is.null(by.rows))
+        by.cols[unlist(by.rows)] = by.cols # gives us inverse of by.rows order
+    misc$con.coef = tcmat[ , by.cols, drop = FALSE] # save contrast coefs
     # zap the transformation info except in very special cases
     if (!is.null(misc$tran)) {
         misc$orig.tran = misc$tran
@@ -608,6 +621,15 @@ pairs.ref.grid = function(x, reverse = FALSE, ...) {
     else
         contrast(object, method = "pairwise", ...)
 }
+
+
+# coef method - returns contrast coefficients, or identity matrix if no contrasts
+coef.ref.grid = function(object, ...) {
+    if(is.null(cf <- object@misc$con.coef))
+        message("No contrast coefficients are available")
+    cf
+}
+    
 
 
 

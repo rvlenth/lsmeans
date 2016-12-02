@@ -60,4 +60,8 @@ cld.lsm.list = function(object, ..., which = 1) {
     cld(object[[which]], ...)
 }
 
+coef.lsm.list = function(object, ..., which = 1) {
+    coef(object[[which]], ...)
+}
+
 

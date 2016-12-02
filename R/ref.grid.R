@@ -438,6 +438,12 @@ print.ref.grid = function(x,...)
     print(summary.ref.grid(x, ...))
 
 
+# levels method - returns data frame of grid without offsets of weights
+levels.ref.grid = function(x, ...) {
+    nms = setdiff(names(x@grid), c(".wgt.", ".offset."))
+    x@grid[nms]
+}
+
 # vcov method
 vcov.ref.grid = function(object, ...) {
     tol = get.lsm.option("estble.tol")
