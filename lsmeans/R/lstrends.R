@@ -92,6 +92,7 @@ lstrends = function(model, specs, var, delta.var=.01*rng, data,
    
     RG@misc$tran = RG@misc$tran.mult = NULL
     RG@misc$estName = estName
+    RG@misc$methDesc = "lstrends"
     
     .save.ref.grid(RG)  # save in .Last.ref.grid, if enabled
     
