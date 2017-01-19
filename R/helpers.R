@@ -336,14 +336,7 @@ recover.data.lme = function(object, data, ...) {
     fcall = object$call
     if (!is.null(fcall$weights))
         fcall$weights = nlme::varWeights(object$modelStruct)
-    if(is.null(data)) { # lme objects actually have the data, so use it!
-        data = object$data
-        if (!is.null(fcall$subset))
-            data = data[eval(fcall$subset, envir=), , drop = FALSE]
-        if (!is.null(object$na.action))
-            data = data[-object$na.action, , drop = FALSE]
-    }
-    recover.data(fcall, delete.response(terms(object)), numeric(0), data = data, ...)
+    recover.data(fcall, delete.response(terms(object)), object$na.action, data = data, ...)
 }
 
 lsm.basis.lme = function(object, trms, xlev, grid, sigmaAdjust = TRUE, ...) {

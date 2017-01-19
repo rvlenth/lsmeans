@@ -280,17 +280,21 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
         result = do.call("update.ref.grid", options)
     }
     
-    if (missing(contr))
-        result
+    # if (missing(contr))
+    #     result
     
-    else { # return a list with lsmeans and contrasts
+    if(!missing(contr)) { # return a list with lsmeans and contrasts
         if (is.character(contr) && contr == "cld") {
         # TO DO: provide for passing dots to cld                
             return(cld(result, by = by))
         }
         ctrs = contrast(result, method = contr, by = by, ...)
-        .cls.list("lsm.list", lsmeans = result, contrasts = ctrs)
+        result = .cls.list("lsm.list", lsmeans = result, contrasts = ctrs)
+        if(!is.null(lbl <- object@misc$methDesc))
+            names(result)[1] = lbl
     }
+    
+    result
 }
 
 
