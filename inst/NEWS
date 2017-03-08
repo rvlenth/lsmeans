@@ -1,12 +1,14 @@
 Changelog for 'lsmeans' package
 
-2.25-3
+2.25-4
     Added 'levels' method for 'ref.grid' to show predictor combinations that 
         define the grid.
     Added 'coef' method for 'ref.grid', returns matrix of contrast coefficients
     Yet another bug correction for lme support (reverted to old code that worked 
         just fine until I tried to make it more efficient)
     Improved labeling of lstrends when a contrast is specified
+    Bug fix for error when 'weights' specified but no weights available
+    Bug fix in ordinal support with weights
 
 2.25
     Now supports models with just the intercept
