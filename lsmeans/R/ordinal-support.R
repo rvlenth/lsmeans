@@ -236,6 +236,11 @@ lsm.basis.clm = function (object, trms, xlev, grid,
 .clm.prob.grid = function(object, thresh = "cut", newname = object@misc$respName) {
     byv = setdiff(names(object@levels), thresh)
     newrg = contrast(object, ".diff_cum", by = byv)
+    if (!is.null(wgt <- object@grid[[".wgt."]])) {
+        km1 = length(object@levels[[thresh]])
+        wgt = wgt[seq_len(length(wgt) / km1)] # unique weights for byv combs
+        newrg@grid[[".wgt."]] = rep(wgt, each = km1 + 1)
+    }
     class(newrg) = "ref.grid"
     misc = newrg@misc
     misc$infer = c(FALSE,FALSE)
