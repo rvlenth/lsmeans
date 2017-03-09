@@ -3,7 +3,12 @@
 # Imports
 # From default packages (new req from CRAN, July 2015)
 importFrom("graphics", "pairs", "plot")
-importFrom("stats", "as.formula", "coef", "complete.cases", "confint", "cov", "cov2cor", "delete.response", "deriv", "family", "lm", "make.link", "model.frame", "model.matrix", "na.omit", "na.pass", "p.adjust", "p.adjust.methods", "pchisq", "pf", "poly", "predict", "pt", "ptukey", "qbeta", "qf", "qt", "qtukey", "reformulate", "terms", "uniroot", "update", "vcov")
+importFrom("stats", "as.formula", "coef", "complete.cases", "confint", "cov", 
+           "cov2cor", "delete.response", "deriv", "family", "lm", "make.link", 
+           "model.frame", "model.matrix", "na.omit", "na.pass", "p.adjust", 
+           "p.adjust.methods", "pchisq", "pf", "poly", "predict", "pt", "ptukey", 
+           "qbeta", "qf", "qt", "qtukey", "reformulate", "terms", "uniroot", 
+           "update", "vcov")
 importFrom("utils", "head", "installed.packages", "str")
 importFrom("nlme", "fixef")
 
@@ -117,8 +122,6 @@ S3method(contrast, lsm.list)
 
 #S3method(glht, lsmlf)   # in namespace block above
 #S3method(glht, ref.grid)
-
-S3method(levels, ref.grid)
 
 S3method(lsmeans, character)
 S3method(lsmeans.character, default)
