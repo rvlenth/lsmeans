@@ -10,6 +10,8 @@
 \alias{confint.ref.grid}
 \alias{pairs}
 \alias{pairs.ref.grid}
+\alias{coef}
+\alias{coef.ref.grid}
 
 
 
@@ -85,7 +87,7 @@ The ``grid'' for the returned value is simply the set of variables that identify
 
 \code{confint} and \code{test} (when \code{Joint==FALSE}) return an object of class \code{summary.ref.grid}. When \code{JOINT==TRUE}, \code{test} returns a \code{"summary.ref.grid"} object (extends \code{"data.frame"})  with the test statistic, degrees of freedom, and \emph{P} value for each \code{by} group.
 
-The \code{coef} method returns a matrix of contrast coefficients, if the object was produced by \code{contrast} or one of its relatives. Each row of this matrix contains the coefficients that were applied to the original object from which contrasts were computed. If \code{object} was not produced via contrasts, \code{NULL} is returned, along with a message. 
+When \code{object} is the result of a call to \code{contrast} or \code{pairs}, the \code{coef} method returns a\code{data.frame}. The initial columns are the factor combinations that were contrasted (i.e. the grid for the \code{object} originally specified in the call to \code{contrast}), and the remaining columns (named \code{c.1}, \code{c.2}, \ldots) contain the contrast coefficients that were applied to the corresponding predictions. If \code{object} was not produced via \code{contrast}, \code{NULL} is returned, along with a message. 
 }
 %\references{}
 \author{
@@ -126,7 +128,7 @@ contrast(warp.lsm, "consec", by = NULL)
 (int.con <- contrast(warp.lsm, interaction = c("poly", "consec"), by = NULL))
 
 # See the contrast coefficients used by the previous call
-cbind(levels(warp.lsm), t(coef(int.con)))
+coef(int.con)
     
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

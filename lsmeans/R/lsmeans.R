@@ -319,6 +319,9 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
         by = object@misc$by.vars
     if(length(by) == 0) # character(0) --> NULL
         by = NULL
+    
+    orig.grid = object@grid
+    orig.grid[[".wgt."]] = orig.grid[[".offset."]] = NULL
 
     if (is.logical(interaction) && interaction)
         interaction = method
@@ -346,6 +349,7 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
             vars[i] = nm
         }
         object = update(object, by = by, adjust = adjust, ...)
+        object@misc$orig.grid = orig.grid
         object@misc$con.coef = tcm
         if(!is.null(options)) {
             options$object = object
@@ -461,6 +465,7 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     by.cols = seq_len(ncol(tcmat))
     if(!is.null(by.rows))
         by.cols[unlist(by.rows)] = by.cols # gives us inverse of by.rows order
+    misc$orig.grid = orig.grid  # save original grid
     misc$con.coef = tcmat[ , by.cols, drop = FALSE] # save contrast coefs
     # zap the transformation info except in very special cases
     if (!is.null(misc$tran)) {
@@ -629,9 +634,13 @@ pairs.ref.grid = function(x, reverse = FALSE, ...) {
 
 # coef method - returns contrast coefficients, or identity matrix if no contrasts
 coef.ref.grid = function(object, ...) {
-    if(is.null(cf <- object@misc$con.coef))
+    if (is.null(cc <- object@misc$con.coef)) {
         message("No contrast coefficients are available")
-    cf
+        return (NULL)
+    }
+    cc = as.data.frame(t(cc))
+    names(cc) = paste("c", seq_len(ncol(cc)), sep = ".")
+    cbind(object@misc$orig.grid, cc)
 }
     
 

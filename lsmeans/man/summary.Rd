@@ -19,7 +19,6 @@
 \alias{xtable.ref.grid}
 \alias{xtable.summary.ref.grid}
 \alias{print.xtable.lsm}
-\alias{levels.ref.grid}
 
 
 %- Also NEED an '\alias' for EACH other topic documented here.
@@ -36,8 +35,6 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 \method{predict}{ref.grid}(object, type, ...)
 
 \method{str}{ref.grid}(object, ...)
-
-\method{levels}{ref.grid}(x, ...)
 
 \method{rbind}{ref.grid}(..., deparse.level = 1, adjust = "mvt")
 

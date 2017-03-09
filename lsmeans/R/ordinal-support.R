@@ -241,11 +241,12 @@ lsm.basis.clm = function (object, trms, xlev, grid,
         wgt = wgt[seq_len(length(wgt) / km1)] # unique weights for byv combs
         newrg@grid[[".wgt."]] = rep(wgt, each = km1 + 1)
     }
+    # proceed to disavow that this was ever exposed to 'lsmeans' or 'contrast'
     class(newrg) = "ref.grid"
     misc = newrg@misc
     misc$infer = c(FALSE,FALSE)
     misc$estName = "prob"
-    misc$pri.vars = misc$by.vars = NULL
+    misc$pri.vars = misc$by.vars = misc$con.coef = misc$orig.grid = NULL
     newrg@misc = misc
     names(newrg@levels)[1] = names(newrg@grid)[1] = newname
     newrg@roles = object@roles
