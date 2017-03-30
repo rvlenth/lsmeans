@@ -23,7 +23,7 @@
 # returns an error if not installed
 .mcletters = function(..., Letters=c("1234567890",LETTERS,letters), reversed=FALSE) {
     if(!requireNamespace("multcompView", quietly = TRUE)) {
-        message("The 'multcompView' package must be installed to use cld methods")
+        stop("The 'multcompView' package must be installed to use cld methods")
         return (list(monospacedLetters = "?"))
     }
     
