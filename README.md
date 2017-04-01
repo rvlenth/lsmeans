@@ -7,9 +7,6 @@ R package **lsmeans**: Least-squares means (predicted marginal means)
 [![total downloads](http://cranlogs.r-pkg.org/badges/grand-total/lsmeans)](http://cranlogs.r-pkg.org/badges/grand-total/lsmeans)
 [![Research software impact](http://depsy.org/api/package/cran/lsmeans/badge.svg)](http://depsy.org/package/r/lsmeans)
 
-## Release notes
-
-* See the [NEWS file](https://github.com/rvlenth/lsmeans/blob/master/inst/NEWS) (or  `news(package="lsmeans")`).
 
 ## Features
 * For an overview, see the [vignette](http://cran.r-project.org/web/packages/lsmeans/vignettes/using-lsmeans.pdf) -- also available via `vignette("using-lsmeans", package = "lsmeans")`
@@ -26,8 +23,10 @@ R package **lsmeans**: Least-squares means (predicted marginal means)
 ```
 install.packages("lsmeans")
 ```
+Release notes for the latest CRAN version are found at [http://cran.r-project.org/web/packages/lsmeans/NEWS](http://cran.r-project.org/web/packages/lsmeans/NEWS) -- or do `news(package = "lsmeans")` for notes on the version you have installed.
+
 * To install the latest development version from Github, have the newest **devtools** package installed, then run
 ```
 devtools::install_github("rvlenth/lsmeans", dependencies = TRUE)
 ```
-
+For latest release notes on this development version, see the [NEWS file](https://github.com/rvlenth/lsmeans/blob/master/inst/NEWS)
