@@ -363,8 +363,11 @@ predict.ref.grid <- function(object, type, ...) {
     #         result = result + object@grid[[".offset."]]
     if (type == "response") {
         link = attr(pred, "link")
-        if (!is.null(link))
+        if (!is.null(link)) {
             result = link$linkinv(result)
+            if (is.logical(link$unknown) && link$unknown)
+                warning("Unknown transformation: \"", link$name, "\" -- no transformation applied.")
+        }
     }
     result
 }

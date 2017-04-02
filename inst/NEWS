@@ -1,7 +1,10 @@
 Changelog for 'lsmeans' package
 
 2.25-6
+    Moved codebase to github rvlenth/lsmeans
     In 'cld', get error instead of message if "multcompView" not installed
+    Added warning message in 'predict.ref.grid(..., type = "response")'
+        when transformation is unknown.
     
 
 2.25-5
