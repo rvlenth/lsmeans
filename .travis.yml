@@ -1,12 +1,11 @@
 language: r
-###r: devel
 sudo: false
 cache: packages
 
 before_install:
   - curl -OL https://raw.githubusercontent.com/metacran/r-builder/master/pkg-build.sh
   - chmod 755 pkg-build.sh
-  - ./pkg-build.sh bootstrap
+  - ./pkg-build.sh lsmeans
 
 install:
   - ./pkg-build.sh install_deps
