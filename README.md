@@ -7,7 +7,6 @@ R package **lsmeans**: Least-squares means (predicted marginal means)
 [![total downloads](http://cranlogs.r-pkg.org/badges/grand-total/lsmeans)](http://cranlogs.r-pkg.org/badges/grand-total/lsmeans)
 [![Research software impact](http://depsy.org/api/package/cran/lsmeans/badge.svg)](http://depsy.org/package/r/lsmeans)
 
-
 ## Features
 * For an overview, see the [vignette](http://cran.r-project.org/web/packages/lsmeans/vignettes/using-lsmeans.pdf) -- also available via `vignette("using-lsmeans", package = "lsmeans")`
 * Least-squares means (a.k.a. predicted marginal means) are derived by using a model to make predictions over a regular grid of pridictor combinations (called a *reference grid*). These predictions may possibly be averaged (typically with equal weights) over one or more of the predictors. Such marginally-averaged predictions are useful for describing the results of fitting a model, particularly in presenting the effects of factors. The **lsmeans** package can easily produce these results, as well as various graphs of them (interaction-style plots and side-by-side intervals).

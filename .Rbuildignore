@@ -2,7 +2,7 @@
 ^.*\.Rproj$
 ^\.svn$
 ^\.gitignore$
-^.travis\..yml$
+^\.travis\.yml$
 
 # Not yet ready for prime time
 
