@@ -58,7 +58,7 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 
 \method{vcov}{ref.grid}(object, ...)
 
-regrid (object, transform = c("response", "log", "none"), 
+regrid (object, transform = c("response", "mu", "log", "none"), 
     inv.log.lbl = "response", predict.type)
 
 \method{as.mcmc}{ref.grid}(x, names = TRUE, ...)
@@ -81,7 +81,7 @@ Character value naming the method used to adjust \eqn{p} values or confidence li
 Character name(s) of variables to use for grouping. This affects the family of tests considered in adjusted \emph{P} values. The printed display of the summary is grouped by the \code{by} variables.
 }
   \item{type}{
-Type of prediction desired (except in \code{print.xtable}). This only has an effect if there is a known transformation or link function. \code{"response"} specifies that the inverse transformation be applied. Other valid values are \code{"link"}, \code{"lp"}, and \code{"linear"}; these are equivalent, and request that results be shown for the linear predictor. The default is \code{"link"}, unless the \code{"predict.type"} option is in force; see \code{\link{lsm.options}}.
+Type of prediction desired (except in \code{print.xtable}). This only has an effect if there is a known transformation or link function. \code{"response"} specifies that the inverse transformation be applied. \code{"mu"} is usually the same as \code{"response"}, but in the case where the model has both a link function and a response transformation, only the link part is back-transformed. Other valid values are \code{"link"}, \code{"lp"}, and \code{"linear"}; these are equivalent, and request that results be shown for the linear predictor, with no back-transformation. The default is \code{"link"}, unless the \code{"predict.type"} option is in force; see \code{\link{lsm.options}}.
 
 Note that \code{type} is also an argument for the \code{print.xtable} method; it is passed to \code{\link[xtable]{print.xtableList}} in the \pkg{xtable} package.
 }
@@ -102,7 +102,7 @@ The object to be subsetted, printed, plotted, or converted.
   \item{comparisons}{If \code{TRUE}, \dQuote{comparison arrows} are added to the plot, in such a way that the degree to which arrows overlap reflects as much as possible the significance of the comparison of the two estimates.}
   \item{alpha}{The \code{alpha} argument to use in constructing comparison arrows.}
   \item{int.adjust}{the multiplicity adjustment method for the plotted confidence intervals; if missing, it defaults to the object's internal \code{adjust} setting (see \code{\link{update}}). (Note: the \code{adjust} argument in \code{plot} sets the adjust method for the comparison arrows, not the confidence intervals.)}
-  \item{transform}{Character value. If \code{"response"}, the inverse transformation is applied to the estimates in the grid; if \code{"log"}, the results are formulated as if the response had been \code{log}-transformed; if \code{"none"}, predictions thereof are on the same scale as in \code{object}, and any internal transformation information is preserved. For compatibility with past versions, \code{transform} may also be logical; \code{TRUE} is taken as \code{"response"}, and \code{FALSE} as \code{"none"}.}
+  \item{transform}{Character value. If \code{"response"} or \code{"mu"}, the inverse transformation is applied to the estimates in the grid (but if there is both a link function and a response transformation, \code{"mu"} back-transforms only the link part); if \code{"log"}, the results are formulated as if the response had been \code{log}-transformed; if \code{"none"}, predictions thereof are on the same scale as in \code{object}, and any internal transformation information is preserved. For compatibility with past versions, \code{transform} may also be logical; \code{TRUE} is taken as \code{"response"}, and \code{FALSE} as \code{"none"}.}
   \item{inv.log.lbl}{Character value. This applies only when \code{transform = "log"}, and is used to label the predictions if subsequently summarized with \code{type = "response"}.}
   \item{predict.type}{Character value. If provided, the returned object is first \code{\link{update}}d with the given type, e.g., \code{"response"}.}
   \item{names}{Logical scalar or vector specifying whether variable names are appended to levels in the column labels for the \code{as.mcmc} result -- e.g., column names of \code{treat A} and \code{treat B} versus  just \code{A} and \code{B}. When there is more than one variable involved, the elements of \code{names} are used cyclically.}
@@ -115,7 +115,7 @@ The object to be subsetted, printed, plotted, or converted.
 The \code{misc} slot in \code{object} contains default values for \code{by}, \code{infer}, \code{level}, \code{adjust}, \code{type}, \code{null}, \code{side}, and \code{delta}. These defaults vary depending on the code that created the object. The \code{\link{update}} method may be used to change these defaults. In addition, any options set using \samp{lsm.options(summary=...)} will trump those stored in the object's \code{misc} slot.
 
 \bold{Transformations and links:}
-With \code{type="response"}, the transformation assumed can be found in \samp{object@misc$tran}, and its label, for the summary is in \samp{object@misc$inv.lbl}. At this time, \code{tran} must be one of the named transformations valid for \code{\link{make.link}}. Any \eqn{t} or \eqn{z} tests are still performed on the scale of the linear predictor, not the inverse-transformed one. Similarly, confidence intervals are computed on the linear-predictor scale, then inverse-transformed.
+With \code{type="response"}, the transformation assumed can be found in \samp{object@misc$tran}, and its label, for the summary is in \samp{object@misc$inv.lbl}. Any \eqn{t} or \eqn{z} tests are still performed on the scale of the linear predictor, not the inverse-transformed one. Similarly, confidence intervals are computed on the linear-predictor scale, then inverse-transformed.
 
 \bold{Confidence-limit and P-value adjustments:}
 The \code{adjust} argument specifies a multiplicity adjustment for tests or confidence intervals. This adjustment always is applied \emph{separately} to each table or sub-table that you see in the printed output (see the details on \code{rbind} below for how to combine tables). The valid values of \code{adjust} are as follows:

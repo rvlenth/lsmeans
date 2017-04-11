@@ -326,7 +326,10 @@
 ### Support for different prediction types ###
 
 # Valid values for type arg or predict.type option
-.valid.types = c("link","response","lp","linear")
+#   "link", "lp", "linear" are all legal but equivalent
+#   "mu" and "response" are usually equivalent -- but in a GLM with a response transformation,
+#      "mu" would back-transform the link only, "response" would do both
+.valid.types = c("link","lp","linear", "response", "mu")
 
 # get "predict.type" option from misc, and make sure it's legal
 .get.predict.type = function(misc) {
@@ -338,9 +341,11 @@
 }
 
 # check a "type" arg to make it legal
+# NOTE: if not matched, returns "link", i.e., no back-transformation will be done
 .validate.type = function (type) {
     .valid.types[pmatch(type, .valid.types, 1)]
 }
+
 
 # S3 predict method
 predict.ref.grid <- function(object, type, ...) {
@@ -355,6 +360,10 @@ predict.ref.grid <- function(object, type, ...) {
         type = .get.predict.type(object@misc)
     else
         type = .validate.type(type)
+
+    # if there are two transformations and we want response, then we need to undo both
+    if ((type == "response") && (!is.null(object@misc$tran2)))
+            object = regrid(object, transform = "mu")
     
     pred = .est.se.df(object, do.se=FALSE)
     result = pred[[1]]
@@ -389,6 +398,10 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
         type = .get.predict.type(object@misc)
     else
         type = .validate.type(type)
+    
+    # if there are two transformations and we want response, then we need to undo both
+    if ((type == "response") && (!is.null(object@misc$tran2)))
+        object = regrid(object, transform = "mu")
     
     if(missing(df)) 
         df = object@misc$df
@@ -429,7 +442,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     lbls = object@grid[lblnms]
     
     zFlag = (all(is.na(result$df)))
-    inv = (type == "response") # flag to inverse-transform
+    inv = (type == "response" || type == "mu") # flag to inverse-transform
     link = attr(result, "link")
     if (inv && is.null(link))
         inv = FALSE

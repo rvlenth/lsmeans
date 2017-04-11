@@ -461,7 +461,7 @@ update.ref.grid = function(object, ..., silent = FALSE) {
     args = list(...)
     valid.misc = c("adjust","alpha","avgd.over","by.vars","delta","df",
         "initMesg","estName","estType","famSize","infer","inv.lbl",
-        "level","methdesc","null","predict.type","pri.vars","side","tran","tran.mult")
+        "level","methdesc","null","predict.type","pri.vars","side","tran","tran.mult","tran2")
     valid.slots = slotNames(object)
     valid.choices = union(valid.misc, valid.slots)
     misc = object@misc
@@ -536,13 +536,18 @@ defaults.lsm = list(
 ### Returned ref.grid object has linfct = I and bhat = estimates
 ### Primary reason to do this is with transform = TRUE, then can 
 ### work with linear functions of the transformed predictions
-regrid = function(object, transform = c("response", "log", "none"), 
+regrid = function(object, transform = c("response", "mu", "log", "none"), 
     inv.log.lbl = "response", predict.type) 
 {
     if (is.logical(transform))   # for backward-compatibility
         transform = ifelse(transform, "response", "none")
     else
         transform = match.arg(transform)
+    
+    # if we have two transformations to undo, do the first one recursively
+    if ((transform == "response") && (!is.null(object@misc$tran2)))
+        object = regrid(object, transform = "mu")
+    
     est = .est.se.df(object, do.se = TRUE) ###FALSE)
     estble = !(is.na(est[[1]]))
     object@V = vcov(object)[estble, estble, drop=FALSE]
@@ -568,7 +573,7 @@ regrid = function(object, transform = c("response", "log", "none"),
         }
     }
     
-    if(transform %in% c("response", "log") && !is.null(object@misc$tran)) {
+    if(transform %in% c("response", "mu", "log") && !is.null(object@misc$tran)) {
         link = attr(est, "link")
         D = .diag(link$mu.eta(object@bhat[estble]))
         object@bhat = link$linkinv(object@bhat)
@@ -576,7 +581,12 @@ regrid = function(object, transform = c("response", "log", "none"),
         inm = object@misc$inv.lbl
         if (!is.null(inm))
             object@misc$estName = inm
-        object@misc$tran = object@misc$tran.mult = object@misc$inv.lbl = NULL
+        if((transform == "mu") && !is.null(object@misc$tran2)) {
+            object@misc$tran = object@misc$tran2
+            object@misc$tran2 = object@misc$tran.mult = object@misc$inv.lbl = NULL
+        }
+        else
+            object@misc$tran = object@misc$tran.mult = object@misc$inv.lbl = NULL
     }
     if (transform == "log") { # from prev block, we now have stuff on response scale
         incl = which(object@bhat > 0)
