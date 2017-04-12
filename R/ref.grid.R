@@ -30,7 +30,7 @@
 
 ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, 
                      options = get.lsm.option("ref.grid"), data, df, type, 
-                     transform = c("none", "response", "log"), ...) 
+                     transform = c("none", "response", "mu", "log"), ...) 
 {
     transform = match.arg(transform)
     if (!missing(df)) {
@@ -173,7 +173,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     # if not, we probably get an error or something that isn't a formula
     # and it is silently ignored
     lhs = try(eval(attr(data, "call")[[2]][-3]), silent = TRUE)
-    if (is.null(misc$tran) && (inherits(lhs, "formula"))) { # No link fcn, but response may be transformed
+    ###--OLD--if (is.null(misc$tran) && (inherits(lhs, "formula"))) { # No link fcn, but response may be transformed
+    if (inherits(lhs, "formula")) { # response may be transformed
         tran = setdiff(.all.vars(lhs, functions = TRUE), c(.all.vars(lhs), "~", "cbind"))
         if(length(tran) > 0) {
             tran = paste(tran, collapse = ".")  
@@ -189,7 +190,10 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
             }
             if (tran == "linkfun")
                 tran = as.list(environment(trms))
-            misc$tran = tran
+            if(is.null(misc$tran))
+                misc$tran = tran
+            else
+                misc$tran2 = tran
             misc$inv.lbl = "response"
         }
     }
@@ -397,8 +401,14 @@ str.ref.grid <- function(object, ...) {
         if (is.null(x)) cat("(predicted by other variables)")
         else cat(paste(format(x, digits = 5, justify = "none"), collapse=", "))
     }
-    #cat("responses: ")
-    #showlevs(object@roles$responses)
+    showtran = function(tran, label) { # internal convenience fcn
+        if (is.list(tran)) 
+            tran = ifelse(is.null(tran$name), "custom", tran$name)
+        if (!is.null(mul <- object@misc$tran.mult))
+            tran = paste0(mul, "*", tran)
+        cat(paste(label, dQuote(tran), "\n"))
+        
+    }
     levs = object@levels
     cat(paste("'", class(object)[1], "' object with variables:\n", sep=""))
     for (nm in union(object@roles$predictors, union(object@roles$multresp, object@roles$responses))) {
@@ -424,11 +434,9 @@ str.ref.grid <- function(object, ...) {
         cat("\n")
     }
     if(!is.null(tran <- object@misc$tran)) {
-        if (is.list(tran)) 
-            tran = ifelse(is.null(tran$name), "custom - see slot(, \"misc\")$tran", tran$name)
-        if (!is.null(mul <- object@misc$tran.mult))
-            tran = paste0(mul, "*", tran)
-        cat(paste("Transformation:", dQuote(tran), "\n"))
+        showtran(tran, "Transformation:")
+        if (!is.null(tran2 <- object@misc$tran2))
+            showtran(tran2, "Additional response transformation:")
     }
 }
 

@@ -58,7 +58,8 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, layout, ..
         stop("This function requires the 'lattice' package be installed.")
     
     summ = x # so I don't get confused
-    estName = attr(summ, "estName")
+    estName = "the.lsmean"
+    names(summ)[which(names(summ) == attr(summ, "estName"))] = estName
     clNames = attr(summ, "clNames")
     if (is.null(clNames)) {
         warning("No information available to display confidence limits")
@@ -254,7 +255,7 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, layout, ..
     facName = paste(priv, collapse=":")
     form = as.formula(chform)
     if (horizontal) {
-        if (missing(xlab)) xlab = estName
+        if (missing(xlab)) xlab = attr(summ, "estName")
         if (missing(ylab)) ylab = facName
         lattice::dotplot(form, prepanel=prepanel.ci, panel=panel.ci, 
                 strip = my.strip, horizontal = TRUE,

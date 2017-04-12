@@ -370,7 +370,7 @@ predict.ref.grid <- function(object, type, ...) {
     # MOVED TO .EST.SE.DF    
     #     if (".offset." %in% names(object@grid))
     #         result = result + object@grid[[".offset."]]
-    if (type == "response") {
+    if ((type == "response") || (type == "mu")) {
         link = attr(pred, "link")
         if (!is.null(link)) {
             result = link$linkinv(result)
@@ -402,6 +402,11 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     # if there are two transformations and we want response, then we need to undo both
     if ((type == "response") && (!is.null(object@misc$tran2)))
         object = regrid(object, transform = "mu")
+    if ((type == "mu") && (!is.null(t2 <- object@misc$tran2))) {
+        if (!is.character(t2))
+            t2 = "tran"
+        object = update(object, inv.lbl = paste0(t2, "(resp)"))
+    }
     
     if(missing(df)) 
         df = object@misc$df
@@ -442,7 +447,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     lbls = object@grid[lblnms]
     
     zFlag = (all(is.na(result$df)))
-    inv = (type == "response" || type == "mu") # flag to inverse-transform
+    inv = ((type == "response") || (type == "mu")) # flag to inverse-transform
     link = attr(result, "link")
     if (inv && is.null(link))
         inv = FALSE
@@ -456,7 +461,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
         if (!is.null(object@misc$inv.lbl))
             names(result)[1] = object@misc$inv.lbl
         else
-            names(result)[1] = "lsresponse"
+            names(result)[1] = "response"
     }
 
     attr(result, "link") = NULL
