@@ -30,7 +30,7 @@
 
 ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, 
                      options = get.lsm.option("ref.grid"), data, df, type, 
-                     transform = c("none", "response", "mu", "log"), ...) 
+                     transform = c("none", "response", "mu", "unlink", "log"), ...) 
 {
     transform = match.arg(transform)
     if (!missing(df)) {
@@ -544,7 +544,7 @@ defaults.lsm = list(
 ### Returned ref.grid object has linfct = I and bhat = estimates
 ### Primary reason to do this is with transform = TRUE, then can 
 ### work with linear functions of the transformed predictions
-regrid = function(object, transform = c("response", "mu", "log", "none"), 
+regrid = function(object, transform = c("response", "mu", "unlink", "log", "none"), 
     inv.log.lbl = "response", predict.type) 
 {
     if (is.logical(transform))   # for backward-compatibility
@@ -581,7 +581,7 @@ regrid = function(object, transform = c("response", "mu", "log", "none"),
         }
     }
     
-    if(transform %in% c("response", "mu", "log") && !is.null(object@misc$tran)) {
+    if(transform %in% c("response", "mu", "unlink", "log") && !is.null(object@misc$tran)) {
         link = attr(est, "link")
         D = .diag(link$mu.eta(object@bhat[estble]))
         object@bhat = link$linkinv(object@bhat)
@@ -589,7 +589,7 @@ regrid = function(object, transform = c("response", "mu", "log", "none"),
         inm = object@misc$inv.lbl
         if (!is.null(inm))
             object@misc$estName = inm
-        if((transform == "mu") && !is.null(object@misc$tran2)) {
+        if((transform %in% c("mu", "unlink")) && !is.null(object@misc$tran2)) {
             object@misc$tran = object@misc$tran2
             object@misc$tran2 = object@misc$tran.mult = object@misc$inv.lbl = NULL
         }

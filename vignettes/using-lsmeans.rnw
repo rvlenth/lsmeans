@@ -594,6 +594,24 @@ The LS~means shown are the geometric means of the predictions, as opposed to the
 For convenience, the user may use a "transform" argument to re-grid as part of a "ref.grid" or "lsmeans" call. For example, \verb|lsmeans(Oats.bc, "Variety", transform = "response")| is equivalent to \verb|lsmeans(rg.bc.regrid, "Variety")| but without needing the two code steps previously used to produce "rg.bc" and "rg.bc.regrid".
 
 
+\subsection{Duplex transformations}\ix{duplex transformations}\ix{two transformations}\ixsub{transformations}{duplex}\ixsub{transformations}{two in same model}
+It is possible to have both a response transformation and a link function in a generalized linear model. For example,
+<<>>=
+warp.glm <- glm(sqrt(breaks) ~ wool * tension, family = gaussian(link = "log"),
+                data = warpbreaks)
+@
+In such a case, both the link function and response transformation are auto-detected, as can be seen here:
+<<>>=
+warp.rg <- ref.grid(warp.glm)
+warp.rg
+@
+Using predictions, summaries, or tests of type \dqt{response} will undo both transformations, so that in the above example, the results would be on the original scale (number of warp breaks). Some users may want to back-transform only half-way---undoing the link function but not the response transformation. For that purpose, prediction type of \dqt{mu} (or equivalently, \dqt{unlink}) is supported. In this example, here are predictions on three different scales:
+<<>>=
+predict(warp.rg, type = "linear")    ### log(sqrt) scale - no back-transformation
+predict(warp.rg, type = "unlink")    ### sqrt scale
+predict(warp.rg, type = "response")  ### response scale
+@
+
 
 \section{More on tests}
 \def\tj{\theta^{(j)}}%%% Notation for this section only

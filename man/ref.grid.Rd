@@ -18,7 +18,7 @@ Using a fitted model object, determine a reference grid for which least-squares 
 \usage{
 ref.grid(object, at, cov.reduce = mean, mult.name, mult.levs, 
     options = get.lsm.option("ref.grid"), data, df, type, 
-    transform = c("none", "response", "log"), ...)
+    transform = c("none", "response", "mu", "unlink", "log"), ...)
     
 .Last.ref.grid
 }

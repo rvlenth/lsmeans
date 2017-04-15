@@ -58,7 +58,7 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 
 \method{vcov}{ref.grid}(object, ...)
 
-regrid (object, transform = c("response", "mu", "log", "none"), 
+regrid (object, transform = c("response", "mu", "unlink", "log", "none"), 
     inv.log.lbl = "response", predict.type)
 
 \method{as.mcmc}{ref.grid}(x, names = TRUE, ...)
@@ -81,7 +81,7 @@ Character value naming the method used to adjust \eqn{p} values or confidence li
 Character name(s) of variables to use for grouping. This affects the family of tests considered in adjusted \emph{P} values. The printed display of the summary is grouped by the \code{by} variables.
 }
   \item{type}{
-Type of prediction desired (except in \code{print.xtable}). This only has an effect if there is a known transformation or link function. \code{"response"} specifies that the inverse transformation be applied. \code{"mu"} is usually the same as \code{"response"}, but in the case where the model has both a link function and a response transformation, only the link part is back-transformed. Other valid values are \code{"link"}, \code{"lp"}, and \code{"linear"}; these are equivalent, and request that results be shown for the linear predictor, with no back-transformation. The default is \code{"link"}, unless the \code{"predict.type"} option is in force; see \code{\link{lsm.options}}.
+Type of prediction desired (except in \code{print.xtable}). This only has an effect if there is a known transformation or link function. \code{"response"} specifies that the inverse transformation be applied. \code{"mu"} (or equivalently, \code{"unlink"} is usually the same as \code{"response"}, but in the case where the model has both a link function and a response transformation, only the link part is back-transformed. Other valid values are \code{"link"}, \code{"lp"}, and \code{"linear"}; these are equivalent, and request that results be shown for the linear predictor, with no back-transformation. The default is \code{"link"}, unless the \code{"predict.type"} option is in force; see \code{\link{lsm.options}}.
 
 Note that \code{type} is also an argument for the \code{print.xtable} method; it is passed to \code{\link[xtable]{print.xtableList}} in the \pkg{xtable} package.
 }

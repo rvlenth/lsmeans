@@ -328,8 +328,8 @@
 # Valid values for type arg or predict.type option
 #   "link", "lp", "linear" are all legal but equivalent
 #   "mu" and "response" are usually equivalent -- but in a GLM with a response transformation,
-#      "mu" would back-transform the link only, "response" would do both
-.valid.types = c("link","lp","linear", "response", "mu")
+#      "mu" (or "unlink") would back-transform the link only, "response" would do both
+.valid.types = c("link","lp","linear", "response", "mu", "unlink")
 
 # get "predict.type" option from misc, and make sure it's legal
 .get.predict.type = function(misc) {
@@ -367,10 +367,8 @@ predict.ref.grid <- function(object, type, ...) {
     
     pred = .est.se.df(object, do.se=FALSE)
     result = pred[[1]]
-    # MOVED TO .EST.SE.DF    
-    #     if (".offset." %in% names(object@grid))
-    #         result = result + object@grid[[".offset."]]
-    if ((type == "response") || (type == "mu")) {
+
+    if (type %in% c("response", "mu", "unlink")) {
         link = attr(pred, "link")
         if (!is.null(link)) {
             result = link$linkinv(result)
@@ -402,7 +400,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     # if there are two transformations and we want response, then we need to undo both
     if ((type == "response") && (!is.null(object@misc$tran2)))
         object = regrid(object, transform = "mu")
-    if ((type == "mu") && (!is.null(t2 <- object@misc$tran2))) {
+    if ((type %in% c("mu", "unlink")) && (!is.null(t2 <- object@misc$tran2))) {
         if (!is.character(t2))
             t2 = "tran"
         object = update(object, inv.lbl = paste0(t2, "(resp)"))
@@ -447,7 +445,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     lbls = object@grid[lblnms]
     
     zFlag = (all(is.na(result$df)))
-    inv = ((type == "response") || (type == "mu")) # flag to inverse-transform
+    inv = (type %in% c("response", "mu", "unlink")) # flag to inverse-transform
     link = attr(result, "link")
     if (inv && is.null(link))
         inv = FALSE
