@@ -181,6 +181,12 @@ With \code{mode = "prob"}, a pseudo-factor is created having the same name as th
 }}% rms
 
 
+\section{\pkg{rstanarm} package}{
+\describe{
+\item{stanreg}{Preliminary support provided at this point. \code{as.mcmc} returns a single posterior sample of LS means. No extended features.}
+}}% rstanarm
+
+
 \section{\pkg{survival} package}{
 \describe{
 \item{survreg, coxph}{No extended features.}

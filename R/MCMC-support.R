@@ -134,3 +134,25 @@ lsm.basis.carbayes = function(object, trms, xlev, grid, ...) {
          misc = misc, post.beta = samp)
 }
 
+
+### Support for the rstanarm package (stanreg objects)
+###
+recover.data.stanreg = function(object, ...) {
+    recover.data.lm(object, ...)
+}
+
+lsm.basis.stanreg = function(object, trms, xlev, grid, ...) {
+    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+    X = model.matrix(trms, m, contrasts.arg = object$contrasts)
+    bhat = fixef(object)
+    V = vcov(object)
+    samp = as.matrix(object$stanfit)[, names(bhat)]
+    misc = list()
+    if (!is.null(object$family))
+        misc = .std.link.labels(object$family, misc)
+    list(X = X, bhat = bhat, nbasis = matrix(NA), V = V, 
+         dffun = function(k, dfargs) NA, dfargs = list(), 
+         misc = misc, post.beta = samp)
+}
+
+

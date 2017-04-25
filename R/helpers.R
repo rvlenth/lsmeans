@@ -104,6 +104,9 @@ recover.data.call = function(object, trms, na.action, data = NULL, params = NULL
     if (is.null(tbl)) {
         m = match(c("formula", "data", "subset", "weights"), names(fcall), 0L)
         fcall = fcall[c(1L, m)]
+        if(any(sapply(fcall[-2], function(x) inherits(x,"call"))))
+            warning("Fitted model contains a call; ref.grid/lsmeans results may be inconsistent",
+                    call. = FALSE)
         fcall$drop.unused.levels = TRUE
         fcall[[1L]] = as.name("model.frame")
         fcall$xlev = NULL # we'll ignore xlev

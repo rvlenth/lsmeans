@@ -1,12 +1,17 @@
 Changelog for 'lsmeans' package
 
-2.25-7
-    Moved codebase to github rvlenth/lsmeans
+2.25-8
+    Moved code repository to https://github.com/rvlenth/lsmeans
+    Added BugReports: URL to DESCRIPTION
     In 'cld', get error instead of message if "multcompView" not installed
     Added warning message in 'predict.ref.grid(..., type = "response")'
         when transformation is unknown.
     Added support for models that have BOTH a link function and a
         response transformation -- and additional prediction type "mu"
+    'recover.data' warns when there is a call in the model-fitting call,
+        as may happen in simulations. 
+    Preliminary support for rstanarm package (stanreg objects) 
+        -- no bells or whistles
     
 
 2.25-5
