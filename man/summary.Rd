@@ -15,6 +15,8 @@
 \alias{rbind.ref.grid}
 \alias{as.mcmc}
 \alias{as.mcmc.ref.grid}
+\alias{as.mcmc.list}
+\alias{as.mcmc.list.ref.grid}
 \alias{[.ref.grid}
 \alias{xtable.ref.grid}
 \alias{xtable.summary.ref.grid}

@@ -36,8 +36,8 @@ if (requireNamespace("plyr", quietly = TRUE)) {
 }
 
 if (requireNamespace("coda", quietly = TRUE)) {
-    importFrom(coda, as.mcmc, as.mcmclist)
-    export(as.mcmc, as.mcmclist)
+    importFrom(coda, as.mcmc, as.mcmc.list)
+    export(as.mcmc, as.mcmc.list)
     S3method(as.mcmc, ref.grid)
     S3method(as.mcmc.list, ref.grid)
 }
