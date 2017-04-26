@@ -1,6 +1,6 @@
 Changelog for 'lsmeans' package
 
-2.25-8
+2.25-9
     Moved code repository to https://github.com/rvlenth/lsmeans
     Added BugReports: URL to DESCRIPTION
     In 'cld', get error instead of message if "multcompView" not installed
@@ -11,7 +11,9 @@ Changelog for 'lsmeans' package
     'recover.data' warns when there is a call in the model-fitting call,
         as may happen in simulations. 
     Preliminary support for rstanarm package (stanreg objects) 
-        -- no bells or whistles
+        -- no bells or whistles yet
+    Addition of as.mcmc.list and extension of as.mcmc to support multiple
+        chains
     
 
 2.25-5

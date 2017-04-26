@@ -21,9 +21,10 @@
 
 # Support for MCMCglmm class and possibly more MCMC-based models
 
-# Method to create a coda 'mcmc' object from a ref.grid
+# Method to create a coda 'mcmc' or 'mcmc.list' object from a ref.grid
 # (dots not supported, unfortunately)
-as.mcmc.ref.grid = function(x, names = TRUE, ...) {
+# If sep.chains is TRUE and there is more than one chain, an mcmc.list is returned
+as.mcmc.ref.grid = function(x, names = TRUE, sep.chains = TRUE, ...) {
     object = x
     if (is.na(x@post.beta[1]))
         stop("No posterior sample -- can't make an 'mcmc' object")
@@ -34,9 +35,28 @@ as.mcmc.ref.grid = function(x, names = TRUE, ...) {
         for (i in seq_along(nm))
             if(names[i]) x@grid[nm[i]] = paste(nm[i], x@grid[[nm[i]]])
     }
+    if(is.null(dimnames(mat)))
+        dimnames(mat) = list(seq_len(nrow(mat)), seq_len(ncol(mat)))
     dimnames(mat)[[2]] = do.call(paste, c(x@grid[, nm, drop = FALSE], sep=", "))
-    coda::mcmc(mat, ...)
+    n.chains = attr(x@post.beta, "n.chains")
+    if (!sep.chains || is.null(n.chains) || (n.chains == 1))
+        coda::mcmc(mat, ...)
+    else {
+        n = nrow(mat) / n.chains
+        seqn = seq_len(n)
+        chains = lapply(seq_len(n.chains), function(i) coda::mcmc(mat[n*(i - 1) + seqn, , drop = FALSE]))
+        coda::mcmc.list(chains)
+    }
 }
+
+### as.mcmc.list - guaranteed to return a list
+as.mcmc.list.ref.grid = function(x, names = TRUE, ...) {
+    result = as.mcmc.ref.grid(x, names = names, sep.chains = TRUE, ...)
+    if(!inherits(result, "mcmc.list"))
+        result = coda::mcmc.list(result)
+    result
+}
+
 
 # Currently, data is required, as call is not stored
 recover.data.MCMCglmm = function(object, data, ...) {    
@@ -109,6 +129,22 @@ lsm.basis.mcmc = function(object, trms, xlev, grid, vcov., ...) {
     list(X = X, bhat = bhat, nbasis = matrix(NA), V = V, 
          dffun = function(k, dfargs) NA, dfargs = list(), 
          misc = misc, post.beta = samp)
+}
+
+
+### Support for mcmc.list
+recover.data.mcmc.list = function(object, formula, data, ...) {
+    recover.data.mcmc(object[[1]], formula, data, ...)
+}
+
+lsm.basis.mcmc.list = function(object, trms, xlev, grid, vcov., ...) {
+    result = lsm.basis.mcmc(object[[1]], trms, xlev, grid, vcov, ...)
+    cols = seq_len(ncol(result$post.beta))
+    for (i in 2:length(object))
+        result$post.beta = rbind(result$post.beta, 
+            as.matrix(object[[i]])[, cols, drop = FALSE])
+    attr(result$post.beta, "n.chains") = length(object)
+    result
 }
 
 

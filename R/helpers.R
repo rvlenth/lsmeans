@@ -110,6 +110,10 @@ recover.data.call = function(object, trms, na.action, data = NULL, params = NULL
         fcall$drop.unused.levels = TRUE
         fcall[[1L]] = as.name("model.frame")
         fcall$xlev = NULL # we'll ignore xlev
+        
+        if(!is.numeric(na.action))   ### In case na.action is not a vector of indices
+            na.action = NULL
+        
         # If we have an explicit list of cases to exclude, let everything through now
         if (!is.null(na.action))
             fcall$na.action = na.pass

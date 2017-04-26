@@ -61,7 +61,8 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 regrid (object, transform = c("response", "mu", "unlink", "log", "none"), 
     inv.log.lbl = "response", predict.type)
 
-\method{as.mcmc}{ref.grid}(x, names = TRUE, ...)
+\method{as.mcmc}{ref.grid}(x, names = TRUE, sep.chains = TRUE, ...)
+\method{as.mcmc.list}{ref.grid}(x, names = TRUE, ...)
 }
 
 \arguments{
@@ -105,7 +106,8 @@ The object to be subsetted, printed, plotted, or converted.
   \item{transform}{Character value. If \code{"response"} or \code{"mu"}, the inverse transformation is applied to the estimates in the grid (but if there is both a link function and a response transformation, \code{"mu"} back-transforms only the link part); if \code{"log"}, the results are formulated as if the response had been \code{log}-transformed; if \code{"none"}, predictions thereof are on the same scale as in \code{object}, and any internal transformation information is preserved. For compatibility with past versions, \code{transform} may also be logical; \code{TRUE} is taken as \code{"response"}, and \code{FALSE} as \code{"none"}.}
   \item{inv.log.lbl}{Character value. This applies only when \code{transform = "log"}, and is used to label the predictions if subsequently summarized with \code{type = "response"}.}
   \item{predict.type}{Character value. If provided, the returned object is first \code{\link{update}}d with the given type, e.g., \code{"response"}.}
-  \item{names}{Logical scalar or vector specifying whether variable names are appended to levels in the column labels for the \code{as.mcmc} result -- e.g., column names of \code{treat A} and \code{treat B} versus  just \code{A} and \code{B}. When there is more than one variable involved, the elements of \code{names} are used cyclically.}
+  \item{names}{Logical scalar or vector specifying whether variable names are appended to levels in the column labels for the \code{as.mcmc} or \code{as.mcmc.list} result -- e.g., column names of \code{treat A} and \code{treat B} versus  just \code{A} and \code{B}. When there is more than one variable involved, the elements of \code{names} are used cyclically.}
+\item{sep.chains}{Logical value. If \code{TRUE}, and there is more than one MCMC chain available, an \code{\link[coda]{mcmc.list}} object is returned by \code{as.mcmc}, with separate lsmeans posteriors in each chain.}
 \item{\dots, digits, quote, right, caption, label, align, display, auto, include.rownames, sanitize.message.function, xlab, ylab, layout}{For summaries, these are additional arguments passed to other methods including \code{\link{print.data.frame}}, 
 \code{\link{xtableList}}, \code{\link{print.xtableList}},
 \code{\link{update}}, or \code{\link{dotplot}} as appropriate. If not specified, appropriate defaults are used. For example, the default \code{layout} is one column of horizontal panels or one row of vertical panels.}
@@ -168,7 +170,7 @@ In plots with \code{comparisons = TRUE}, the resulting arrows are only approxima
 The \code{regrid} function reparameterizes an existing \code{ref.grid} so that its \code{linfct} slot is the identity matrix and its \code{bhat} slot consists of the estimates at the grid points. If \code{transform} is \code{TRUE}, the inverse transform is applied to the estimates. Outwardly, the \code{summary} after applying \code{regrid} is identical to what it was before (using \samp{type="response"} if \code{transform} is \code{TRUE}). But subsequent contrasts will be conducted on the transformed scale -- which is the reason this function exists. See the example below. In cases where the degrees of freedom depended on the linear function being estimated, the d.f. from the reference grid are saved, and a kind of \dQuote{containment} method is substituted in the returned object whereby the calculated d.f. for a new linear function will be the minimum d.f. among those having nonzero coefficients. This is kind of an \emph{ad hoc} method, and it can over-estimate the degrees of freedom in some cases.
 
 \bold{MCMC samplers:}
-When the object's \code{post.beta} slot is non-trivial, \code{as.mcmc} will return an \code{\link[coda]{mcmc}} object that can be summarized or plotted using methods in the \pkg{coda} package. Specifically, \code{post.beta} is transformed by post-multiplying by \code{t(linfct)}, creating a sample from the posterior distribution of LS means.
+When the object's \code{post.beta} slot is non-trivial, \code{as.mcmc} will return an \code{\link[coda]{mcmc}} or \code{\link[coda]{mcmc.list}} object that can be summarized or plotted using methods in the \pkg{coda} package. Specifically, \code{post.beta} is transformed by post-multiplying by \code{t(linfct)}, creating a sample from the posterior distribution of LS means. If \code{sep.chains} is \code{TRUE} and there is in fact more than one chain, an \code{mcmc.list} is returned with each chain's results. The \code{as.mcmc.list} method is guaranteed to return an \code{mcmc.list}, even if it comprises just one chain.
 }
 
 \value{
