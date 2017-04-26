@@ -556,6 +556,13 @@ regrid = function(object, transform = c("response", "mu", "unlink", "log", "none
     if ((transform == "response") && (!is.null(object@misc$tran2)))
         object = regrid(object, transform = "mu")
     
+    # Save post.beta stuff
+    PB = object@post.beta
+    NC = attr(PB, "n.chains")
+    
+    if (!is.na(PB[1])) # fix up post.beta BEFORE we overwrite parameters
+        PB = PB %*% t(object@linfct)
+
     est = .est.se.df(object, do.se = TRUE) ###FALSE)
     estble = !(is.na(est[[1]]))
     object@V = vcov(object)[estble, estble, drop=FALSE]
@@ -586,6 +593,8 @@ regrid = function(object, transform = c("response", "mu", "unlink", "log", "none
         D = .diag(link$mu.eta(object@bhat[estble]))
         object@bhat = link$linkinv(object@bhat)
         object@V = D %*% tcrossprod(object@V, D)
+        if (!is.na(PB[1]))
+            PB = matrix(link$linkinv(PB), ncol = ncol(PB))
         inm = object@misc$inv.lbl
         if (!is.null(inm))
             object@misc$estName = inm
@@ -608,9 +617,20 @@ regrid = function(object, transform = c("response", "mu", "unlink", "log", "none
         D = .diag(1/object@bhat[incl])
         object@V = D %*% tcrossprod(object@V[incl, incl, drop = FALSE], D)
         object@bhat = log(object@bhat)
+        if (!is.na(PB[1])) {
+            PB[PB <= 0] = NA
+            PB = log(PB)
+            PB[1] = ifelse(is.na(PB[1]), 0, PB[1]) # make sure 1st elt isn't NA
+        }
         object@misc$tran = "log"
         object@misc$inv.lbl = inv.log.lbl
     }
+    
+    if(!is.na(PB[1])) {
+        attr(PB, "n.chains") = NC
+        object@post.beta = PB
+    }
+    
     # Nix out things that are no longer needed or valid
     object@grid$.offset. = object@misc$offset.mult =
         object@misc$estHook = object@misc$vcovHook = NULL

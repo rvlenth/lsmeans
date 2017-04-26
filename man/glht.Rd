@@ -40,7 +40,7 @@ An object of the required class.
 }
   \item{which}{Numeric index of which element of the \code{lsm.list} to use.}
   \item{\dots}{
-Additional arguuments to other methods.
+Additional arguments to other methods.
 }
 }
 \details{

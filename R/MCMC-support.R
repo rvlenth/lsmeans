@@ -183,6 +183,7 @@ lsm.basis.stanreg = function(object, trms, xlev, grid, ...) {
     bhat = fixef(object)
     V = vcov(object)
     samp = as.matrix(object$stanfit)[, names(bhat)]
+    attr(samp, "n.chains") = object$stanfit@sim$chains
     misc = list()
     if (!is.null(object$family))
         misc = .std.link.labels(object$family, misc)

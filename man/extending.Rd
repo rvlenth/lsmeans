@@ -60,7 +60,7 @@ The models already supported are detailed in \code{\link{models}}. Some packages
 \code{recover.data} should return a \code{data.frame} containing all the variables in the original data that appear as predictors in the model. Several attributes need to be included as well; see the code for \code{lsmeans:::recover.data.lm}.
 
 \code{lsm.basis} should return a \code{list} with the following elements:
-\item{X}{The matrix of linear fcns over \code{grid}, having the same number of rows as \code{grid} and the number of columns equal to the length of \code{bhat}.}
+\item{X}{The matrix of linear functions over \code{grid}, having the same number of rows as \code{grid} and the number of columns equal to the length of \code{bhat}.}
 \item{bhat}{The vector of regression coefficients for fixed effects. This should \emph{include} any \code{NA}s that result from rank deficiencies.}
 \item{nbasis}{A matrix whose columns form a basis for non-estimable functions of beta, or a 1x1 matrix of \code{NA} if there is no rank deficiency.}
 \item{V}{The estimated covariance matrix of \code{bhat}.}

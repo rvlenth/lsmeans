@@ -21,7 +21,7 @@ It is used as a case study in Milliken and Johnson, Chapter 17, p.202. (You may 
   }
 }
 \details{
-A survey was conducted by home economists ``to study how much lower-socioeconomic-level mothers knew about nutrition and to judge the effect of a training program designed to increase therir knowledge of nutrition.'' This is a messy dataset with several empty cells.
+A survey was conducted by home economists ``to study how much lower-socioeconomic-level mothers knew about nutrition and to judge the effect of a training program designed to increase their knowledge of nutrition.'' This is a messy dataset with several empty cells.
 }
 \source{
 Milliken, G. A. and Johnson, D. E. (1984)
