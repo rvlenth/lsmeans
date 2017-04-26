@@ -104,9 +104,15 @@ recover.data.call = function(object, trms, na.action, data = NULL, params = NULL
     if (is.null(tbl)) {
         m = match(c("formula", "data", "subset", "weights"), names(fcall), 0L)
         fcall = fcall[c(1L, m)]
-        if(any(sapply(fcall[-2], function(x) inherits(x,"call"))))
-            warning("Fitted model contains a call; ref.grid/lsmeans results may be inconsistent",
+        
+        # check to see if there are any function calls to worry about
+        # [e.g., subset = sample(1:n, 50) will give us a different subset than model used]
+        mm = match(c("data", "subset"), names(fcall), 0L)
+        fcns = unlist(lapply(fcall[mm], function(x) setdiff(all.names(x), all.vars(x))))
+        if(max(nchar(c("", fcns))) > 1)
+            warning("Function call in data or subset: ref.grid/lsmeans results may be inconsistent",
                     call. = FALSE)
+        
         fcall$drop.unused.levels = TRUE
         fcall[[1L]] = as.name("model.frame")
         fcall$xlev = NULL # we'll ignore xlev

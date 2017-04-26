@@ -52,7 +52,7 @@ Additional models can be supported by writing appropriate \code{recover.data} an
 
 \section{\pkg{gam} package}{
 \describe{
-\item{gam}{Currently, \code{gam} objects are not supported. Past versions of \pkg{lsmeans} appeared to support \code{gam} models owing to inheritance from \code{lm}, but the results were incorrect because spline features were ignored. We now explicitly trap \code{gam} objects to avoid tyhese misleading analyses.}
+\item{gam}{Currently, \code{gam} objects are not supported. Past versions of \pkg{lsmeans} appeared to support \code{gam} models owing to inheritance from \code{lm}, but the results were incorrect because spline features were ignored. We now explicitly trap \code{gam} objects to avoid these misleading analyses.}
 }}% coxme
 
 
@@ -156,7 +156,7 @@ Two optional arguments -- \code{mode} and \code{lin.pred} -- are provided. The \
 
 With \code{lin.pred = FALSE}, the results are comparable to those returned by \code{predict(..., type = "response")}, \code{predict(..., type = "count")}, \code{predict(..., type = "zero")}, or \code{predict(..., type = "prob")[, 1]}. See the documentation for \code{\link[pscl]{predict.hurdle}} and \code{\link[pscl]{predict.zeroinfl}}.
 
-The option \code{lin.pred = TRUE} only applies to \code{mode = "count"} and \code{mode = "zero"}. The results returned are on the linear-predictor scale, with the same transformation as the link function in that part of the model. The predictions for a reference grid with \code{mode = "count"}, \code{lin.pred = TRUE}, and \code{type = "response"} will be the same as those obtained with \code{lin.pred = FALSE} and \code{mode = "count"}; however, any LS means derived from these grids will be defferent, because the averaging is done on the log-count scale and the actual count scale, respectively -- thereby producing geometric means versus arithmetic means of the predictions.
+The option \code{lin.pred = TRUE} only applies to \code{mode = "count"} and \code{mode = "zero"}. The results returned are on the linear-predictor scale, with the same transformation as the link function in that part of the model. The predictions for a reference grid with \code{mode = "count"}, \code{lin.pred = TRUE}, and \code{type = "response"} will be the same as those obtained with \code{lin.pred = FALSE} and \code{mode = "count"}; however, any LS means derived from these grids will be different, because the averaging is done on the log-count scale and the actual count scale, respectively -- thereby producing geometric means versus arithmetic means of the predictions.
 
 If the \code{vcov.} argument is used (see details in \code{\link{ref.grid}}), it must yield a matrix of the same size as would be obtained using \code{\link[pscl]{vcov.hurdle}} or \code{\link[pscl]{vcov.zeroinfl}} with its \code{model} argument set to \code{("full", "count", "zero")} in respective correspondence with \code{mode} of \code{("mean", "count", "zero")}.
 If \code{vcov.} is a function, it must support the \code{model} argument.
