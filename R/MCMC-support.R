@@ -193,3 +193,31 @@ lsm.basis.stanreg = function(object, trms, xlev, grid, ...) {
 }
 
 
+### see if we can create a usable stanfit object from post.beta
+as.stanfit = function(object, names = TRUE, ...) {
+    if(!inherits(object, "ref.grid"))
+        stop("Not a 'ref.grid' or 'lsmobj' object")
+    mcmcl = as.mcmc.list(object, names = names, ...)
+    samples = lapply(mcmcl, as.data.frame)
+    nm = names(samples[[1]])
+    nm = gsub(" ", "_", nm)
+    for (s in samples) 
+        names(s) = nm
+    chains = attr(object@post.beta, "n.chains")
+    iter = nrow(as.matrix(mcmcl[[1]]))
+    if(is.null(chains)) chains = 1
+    dims = as.list(rep(1, length(nm)))
+    names(dims) = nm
+    perm = lapply(seq_len(chains), function(x) seq_len(iter))
+    sa = list(iter = iter, thin = 1, seed = 0, warmup = 0, init = "random", 
+              algorithm = "ref.grid", save_warmup = FALSE, method = "sampling", control = list())
+    stan_args = lapply(seq_len(chains), function(x) c(chain_id = x, sa))
+    sim = list(samples = samples, iter = iter, thin = 1, warmup = 0, 
+        chains = chains, n_save = rep(iter, chains), warmup2 = rep(0, chains),
+        permutation = perm, pars_oi = nm, dims_oi = dims, fnames_oi = nm,
+        n_flatnames = length(nm))
+    nullmod = new("stanmodel")
+    new("stanfit", model_name = "continuous", model_pars = nm, par_dims = dims,
+        mode = as.integer(0), sim = sim, inits = list(0), stan_args = stan_args, 
+        stanmodel = nullmod, date = as.character(Sys.time()), .MISC = new.env())
+}

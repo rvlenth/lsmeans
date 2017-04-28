@@ -108,10 +108,12 @@ recover.data.call = function(object, trms, na.action, data = NULL, params = NULL
         # check to see if there are any function calls to worry about
         # [e.g., subset = sample(1:n, 50) will give us a different subset than model used]
         mm = match(c("data", "subset"), names(fcall), 0L)
-        fcns = unlist(lapply(fcall[mm], function(x) setdiff(all.names(x), all.vars(x))))
-        if(max(nchar(c("", fcns))) > 1)
-            warning("Function call in data or subset: ref.grid/lsmeans results may be inconsistent",
-                    call. = FALSE)
+        if(any(mm > 0)) {
+            fcns = unlist(lapply(fcall[mm], function(x) setdiff(all.names(x), all.vars(x))))
+            if(max(nchar(c("", fcns))) > 1)
+                warning("Function call in data or subset: ref.grid/lsmeans results may be inconsistent",
+                        call. = FALSE)
+        }
         
         fcall$drop.unused.levels = TRUE
         fcall[[1L]] = as.name("model.frame")

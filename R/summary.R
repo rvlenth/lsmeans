@@ -397,6 +397,9 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     else
         type = .validate.type(type)
     
+    if (!is.na(object@post.beta[1]))
+        message("This is a frequentist summary. See `?as.mcmc.ref.grid' for more on what you can do.")
+    
     # if there are two transformations and we want response, then we need to undo both
     if ((type == "response") && (!is.null(object@misc$tran2)))
         object = regrid(object, transform = "mu")

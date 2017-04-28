@@ -17,6 +17,7 @@
 \alias{as.mcmc.ref.grid}
 \alias{as.mcmc.list}
 \alias{as.mcmc.list.ref.grid}
+\alias{as.stanfit}
 \alias{[.ref.grid}
 \alias{xtable.ref.grid}
 \alias{xtable.summary.ref.grid}
@@ -65,6 +66,8 @@ regrid (object, transform = c("response", "mu", "unlink", "log", "none"),
 
 \method{as.mcmc}{ref.grid}(x, names = TRUE, sep.chains = TRUE, ...)
 \method{as.mcmc.list}{ref.grid}(x, names = TRUE, ...)
+
+as.stanfit(object, names = TRUE, ...)
 }
 
 \arguments{
@@ -172,7 +175,8 @@ In plots with \code{comparisons = TRUE}, the resulting arrows are only approxima
 The \code{regrid} function reparameterizes an existing \code{ref.grid} so that its \code{linfct} slot is the identity matrix and its \code{bhat} slot consists of the estimates at the grid points. If \code{transform} is \code{TRUE}, the inverse transform is applied to the estimates. Outwardly, the \code{summary} after applying \code{regrid} is identical to what it was before (using \samp{type="response"} if \code{transform} is \code{TRUE}). But subsequent contrasts will be conducted on the transformed scale -- which is the reason this function exists. See the example below. In cases where the degrees of freedom depended on the linear function being estimated, the d.f. from the reference grid are saved, and a kind of \dQuote{containment} method is substituted in the returned object whereby the calculated d.f. for a new linear function will be the minimum d.f. among those having nonzero coefficients. This is kind of an \emph{ad hoc} method, and it can over-estimate the degrees of freedom in some cases.
 
 \bold{MCMC samplers:}
-When the object's \code{post.beta} slot is non-trivial, \code{as.mcmc} will return an \code{\link[coda]{mcmc}} or \code{\link[coda]{mcmc.list}} object that can be summarized or plotted using methods in the \pkg{coda} package. Specifically, \code{post.beta} is transformed by post-multiplying by \code{t(linfct)}, creating a sample from the posterior distribution of LS means. If \code{sep.chains} is \code{TRUE} and there is in fact more than one chain, an \code{mcmc.list} is returned with each chain's results. The \code{as.mcmc.list} method is guaranteed to return an \code{mcmc.list}, even if it comprises just one chain.
+When the object's \code{post.beta} slot is non-trivial, \code{as.mcmc} will return an \code{\link[coda]{mcmc}} or \code{\link[coda]{mcmc.list}} object that can be summarized or plotted using methods in the \pkg{coda} package. Alternatively, \code{as.stanfit} will return a \code{link[rstan]{stanfit}} object that can be summarized or plotted using methods in the \pkg{rstan} package. You may use any of these functions regardless of what packages were originally used to implement the MCMC method.
+In these functions, \code{post.beta} is transformed by post-multiplying it by \code{t(linfct)}, creating a sample from the posterior distribution of LS means. In \code{as.mcmc}, if \code{sep.chains} is \code{TRUE} and there is in fact more than one chain, an \code{mcmc.list} is returned with each chain's results. The \code{as.mcmc.list} method is guaranteed to return an \code{mcmc.list}, even if it comprises just one chain. Note that \code{stanfit} objects are designed already for multiple chains.
 }
 
 \value{

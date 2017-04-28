@@ -42,6 +42,11 @@ if (requireNamespace("coda", quietly = TRUE)) {
     S3method(as.mcmc.list, ref.grid)
 }
 
+if (requireNamespace("rstan", quietly = TRUE)) {
+    export(as.stanfit) # rstan offers no generic, so just export the function
+}
+
+
 if (requireNamespace("xtable", quietly = TRUE)) {
     importFrom(xtable, xtable, xtableList)
 }
