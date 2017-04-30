@@ -29,6 +29,10 @@ as.mcmc.ref.grid = function(x, names = TRUE, sep.chains = TRUE, ...) {
     if (is.na(x@post.beta[1]))
         stop("No posterior sample -- can't make an 'mcmc' object")
     mat = x@post.beta %*% t(x@linfct)
+    if(!is.null(offset <- x@grid[[".offset."]])) {
+        n = nrow(mat)
+        mat = mat + matrix(rep(offset, each = n), nrow = n)
+    }
     nm = setdiff(names(x@grid), c(".wgt.",".offset."))
     if (any(names)) {
         names = rep(names, length(nm))
@@ -177,17 +181,59 @@ recover.data.stanreg = function(object, ...) {
     recover.data.lm(object, ...)
 }
 
-lsm.basis.stanreg = function(object, trms, xlev, grid, ...) {
+# note: mode and rescale are ignored for some models
+lsm.basis.stanreg = function(object, trms, xlev, grid, mode, rescale, ...) {
     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
-    X = model.matrix(trms, m, contrasts.arg = object$contrasts)
+    if(is.null(contr <- object$contrasts))
+        contr = attr(model.matrix(object), "contrasts")
+    X = model.matrix(trms, m, contrasts.arg = contr)
     bhat = fixef(object)
     V = vcov(object)
+    misc = list()
+    if (!is.null(object$family)) {
+        if (is.character(object$family)) # work around bug for stan_polr
+            misc$tran = object$method
+        else
+            misc = .std.link.labels(object$family, misc)
+    }
+    if(!is.null(object$zeta)) {   # Polytomous regression model
+        if (missing(mode))
+            mode = "latent"
+        else
+            mode = match.arg(mode, 
+                c("latent", "linear.predictor", "cum.prob", "exc.prob", "prob", "mean.class"))
+        
+        xint = match("(Intercept)", colnames(X), nomatch = 0L)
+        if (xint > 0L) 
+            X = X[, -xint, drop = FALSE]
+        k = length(object$zeta)
+        if (mode == "latent") {
+            if (missing(rescale)) 
+                rescale = c(0,1)
+            X = rescale[2] * cbind(X, matrix(- 1/k, nrow = nrow(X), ncol = k))
+            bhat = c(bhat, object$zeta - rescale[1] / rescale[2])
+            misc = list(offset.mult = rescale[2])
+        }
+        else {
+            bhat = c(bhat, object$zeta)
+            j = matrix(1, nrow=k, ncol=1)
+            J = matrix(1, nrow=nrow(X), ncol=1)
+            X = cbind(kronecker(-j, X), kronecker(diag(1,k), J))
+            link = object$method
+            if (link == "logistic") link = "logit"
+            misc = list(ylevs = list(cut = names(object$zeta)), 
+                        tran = link, inv.lbl = "cumprob", offset.mult = -1)
+            if (mode != "linear.predictor") {
+                misc$mode = mode
+                misc$postGridHook = ".clm.postGrid" # we probably need to adapt this
+            }
+        }
+        
+        misc$respName = as.character(terms(object))[2]
+    }
     samp = as.matrix(object$stanfit)[, names(bhat)]
     attr(samp, "n.chains") = object$stanfit@sim$chains
-    misc = list()
-    if (!is.null(object$family))
-        misc = .std.link.labels(object$family, misc)
-    list(X = X, bhat = bhat, nbasis = matrix(NA), V = V, 
+    list(X = X, bhat = bhat, nbasis = estimability::all.estble, V = V, 
          dffun = function(k, dfargs) NA, dfargs = list(), 
          misc = misc, post.beta = samp)
 }

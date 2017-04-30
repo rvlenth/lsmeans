@@ -109,7 +109,8 @@ recover.data.call = function(object, trms, na.action, data = NULL, params = NULL
         # [e.g., subset = sample(1:n, 50) will give us a different subset than model used]
         mm = match(c("data", "subset"), names(fcall), 0L)
         if(any(mm > 0)) {
-            fcns = unlist(lapply(fcall[mm], function(x) setdiff(all.names(x), all.vars(x))))
+            fcns = unlist(lapply(fcall[mm], 
+                        function(x) setdiff(all.names(x), c("::",":::","[[","]]",all.vars(x)))))
             if(max(nchar(c("", fcns))) > 1)
                 warning("Function call in data or subset: ref.grid/lsmeans results may be inconsistent",
                         call. = FALSE)
@@ -410,7 +411,7 @@ lsm.basis.gls = function(object, trms, xlev, grid, ...) {
 recover.data.polr = recover.data.lm
 
 lsm.basis.polr = function(object, trms, xlev, grid, 
-                          mode = c("latent", "linear.predictor", "cum.prob", "prob", "mean.class"), 
+                          mode = c("latent", "linear.predictor", "cum.prob", "exc.prob", "prob", "mean.class"), 
                           rescale = c(0,1), ...) {
     mode = match.arg(mode)
     contrasts = object$contrasts
@@ -742,6 +743,8 @@ lsm.basis.gam = function(object, trms, xlev, grid, ...) {
 # Returns a modified misc
 .std.link.labels = function(fam, misc) {
     if (is.null(fam))
+        return(misc)
+    if (fam$link == "identity")
         return(misc)
     misc$tran = fam$link
     misc$inv.lbl = "response"

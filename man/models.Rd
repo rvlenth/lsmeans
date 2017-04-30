@@ -183,7 +183,8 @@ With \code{mode = "prob"}, a pseudo-factor is created having the same name as th
 
 \section{\pkg{rstanarm} package}{
 \describe{
-\item{stanreg}{Preliminary support provided at this point. \code{as.mcmc} returns a single posterior sample of LS means. No extended features.}
+\item{stanreg}{Support for models fitted using \code{stan_xxx} is similar to that for models fitted by \code{xxx}, where supported, except that posterior samples are also available. For example, \code{stan_glm} models are treated like \code{stats::glm}, and \code{stan_polr} results are similar to those for \code{MASS::polr} (including its available \code{mode} and \code{rescale} options). Models fitted using \code{stan_biglm}, \code{stan_betareg}, and \code{stan_gamm4} are currently not supported. The user may use
+\code{as.mcmc}, \code{as.mcmc.list}, or \code{as.stanfit} on the \code{ref.grid} or \code{lsmobj} produced to obtain posterior samples of LS means, contrasts, etc. }
 }}% rstanarm
 
 

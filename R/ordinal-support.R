@@ -207,12 +207,15 @@ lsm.basis.clm = function (object, trms, xlev, grid,
 
 # fuction called at end of ref.grid
 # I use this for polr as well
+# Also used for stanreg result of stan_polr & potentially other MCMC ordinal models
 .clm.postGrid = function(object) {
     mode = object@misc$mode
     object@misc$postGridHook = object@misc$mode = NULL
     object = regrid(object, TRUE)
-    if(object@misc$estName == "exc.prob") { # Exceedance probs
+    if(object@misc$estName == "exc.prob") { # back-transforming yields exceedance probs
         object@bhat = 1 - object@bhat
+        if(!is.null(object@post.beta[1]))
+            object@post.beta = 1 - object@post.beta
         object@misc$estName = "cum.prob"
     }
     if (mode == "prob") {
@@ -223,10 +226,12 @@ lsm.basis.clm = function (object, trms, xlev, grid,
     }
     else if (mode == "exc.prob") {
         object@bhat = 1 - object@bhat
+        if(!is.null(object@post.beta[1]))
+            object@post.beta = 1 - object@post.beta
         object@misc$estName = "exc.prob"        
     }
     # (else mode == "cum.prob" and it's all OK)
-    object@misc$respName = NULL
+    object@misc$respName = NULL # cleanup
     object
 }
 
