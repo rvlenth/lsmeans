@@ -173,9 +173,8 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     # if not, we probably get an error or something that isn't a formula
     # and it is silently ignored
     lhs = try(eval(attr(data, "call")[[2]][-3]), silent = TRUE)
-    ###--OLD--if (is.null(misc$tran) && (inherits(lhs, "formula"))) { # No link fcn, but response may be transformed
     if (inherits(lhs, "formula")) { # response may be transformed
-        tran = setdiff(.all.vars(lhs, functions = TRUE), c(.all.vars(lhs), "~", "cbind"))
+        tran = setdiff(.all.vars(lhs, functions = TRUE), c(.all.vars(lhs), "~", "cbind", "+", "-", "*", "/", "^", "%%", "%/%"))
         if(length(tran) > 0) {
             tran = paste(tran, collapse = ".")  
             # length > 1: Almost certainly unsupported, but facilitates a more informative error message

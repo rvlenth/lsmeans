@@ -8,7 +8,7 @@ R package **lsmeans**: Least-squares means (predicted marginal means)
 [![Research software impact](http://depsy.org/api/package/cran/lsmeans/badge.svg)](http://depsy.org/package/r/lsmeans)
 
 ## Features
-* For an overview, see the [vignette](http://cran.r-project.org/web/packages/lsmeans/vignettes/using-lsmeans.pdf) -- also available via `vignette("using-lsmeans", package = "lsmeans")`
+* For an overview, see the [vignette](https://CRAN.R-project.org/package=lsmeans/vignettes/using-lsmeans.pdf) -- also available via `vignette("using-lsmeans", package = "lsmeans")`
 * Least-squares means (a.k.a. predicted marginal means) are derived by using a model to make predictions over a regular grid of pridictor combinations (called a *reference grid*). These predictions may possibly be averaged (typically with equal weights) over one or more of the predictors. Such marginally-averaged predictions are useful for describing the results of fitting a model, particularly in presenting the effects of factors. The **lsmeans** package can easily produce these results, as well as various graphs of them (interaction-style plots and side-by-side intervals).
 * Estimation and testing of pairwise comparisons of LS means, and several other types of contrasts, are provided. There is also a `cld` method for display of grouping symbols.
 * Two-way support of the `glht` function in the **multcomp** package.
@@ -22,7 +22,7 @@ R package **lsmeans**: Least-squares means (predicted marginal means)
 ```
 install.packages("lsmeans")
 ```
-Release notes for the latest CRAN version are found at [http://cran.r-project.org/web/packages/lsmeans/NEWS](http://cran.r-project.org/web/packages/lsmeans/NEWS) -- or do `news(package = "lsmeans")` for notes on the version you have installed.
+Release notes for the latest CRAN version are found at [https://CRAN.R-project.org/package=lsmeans/NEWS](https://CRAN.R-project.org/package=lsmeans/NEWS) -- or do `news(package = "lsmeans")` for notes on the version you have installed.
 
 * To install the latest development version from Github, have the newest **devtools** package installed, then run
 ```
