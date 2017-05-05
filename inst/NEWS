@@ -1,6 +1,6 @@
 Changelog for 'lsmeans' package
 
-2.26
+2.26-2
     Moved code repository to https://github.com/rvlenth/lsmeans
     Added BugReports: URL to DESCRIPTION
     In 'cld', get error instead of message if "multcompView" not installed

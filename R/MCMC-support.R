@@ -53,17 +53,19 @@ as.mcmc.ref.grid = function(x, names = TRUE, sep.chains = TRUE, ...) {
     }
 }
 
-### Hack to work around CRAN check that thinks as.mcmc.list should be an S3 method
-### Correspondingly, in NAMESPACE, don't import coda's generic of as.mcmc.list
-###    but register S3method(as.mcmc, list)
-as.mcmc.list = function(x, ...) {
-    if(inherits(x, "list")) {
-        NextMethod("as.mcmc")   # presumably this throws an error
-    }
-    else {
-        UseMethod("as.mcmc.list")
-    }
-}
+# I'm taking out this hack and will appeal to CRAN to make a check exception
+#
+# ### Hack to work around CRAN check that thinks as.mcmc.list should be an S3 method
+# ### Correspondingly, in NAMESPACE, don't import coda's generic of as.mcmc.list
+# ###    but register S3method(as.mcmc, list)
+# as.mcmc.list = function(x, ...) {
+#     if(inherits(x, "list")) {
+#         NextMethod("as.mcmc")   # presumably this throws an error
+#     }
+#     else {
+#         UseMethod("as.mcmc.list")
+#     }
+# }
 
 ### as.mcmc.list - guaranteed to return a list
 as.mcmc.list.ref.grid = function(x, names = TRUE, ...) {
