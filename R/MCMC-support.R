@@ -257,7 +257,7 @@ lsm.basis.stanreg = function(object, trms, xlev, grid, mode, rescale, ...) {
 as.stanfit = function(object, names = TRUE, ...) {
     if(!inherits(object, "ref.grid"))
         stop("Not a 'ref.grid' or 'lsmobj' object")
-    mcmcl = as.mcmc.list(object, names = names, ...)
+    mcmcl = as.mcmc.list.ref.grid(object, names = names, ...)
     samples = lapply(mcmcl, as.data.frame)
     nm = names(samples[[1]])
     nm = gsub(" ", "_", nm)

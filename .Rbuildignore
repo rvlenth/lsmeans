@@ -24,11 +24,6 @@ vignettes/*.ind
 
 
 
-#Deprecated
-KRstuff.R
-old-lsmeans.R
-lsmeans-changes.rnw
-
 # New devel stuff
 test-data.R
 int.plot.R
@@ -37,11 +32,6 @@ CopyOflsmeans.R
 # Complicated rules about Enhances vs. Suggests - I say just ditch these tests
 tests2.R
 tests2.Rout.save
-
-# code that I moved to helpers.R
-recover.data.R
-lsm.basis.R
-survival-supp.R
 
 lsmeans-Ex.R
 

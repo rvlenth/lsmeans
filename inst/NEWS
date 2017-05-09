@@ -1,6 +1,6 @@
 Changelog for 'lsmeans' package
 
-2.26-2
+2.26-3
     Moved code repository to https://github.com/rvlenth/lsmeans
     Added BugReports: URL to DESCRIPTION
     In 'cld', get error instead of message if "multcompView" not installed
@@ -12,8 +12,8 @@ Changelog for 'lsmeans' package
         as may happen in simulations. 
     Preliminary support for rstanarm package (stanreg objects)
         -- but not for stan_betareg, stan_biglm, stan_gamm4
-    Addition of as.mcmc.list and extension of as.mcmc to support multiple
-        chains
+    Addition of as.stanfit and as.mcmc.list; extension of as.mcmc 
+        to support multiple chains
     
 
 2.25-5

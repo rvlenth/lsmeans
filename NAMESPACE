@@ -21,9 +21,7 @@ import(estimability)
 # Imports instead of Depends. 
 if (requireNamespace("multcomp", quietly = TRUE)) {
     importFrom(multcomp, cld, glht, modelparm)
-    
-    export(cld) # need user to see it even if multcomp not loaded
-    
+    export(cld) # needed so that cld is visible even when multcomp not attached
     S3method(cld, ref.grid)
     S3method(cld, lsm.list)
     S3method(glht, lsmlf)
@@ -37,8 +35,6 @@ if (requireNamespace("plyr", quietly = TRUE)) {
 
 if (requireNamespace("coda", quietly = TRUE)) {
     importFrom(coda, as.mcmc, as.mcmc.list)
-    export(as.mcmc, as.mcmc.list)
-###    S3method(as.mcmc, list)   # prevents "apparent S3 method" NOTE in CRAN check
     S3method(as.mcmc, ref.grid)
     S3method(as.mcmc.list, ref.grid)
 }
@@ -184,9 +180,3 @@ S3method(plot, glht.list)
 S3method(summary, glht.list)
 S3method(vcov, glht.list)
 
-
-# interim support for old lsmeans function
-# removed at version 2.14
-#   export(.old.lsmeans)
-#   S3method(print, lsm)
-#   S3method(print, data.frame.lsm)
