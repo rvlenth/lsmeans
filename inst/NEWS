@@ -1,5 +1,11 @@
 Changelog for 'lsmeans' package
 
+
+2.27
+    Added warning and workaround if user specifies a vector for `type`
+    Fixed a bug reported for ordinal models (but actually in support code)
+    
+
 2.26-3
     Moved code repository to https://github.com/rvlenth/lsmeans
     Added BugReports: URL to DESCRIPTION

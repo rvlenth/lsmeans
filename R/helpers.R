@@ -758,6 +758,8 @@ lsm.basis.gam = function(object, trms, xlev, grid, ...) {
 ## Alternative to all.vars, but keeps vars like foo$x and foo[[1]] as-is
 ##   Passes ... to all.vars
 .all.vars = function(expr, retain = c("\\$", "\\[\\[", "\\]\\]"), ...) {
+    if (is.null(expr))
+        return(character(0))
     if (!inherits(expr, "formula")) {
         expr = try(eval(expr), silent = TRUE)
         if(inherits(expr, "try-error")) {
