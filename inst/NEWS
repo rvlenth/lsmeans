@@ -1,9 +1,9 @@
 Changelog for 'lsmeans' package
 
 
-2.27
+2.26-51
     Added warning and workaround if user specifies a vector for `type`
-    Fixed a bug reported for ordinal models (but actually in support code)
+    Various other bug fixes
     
 
 2.26-3

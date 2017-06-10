@@ -609,7 +609,7 @@ print.summary.ref.grid = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) 
         cat("\n")
     }
     else { # separate listing for each by variable
-        m = .just.labs(m[, setdiff(names(x), by.vars)], just)
+        m = .just.labs(m[, setdiff(names(x), by.vars), drop = FALSE], just)
         pargs = as.list(x[,by.vars, drop=FALSE])
         pargs$sep = ", "
         lbls = do.call(paste, pargs)
