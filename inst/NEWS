@@ -1,8 +1,10 @@
 Changelog for 'lsmeans' package
 
 
-2.26-51
+2.26-52
     Added warning and workaround if user specifies a vector for `type`
+    Added a courtesy function `nested` to aid in fitting nested models
+        (needed only if using a nested structure as a fixed effect)
     Various other bug fixes
     
 

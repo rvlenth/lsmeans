@@ -35,3 +35,31 @@
 hasName = function(x, name)
     match(name, names(x), nomatch = 0L) > 0L
 
+
+# courtesy function to create levels for a nested structure factor %in% nest
+# factor: factor (or interaction() result)
+# ...:    factors in nest
+# SAS:    if (FALSE|TRUE), reference level in each nest is (first|last)
+nested = function(factor, ..., SAS = FALSE) {
+    nfacs = list(...)
+    if (length(nfacs) == 0)
+        return(factor)
+    nfacs$drop = TRUE
+    nest = do.call(interaction, nfacs)
+    result = as.character(interaction(factor, nest, sep = ".in."))
+    ores = unique(sort(result))
+    nlev = levels(nest)
+    flev = levels(factor)
+    refs = lapply(nlev, function(nst) {
+        r = unique(ores[ores == paste0(flev, ".in.", nst)])
+        ifelse (SAS, rev(r)[1], r[1])
+    })
+    result[result %in% refs] = "ref"
+    ores[ores %in% refs] = "ref"
+    ores = setdiff(ores, "ref")
+    if (SAS)
+        factor(result, levels = c(ores, "ref"))
+    else
+        factor(result, levels = c("ref", ores))
+}
+

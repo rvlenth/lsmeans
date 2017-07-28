@@ -67,6 +67,7 @@ export(
     lsm.options,
     lstrends,
     make.tran,
+    nested,
     pmm,
     pmmeans,
     pmmobj,

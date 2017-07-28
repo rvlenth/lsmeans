@@ -161,10 +161,12 @@ recover.data.lm = function(object, ...) {
 }
 
 lsm.basis.lm = function(object, trms, xlev, grid, ...) {
-    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
-    X = model.matrix(trms, m, contrasts.arg = object$contrasts)
     # coef() works right for lm but coef.aov tosses out NAs
-    bhat = as.numeric(object$coefficients) 
+    bhat = object$coefficients
+    nm = if(is.null(names(bhat))) row.names(bhat) else names(bhat)
+    m = suppressWarnings(model.frame(trms, grid, na.action = na.pass, xlev = xlev))
+    X = model.matrix(trms, m, contrasts.arg = object$contrasts)[, nm]
+    bhat = as.numeric(bhat) 
     # stretches it out if multivariate - see mlm method
     V = .my.vcov(object, ...)
     
