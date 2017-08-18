@@ -7,10 +7,14 @@
 Efficient factor coding for nested structures
 }
 \description{
-
+The default way that R codes nested effects can be very inefficient, leading to possibly
+large numbers of zero or linearly dependent columns in the design matrix. 
+The \code{nested()} function may be used with nested structures to create a factor 
+that will generate just the right number of contrasts to fit the model efficiently,
+often without creating a rank deficiency.
 }
 \usage{
-nested(factor, ..., SAS = TRUE)
+nested(factor, ..., SAS = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

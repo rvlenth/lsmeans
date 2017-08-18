@@ -1,6 +1,10 @@
+######################################################################
+### Contributed by Jonathon Love, https://github.com/jonathon-love ###
+######################################################################
 
 # reformulate for us internally in lsmeans
 # same as stats::reformulate, except it surrounds term labels with backsticks
+
 
 reformulate <- function (termlabels, response = NULL, intercept = TRUE)
 {

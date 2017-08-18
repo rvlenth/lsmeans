@@ -30,7 +30,8 @@
 
 ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs, 
                      options = get.lsm.option("ref.grid"), data, df, type, 
-                     transform = c("none", "response", "mu", "unlink", "log"), ...) 
+                     transform = c("none", "response", "mu", "unlink", "log"), 
+                     nests, ...) 
 {
     transform = match.arg(transform)
     if (!missing(df)) {
@@ -306,6 +307,9 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
         if (is.null(options)) options = list()
         options$predict.type = type
     }
+    
+    if (!missing(nests))
+        result@model.info$nests = nests
 
     if(!is.null(options)) {
         options$object = result
@@ -432,6 +436,11 @@ str.ref.grid <- function(object, ...) {
             showlevs(levs[[nm]])
         cat("\n")
     }
+    if(!is.null(object@model.info$nests)) {
+        cat("\nNesting structure:\n")
+        print(object@model.info$nests)
+        cat("\n")
+    }
     if(!is.null(tran <- object@misc$tran)) {
         showtran(tran, "Transformation:")
         if (!is.null(tran2 <- object@misc$tran2))
@@ -468,7 +477,7 @@ update.ref.grid = function(object, ..., silent = FALSE) {
     args = list(...)
     valid.misc = c("adjust","alpha","avgd.over","by.vars","delta","df",
         "initMesg","estName","estType","famSize","infer","inv.lbl",
-        "level","methdesc","null","predict.type","pri.vars","side","tran","tran.mult","tran2")
+        "level","methdesc","nests","null","predict.type","pri.vars","side","tran","tran.mult","tran2")
     valid.slots = slotNames(object)
     valid.choices = union(valid.misc, valid.slots)
     misc = object@misc
@@ -491,7 +500,10 @@ update.ref.grid = function(object, ..., silent = FALSE) {
                     allvars = union(misc$pri.vars, misc$by.vars)
                     misc$by.vars = setdiff(allvars, args[[nm]])
                 }
-                misc[[fullname]] = args[[nm]]
+                if (fullname == "nests") # special case - I keep nests in model.info
+                    object@model.info$nests = args[[nm]]
+                else
+                    misc[[fullname]] = args[[nm]]
             }
         }
     }

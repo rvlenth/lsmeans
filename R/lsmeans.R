@@ -51,9 +51,11 @@ lsmeans = function(object, specs, ...)
     UseMethod("lsmeans", specs)
 
 # 
-lsmeans.default = function(object, specs, ...) {
+lsmeans.default = function(object, specs, nests, ...) {
     rgargs = list(object = object, ...) ####.args.for.fcn(ref.grid, list(object=object, ...))
     rgargs$options = NULL  # don't pass options to ref.grid
+    if (!missing(nests))
+        rgargs$nests = nests
     RG = do.call("ref.grid", rgargs)
     lsargs = list(object = RG, specs = specs, ...)
     #for (nm in names(rgargs)[-1]) lsargs[[nm]] = NULL
@@ -135,8 +137,11 @@ lsmeans.character = function(object, specs, ...) {
 
 # Needed for model objects
 lsmeans.character.default = function(object, specs, trend, ...) {
-    if (!missing(trend))
+    if (!missing(trend)) {
+        .Deprecated("lsmeans::lstrends()", "lsmeans", 
+                    "The `trend` argument is being deprecated use `lstrends()` instead.")
         lstrends(object, specs, var = trend, ...)
+    }
     else
         lsmeans.default(object, specs, ...)
 }
@@ -155,6 +160,13 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
         # cl$var = trend
         # cl$object = cl$trend = NULL
         # return(eval(cl))
+    }
+    
+    # pseudo-method dispatch for case where there is a nested structure
+    if(!is.null(nests <- object@model.info$nests)) {
+        object@model.info$nests = NULL
+        return(.nested_lsm(object, specs, by = by, fac.reduce = fac.reduce, contr = contr, 
+                           options = options, weights = weights, ..., nests = nests))
     }
     
     RG = object
@@ -180,8 +192,8 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
             if (is.null(wgt))
                 warning("'weights' requested but no weighting information is available")
             else {
-                wopts = c("equal","proportional","outer","cells","show.levels","invalid")
-                weights = switch(wopts[pmatch(weights, wopts, 5)],
+                wopts = c("equal","proportional","outer","cells","flat","show.levels","invalid")
+                weights = switch(wopts[pmatch(weights, wopts, 7)],
                     equal = rep(1, prod(dims[avgd.mars])),
                     proportional = as.numeric(plyr::aaply(row.idx, avgd.mars,
                                                           function(idx) sum(wgt[idx]))),
@@ -194,6 +206,7 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
                         as.numeric(w)
                     },
                     cells = "fq",
+                    flat = "fl",
                     show.levels = {
                         cat("lsmeans are obtained by averaging over these factor combinations\n")
                         return(do.call(expand.grid, RG@levels[avgd.mars]))
@@ -231,9 +244,11 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
             stop(paste("No variable named", f, "in the reference grid"))
     }
     combs = do.call("expand.grid", levs)
-    if (!missing(weights) && (weights == "fq"))
+    if (!missing(weights) && (weights %in% c("fq", "fl")))
         K = plyr::alply(row.idx, use.mars, function(idx) {
             fq = RG@grid[[".wgt."]][idx]
+            if (weights == "fl")
+                fq = 0 + (fq > 0)  # fq = 1 if > 0, else 0
             apply(.diag(fq) %*% RG@linfct[idx, , drop=FALSE], 2, sum) / sum(fq)
         })
     else

@@ -18,7 +18,8 @@ Using a fitted model object, determine a reference grid for which least-squares 
 \usage{
 ref.grid(object, at, cov.reduce = mean, mult.name, mult.levs, 
     options = get.lsm.option("ref.grid"), data, df, type, 
-    transform = c("none", "response", "mu", "unlink", "log"), ...)
+    transform = c("none", "response", "mu", "unlink", "log"), 
+    nests, ...)
     
 .Last.ref.grid
 }
@@ -45,6 +46,7 @@ Any \code{cov.reduce} specification for a covariate also named in \code{at} is i
   \item{df}{This is a courtesy shortcut, equivalent to specifying \code{options(df = df)}. See \code{\link{update}}.}
   \item{type}{If provided, this is saved as the \code{"predict.type"} setting. See \code{\link{update}}}
   \item{transform}{If other than \code{"none"}, the reference grid is reconstructed via \code{\link{regrid}} with the given \code{transform} argument. See Details.}
+  \item{nests}{If the model has nested fixed effects, this may be specified here via a formula or list of formulas specifying the nesting structure. The formulas must have one or more factors on each side, with the nested factors on the left and the nesting factors on the right; for example, \code{city ~ state * country}. This affects future calls to \code{lsmeans} in that any averaging over nested factors is done separately for each level (or combination thereof) of nesting factors.}
   \item{\dots}{Optional arguments passed to \code{\link{lsm.basis}}, such as \code{vcov.} (see Details below) or options for certain models (see \link{models}).}
 } %--- end of \arguments
 

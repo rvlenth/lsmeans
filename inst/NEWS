@@ -1,10 +1,13 @@
 Changelog for 'lsmeans' package
 
 
-2.26-52
+2.26-53
     Added warning and workaround if user specifies a vector for `type`
-    Added a courtesy function `nested` to aid in fitting nested models
-        (needed only if using a nested structure as a fixed effect)
+    Added a courtesy function `nested` to aid in fitting nested models;
+        and added a 'nests' argument in ref.grid. (These are useful 
+        when modeling nested structure(s) in the fixed effects.)
+    Added support for variable names having spaces (contr by Jonathon Love)
+    Additional 'weights' option of "flat"
     Various other bug fixes
     
 

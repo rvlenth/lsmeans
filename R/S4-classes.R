@@ -1,5 +1,5 @@
 ##############################################################################
-#    Copyright (c) 2012-2016 Russell V. Lenth                                #
+#    Copyright (c) 2012-2017 Russell V. Lenth                                #
 #                                                                            #
 #    This file is part of the lsmeans package for R (*lsmeans*)              #
 #                                                                            #
@@ -46,13 +46,12 @@ setClass("ref.grid", slots = c(
 #   adjust: default adjust method ["none"]
 #   famSize: number of means in family
 
+
+
 ### lsmobj class -- almost trivial ext of ref.grid, structurally
 # But origin can be very different from those of a reference grid
 # In general its 'grid' will correspond to some set of 
 # linear functions of grid points
 setClass("lsmobj", contains="ref.grid")
 
-# ### lstobj class -- for objects from lstrends
-# # Additional slot 'deriv' holds the values from mu.eta() from the associated lsmeans
-# setClass("lstobj", slots = c(deriv = "numeric"), contains = "lsmobj")
 
