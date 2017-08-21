@@ -5,6 +5,7 @@
 ^\.travis\.yml$
 
 # Not yet ready for prime time
+nested.Rd
 
 # Bibliography that is needed but not allowed...
 using-lsmeans.bbl

@@ -21,34 +21,42 @@
 
 # Code supporting nested models
 
+# This code replies on nested structures specified in a named list like
+#    list(a = "b", c = c("d", "e"))
+# ... to denote a %in% b, c %in% d*e
 
 # Internal function to deal with nested structures. 
 #   rgobj        -- a ref.grid
 #   specs, ...   -- arguments for lsmeans
-#   nests        -- a formula or list of formulas each of the form  factors ~ in.factors
+#   nesting      -- a named list of nesting info
 # This function works by subsetting rgobj as needed, and applying lsmeans
 # to each subsetted object
 # This is a servant to lsmeans.character.ref.grid, so we can assume specs is character
-.nested_lsm = function(rgobj, specs, by = NULL, ..., nests) {
-    if (inherits(nests, "formula"))   # for a single nested structure
-        nests = list(nests)
-    avg.over = setdiff(names(rgobj@levels), union(specs, by))
-    infacs = grpfacs = character(0)
-    # figure out which nested factors get averaged over, and which groups are involved
-    for (nest in nests) { 
-        if (!inherits(nest, "formula") || length(nest) < 3)
-            stop("All nesting specifications must be two-sided formulas")
-        gf = .all.vars(nest[-2])
-        nf = .all.vars(nest[-3])
-        af = nf[nf %in% avg.over]
-        if (length(af) > 0) {
-            infacs = union(infacs, af)
-            grpfacs = union(grpfacs, gf)
-        }
+.nested_lsm = function(rgobj, specs, by = NULL, ..., nesting) {
+    # Trap something not supported for these...
+    if(!is.null((wts <- list(...)$weights)))
+        if(!is.na(pmatch(wts, "show.levels")))
+            stop('weights = "show.levels" is not supported for nested models.')
+
+    #### Two issues to worry about....
+    # (1) specs contains nested factors. We need to include their grouping factors
+    xspecs = intersect(union(specs, by), names(nesting))
+    if (length(xspecs) > 0) {
+        xgrps = unlist(nesting[xspecs])
+        specs = union(union(xspecs, xgrps), specs)  # expanded specs with flagged ones first
+        by = setdiff(by, xspecs) # can't use nested factors for grouping
     }
-    if (length(grpfacs) == 0)  # no nesting issues; just use lsmeans
-        result = lsmeans(rgobj, specs, ...)
+    # (2) If we average over any nested factors, we need to do it separately
+    avg.over = setdiff(names(rgobj@levels), union(specs, by))
+    afacs = intersect(names(nesting), avg.over) ### DUH!names(nesting)[names(nesting) %in% avg.over]
+    if (length(afacs) == 0)  { # no nesting issues; just use lsmeans
+        result = lsmeans(rgobj, specs, by = by, ...)
+    }
     else { # we need to handle each group separately
+        sz = sapply(afacs, function(nm) length(nesting[[nm]]))
+        # use highest-order one first: potentially, we end up calling this recursively
+        afac = afacs[rev(order(sz))][1] 
+        grpfacs = nesting[[afac]]
         gspecs = union(specs, union(by, grpfacs))
         grpids = as.character(interaction(rgobj@grid[, grpfacs]))
         grps = do.call(expand.grid, rgobj@levels[grpfacs])  # all combinations of group factors
@@ -62,11 +70,10 @@
             # Reduce grid to infacs that actually appear in  this group
             nzg = grd[grd$.wgt. > 0, , drop = FALSE]
             rows = integer(0)
-            for (fac in infacs) {
-                levs = unique(nzg[[fac]])
-                rg@levels[[fac]] = levs
-                rows = union(rows, which(grd[[fac]] %in% levs))
-            }
+            # focus on levels of afac that exist in this group
+            levs = unique(nzg[[afac]])
+            rg@levels[[afac]] = levs
+            rows = union(rows, which(grd[[afac]] %in% levs))
             rg@grid = grd[rows, , drop = FALSE]
             rg@linfct = lf[rows, , drop = FALSE]
             for (j in seq_along(grpfacs))
@@ -81,44 +88,127 @@
         }
         for (j in seq_along(grpfacs))
             result@levels[grpfacs[j]] = rgobj@levels[grpfacs[j]]
-        # # Take care of a subtlety: What we have constructed always will have groups 
-        # # as the last sets of levels
-        # lvls = names(result@levels)
-        # newlvls = union(setdiff(lvls, grpfacs), grpfacs)
-        # result@grid = result@grid[, newlvls, drop = FALSE]
-        # result@levels = result@levels[newlvls]
+        
         result@misc$avgd.over = setdiff(union(result@misc$avgd.over, avg.over), gspecs)
+        nkeep = intersect(names(nesting), names(result@levels))
+        if (length(nkeep) > 0)
+            result@model.info$nesting = nesting[nkeep]
+        
+        # Note: if any nesting remains, this next call recurs back to this function
         result = lsmeans(result, specs, by = by, ...)
     }
+    
+    if (length(xspecs) > 0)
+        result@misc$display = .find.nonempty.nests(result, xspecs, nesting)
+    else
+        result@misc$display = NULL
+    
     result
 }
 
 
-
-# courtesy function to create levels for a nested structure factor %in% nest
-# factor: factor (or interaction() result)
-# ...:    factors in nest
-# SAS:    if (FALSE|TRUE), reference level in each nest is (first|last)
-nested = function(factor, ..., SAS = FALSE) {
-    nfacs = list(...)
-    if (length(nfacs) == 0)
-        return(factor)
-    nfacs$drop = TRUE
-    nest = do.call(interaction, nfacs)
-    result = as.character(interaction(factor, nest, sep = ".in."))
-    ores = unique(sort(result))
-    nlev = levels(nest)
-    flev = levels(factor)
-    refs = lapply(nlev, function(nst) {
-        r = ores[ores %in% paste0(flev, ".in.", nst)]
-        ifelse (SAS, rev(r)[1], r[1])
-    })
-    result[result %in% refs] = "ref"
-    ores[ores %in% refs] = "ref"
-    ores = setdiff(ores, "ref")
-    if (SAS)
-        factor(result, levels = c(ores, "ref"))
-    else
-        factor(result, levels = c("ref", ores))
+# Internal function to find nonempty cells in nested structures in rgobj for xfacs
+# Returns logical vector, FALSE are rows of the grid we needn't display
+.find.nonempty.nests = function(rgobj, xfacs, nesting = rgobj@model.info$nesting) {
+    grid = rgobj@grid
+    keep = rep(TRUE, nrow(grid))
+    for (x in xfacs) {
+        facs = union(x, nesting[[x]])
+        combs = do.call(expand.grid, rgobj@levels[facs])
+        levs = as.character(interaction(combs))
+        glevs = as.character(interaction(grid[facs]))
+        
+        for (lev in levs) {
+            idx = which(glevs == lev)
+            if (all(grid$.wgt.[idx] == 0)) {
+                keep[idx] = FALSE
+                levs[levs==lev] = ""
+            }
+        }
+    }
+    keep
 }
+
+
+# Internal function to find nesting
+# We look at two things:
+# (1) structural nesting - i.e., any combinations of
+#     factors A and B for which each level of A occurs with one and only one
+#     level of B. If so, we deem A %in% B.
+# (2) Model-term nesting - cases where a factor appears not as a main effect
+#     but only in higher-order terms. This is discovered using the 1s and 2s in 
+#     trms$factors
+# The function returns a named list, e.g., list(A = "B")
+# If none found, an empty list is returned.
+.find_nests = function(grid, trms) {
+    result = list()
+    nms = names(grid)[sapply(grid, is.factor)]
+    if (length(nms) < 2)
+        return (result)
+    g = grid[grid$.wgt. > 0, nms, drop = FALSE]
+    for (nm in nms) {
+        x = levels(g[[nm]])
+###        x = x[x != ".nref."]     # ignore reference level from nested()
+        otrs = nms[!(nms == nm)]
+        max.levs = sapply(otrs, function(n) {
+            max(sapply(x, function(lev) length(unique(g[[n]][g[[nm]] == lev]))))
+        })
+        if (any(max.levs == 1))
+            result[[nm]] = otrs[max.levs == 1]
+    }
+    
+    # Now look at factors attribute
+    fac = attr(trms, "factors")
+    fac = fac[intersect(nms, row.names(fac)), , drop = FALSE]
+    for (j in seq_len(ncol(fac))) {
+        if (any(fac[, j] == 2)) {
+            nst = nms[fac[, j] == 1]
+            for (nm in nst)
+                result[[nm]] = nms[fac[, j] == 2]
+        }
+    }
+    
+    result
+}
+
+# internal function to format a list of nested levels
+.fmt.nest = function(nlist) {
+    if (length(nlist) == 0)
+        "none"
+    else {
+        tmp = lapply(nlist, function(x) paste(x, collapse = "*"))
+        paste(sapply(names(nlist), function (nm) paste0(nm, " %in% ", tmp[[nm]])),
+              collapse = ", ")
+    }
+}
+
+
+# ### I'm removing this because I now think it creates more problems than it solves
+# #
+# # courtesy function to create levels for a nested structure factor %in% nest
+# # factor: factor (or interaction() result)
+# # ...:    factors in nest
+# # SAS:    if (FALSE|TRUE), reference level in each nest is (first|last)
+# nested = function(factor, ..., SAS = FALSE) {
+#     nfacs = list(...)
+#     if (length(nfacs) == 0)
+#         return(factor)
+#     nfacs$drop = TRUE
+#     nest = do.call(interaction, nfacs)
+#     result = as.character(interaction(factor, nest, sep = ".in."))
+#     ores = unique(sort(result))
+#     nlev = levels(nest)
+#     flev = levels(factor)
+#     refs = lapply(nlev, function(nst) {
+#         r = ores[ores %in% paste0(flev, ".in.", nst)]
+#         ifelse (SAS, rev(r)[1], r[1])
+#     })
+#     result[result %in% refs] = ".nref."
+#     ores[ores %in% refs] = ".nref."
+#     ores = setdiff(ores, ".nref.")
+#     if (SAS)
+#         factor(result, levels = c(ores, ".nref."))
+#     else
+#         factor(result, levels = c(".nref.", ores))
+# }
 

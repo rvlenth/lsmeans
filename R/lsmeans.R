@@ -51,11 +51,11 @@ lsmeans = function(object, specs, ...)
     UseMethod("lsmeans", specs)
 
 # 
-lsmeans.default = function(object, specs, nests, ...) {
+lsmeans.default = function(object, specs, nesting, ...) {
     rgargs = list(object = object, ...) ####.args.for.fcn(ref.grid, list(object=object, ...))
     rgargs$options = NULL  # don't pass options to ref.grid
-    if (!missing(nests))
-        rgargs$nests = nests
+    if (!missing(nesting))
+        rgargs$nesting = nesting
     RG = do.call("ref.grid", rgargs)
     lsargs = list(object = RG, specs = specs, ...)
     #for (nm in names(rgargs)[-1]) lsargs[[nm]] = NULL
@@ -162,142 +162,142 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
         # return(eval(cl))
     }
     
-    # pseudo-method dispatch for case where there is a nested structure
-    if(!is.null(nests <- object@model.info$nests)) {
-        object@model.info$nests = NULL
-        return(.nested_lsm(object, specs, by = by, fac.reduce = fac.reduce, contr = contr, 
-                           options = options, weights = weights, ..., nests = nests))
-    }
-    
-    RG = object
-    facs = union(specs, by)
-    
-    if ((length(facs) == 1) && (facs == "1")) {  ### just want grand mean
-        RG@levels[["1"]] = "overall"
-        RG@grid[ ,"1"] = 1
-    }
-    
-    
-    # Figure out the structure of the grid
-    wgt = RG@grid[[".wgt."]]
-    if(!is.null(wgt) && all(zapsmall(wgt) == 0)) wgt = wgt + 1 ### repl all zero wgts with 1
-    dims = sapply(RG@levels, length)
-    row.idx = array(seq_len(nrow(RG@linfct)), dims)
-    use.mars = match(facs, names(RG@levels)) # which margins to use
-    avgd.mars = setdiff(seq_along(dims)[dims>1], use.mars) # margins that we average over
-    
-    # Reconcile weights, if there are any margins left
-    if ((length(avgd.mars) > 0) && !missing(weights)) {
-        if (is.character(weights)) {
-            if (is.null(wgt))
-                warning("'weights' requested but no weighting information is available")
-            else {
-                wopts = c("equal","proportional","outer","cells","flat","show.levels","invalid")
-                weights = switch(wopts[pmatch(weights, wopts, 7)],
-                    equal = rep(1, prod(dims[avgd.mars])),
-                    proportional = as.numeric(plyr::aaply(row.idx, avgd.mars,
-                                                          function(idx) sum(wgt[idx]))),
-                    outer = {
-                        ftbl = plyr::aaply(row.idx, avgd.mars,
-                                           function(idx) sum(wgt[idx]), .drop = FALSE)
-                        w = N = sum(ftbl)
-                        for (d in seq_along(dim(ftbl)))
-                            w = outer(w, plyr::aaply(ftbl, d, sum) / N)
-                        as.numeric(w)
-                    },
-                    cells = "fq",
-                    flat = "fl",
-                    show.levels = {
-                        cat("lsmeans are obtained by averaging over these factor combinations\n")
-                        return(do.call(expand.grid, RG@levels[avgd.mars]))
-                    },
-                    invalid = stop("Invalid 'weights' option: '", weights, "'")
-                )
-            }
-        }
-        if (is.matrix(weights)) {
-            wtrow = 0
-            fac.reduce = function(coefs) {
-                wtmat = .diag(weights[wtrow+1, ]) / sum(weights[wtrow+1, ])
-                ans = apply(wtmat %*% coefs, 2, sum)
-                wtrow <<- (1 + wtrow) %% nrow(weights)
-                ans
-            }
-        }
-        else if (is.numeric(weights)) {
-            wtmat = .diag(weights)
-            wtsum = sum(weights)
-            if (wtsum <= 1e-8) wtsum = NA
-            fac.reduce = function(coefs) {
-                if (nrow(coefs) != nrow(wtmat))
-                    stop("Nonconforming number of weights -- need ", nrow(coefs))
-                apply(wtmat %*% coefs, 2, sum) / wtsum
-            }
-        }
-    }
-    
-    # Get the required factor combs
-    levs = list()
-    for (f in facs) {
-        levs[[f]] = RG@levels[[f]]
-        if (!hasName(levs, f))
-            stop(paste("No variable named", f, "in the reference grid"))
-    }
-    combs = do.call("expand.grid", levs)
-    if (!missing(weights) && (weights %in% c("fq", "fl")))
-        K = plyr::alply(row.idx, use.mars, function(idx) {
-            fq = RG@grid[[".wgt."]][idx]
-            if (weights == "fl")
-                fq = 0 + (fq > 0)  # fq = 1 if > 0, else 0
-            apply(.diag(fq) %*% RG@linfct[idx, , drop=FALSE], 2, sum) / sum(fq)
-        })
-    else
-        K = plyr::alply(row.idx, use.mars, function(idx) {
-            fac.reduce(RG@linfct[idx, , drop=FALSE])
-        })
+    if(is.null(nesting <- object@model.info$nesting)) 
+        {
+        RG = object
+        facs = union(specs, by)
         
-    linfct = t(as.matrix(as.data.frame(K)))
-    row.names(linfct) = NULL
-    
-    if(.some.term.contains(union(facs, RG@roles$trend), RG@model.info$terms))
-        message("NOTE: Results may be misleading due to involvement in interactions")
-    
-    # Figure offset, if any
-    if (hasName(RG@grid, ".offset.")) {
-        combs[[".offset."]] = as.numeric(plyr::aaply(row.idx, use.mars, function(idx)
-            fac.reduce(as.matrix(RG@grid[idx, ".offset.", drop=FALSE]))))
+        if ((length(facs) == 1) && (facs == "1")) {  ### just want grand mean
+            RG@levels[["1"]] = "overall"
+            RG@grid[ ,"1"] = 1
+        }
+        
+        
+        # Figure out the structure of the grid
+        wgt = RG@grid[[".wgt."]]
+        if(!is.null(wgt) && all(zapsmall(wgt) == 0)) wgt = wgt + 1 ### repl all zero wgts with 1
+        dims = sapply(RG@levels, length)
+        row.idx = array(seq_len(nrow(RG@linfct)), dims)
+        use.mars = match(facs, names(RG@levels)) # which margins to use
+        avgd.mars = setdiff(seq_along(dims)[dims>1], use.mars) # margins that we average over
+        
+        # Reconcile weights, if there are any margins left
+        if ((length(avgd.mars) > 0) && !missing(weights)) {
+            if (is.character(weights)) {
+                if (is.null(wgt))
+                    warning("'weights' requested but no weighting information is available")
+                else {
+                    wopts = c("equal","proportional","outer","cells","flat","show.levels","invalid")
+                    weights = switch(wopts[pmatch(weights, wopts, 7)],
+                                     equal = rep(1, prod(dims[avgd.mars])),
+                                     proportional = as.numeric(plyr::aaply(row.idx, avgd.mars,
+                                                                           function(idx) sum(wgt[idx]))),
+                                     outer = {
+                                         ftbl = plyr::aaply(row.idx, avgd.mars,
+                                                            function(idx) sum(wgt[idx]), .drop = FALSE)
+                                         w = N = sum(ftbl)
+                                         for (d in seq_along(dim(ftbl)))
+                                             w = outer(w, plyr::aaply(ftbl, d, sum) / N)
+                                         as.numeric(w)
+                                     },
+                                     cells = "fq",
+                                     flat = "fl",
+                                     show.levels = {
+                                         cat("lsmeans are obtained by averaging over these factor combinations\n")
+                                         return(do.call(expand.grid, RG@levels[avgd.mars]))
+                                     },
+                                     invalid = stop("Invalid 'weights' option: '", weights, "'")
+                    )
+                }
+            }
+            if (is.matrix(weights)) {
+                wtrow = 0
+                fac.reduce = function(coefs) {
+                    wtmat = .diag(weights[wtrow+1, ]) / sum(weights[wtrow+1, ])
+                    ans = apply(wtmat %*% coefs, 2, sum)
+                    wtrow <<- (1 + wtrow) %% nrow(weights)
+                    ans
+                }
+            }
+            else if (is.numeric(weights)) {
+                wtmat = .diag(weights)
+                wtsum = sum(weights)
+                if (wtsum <= 1e-8) wtsum = NA
+                fac.reduce = function(coefs) {
+                    if (nrow(coefs) != nrow(wtmat))
+                        stop("Nonconforming number of weights -- need ", nrow(coefs))
+                    apply(wtmat %*% coefs, 2, sum) / wtsum
+                }
+            }
+        }
+        
+        # Get the required factor combs
+        levs = list()
+        for (f in facs) {
+            levs[[f]] = RG@levels[[f]]
+            if (!hasName(levs, f))
+                stop(paste("No variable named", f, "in the reference grid"))
+        }
+        combs = do.call("expand.grid", levs)
+        if (!missing(weights) && (weights %in% c("fq", "fl")))
+            K = plyr::alply(row.idx, use.mars, function(idx) {
+                fq = RG@grid[[".wgt."]][idx]
+                if (weights == "fl")
+                    fq = 0 + (fq > 0)  # fq = 1 if > 0, else 0
+                apply(.diag(fq) %*% RG@linfct[idx, , drop=FALSE], 2, sum) / sum(fq)
+            })
+        else
+            K = plyr::alply(row.idx, use.mars, function(idx) {
+                fac.reduce(RG@linfct[idx, , drop=FALSE])
+            })
+        
+        linfct = t(as.matrix(as.data.frame(K)))
+        row.names(linfct) = NULL
+        
+        if(.some.term.contains(union(facs, RG@roles$trend), RG@model.info$terms))
+            message("NOTE: Results may be misleading due to involvement in interactions")
+        
+        # Figure offset, if any
+        if (hasName(RG@grid, ".offset.")) {
+            combs[[".offset."]] = as.numeric(plyr::aaply(row.idx, use.mars, function(idx)
+                fac.reduce(as.matrix(RG@grid[idx, ".offset.", drop=FALSE]))))
+        }
+        
+        avgd.over = names(RG@levels[avgd.mars])
+        
+        # Update .wgt column of grid, if it exists
+        if (!is.null(wgt)) {
+            combs[[".wgt."]] = as.numeric(plyr::aaply(row.idx, use.mars, 
+                                                      function(idx) sum(wgt[idx])))
+        }
+        
+        RG@roles$responses = character()
+        RG@misc$famSize = nrow(linfct)
+        if(RG@misc$estName == "prediction") 
+            RG@misc$estName = "lsmean"
+        RG@misc$adjust = "none"
+        RG@misc$infer = c(TRUE,FALSE)
+        RG@misc$pri.vars = setdiff(facs, by)
+        RG@misc$by.vars = by
+        RG@misc$avgd.over = union(RG@misc$avgd.over, avgd.over)
+        RG@misc$methDesc = "lsmeans"
+        RG@roles$predictors = names(levs)
+        result = new("lsmobj", RG, linfct = linfct, levels = levs, grid = combs)
+        
+        
+        if(!is.null(options)) {
+            options$object = result
+            result = do.call("update.ref.grid", options)
+        }
     }
     
-    avgd.over = names(RG@levels[avgd.mars])
-    
-    # Update .wgt column of grid, if it exists
-    if (!is.null(wgt)) {
-        combs[[".wgt."]] = as.numeric(plyr::aaply(row.idx, use.mars, 
-            function(idx) sum(wgt[idx])))
+    else {  # handle a nested structure
+        object@model.info$nesting = NULL
+        result = .nested_lsm(object, specs, by = by, fac.reduce = fac.reduce, 
+                       options = options, weights = weights, ..., nesting = nesting)
     }
     
-    RG@roles$responses = character()
-    RG@misc$famSize = nrow(linfct)
-    if(RG@misc$estName == "prediction") 
-        RG@misc$estName = "lsmean"
-    RG@misc$adjust = "none"
-    RG@misc$infer = c(TRUE,FALSE)
-    RG@misc$pri.vars = setdiff(facs, by)
-    RG@misc$by.vars = by
-    RG@misc$avgd.over = union(RG@misc$avgd.over, avgd.over)
-    RG@misc$methDesc = "lsmeans"
-    RG@roles$predictors = names(levs)
-    result = new("lsmobj", RG, linfct = linfct, levels = levs, grid = combs)
-    
-    
-    if(!is.null(options)) {
-        options$object = result
-        result = do.call("update.ref.grid", options)
-    }
-    
-    # if (missing(contr))
-    #     result
-    
+
     if(!missing(contr)) { # return a list with lsmeans and contrasts
         if (is.character(contr) && contr == "cld") {
         # TO DO: provide for passing dots to cld                
@@ -335,7 +335,12 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     if(length(by) == 0) # character(0) --> NULL
         by = NULL
     
-    orig.grid = object@grid
+    display = if (is.null(object@misc$display))  rep(TRUE, nrow(object@grid)) 
+    else                                         object@misc$display
+    object@misc$display = NULL   # so result doesn't inherit this
+    
+    
+    orig.grid = object@grid[display, , drop = FALSE]
     orig.grid[[".wgt."]] = orig.grid[[".offset."]] = NULL
 
     if (is.logical(interaction) && interaction)
@@ -374,7 +379,8 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     }
     
     # else
-    args = object@grid
+    linfct = object@linfct[display, , drop = FALSE]
+    args = g = object@grid[display, , drop = FALSE]
     args[[".offset."]] = NULL 
     args[[".wgt."]] = NULL # ignore auxiliary stuff in labels, etc.
     if (!is.null(by)) {
@@ -384,7 +390,7 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
         for (nm in by) args[[nm]] = NULL
     }
     args$sep = ","
-    levs = do.call("paste", args)
+    levs = do.call("paste", args)  # NOTE - these are levels for the first (or only) by-group
     
     
     if (is.list(method)) {
@@ -416,7 +422,7 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
         stop("Nonconforming number of contrast coefficients")
     
     if (is.null(by)) {
-        linfct = tcmat %*% object@linfct
+        linfct = tcmat %*% linfct
         grid = data.frame(.contrast.=names(cmat))
         if (hasName(object@grid, ".offset."))
             grid[[".offset."]] = t(cmat) %*% object@grid[[".offset."]]
@@ -427,19 +433,41 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     # on the grid being regular -- same number of rows for each 'by' case
     # If you ever want to expand to irregular grids, this block will
     # have to change, but everything else is probably OK.
+    # ... well, the time has come ...
     else {
-        tcmat = kronecker(.diag(rep(1,length(by.rows))), tcmat)
-        linfct = tcmat %*% object@linfct[unlist(by.rows), , drop = FALSE]
-        tmp = expand.grid(con = names(cmat), by = seq_len(length(by.rows)))###unique(by.id))
-        grid = data.frame(.contrast. = tmp$con)
-        n.each = ncol(cmat)
-        row.1st = sapply(by.rows, function(x) x[1])
-        xlevs = list()
-        for (v in by)
-            xlevs[[v]] = rep(bylevs[row.1st, v], each=n.each)
-        grid = cbind(grid, as.data.frame(xlevs))
-        if (hasName(object@grid, ".offset."))
-            grid[[".offset."]] = tcmat %*% object@grid[unlist(by.rows), ".offset."]
+        # tcmat = kronecker(.diag(rep(1,length(by.rows))), tcmat)
+        # linfct = tcmat %*% linfct[unlist(by.rows), , drop = FALSE]
+        # tmp = expand.grid(con = names(cmat), by = seq_len(length(by.rows)))###unique(by.id))
+        # grid = data.frame(.contrast. = tmp$con)
+        # n.each = ncol(cmat)
+        # row.1st = sapply(by.rows, function(x) x[1])
+        # xlevs = list()
+        # for (v in by)
+        #     xlevs[[v]] = rep(bylevs[row.1st, v], each=n.each)
+        # grid = cbind(grid, as.data.frame(xlevs))
+        # if (hasName(object@grid, ".offset."))
+        #     grid[[".offset."]] = tcmat %*% object@grid[unlist(by.rows), ".offset."]
+        byl = g[ , by, drop = FALSE]
+        g = g[ , !(names(g) %in% c(by, ".wgt.", ".offset.")), drop = FALSE]
+        grid = data.frame(character(0))
+        lfout = numeric(0)
+        for (i in seq_along(by.rows)) {
+            args = as.list(g[by.rows[[i]], , drop = FALSE])
+            args$sep = ","
+            levs = do.call(paste, args)
+            cmat = method(levs, ...)
+            tcmat = t(cmat)
+            lf = tcmat %*% linfct[by.rows[[i]], , drop = FALSE]
+            gd = data.frame(.contrast. = names(cmat))
+            j = by.rows[[i]][1]
+            for (v in  by)
+                gd[[v]] = byl[j, v]
+            if (hasName(g, ".offset."))
+                gd[[".offset."]] = tcmat %*% g[[".offset."]]
+            grid = rbind(grid, gd)
+            lfout = rbind(lfout, lf)
+        }
+        linfct = lfout
     }
     
     # Rename the .contrast. column -- ordinarily to "contrast",
@@ -462,7 +490,7 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
         misc$estType = ifelse(is.con, "contrast", "prediction")
     }
     misc$methDesc = attr(cmat, "desc")
-    misc$famSize = size = nrow(args)
+    misc$famSize = size = length(by.rows[[1]])
     misc$pri.vars = setdiff(names(grid), c(".offset.",".wgt."))
     if (missing(adjust)) adjust = attr(cmat, "adjust")
     if (is.null(adjust)) adjust = "none"
@@ -518,7 +546,7 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     for (nm in setdiff(names(grid), ".offset."))
         levels[[nm]] = unique(grid[[nm]])
         
-    result = new("lsmobj", object, linfct=linfct, levels=levels, grid=grid, misc=misc)
+    result = new("lsmobj", object, linfct = linfct, levels = levels, grid = grid, misc = misc)
     if(!is.null(options)) {
         options$object = result
         result = do.call("update.ref.grid", options)

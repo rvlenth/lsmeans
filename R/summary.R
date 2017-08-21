@@ -43,6 +43,8 @@
         return(result[-1, ])
     }
     misc = object@misc
+    use.elts = if (is.null(misc$display))  rep(TRUE, nrow(object@grid)) 
+               else                        misc$display
 
     if (!is.null(hook <- misc$estHook)) {
         if (is.character(hook)) hook = get(hook)
@@ -51,8 +53,8 @@
     else {
         active = which(!is.na(object@bhat))
         bhat = object@bhat[active]
-        result = t(apply(object@linfct, 1, function(x) {
-            if (estimability::is.estble(x, object@nbasis, tol)) {
+        result = t(apply(object@linfct[use.elts, , drop = FALSE], 1, function(x) {
+            if (!any(is.na(x)) && estimability::is.estble(x, object@nbasis, tol)) {
                 x = x[active]
                 est = sum(bhat * x)
                 if(do.se) {
@@ -67,7 +69,7 @@
         }))
             
         if (!is.null(object@grid$.offset.))
-            result[, 1] = result[, 1] + object@grid$.offset.
+            result[, 1] = result[, 1] + object@grid$.offset.[use.elts]
     }
     result[1] = as.numeric(result[1]) # silly bit of code to avoid getting a data.frame of logicals if all are NA
     result = as.data.frame(result)
@@ -103,9 +105,15 @@
 # Note fam.info is c(famsize, ncontr, estTypeIndex)
 # 2.14: added corrmat arg, dunnettx & mvt adjustments
 # NOTE: corrmat is NULL unless adjust == "mvt"
-.adj.p.value = function(t, df, adjust, fam.info, tail, corrmat) {
+.adj.p.value = function(t, DF, adjust, fam.info, tail, corrmat, by.rows) {
     fam.size = fam.info[1]
     n.contr = fam.info[2]
+    et = as.numeric(fam.info[3])
+
+    ragged.by = (is.character(fam.size))   # flag that we need to do groups separately
+    if (!ragged.by)
+        by.rows = list(seq_along(t))       # not ragged, we can do all as one by group
+        
     if (n.contr == 1) # Force no adjustment when just one test
         adjust = "none"
     
@@ -117,39 +125,60 @@
     adjust = adj.meths[k]
     if ((tail != 0) && (adjust %in% c("tukey", "scheffe", "dunnettx"))) # meth not approp for 1-sided
         adjust = "sidak"
-    if ((fam.info[3] != 3) && adjust == "tukey") # not pairwise
+    if ((et != 3) && adjust == "tukey") # not pairwise
         adjust = "sidak"
     
     # asymptotic results when df is NA
-    df[is.na(df)] = Inf
+    DF[is.na(DF)] = Inf
     
     # if estType is "prediction", use #contrasts + 1 as family size
     # (produces right Scheffe CV; Tukey ones are a bit strange)
-    scheffe.dim = ifelse(fam.info[3] == 1, fam.size, fam.size - 1)
-    abst = abs(t)
+    scheffe.adj = ifelse(et == 1, 0, - 1)
     if (tail == 0)
-        unadj.p = 2*pt(abst, df, lower.tail=FALSE)
+        p.unadj = 2*pt(abs(t), DF, lower.tail=FALSE)
     else
-        unadj.p = pt(t, df, lower.tail = (tail<0))
+        p.unadj = pt(t, DF, lower.tail = (tail<0))
     
-    if (adjust %in% p.adjust.methods) {
-        if (n.contr == length(unadj.p))
-            pval = p.adjust(unadj.p, adjust, n = n.contr)
-        else
-            pval = as.numeric(apply(matrix(unadj.p, nrow=n.contr), 2, 
-                                    function(pp) p.adjust(pp, adjust, n=sum(!is.na(pp)))))
-    }
-    else pval = switch(adjust,
-                       sidak = 1 - (1 - unadj.p)^n.contr,
-                       # NOTE: tukey, scheffe, dunnettx all assumed 2-sided!
-                       tukey = ptukey(sqrt(2)*abst, fam.size, zapsmall(df), lower.tail=FALSE),
-                       scheffe = pf(t^2/scheffe.dim, scheffe.dim, df, lower.tail=FALSE),
-                       dunnettx = 1 - .pdunnx(abst, n.contr, df),
-                       mvt = 1 - .my.pmvt(t, df, corrmat, -tail) # tricky - reverse the tail because we're subtracting from 1 
-                )
+    pvals = lapply(by.rows, function(rows) {
+        unadj.p = p.unadj[rows]
+        abst = abs(t[rows])
+        df = DF[rows]
+        if (ragged.by) {
+            n.contr = length(rows)
+            fam.size = (1 + sqrt(1 + 8*n.contr)) / 2   # tukey family size - e.g., 6 pairs -> family of 4
+        }
+        if (adjust %in% p.adjust.methods) {
+            if (n.contr == length(unadj.p))
+                pval = p.adjust(unadj.p, adjust, n = n.contr)
+            else # only will happen when by.rows is length 1
+                pval = as.numeric(apply(matrix(unadj.p, nrow=n.contr), 2, 
+                                        function(pp) p.adjust(pp, adjust, n=sum(!is.na(pp)))))
+        }
+        else pval = switch(adjust,
+                           sidak = 1 - (1 - unadj.p)^n.contr,
+                           # NOTE: tukey, scheffe, dunnettx all assumed 2-sided!
+                           tukey = ptukey(sqrt(2)*abst, fam.size, zapsmall(df), lower.tail=FALSE),
+                           scheffe = pf(t[rows]^2 / (n.contr + scheffe.adj), n.contr + scheffe.adj, 
+                                        df, lower.tail = FALSE),
+                           dunnettx = 1 - .pdunnx(abst, n.contr, df),
+                           mvt = 1 - .my.pmvt(t[rows], df, corrmat[rows,rows,drop=FALSE], -tail) # tricky - reverse the tail because we're subtracting from 1 
+        )
+    })
+    pval = unlist(pvals)
+    
     chk.adj = match(adjust, c("none", "tukey", "scheffe"), nomatch = 99)
-    do.msg = (chk.adj > 1) && (n.contr > 1) && 
-        !((fam.size == 2) && (chk.adj < 10)) 
+    
+    if (ragged.by) {
+        nc = max(sapply(by.rows, length))
+        fs = (1 + sqrt(1 + 8*nc)) / 2
+        scheffe.dim = "(varies)"
+    }
+    else {
+        nc = n.contr
+        fs = fam.size
+        scheffe.dim = nc + scheffe.adj
+    }
+    do.msg = (chk.adj > 1) && (nc > 1) && !((fs < 3) && (chk.adj < 10)) 
     if (do.msg) {
 #         xtra = if(chk.adj < 10) paste("a family of", fam.size, "tests")
 #         else             paste(n.contr, "tests")
@@ -168,37 +197,51 @@
 # returns a list similar to .adj.p.value
 # 2.14: Added tail & corrmat args, dunnettx & mvt adjustments
 # NOTE: corrmat is NULL unless adjust == "mvt"
-.adj.critval = function(level, df, adjust, fam.info, tail, corrmat) {
+.adj.critval = function(level, DF, adjust, fam.info, tail, corrmat, by.rows) {
     mesg = NULL
     
     fam.size = fam.info[1]
     n.contr = fam.info[2]
-    if (n.contr == 1) # Force no adjustment when just one interval
+    et = as.numeric(fam.info[3])
+    
+    ragged.by = (is.character(fam.size))   # flag that we need to do groups separately
+    if (!ragged.by)
+        by.rows = list(seq_along(t))       # not ragged, we can do all as one by group
+    
+    if (!ragged.by && n.contr == 1) # Force no adjustment when just one interval
         adjust = "none"
     
     adj.meths = c("sidak", "tukey", "scheffe", "dunnettx", "mvt", "bonferroni", "none")
     k = pmatch(tolower(adjust), adj.meths)
-    if(is.na(k)) {
-        k = which(adj.meths == "bonferroni") ###none")
-        ###mesg = paste("\"", adjust, "\" adjustment is not valid for CIs: used bonferroni instead", sep = "")
-        ###mesg = "Confidence levels are NOT adjusted for multiplicity"
-    }
+    if(is.na(k))
+        k = which(adj.meths == "bonferroni") 
     adjust = adj.meths[k]
-    if ((fam.info[3] != 3) && adjust == "tukey") # not pairwise
+    
+    
+    if ((et != 3) && adjust == "tukey") # not pairwise
         adjust = "sidak"
     if ((tail != 0) && (adjust %in% c("tukey", "scheffe", "dunnettx"))) # meth not approp for 1-sided
         adjust = "sidak"
-    if ((fam.info[3] != 3) && adjust == "tukey") # not pairwise
+    if ((et != 3) && adjust == "tukey") # not pairwise
         adjust = "sidak"
     
     # asymptotic results when df is NA
-    df[is.na(df)] = Inf
-    
-    scheffe.dim = ifelse(fam.info[3] == 1, fam.size, fam.size - 1)
+    DF[is.na(DF)] = Inf
+    scheffe.adj = ifelse(et == 1, 0, - 1)
     
     chk.adj = match(adjust, c("none", "tukey", "scheffe"), nomatch = 99)
-    do.msg = (chk.adj > 1) && (n.contr > 1) && 
-        !((fam.size == 2) && (chk.adj < 10)) 
+    if (ragged.by) {
+        nc = max(sapply(by.rows, length))
+        fs = (1 + sqrt(1 + 8*nc)) / 2
+        scheffe.dim = "(varies)"
+    }
+    else {
+        nc = n.contr
+        fs = fam.size
+        scheffe.dim = nc + scheffe.adj
+    }
+    do.msg = (chk.adj > 1) && (nc > 1) && 
+        !((fs < 3) && (chk.adj < 10)) 
     
     if (do.msg) {
 #        xtra = if(chk.adj < 10) paste("a family of", fam.size, "estimates")
@@ -213,16 +256,24 @@
     
     adiv = ifelse(tail == 0, 2, 1) # divisor for alpha where needed
     
-    cv = switch(adjust,
-                none = -qt((1-level)/adiv, df),
-                sidak = -qt((1 - level^(1/n.contr))/adiv, df),
-                bonferroni = -qt((1-level)/n.contr/adiv, df),
-                tukey = qtukey(level, fam.size, df) / sqrt(2),
-                scheffe = sqrt(scheffe.dim * qf(level, scheffe.dim, df)),
-                dunnettx = .qdunnx(level, n.contr, df),
-                mvt = .my.qmvt(level, df, corrmat, tail)
-    )
-    list(cv = cv, mesg = mesg, adjust = adjust)
+    cvs = lapply(by.rows, function(rows) {
+        df = DF[rows]
+        if (ragged.by) {
+            n.contr = length(rows)
+            fam.size = (1 + sqrt(1 + 8*n.contr)) / 2   # tukey family size - e.g., 6 pairs -> family of 4
+        }
+        switch(adjust,
+               none = -qt((1-level)/adiv, df),
+               sidak = -qt((1 - level^(1/n.contr))/adiv, df),
+               bonferroni = -qt((1-level)/n.contr/adiv, df),
+               tukey = qtukey(level, fam.size, df) / sqrt(2),
+               scheffe = sqrt(n.contr + scheffe.adj * qf(level, n.contr + scheffe.adj, df)),
+               dunnettx = .qdunnx(level, n.contr, df),
+               mvt = .my.qmvt(level, df, corrmat[rows,rows,drop=FALSE], tail)
+        )
+    })
+    
+    list(cv = unlist(cvs), mesg = mesg, adjust = adjust)
 }
 
 
@@ -387,18 +438,23 @@ predict.ref.grid <- function(object, type, ...) {
 # S3 summary method
 summary.ref.grid <- function(object, infer, level, adjust, by, type, df, 
                              null, delta, side, ...) {
+    misc = object@misc
+    use.elts = if (is.null(misc$display))  rep(TRUE, nrow(object@grid)) 
+    else                        misc$display
+    grid = object@grid[use.elts, , drop = FALSE]
+    
     ### For missing arguments, get from misc, else default    
     if(missing(infer))
-        infer = object@misc$infer
+        infer = misc$infer
     if(missing(level))
-        level = object@misc$level
+        level = misc$level
     if(missing(adjust))
-        adjust = object@misc$adjust
+        adjust = misc$adjust
     if(missing(by))
-        by = object@misc$by.vars
+        by = misc$by.vars
     
     if (missing(type))
-        type = .get.predict.type(object@misc)
+        type = .get.predict.type(misc)
     else
         type = .validate.type(type)
     
@@ -406,16 +462,16 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
         message("This is a frequentist summary. See `?as.mcmc.ref.grid' for more on what you can do.")
     
     # if there are two transformations and we want response, then we need to undo both
-    if ((type == "response") && (!is.null(object@misc$tran2)))
+    if ((type == "response") && (!is.null(misc$tran2)))
         object = regrid(object, transform = "mu")
-    if ((type %in% c("mu", "unlink")) && (!is.null(t2 <- object@misc$tran2))) {
+    if ((type %in% c("mu", "unlink")) && (!is.null(t2 <- misc$tran2))) {
         if (!is.character(t2))
             t2 = "tran"
         object = update(object, inv.lbl = paste0(t2, "(resp)"))
     }
     
     if(missing(df)) 
-        df = object@misc$df
+        df = misc$df
     if(!is.null(df))
         object@dffun = function(k, dfargs) df
     
@@ -425,11 +481,11 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
         else val
     }
     if(missing(null))
-        null = .nul.eq.zero(object@misc$null)
+        null = .nul.eq.zero(misc$null)
     if(missing(delta))
-        delta = .nul.eq.zero(object@misc$delta)
+        delta = .nul.eq.zero(misc$delta)
     if(missing(side))
-        side = .nul.eq.zero(object@misc$side)
+        side = .nul.eq.zero(misc$side)
     
     # update with any "summary" options
     opt = get.lsm.option("summary")
@@ -448,9 +504,9 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     
     result = .est.se.df(object)
     
-    lblnms = setdiff(names(object@grid), 
+    lblnms = setdiff(names(grid), 
                      c(object@roles$responses, ".offset.", ".wgt."))
-    lbls = object@grid[lblnms]
+    lbls = grid[lblnms]
     
     zFlag = (all(is.na(result$df)))
     inv = (type %in% c("response", "mu", "unlink")) # flag to inverse-transform
@@ -463,9 +519,9 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     if(length(infer == 1)) 
         infer = c(infer,infer)
     
-    if(inv && !is.null(object@misc$tran)) {
-        if (!is.null(object@misc$inv.lbl))
-            names(result)[1] = object@misc$inv.lbl
+    if(inv && !is.null(misc$tran)) {
+        if (!is.null(misc$inv.lbl))
+            names(result)[1] = misc$inv.lbl
         else
             names(result)[1] = "response"
     }
@@ -473,7 +529,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     attr(result, "link") = NULL
     estName = names(result)[1]
     
-    mesg = object@misc$initMesg
+    mesg = misc$initMesg
     
     ### Add an annotation when we show results on lp scale and
     ### there is a transformation
@@ -487,24 +543,29 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
     }
     
     # et = 1 if a prediction, 2 if a contrast (or unmatched or NULL), 3 if pairs
-    et = pmatch(c(object@misc$estType, "c"), c("prediction", "contrast", "pairs"), nomatch = 2)[1]
+    et = pmatch(c(misc$estType, "c"), c("prediction", "contrast", "pairs"), nomatch = 2)[1]
     
-    by.size = nrow(object@grid)
-    if (!is.null(by))
-        for (nm in by)
+    by.size = nrow(grid)
+    by.rows = .find.by.rows(grid, by)
+    if (!is.null(by)) {
+        if (length(unique(sapply(by.rows, length))) > 1) {
+            by.size = misc$famSize = "(varies)"
+        }
+        else for (nm in by)
             by.size = by.size / length(unique(object@levels[[nm]]))
-    fam.info = c(object@misc$famSize, by.size, et)
+    }
+    fam.info = c(misc$famSize, by.size, et)
     cnm = NULL
     
     # get vcov matrix only if needed (adjust == "mvt")
     corrmat = NULL
     if (!is.na(pmatch(adjust, "mvt"))) {
         corrmat = cov2cor(vcov(object))
-        attr(corrmat, "by.rows") = .find.by.rows(object@grid, by)
+        attr(corrmat, "by.rows") = by.rows
     }
     
     if(infer[1]) { # add CIs
-        acv = .adj.critval(level, result$df, adjust, fam.info, side, corrmat)
+        acv = .adj.critval(level, result$df, adjust, fam.info, side, corrmat, by.rows)
         ###adjust = acv$adjust # in older versions, I forced same adj method for tests
         cv = acv$cv
         cv = switch(side + 2, cbind(-Inf, cv), cbind(-cv, cv), cbind(-cv, Inf))
@@ -539,7 +600,7 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
         else {
             t.ratio = result[[tnm]] = (result[[1]] - null + side * delta) / result$SE            
         }
-        apv = .adj.p.value(t.ratio, result$df, adjust, fam.info, tail, corrmat)
+        apv = .adj.p.value(t.ratio, result$df, adjust, fam.info, tail, corrmat, by.rows)
         adjust = apv$adjust   # in case it was abbreviated
         result$p.value = apv$pval
         mesg = c(mesg, apv$mesg)
@@ -556,16 +617,16 @@ summary.ref.grid <- function(object, infer, level, adjust, by, type, df,
         result[[1]] = with(link, linkinv(result[[1]]))
     }
     
-    if (length(object@misc$avgd.over) > 0) {
-        qual = attr(object@misc$avgd.over, "qualifier")
+    if (length(misc$avgd.over) > 0) {
+        qual = attr(misc$avgd.over, "qualifier")
         if (is.null(qual)) qual = ""
         mesg = c(paste0("Results are averaged over", qual, " the levels of: ",
-                       paste(object@misc$avgd.over, collapse = ", ")), mesg)
+                       paste(misc$avgd.over, collapse = ", ")), mesg)
     }
     summ = cbind(lbls, result)
     attr(summ, "estName") = estName
     attr(summ, "clNames") = cnm  # will be NULL if infer[1] is FALSE
-    attr(summ, "pri.vars") = setdiff(union(object@misc$pri.vars, object@misc$by.vars), by)
+    attr(summ, "pri.vars") = setdiff(union(misc$pri.vars, misc$by.vars), by)
     attr(summ, "by.vars") = by
     attr(summ, "mesg") = unique(mesg)
     class(summ) = c("summary.ref.grid", "data.frame")
@@ -594,7 +655,13 @@ print.summary.ref.grid = function(x, ..., digits=NULL, quote=FALSE, right=TRUE) 
         fp = x$p.value = format(round(x$p.value,4), nsmall=4, sci=FALSE)
         x$p.value[fp=="0.0000"] = "<.0001"
     }
+    estn = attr(x, "estName")
     just = sapply(x.save, function(col) if(is.numeric(col)) "R" else "L")
+    est = x[[estn]]
+    if (any(is.na(est))) {
+        x[[estn]] = format(est, digits=digits)
+        x[[estn]][is.na(est)] = "nonEst"
+    }
     xc = as.matrix(format.data.frame(x, digits=digits, na.encode=FALSE))
     m = apply(rbind(just, names(x), xc), 2, function(x) {
         w = max(sapply(x, nchar))

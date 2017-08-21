@@ -19,7 +19,7 @@ Using a fitted model object, determine a reference grid for which least-squares 
 ref.grid(object, at, cov.reduce = mean, mult.name, mult.levs, 
     options = get.lsm.option("ref.grid"), data, df, type, 
     transform = c("none", "response", "mu", "unlink", "log"), 
-    nests, ...)
+    nesting, ...)
     
 .Last.ref.grid
 }
@@ -46,7 +46,7 @@ Any \code{cov.reduce} specification for a covariate also named in \code{at} is i
   \item{df}{This is a courtesy shortcut, equivalent to specifying \code{options(df = df)}. See \code{\link{update}}.}
   \item{type}{If provided, this is saved as the \code{"predict.type"} setting. See \code{\link{update}}}
   \item{transform}{If other than \code{"none"}, the reference grid is reconstructed via \code{\link{regrid}} with the given \code{transform} argument. See Details.}
-  \item{nests}{If the model has nested fixed effects, this may be specified here via a formula or list of formulas specifying the nesting structure. The formulas must have one or more factors on each side, with the nested factors on the left and the nesting factors on the right; for example, \code{city ~ state * country}. This affects future calls to \code{lsmeans} in that any averaging over nested factors is done separately for each level (or combination thereof) of nesting factors.}
+  \item{nesting}{If the model has nested fixed effects, this may be specified here via a named \code{list} specifying the nesting structure. Specifying \code{nesting} overrides the nesting structure that may be automatically detected. See Details.}
   \item{\dots}{Optional arguments passed to \code{\link{lsm.basis}}, such as \code{vcov.} (see Details below) or options for certain models (see \link{models}).}
 } %--- end of \arguments
 
@@ -61,6 +61,8 @@ Only the complete cases in \code{data} are used, so it may be necessary to exclu
 Using \code{data} can also help save computing, especially when the dataset is large. In any case, \code{data} must represent all factor levels used in fitting the model. It \emph{cannot} be used as an alternative to \code{at}. (Note: If there is a pattern of \code{NAs} that caused one or more factor levels to be excluded when fitting the model, then \code{data} should also exclude those levels.)
 
 By default, the variance-covariance matrix for the fixed effects is obtained from \code{object}, usually via its \code{\link{vcov}} method. However, the user may override this via a \code{vcov.} argument, specifying a matrix or a function. If a matrix, it must be square and of the same dimension and parameter order of the fixed effects. If a function, must return a suitable matrix when it is called with \code{object} as its only argument.
+
+Nested factors: \code{ref.grid} tries to discern which factors are nested in other factors, but it is not always obvious, and if it misses some, the user must specify this structure via \code{nesting}; or later using \code{\link{update}}. Each member of \code{nesting} should be a character vector of the name(s) of grouping factors; and the name for that member should be that of the factor that is nested therein; for example, \code{list(city = c("state", "country")}. Having a nesting structure affects marginal averaging in \code{lsmeans} in that it is done separately for each level (or combination thereof) of the grouping factors.
 
 There is a subtle difference between specifying \samp{type = "response"} and \samp{transform = "response"}. While the summary statistics for the grid itself are the same, subsequent use in \code{\link{lsmeans}} will yield different results if there is a response transformation. With \samp{type = "response"}, LS means are computed by averaging together predictions on the \emph{linear-predictor} scale and then back-transforming to the response scale; while with \samp{transform = "response"}, the predictions are already on the response scale so that the LS means will be the arithmetic means of those response-scale predictions. To add further to the possibilities, \emph{geometric} means of the response-scale predictions are obtainable via \samp{transform = "log", type = "response"}.
 
