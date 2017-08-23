@@ -89,15 +89,15 @@ Confidence level used: 0.95
 > ( warp.lsm <- lsmeans(warp.lm, "tension", by = "wool") )
 wool = A:
  tension lsmean SE df asymp.LCL asymp.UCL
- L           NA NA NA        NA        NA
- M           NA NA NA        NA        NA
- H           NA NA NA        NA        NA
+ L       nonEst NA NA        NA        NA
+ M       nonEst NA NA        NA        NA
+ H       nonEst NA NA        NA        NA
 
 wool = B:
  tension lsmean SE df asymp.LCL asymp.UCL
- L           NA NA NA        NA        NA
- M           NA NA NA        NA        NA
- H           NA NA NA        NA        NA
+ L       nonEst NA NA        NA        NA
+ M       nonEst NA NA        NA        NA
+ H       nonEst NA NA        NA        NA
 
 Confidence level used: 0.95 
 > # (Nothing is estimable)
@@ -531,7 +531,7 @@ Tests are performed on the log scale
 NOTE: Results may be misleading due to involvement in interactions
  race       lsmean       SE df   lower.CL upper.CL
  Black    1.258929 1.646003 92 -2.0101755 4.528033
- Hispanic       NA       NA NA         NA       NA
+ Hispanic   nonEst       NA NA         NA       NA
  White    2.932008 1.346612 92  0.2575192 5.606496
 
 Results are averaged over the levels of: age, group 
@@ -541,7 +541,7 @@ Confidence level used: 0.95
 NOTE: Results may be misleading due to involvement in interactions
  race       lsmean        SE df   lower.CL upper.CL
  Black    1.926554 1.3940313 92 -0.8421122 4.695221
- Hispanic       NA        NA NA         NA       NA
+ Hispanic   nonEst        NA NA         NA       NA
  White    2.522821 0.6044604 92  1.3223102 3.723331
 
 Results are averaged over the levels of: age, group 
@@ -551,7 +551,7 @@ Confidence level used: 0.95
 NOTE: Results may be misleading due to involvement in interactions
  race       lsmean        SE df   lower.CL upper.CL
  Black    2.546674 1.4313624 92 -0.2961356 5.389483
- Hispanic       NA        NA NA         NA       NA
+ Hispanic   nonEst        NA NA         NA       NA
  White    3.142940 0.7494154 92  1.6545363 4.631344
 
 Results are averaged over the levels of: age, group 

@@ -132,7 +132,7 @@ plot.summary.ref.grid = function(x, y, horizontal = TRUE, xlab, ylab, layout, ..
                     paste(estName, "~ pri.fac"))
     
     byv = attr(summ, "by.vars")
-    if (!is.null(byv)) {
+    if (!is.null(byv) && length(byv) > 0) {
         chform = paste(chform, "|", paste(byv, collapse="*"))
         lbv = do.call("paste", summ[byv]) # strings for matching by variables
         ubv = unique(lbv)

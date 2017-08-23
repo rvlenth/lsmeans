@@ -383,7 +383,7 @@ ref.grid <- function(object, at, cov.reduce = mean, mult.name, mult.levs,
     # Do same with covariates
     ccov = setdiff(covs.m, covs.d)
     if(length(ccov) > 0) {
-        cvars = lapply(ccov, function(x) .all.vars(reformulate(x)))
+        cvars = lapply(ccov, function(x) .all.vars(stats::reformulate(x)))
         ccov = intersect(unique(unlist(cvars)), facs.d)
     }
     

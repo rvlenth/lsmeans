@@ -55,6 +55,8 @@ rbind.ref.grid = function(..., deparse.level = 1, adjust = "mvt") {
     avgd.over = unique(unlist(lapply(objs, function(o) o@misc$avgd.over)))
     attr(avgd.over, "qualifier") = " some or all of"
     obj@grid = grid
+    obj@levels = lapply(gnms, function(nm) unique(grid[[nm]]))
+    names(obj@levels) = gnms
     update(obj, pri.vars = gnms, by.vars = NULL, adjust = adjust,
            famSize = round((1 + sqrt(1 + 8*n)) / 2, 3),
            estType = "contrast", infer = c(FALSE, TRUE),
@@ -63,13 +65,19 @@ rbind.ref.grid = function(..., deparse.level = 1, adjust = "mvt") {
 
 
 ### Subset a reference grid
-
-"[.ref.grid" = function(x, i, adjust = "mvt", ...) {
-    x@linfct = x@linfct[i, , drop=FALSE]
+# if drop = TRUE, the levels of factors are reduced
+"[.ref.grid" = function(x, i, adjust = "mvt", drop.levels = TRUE, ...) {
+    x@linfct = x@linfct[i, , drop = FALSE]
     x@grid = x@grid[i, , drop = FALSE]                  
     x = update(x, pri.vars = names(x@grid), 
            famSize = 2, adjust = adjust)
     x@misc$by.vars = NULL
+    if(!is.null(disp <- x@misc$display))
+        x@misc$display = disp[i]
+    if (drop.levels) {
+        for (nm in names(x@levels))
+            x@levels[[nm]] = unique(x@grid[[nm]])
+    }
     x
 }
 

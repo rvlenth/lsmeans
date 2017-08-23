@@ -82,7 +82,7 @@ lsmip.default = function(object, formula, type,
     
     # figure out 'x' and 'by' vars
     rhs = strsplit(as.character(formula[3]), "\\|")[[1]]
-    xvars = .all.vars(reformulate(rhs[[1]]))
+    xvars = .all.vars(stats::reformulate(rhs[[1]]))
     xv = do.call(paste, lsms[xvars])
     lsms$xvar = factor(xv, levels = unique(xv))
     lsms = lsms[order(lsms$xvar), ]
@@ -90,7 +90,7 @@ lsmip.default = function(object, formula, type,
     
     # see if we have any 'by' vars
     if (length(rhs) > 1) {
-        byvars = .all.vars(reformulate(rhs[[2]]))
+        byvars = .all.vars(stats::reformulate(rhs[[2]]))
         plotform = as.formula(paste("lsmean ~ xvar |", paste(byvars, collapse="*")))
     }
 

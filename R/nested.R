@@ -33,10 +33,11 @@
 # to each subsetted object
 # This is a servant to lsmeans.character.ref.grid, so we can assume specs is character
 .nested_lsm = function(rgobj, specs, by = NULL, ..., nesting) {
-    # Trap something not supported for these...
-    if(!is.null((wts <- list(...)$weights)))
-        if(!is.na(pmatch(wts, "show.levels")))
-            stop('weights = "show.levels" is not supported for nested models.')
+    # # Trap something not supported for these... This doesn't work
+    # dots = list(...)
+    # if("weights" %in% dots)
+    #     if(!is.na(pmatch(dots$weights, "show.levels")))
+    #         stop('weights = "show.levels" is not supported for nested models.')
 
     #### Two issues to worry about....
     # (1) specs contains nested factors. We need to include their grouping factors
@@ -103,6 +104,60 @@
     else
         result@misc$display = NULL
     
+    # preserve any nesting that still exists
+    result@model.info$nesting = nesting[names(nesting) %in% names(result@levels)]
+    result
+}
+
+
+### contrast function for nested structures
+.nested_contrast = function(rgobj, method = "eff", by = NULL, adjust, ...) {
+    nesting = rgobj@model.info$nesting
+    # Prevent meaningless cases -- if A %in% B, we can't have A in 'by' without B
+    # Our remedy will be to EXPAND the by list
+    for (nm in intersect(by, names(nesting)))
+        if (!all(nesting[[nm]] %in% by)) {
+            by = union(by, nesting[[nm]])
+            message("Note: Grouping factor(s) for '", nm, "' have been added to the 'by' list.")
+        }
+    facs = setdiff(names(nesting), by)
+    if (length(facs) == 0)
+        stop("There are no factor levels left to contrast. Try taking nested factors out of 'by'.")
+    
+    if(!is.character(method))
+        stop ("Non-character contrast methods are not supported with nested objects")
+    
+    testcon = get(paste0(method, ".lsmc"))(1:3)
+    if(missing(adjust)) 
+        adjust = attr(testcon, "adjust")
+    estType = attr(testcon, "type")
+
+    wkrg = rgobj # working copy
+    facs = setdiff(names(wkrg@levels), by)  # these are the factors we'll combine & contrast
+    if (!is.null(display <- wkrg@misc$display))
+        wkrg = wkrg[which(display), drop.levels = TRUE]
+    wkrg@model.info$nesting = wkrg@misc$display = NULL
+    by.rows = .find.by.rows(wkrg@grid, by)
+    if(length(by.rows) == 1)
+        result = contrast(wkrg, method = method, by = by, ...)
+    else {
+        result = lapply(by.rows, function(rows) {
+            contrast.ref.grid(wkrg[rows, drop.levels = TRUE], method = method, 
+                              by = by, adjust = adjust, ...)
+        })
+        result$adjust = ifelse(is.null(adjust), "none", adjust)
+        result = do.call(rbind.ref.grid, result)
+        result = update(result, by = by, 
+                        estType = ifelse(is.null(estType), "contrast", estType))
+        cname = setdiff(names(result@levels), by)
+        result@model.info$nesting[[cname]] = by
+    }
+    result@misc$orig.grid = result@misc$con.code = NULL
+
+    for (nm in by) {
+        if (nm %in% names(nesting))
+            result@model.info$nesting[[nm]] = intersect(nesting[[nm]], by)
+    }
     result
 }
 

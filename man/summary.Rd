@@ -41,7 +41,7 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 
 \method{rbind}{ref.grid}(..., deparse.level = 1, adjust = "mvt")
 
-\method{[}{ref.grid}(x, i, adjust = "mvt", ...)
+\method{[}{ref.grid}(x, i, adjust = "mvt", drop.levels = TRUE, ...)
 
 \method{print}{ref.grid}(x, ...)
 \method{print}{summary.ref.grid}(x, ..., digits = NULL, quote = FALSE, right = TRUE)
@@ -98,6 +98,7 @@ If non-missing a constant number of degrees of freedom to use in constructing co
   \item{delta}{Numeric value. If zero, ordinary tests of significance are performed. If positive, this specifies a threshold for testing equivalence (using the TOST or two-one-sided-test method), non-inferiority, or non-superiority, depending on \code{side}. See Details for how the test statistics are defined.}
   \item{side}{Numeric or character value specifying whether the test is left-tailed (\code{-1}, \code{"-"}, code{"<"}, \code{"left"}, or \code{"nonsuperiority"}); right-tailed (\code{1}, \code{"+"}, \code{">"}, \code{"right"}, or \code{"noninferiority"}); or two-sided (\code{0}, \code{2}, \code{"!="}, \code{"two-sided"}, \code{"both"}, \code{"equivalence"}, or \code{"="}).}
   \item{deparse.level}{This argument is needed by the generic \code{rbind} method, but ignored by its \code{ref.grid} method.}
+  \item{drop.levels}{Logical value to specify whether or not the \code{levels} slot should be recomputed based on a possibly reduced number of levels of factors in the grid.}
   \item{x}{
 The object to be subsetted, printed, plotted, or converted.
 }

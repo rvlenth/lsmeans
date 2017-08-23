@@ -167,6 +167,11 @@ lsmeans.character.ref.grid = function(object, specs, by = NULL,
         RG = object
         facs = union(specs, by)
         
+        # Check that grid is complete
+        # This isn't a 100% reliable check, but...
+        if(nrow(RG@grid) != prod(sapply(RG@levels, length)))
+            stop("Irregular reference grid: Marginal means cannot be determined")
+        
         if ((length(facs) == 1) && (facs == "1")) {  ### just want grand mean
             RG@levels[["1"]] = "overall"
             RG@grid[ ,"1"] = 1
@@ -335,12 +340,11 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     if(length(by) == 0) # character(0) --> NULL
         by = NULL
     
-    display = if (is.null(object@misc$display))  rep(TRUE, nrow(object@grid)) 
-    else                                         object@misc$display
-    object@misc$display = NULL   # so result doesn't inherit this
+    nesting = object@model.info$nesting
+    if (!is.null(nesting) || !is.null(object@misc$display))
+        return (.nested_contrast(rgobj = object, method = method, by = by, adjust = adjust, ...))
     
-    
-    orig.grid = object@grid[display, , drop = FALSE]
+    orig.grid = object@grid[, , drop = FALSE]
     orig.grid[[".wgt."]] = orig.grid[[".offset."]] = NULL
 
     if (is.logical(interaction) && interaction)
@@ -379,8 +383,8 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     }
     
     # else
-    linfct = object@linfct[display, , drop = FALSE]
-    args = g = object@grid[display, , drop = FALSE]
+    linfct = object@linfct[, , drop = FALSE]
+    args = g = object@grid[, , drop = FALSE]
     args[[".offset."]] = NULL 
     args[[".wgt."]] = NULL # ignore auxiliary stuff in labels, etc.
     if (!is.null(by)) {
@@ -429,47 +433,23 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
         by.rows = list(seq_along(object@linfct[ , 1]))
     }
     
-    # NOTE: The kronecker thing here is nice and efficient but depends
-    # on the grid being regular -- same number of rows for each 'by' case
-    # If you ever want to expand to irregular grids, this block will
-    # have to change, but everything else is probably OK.
-    # ... well, the time has come ...
+    # NOTE: The kronecker thing here depends on the grid being regular.
+    # Irregular grids are handled by .neted_contrast
     else {
-        # tcmat = kronecker(.diag(rep(1,length(by.rows))), tcmat)
-        # linfct = tcmat %*% linfct[unlist(by.rows), , drop = FALSE]
-        # tmp = expand.grid(con = names(cmat), by = seq_len(length(by.rows)))###unique(by.id))
-        # grid = data.frame(.contrast. = tmp$con)
-        # n.each = ncol(cmat)
-        # row.1st = sapply(by.rows, function(x) x[1])
-        # xlevs = list()
-        # for (v in by)
-        #     xlevs[[v]] = rep(bylevs[row.1st, v], each=n.each)
-        # grid = cbind(grid, as.data.frame(xlevs))
-        # if (hasName(object@grid, ".offset."))
-        #     grid[[".offset."]] = tcmat %*% object@grid[unlist(by.rows), ".offset."]
-        byl = g[ , by, drop = FALSE]
-        g = g[ , !(names(g) %in% c(by, ".wgt.", ".offset.")), drop = FALSE]
-        grid = data.frame(character(0))
-        lfout = numeric(0)
-        for (i in seq_along(by.rows)) {
-            args = as.list(g[by.rows[[i]], , drop = FALSE])
-            args$sep = ","
-            levs = do.call(paste, args)
-            cmat = method(levs, ...)
-            tcmat = t(cmat)
-            lf = tcmat %*% linfct[by.rows[[i]], , drop = FALSE]
-            gd = data.frame(.contrast. = names(cmat))
-            j = by.rows[[i]][1]
-            for (v in  by)
-                gd[[v]] = byl[j, v]
-            if (hasName(g, ".offset."))
-                gd[[".offset."]] = tcmat %*% g[[".offset."]]
-            grid = rbind(grid, gd)
-            lfout = rbind(lfout, lf)
-        }
-        linfct = lfout
+        tcmat = kronecker(.diag(rep(1,length(by.rows))), tcmat)
+        linfct = tcmat %*% linfct[unlist(by.rows), , drop = FALSE]
+        tmp = expand.grid(con = names(cmat), by = seq_len(length(by.rows)))###unique(by.id))
+        grid = data.frame(.contrast. = tmp$con)
+        n.each = ncol(cmat)
+        row.1st = sapply(by.rows, function(x) x[1])
+        xlevs = list()
+        for (v in by)
+            xlevs[[v]] = rep(bylevs[row.1st, v], each=n.each)
+        grid = cbind(grid, as.data.frame(xlevs))
+        if (hasName(object@grid, ".offset."))
+            grid[[".offset."]] = tcmat %*% object@grid[unlist(by.rows), ".offset."]
     }
-    
+
     # Rename the .contrast. column -- ordinarily to "contrast",
     # but otherwise a unique variation thereof
     con.pat = paste("^", name, "[0-p]?", sep = "")
@@ -513,16 +493,6 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     # zap the transformation info except in very special cases
     if (!is.null(misc$tran)) {
         misc$orig.tran = misc$tran
-# --- previous code        
-#         # anything other than (-1,0,1)?
-#         non.comp = setdiff(zapsmall(unique(as.matrix(cmat))), c(-1,0,1)) 
-#         if(length(non.comp) == 0 && (misc$tran %in% c("log", "logit"))) {
-#             misc$orig.inv.lbl = misc$inv.lbl
-#             misc$inv.lbl = ifelse(misc$tran == "logit", "odds.ratio", 
-#                                   paste(misc$inv.lbl,"ratio",sep="."))
-#             misc$tran = "log"
-#         }
-# Replacement 2016-10-19:
         true.con = all(zapsmall(apply(cmat, 2, sum)) == 0) # each set of coefs sums to 0
         if (true.con && misc$tran == "log") {
             misc$orig.inv.lbl = misc$inv.lbl
@@ -656,6 +626,7 @@ test.ref.grid = function(object, null = 0,
             result = cbind(object@grid[fbr, by, drop = FALSE], result)
         }
         class(result) = c("summary.ref.grid", "data.frame")
+        attr(result, "estName") = "F"
         if (lindep)
             message("There are linearly dependent rows - df are reduced accordingly")
         if (nonest)
