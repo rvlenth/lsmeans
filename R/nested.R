@@ -94,6 +94,8 @@
         nkeep = intersect(names(nesting), names(result@levels))
         if (length(nkeep) > 0)
             result@model.info$nesting = nesting[nkeep]
+        else
+            result@model.info$nesting = NULL
         
         # Note: if any nesting remains, this next call recurs back to this function
         result = lsmeans(result, specs, by = by, ...)
@@ -101,11 +103,10 @@
     
     if (length(xspecs) > 0)
         result@misc$display = .find.nonempty.nests(result, xspecs, nesting)
-    else
-        result@misc$display = NULL
-    
+
     # preserve any nesting that still exists
-    result@model.info$nesting = nesting[names(nesting) %in% names(result@levels)]
+    nesting = nesting[names(nesting) %in% names(result@levels)]
+    result@model.info$nesting =   if (length(nesting) > 0) nesting    else NULL
     result
 }
 
@@ -145,6 +146,9 @@
             contrast.ref.grid(wkrg[rows, drop.levels = TRUE], method = method, 
                               by = by, adjust = adjust, ...)
         })
+        # Have to define .wgt. for nested ref.grid. Use average weight - seems most sensible
+        for (i in seq_along(by.rows))
+            result[[i]]@grid$.wgt. = mean(wkrg@grid[[".wgt."]][by.rows[[i]]])
         result$adjust = ifelse(is.null(adjust), "none", adjust)
         result = do.call(rbind.ref.grid, result)
         result = update(result, by = by, 

@@ -44,14 +44,21 @@ rbind.ref.grid = function(..., deparse.level = 1, adjust = "mvt") {
     grid = data.frame(.tmp. = seq_len(n <- nrow(obj@linfct)))
     for (g in gnms)
         grid[[g]] = rep(".", n)
+    grid[[".wgt."]] = grid[[".offset."]] = 0
     grid$.tmp. = NULL
     n.before = 0
     for (g in grids) {
         rows = n.before + seq_along(g[[1]])
         n.before = max(rows)
-        for (nm in names(g))
+        for (nm in setdiff(names(g), c(".wgt.", ".offset.")))
             grid[rows, nm] = as.character(g[[nm]])
+        if (!is.null(g$.wgt.)) grid[rows, ".wgt."] = g$.wgt.
+        if (!is.null(g$.offset.)) grid[rows, ".wgt."] = g$.offset.
     }
+    if (all(grid$.wgt. == 0)) 
+        grid$.wgt. = 1
+    if (all(grid$.offset. == 0)) 
+        grid$.offset. = NULL
     avgd.over = unique(unlist(lapply(objs, function(o) o@misc$avgd.over)))
     attr(avgd.over, "qualifier") = " some or all of"
     obj@grid = grid

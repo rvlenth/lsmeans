@@ -774,7 +774,7 @@ The general conclusion from these analyses is that for age groups 2 and~3, the e
 Note that this analysis is somewhat different than the results we would obtain by subsetting the data before analysis, as we are borrowing information from the other observations in estimating and testing these LS~means.
 
 \subsection{More on weighting}\label{weights}
-The \wixcodesub{weights}{equal, proportional, outer, cells} argument can be a vector of numerical weights (it has to be of the right length), or one of four text values: \dqt{equal} (weight the predictions equally when averaging them, the default), \dqt{proportional} (weight them proportionally to the observed frequencies of the factor combinations being averaged over), \dqt{outer} (weight according to the outer products of the one-factor marginal counts), or \dqt{cells} (weight each mean differently, according to the frequencies of the predictions being averaged). \Fig{wtcomp} shows the LS~means for "race" using the four different weighting schemes. (Note: If the model itself has weights, then the total weights are used instead of counts.)
+The \wixcodesub{weights}{equal, proportional, outer, cells} argument can be a vector of numerical weights (it has to be of the right length), or one of five text values: \dqt{equal} (weight the predictions equally when averaging them, the default), \dqt{proportional} (weight them proportionally to the observed frequencies of the factor combinations being averaged over), \dqt{outer} (weight according to the outer products of the one-factor marginal counts), \dqt{cells} (weight each mean differently, according to the frequencies of the predictions being averaged), or \dqt{flat} (like \dqt{cells}, but give all nonemprty cells equal weight). \Fig{wtcomp} shows the LS~means for "race" using the first four different weighting schemes. (Note: If the model itself has weights, then the total weights are used instead of counts.)
 \begin{figure}
 \hspace{-.06\linewidth}
 \begin{minipage}{1.12\linewidth}
@@ -804,6 +804,50 @@ The results for \dqt{cells} weights stand out because everything is estimable---
 <<>>=
 with(nutrition, tapply(gain, race, mean))
 @
+
+
+\subsection{Nested fixed effects}\ix{nested models}
+A factor $A$ is nested in another factor $B$ if the levels of $A$ have a different meaning in one level of $B$ than in another. Often, nested factors are random effects---for example, subjects in an experiment may be randomly assigned to treatments, in which case subjects are nested in treatments---and if we model them as random effects, these random nested effects are not among the fixed effects and are not an issue to "lsmeans". But sometimes we have fixed nested factors. For example, we may have data on different cities of particular interest, in three states of particular interest. Then cities are nested in states. We might want to compare the states because they have different social services policies or something; and we might want to compare the cities in each state. This nesting becomes particularly important when we have cities with the same name in different states: we need to be able to distinguish Springfield, Illinois and Springfield, Missouri.
+
+In contrast to older versions of the package, "lsmeans" now tries to discover and accommodate nested structures in the fixed effects. It does this in two ways: first, by identifying factors whose levels appear in combination with only one level of another factor; and second, by examining the "terms" attribute of the fixed effects.
+
+\index{Examples!cow treatments}\index{Examples!messy data}
+Here is an example of a fictional study of five fictional treatments for some disease in cows. Two of the treatments are administered by injection, and the other three are administered orally. There are varying numbers of observations for each drug. The data and model follow:
+<<>>=
+cows = data.frame (
+    route = factor(rep(c("injection", "oral"), c(5, 9))),
+    drug = factor(rep(c("Elsiepam", "Gateway", 
+              "Gertine", "BessieMucho", "Mollycoddle"), c(3,2,  4,2,3))),
+    resp = c(34, 35, 34, 44, 43, 36, 33, 36, 32, 26, 25, 25, 24, 24)
+)
+cows.lm <- lm(resp ~ route + drug, data = cows)
+@
+The "ref.grid" function finds a nested structure in this model:
+<<>>=
+( cows.rg <- ref.grid(cows.lm) )
+@
+
+When there is nesting, "lsmeans" computes averages separately in each group\ldots
+<<>>=
+( route.lsm <- lsmeans(cows.rg, "route") )
+@
+\ldots\ and insists on carrying along any grouping factors that a factor is nested in:
+<<>>=
+( drug.lsm <- lsmeans(cows.rg, "drug") )
+@
+Here are the associated pairwise comparisons:
+<<>>=
+pairs(route.lsm, reverse = TRUE)
+pairs(drug.lsm, by = "route", reverse = TRUE)
+@
+In the latter result, the contrast itself becomes a nested factor in the returned reference grid. That would not be the case if there had been no "by" variable.
+
+It is possible for "lsmeans" or "ref.grid" to mis-detect or overlook the nesting structure. If that happens, you may see a lot of "NA"s in the "lsmeans" results. The user can alter the nesting structure via the "update" function or the "nesting" argument to "ref.grid". The nesting is specified using a named "list" where each member's name is a factor name, and each member is a character vector of the names of other factors that it is nested in; for example,
+<<eval=FALSE>>=
+lsmeans(city.model, "county", 
+        nesting = list(county = "state", city = c("county", "state")))
+@
+
 
 \subsection{Alternative covariate adjustments}\ix{covariate adjustments}
 \index{Example!framing experiment}

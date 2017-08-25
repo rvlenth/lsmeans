@@ -5,8 +5,11 @@
 # reformulate for us internally in lsmeans
 # same as stats::reformulate, except it surrounds term labels with backsticks
 
+# RVL note: I renamed it .reformulate to avoid certain issues.
+#   For example I need reformulate() sometimes to strip off function calls
+#   and this .reformulate works quite differently.
 
-reformulate <- function (termlabels, response = NULL, intercept = TRUE)
+.reformulate <- function (termlabels, response = NULL, intercept = TRUE)
 {
     if (!is.character(termlabels) || !length(termlabels))
         stop("'termlabels' must be a character vector of length at least one")

@@ -31,10 +31,8 @@ recover.data.clm = function(object, mode = "latent", ...) {
         recover.data.lm(object, ...)
     else { # bring-in predictors from loc, scale, and nom models
         trms = delete.response(object$terms)
-        #preds = union(.all.vars(trms), union(.all.vars(object$S.terms), .all.vars(object$nom.terms)))
         x.preds = union(.all.vars(object$S.terms), .all.vars(object$nom.terms))
-        #x.trms = update(trms, reformulate(preds))
-        x.trms = terms(update(trms, reformulate(c(".", x.preds))))
+        x.trms = terms(update(trms, .reformulate(c(".", x.preds))))
         recover.data(object$call, x.trms, object$na.action, ...)
     }
 }

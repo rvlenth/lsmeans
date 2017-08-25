@@ -1,7 +1,7 @@
 Changelog for 'lsmeans' package
 
 
-2.26-54
+2.27
     Added warning and workaround if user specifies a vector for `type`
     Added support for nested structure(s) in the fixed effects.
     Modifications to summary.ref.grid to suppress output for empty cells

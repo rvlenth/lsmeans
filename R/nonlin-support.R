@@ -23,7 +23,7 @@
 
 recover.data.nls = function(object, ...) {
     fcall = object$call
-    trms = terms(reformulate(names(object$dataClasses)))
+    trms = terms(.reformulate(names(object$dataClasses)))
     recover.data(fcall, trms, object$na.action, ...)
 }
 
