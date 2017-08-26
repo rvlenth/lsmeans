@@ -816,8 +816,8 @@ Here is an example of a fictional study of five fictional treatments for some di
 <<>>=
 cows = data.frame (
     route = factor(rep(c("injection", "oral"), c(5, 9))),
-    drug = factor(rep(c("Elsiepam", "Gateway", 
-              "Gertine", "BessieMucho", "Mollycoddle"), c(3,2,  4,2,3))),
+    drug = factor(rep(c("Bovineumab", "Charloisazepam", 
+              "Angustatin", "Herefordmycin", "Mollycoddle"), c(3,2,  4,2,3))),
     resp = c(34, 35, 34, 44, 43, 36, 33, 36, 32, 26, 25, 25, 24, 24)
 )
 cows.lm <- lm(resp ~ route + drug, data = cows)
