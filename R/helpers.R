@@ -218,7 +218,8 @@ recover.data.merMod = function(object, ...) {
                  attr(object@frame, "na.action"), ...)
 }
 
-lsm.basis.merMod = function(object, trms, xlev, grid, vcov., mode = get.lsm.option("lmer.df"), ...) {
+lsm.basis.merMod = function(object, trms, xlev, grid, vcov., 
+                            mode = get.lsm.option("lmer.df"), lmer.df, ...) {
     if (missing(vcov.))
         V = as.matrix(vcov(object, correlation = FALSE))
     else
@@ -226,12 +227,16 @@ lsm.basis.merMod = function(object, trms, xlev, grid, vcov., mode = get.lsm.opti
     dfargs = misc = list()
     
     if (lme4::isLMM(object)) {
+        # Allow user to specify mode as 'lmer.df'
+        if (!missing(lmer.df))
+            mode = lmer.df
         mode = match.arg(tolower(mode), c("satterthwaite", "kenward-roger", "asymptotic"))
         
         if (mode == "satterthwaite") {
             if (requireNamespace("lmerTest")) {
                 dfargs = list(object = object)
-                dffun = function(k, dfargs) lmerTest::calcSatterth(dfargs$object, k)$denom
+                dffun = function(k, dfargs) 
+                    suppressMessages(lmerTest::calcSatterth(dfargs$object, k)$denom)
             }
             else {
                 message("Install package 'lmerTest' to obtain Satterthwaite degrees of freedom")
