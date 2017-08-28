@@ -1,7 +1,7 @@
 
-R Under development (unstable) (2016-10-02 r71437) -- "Unsuffered Consequences"
-Copyright (C) 2016 The R Foundation for Statistical Computing
-Platform: x86_64-w64-mingw32/x64 (64-bit)
+R Under development (unstable) (2017-08-25 r73135) -- "Unsuffered Consequences"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: i386-w64-mingw32/i386 (32-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
@@ -199,7 +199,7 @@ Confidence level used: 0.95
 > # won't work if detached
 > try(lsmeans(warp.lm3, "tension")) 
 Error in eval(predvars, data, env) : object 'x1' not found
-Error in ref.grid(object = structure(list(coefficients = structure(c(39.9798298407202,  : 
+Error in ref.grid(object = structure(list(coefficients = c(`(Intercept)` = 39.9798298407204,  : 
   Perhaps a 'data' or 'params' argument is needed
 > 
 > # However, we're OK again if we use 'data'
@@ -308,10 +308,12 @@ The following object is masked from 'package:MASS':
 > # Hope this changes.
 > try( as.glht(pairs(warp.lsm)) )
 Note: df set to 37
-Error in glht.matrix(model = structure(list(object = <S4 object of class structure("lsmobj", package = "lsmeans")>), .Names = "object", class = c("lsmwrap",  : 
+Error in glht.matrix(model = structure(list(object = new("lsmobj",
+model.info = list( : 
   'ncol(linfct)' is not equal to 'length(coef(model))'
 In addition: Warning message:
-In glht.matrix(model = list(object = <S4 object of class "lsmobj">),  :
+In glht.matrix(model = list(object = new("lsmobj",
+model.info = list( :
   1 out of 10 coefficients not estimable in 'model'
 > 
 > # However, warp.lm2 isn't rank-deficient
@@ -334,7 +336,7 @@ Note: df set to 38
 Linear Hypotheses:
               Estimate Std. Error t value Pr(>|t|)    
 L effect == 0    9.338      2.333   4.003  < 0.001 ***
-M effect == 0   -2.165      2.018  -1.072  0.53536    
+M effect == 0   -2.165      2.018  -1.072  0.53538    
 H effect == 0   -7.174      2.059  -3.483  0.00357 ** 
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
@@ -590,4 +592,4 @@ Confidence level used: 0.95
 > 
 > proc.time()
    user  system elapsed 
-   2.68    0.17    2.84 
+   2.43    0.10    2.52 
