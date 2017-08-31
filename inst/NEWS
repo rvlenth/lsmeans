@@ -1,5 +1,7 @@
 Changelog for 'lsmeans' package
 
+2.27-51
+    Improvements to detection of nested effects
 
 2.27
     Added warning and workaround if user specifies a vector for `type`

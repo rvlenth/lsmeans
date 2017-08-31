@@ -199,31 +199,38 @@
 #     trms$factors
 # The function returns a named list, e.g., list(A = "B")
 # If none found, an empty list is returned.
-.find_nests = function(grid, trms) {
+.find_nests = function(grid, trms, levels) {
     result = list()
-    nms = names(grid)[sapply(grid, is.factor)]
+    
+    # only consider cases where levels has length > 1
+    lng = sapply(levels, length)
+    nms = names(levels[lng > 1])
     if (length(nms) < 2)
         return (result)
     g = grid[grid$.wgt. > 0, nms, drop = FALSE]
     for (nm in nms) {
-        x = levels(g[[nm]])
-###        x = x[x != ".nref."]     # ignore reference level from nested()
-        otrs = nms[!(nms == nm)]
+        x = levels[[nm]]
+        # exclude other factors this is already nested in
+        excl = sapply(names(result), function(lnm)
+            ifelse(nm %in% result[[lnm]], lnm, ""))
+        otrs = setdiff(nms[!(nms == nm)], excl)
         max.levs = sapply(otrs, function(n) {
             max(sapply(x, function(lev) length(unique(g[[n]][g[[nm]] == lev]))))
         })
-        if (any(max.levs == 1))
+        if (any(max.levs == 1)) 
             result[[nm]] = otrs[max.levs == 1]
     }
     
     # Now look at factors attribute
     fac = attr(trms, "factors")
-    fac = fac[intersect(nms, row.names(fac)), , drop = FALSE]
-    for (j in seq_len(ncol(fac))) {
-        if (any(fac[, j] == 2)) {
-            nst = nms[fac[, j] == 1]
-            for (nm in nst)
-                result[[nm]] = nms[fac[, j] == 2]
+    if (!is.null(fac)) {
+        fac = fac[intersect(nms, row.names(fac)), , drop = FALSE]
+        for (j in seq_len(ncol(fac))) {
+            if (any(fac[, j] == 2)) {
+                nst = nms[fac[, j] == 1]
+                for (nm in nst)
+                    result[[nm]] = nms[fac[, j] == 2]
+            }
         }
     }
     
