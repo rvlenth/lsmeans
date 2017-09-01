@@ -416,14 +416,15 @@ contrast.ref.grid = function(object, method = "eff", interaction = FALSE,
     
     # Get the contrasts; this should be a data.frame
     cmat = method(levs, ...)
-    tcmat = t(cmat)
     if (!is.data.frame(cmat))
         stop("Contrast function must provide a data.frame")
     else if(ncol(cmat) == 0)
-        warning("No contrasts were generated! Perhaps only one lsmean is involved.\n",
-             "  This can happen, for example, when your predictors are not factors.")
+        cmat = data.frame(`(nothing)` = rep(NA, nrow(args)), check.names = FALSE)
+        # warning("No contrasts were generated! Perhaps only one lsmean is involved.\n",
+        #      "  This can happen, for example, when your predictors are not factors.")
     else if (nrow(cmat) != nrow(args))
         stop("Nonconforming number of contrast coefficients")
+    tcmat = t(cmat)
     
     if (is.null(by)) {
         linfct = tcmat %*% linfct

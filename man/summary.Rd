@@ -39,9 +39,9 @@ Use these methods to summarize, print, plot, or examine objects of class \code{"
 
 \method{str}{ref.grid}(object, ...)
 
-\method{rbind}{ref.grid}(..., deparse.level = 1, adjust = "mvt")
+\method{rbind}{ref.grid}(..., deparse.level = 1, adjust = "bonferroni")
 
-\method{[}{ref.grid}(x, i, adjust = "mvt", drop.levels = TRUE, ...)
+\method{[}{ref.grid}(x, i, adjust, drop.levels = TRUE, ...)
 
 \method{print}{ref.grid}(x, ...)
 \method{print}{summary.ref.grid}(x, ..., digits = NULL, quote = FALSE, right = TRUE)

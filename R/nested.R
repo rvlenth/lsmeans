@@ -91,6 +91,7 @@
             result@levels[grpfacs[j]] = rgobj@levels[grpfacs[j]]
         
         result@misc$avgd.over = setdiff(union(result@misc$avgd.over, avg.over), gspecs)
+        result@misc$display = NULL
         nkeep = intersect(names(nesting), names(result@levels))
         if (length(nkeep) > 0)
             result@model.info$nesting = nesting[nkeep]
@@ -242,10 +243,90 @@
     if (length(nlist) == 0)
         "none"
     else {
-        tmp = lapply(nlist, function(x) paste(x, collapse = "*"))
+        tmp = lapply(nlist, function(x) 
+            if (length(x) == 1) x
+            else                paste0("(", paste(x, collapse = "*"), ")")
+        )
         paste(sapply(names(nlist), function (nm) paste0(nm, " %in% ", tmp[[nm]])),
               collapse = ", ")
     }
+}
+
+# internal function to parse a nesting string & return a list
+# spec can be a named list, character vector    ####, or formula
+.parse_nest = function(spec) {
+    if (is.list(spec))
+        return (spec)
+    result = list()
+    # break up any comma delimiters
+    spec = trimws(unlist(strsplit(spec, ",")))
+    for (s in spec) {
+        parts = strsplit(s, "[ ]+%in%[ ]+")[[1]]
+        grp = .all.vars(stats::reformulate(parts[2]))
+        result[[parts[[1]]]] = grp
+    }
+    if(length(result) == 0)
+        result = NULL
+    result
+}
+
+
+### Create a grouping factor and add it to a ref grid
+# object  - a ref.grid
+# newname - name of new factor to be created
+# refname - name of existing factor that will be nested in new factor
+# newlevs   - corresponding levels of new factor (length = # levels of ref factor)
+#           (make newlevs a factor if you want levels in a particular order)
+add_grouping = function(object, newname, refname, newlevs) {
+    if(!is.null(object@model.info$nesting[[refname]]))
+        stop("'", refname, "' is already nested in another factor; cannot re-group it")
+    rlevs = object@levels[[refname]]
+    if (length(newlevs) != length(rlevs))
+        stop("Length of 'newlevs' doesn't match # levels of '", refname, "'")
+    newlevs = factor(newlevs)
+    glevs = levels(newlevs)
+    k = length(glevs)
+    
+    object@bhat = rep(object@bhat, k)
+    object@linfct = kronecker(diag(k), object@linfct)
+    object@V = kronecker(diag(k), object@V)
+    object@levels[[newname]] = glevs
+    
+    wgt = object@grid$.wgt.
+    offset = object@grid$.offset.
+    ogrid = object@grid[setdiff(names(object@grid), c(".wgt.", ".offset."))]
+    grid = data.frame()
+    valid = logical(0) # flag for rows that make sense
+    for (i in 1:k) {
+        g = ogrid
+        g[[newname]] = glevs[i]
+        g$.wgt. = wgt
+        g$.offset. = offset
+        grid = rbind(grid, g)
+        alevs = rlevs[newlevs == glevs[i]]
+        valid = c(valid, g[[refname]] %in% alevs)
+    }
+    # screen out invalid rows
+    grid[!valid, ".wgt."] = 0
+    object@linfct[!valid, ] = NaN
+    object@misc$pri.vars = c(object@misc$pri.vars, newname)
+    if(is.null(disp <- object@misc$display))
+        object@misc$display = valid
+    else
+        object@misc$display = disp & valid
+    object@grid = grid
+    
+    # update nesting structure
+    nesting = object@model.info$nesting
+    if (is.null(nesting))
+        nesting = list()
+    for (nm in names(nesting))
+        if (refname %in% nesting[[nm]])
+            nesting[[nm]] = c(nesting[[nm]], newname)
+    nesting[[refname]] = newname
+    object@model.info$nesting = nesting
+    
+    object
 }
 
 

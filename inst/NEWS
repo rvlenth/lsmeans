@@ -1,7 +1,15 @@
 Changelog for 'lsmeans' package
 
-2.27-51
+2.27-52
     Improvements to detection of nested effects
+    New 'add_grouping()' function to redefine an existing factor as a 
+        nested effect
+    Handling of contrasts of just one case changed to prevent breaking 
+        other things. Instead of an empty grid and a warning, we now get 
+        one row named "(nothing)".
+    Defaults for 'adjust' in '[.ref.grid()' and 'rbind.ref.grid()' changed
+        due to all-too-likely high overhead in "mvt"
+
 
 2.27
     Added warning and workaround if user specifies a vector for `type`
@@ -14,7 +22,8 @@ Changelog for 'lsmeans' package
     Various bug fixes
     
 
-2.26-3
+
+2.26
     Moved code repository to https://github.com/rvlenth/lsmeans
     Added BugReports: URL to DESCRIPTION
     In 'cld', get error instead of message if "multcompView" not installed

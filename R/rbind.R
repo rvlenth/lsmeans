@@ -21,7 +21,7 @@
 
 # rbind method for ref.grid objects
 
-rbind.ref.grid = function(..., deparse.level = 1, adjust = "mvt") {
+rbind.ref.grid = function(..., deparse.level = 1, adjust = "bonferroni") {
     objs = list(...)
     if (!all(sapply(objs, inherits, "ref.grid")))
         stop("All objects must inherit from 'ref.grid'")
@@ -73,12 +73,13 @@ rbind.ref.grid = function(..., deparse.level = 1, adjust = "mvt") {
 
 ### Subset a reference grid
 # if drop = TRUE, the levels of factors are reduced
-"[.ref.grid" = function(x, i, adjust = "mvt", drop.levels = TRUE, ...) {
+"[.ref.grid" = function(x, i, adjust, drop.levels = TRUE, ...) {
     x@linfct = x@linfct[i, , drop = FALSE]
     x@grid = x@grid[i, , drop = FALSE]                  
-    x = update(x, pri.vars = names(x@grid), 
-           famSize = 2, adjust = adjust)
+    x = update(x, pri.vars = names(x@grid), famSize = length(i))
     x@misc$by.vars = NULL
+    if(!missing(adjust))
+        x@misc$adjust = adjust
     if(!is.null(disp <- x@misc$display))
         x@misc$display = disp[i]
     if (drop.levels) {

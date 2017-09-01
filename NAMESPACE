@@ -53,6 +53,7 @@ if (requireNamespace("xtable", quietly = TRUE)) {
 # Visible exports
 exportPattern("*.lsmc")  #all contrast fcns
 export(
+    add_grouping,
     as.glht,
     contrast,
     defaults.lsm,
