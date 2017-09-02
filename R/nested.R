@@ -287,9 +287,8 @@ add_grouping = function(object, newname, refname, newlevs) {
     glevs = levels(newlevs)
     k = length(glevs)
     
-    object@bhat = rep(object@bhat, k)
-    object@linfct = kronecker(diag(k), object@linfct)
-    object@V = kronecker(diag(k), object@V)
+    one = matrix(1, nrow = k, ncol = 1)
+    object@linfct = kronecker(one, object@linfct)
     object@levels[[newname]] = glevs
     
     wgt = object@grid$.wgt.

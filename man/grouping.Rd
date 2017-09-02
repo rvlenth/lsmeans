@@ -29,10 +29,7 @@ If \code{newlevs} is specified as a factor, the user can use its \code{levels} a
 Russell V. Lenth
 }
 \note{If \code{object} already has \code{refname} nested in some other factors, this creates a conflict and therefore it is not allowed; an error is returned.
-
-Also, the resulting object, as is true of all reference grids, will be a regular grid; that means it will include all combinations of levels for \code{newname} and \code{refname}, with the inappropriate ones being ignored and non-estimable. So the usage of memory is not very efficient, and this could become an issue with very complex models.
-
-Currently, \code{add_grouping} does not work with models fitted by \code{lme4::lmer()}, unless the reference grid is created using \code{mode = "asymptotic"}. The reason is that the restructuring performed by \code{add_grouping} disrupts the special structures needed by the Satterthwaite and Kenward-Roger methods for degrees of freedom.}
+}
 
 
 
