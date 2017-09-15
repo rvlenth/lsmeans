@@ -4,6 +4,7 @@ Changelog for 'lsmeans' package
     Improvements to detection of nested effects
     New 'add_grouping()' function to redefine an existing factor as a 
         nested effect
+    Bug fix in handling 'nesting' argument
     Handling of contrasts of just one case changed to prevent breaking 
         other things. Instead of an empty grid and a warning, we now get 
         one row named "(nothing)".

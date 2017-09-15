@@ -255,6 +255,8 @@
 # internal function to parse a nesting string & return a list
 # spec can be a named list, character vector    ####, or formula
 .parse_nest = function(spec) {
+    if (is.null(spec))
+        return(NULL)
     if (is.list(spec))
         return (spec)
     result = list()
