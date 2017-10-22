@@ -1,22 +1,24 @@
 Package: lsmeans
 Type: Package
-Title: Least-Squares Means
-Version: 2.27-54
-Date: 2017-09-02
+Title: Least-Squares Means - final standalone version
+Version: 2.27-50
+Date: 2017-10-22
 Authors@R: c(person("Russell", "Lenth", role = c("aut", "cre", "cph"), 
     email = "russell-lenth@uiowa.edu"),
     person("Jonathon", "Love", role = "ctb"))
 Depends: estimability, methods, R (>= 3.2)
 Suggests: car, lattice, MCMCpack, mediation, multcompView, ordinal, pbkrtest (>= 0.4-1),
-          CARBayes, coxme, gee, geepack, glmmADMB, lme4.0, lme4, lmerTest (>= 2.0.32), 
+          CARBayes, coxme, gee, geepack, glmmADMB, lme4, lmerTest (>= 2.0.32), 
           MASS, MCMCglmm, nnet, pscl, rsm, rstan, rstanarm, survival
 Imports: graphics, stats, utils, nlme,
          coda (>= 0.17), multcomp, plyr, mvtnorm, xtable (>= 1.8-2)
-Additional_repositories: http://glmmadmb.r-forge.r-project.org/repos, http://lme4.0.r-forge.r-project.org/repos
+Additional_repositories: http://glmmadmb.r-forge.r-project.org/repos
 BugReports: https://github.com/rvlenth/lsmeans/issues
 LazyData: yes
 ByteCompile: yes
-Description: Obtain least-squares means for many linear, generalized linear, 
-  and mixed models. Compute contrasts or linear functions of least-squares
-  means, and comparisons of slopes. Plots and compact letter displays.
+Description: This is the final standalone release of lsmeans. 
+        The package has been renamed 'emmeans' (estimated marginal means) 
+        where all future developments will take place.
+        The final release of 'lsmeans' will be a wrapper for 'emmeans'; 
+        'lsmeans' will eventually be removed from CRAN. 
 License: GPL-2 | GPL-3

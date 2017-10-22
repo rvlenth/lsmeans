@@ -309,46 +309,47 @@ lsm.basis.merMod = function(object, trms, xlev, grid, vcov.,
 
 
 
+# lme4.0 support removed because CRAN really doesn't want it supported 
 #--------------------------------------------------------------
-### mer objects (from old lme4 version, now lme4.0)
-### re-enabled; CRAN check now seems to work with multiple add'l repositories
-
-recover.data.mer = function(object, ...) {
-    if(!lme4.0::isLMM(object) && !lme4.0::isGLMM(object)) 
-        return("Can't handle a nonlinear mixed model")
-    fcall = object@call
-    recover.data(fcall, delete.response(terms(object)), 
-                 attr(object@frame, "na.action"), ...)
-}
-
-# Does NOT support pbkrtest capabilities. Uses asymptotic methods
-lsm.basis.mer = function(object, trms, xlev, grid, ...) {
-    V = as.matrix(.my.vcov(object, ...))
-    dfargs = misc = list()
-    if (lme4.0::isLMM(object)) {
-        dffun = function(k, dfargs) NA        
-    }
-    else if (lme4.0::isGLMM(object)) {
-        dffun = function(k, dfargs) NA
-        # need to work harder as there is no 'family' method
-        cfam = object@call$family
-        if (is.name(cfam))
-            fam = eval(cfam)()
-        else
-            fam = eval(cfam)
-        misc = .std.link.labels(fam, misc)
-    }
-    else 
-        stop("Can't handle a nonlinear mixed model")
-    
-    contrasts = attr(object@X, "contrasts")
-    m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
-    X = model.matrix(trms, m, contrasts.arg = contrasts)
-    bhat = lme4.0::fixef(object)
-    nbasis=estimability::all.estble
-    
-    list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=misc)
-}
+# ### mer objects (from old lme4 version, now lme4.0)
+# ### re-enabled; CRAN check now seems to work with multiple add'l repositories
+# 
+# recover.data.mer = function(object, ...) {
+#     if(!lme4.0::isLMM(object) && !lme4.0::isGLMM(object)) 
+#         return("Can't handle a nonlinear mixed model")
+#     fcall = object@call
+#     recover.data(fcall, delete.response(terms(object)), 
+#                  attr(object@frame, "na.action"), ...)
+# }
+# 
+# # Does NOT support pbkrtest capabilities. Uses asymptotic methods
+# lsm.basis.mer = function(object, trms, xlev, grid, ...) {
+#     V = as.matrix(.my.vcov(object, ...))
+#     dfargs = misc = list()
+#     if (lme4.0::isLMM(object)) {
+#         dffun = function(k, dfargs) NA        
+#     }
+#     else if (lme4.0::isGLMM(object)) {
+#         dffun = function(k, dfargs) NA
+#         # need to work harder as there is no 'family' method
+#         cfam = object@call$family
+#         if (is.name(cfam))
+#             fam = eval(cfam)()
+#         else
+#             fam = eval(cfam)
+#         misc = .std.link.labels(fam, misc)
+#     }
+#     else 
+#         stop("Can't handle a nonlinear mixed model")
+#     
+#     contrasts = attr(object@X, "contrasts")
+#     m = model.frame(trms, grid, na.action = na.pass, xlev = xlev)
+#     X = model.matrix(trms, m, contrasts.arg = contrasts)
+#     bhat = lme4.0::fixef(object)
+#     nbasis=estimability::all.estble
+#     
+#     list(X=X, bhat=bhat, nbasis=nbasis, V=V, dffun=dffun, dfargs=dfargs, misc=misc)
+# }
 
 
 

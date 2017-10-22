@@ -1,5 +1,5 @@
 ##############################################################################
-#    Copyright (c) 2012-2016 Russell V. Lenth                                #
+#    Copyright (c) 2012-2017 Russell V. Lenth                                #
 #                                                                            #
 #    This file is part of the lsmeans package for R (*lsmeans*)              #
 #                                                                            #
@@ -19,20 +19,17 @@
 #    <http://www.gnu.org/licenses/>.                                         #
 ##############################################################################
 
-# Namespace hooks for lsmeans
 
-# .onLoad = function(libname, pkgname) {
-#     # Function to check for existence of a variable
-#     # This will be in the base package of R > 3.3.0
-#     if (!exists("hasName", envir = getNamespace("utils"), inherits = FALSE)) {
-#         assign("hasName", function(x, name)
-#                 match(name, names(x), nomatch = 0L) > 0L,
-#             envir = getNamespace(pkgname))
-#     }
-# }
-
-# Just define the function for now. Maybe in a year we require R >= 3.4
 hasName = function(x, name)
     match(name, names(x), nomatch = 0L) > 0L
+
+.onAttach = function(libname, pkgname) {
+    packageStartupMessage (
+        "Package 'lsmeans' has been renamed 'emmeans' (estimated marginal means).\n",
+        "Users are encouraged to switch to 'emmeans'.\n",
+        "See help('transition') for more information, including how\n",
+        "to convert 'lsmeans' objects and scripts to work with 'emmeans'."
+    )
+}
 
 
