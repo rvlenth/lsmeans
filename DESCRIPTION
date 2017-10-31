@@ -1,8 +1,8 @@
 Package: lsmeans
 Type: Package
-Title: Least-Squares Means - final standalone version
-Version: 2.27-50
-Date: 2017-10-22
+Title: Least-Squares Means
+Version: 2.27-60
+Date: 2017-10-23
 Authors@R: c(person("Russell", "Lenth", role = c("aut", "cre", "cph"), 
     email = "russell-lenth@uiowa.edu"),
     person("Jonathon", "Love", role = "ctb"))
@@ -16,9 +16,13 @@ Additional_repositories: http://glmmadmb.r-forge.r-project.org/repos
 BugReports: https://github.com/rvlenth/lsmeans/issues
 LazyData: yes
 ByteCompile: yes
-Description: This is the final standalone release of lsmeans. 
-        The package has been renamed 'emmeans' (estimated marginal means) 
-        where all future developments will take place.
-        The final release of 'lsmeans' will be a wrapper for 'emmeans'; 
-        'lsmeans' will eventually be removed from CRAN. 
+Description: Obtain least-squares means for many linear, generalized linear, 
+    and mixed models. Compute contrasts or linear functions of 
+    least-squares means, and comparisons of slopes. 
+    Plots and compact letter displays. Least-squares means were proposed in
+    Harvey, W (1960) "Least-squares analysis of data with unequal subclass numbers",
+    Tech Report ARS-20-8, USDA National Agricultural Library, and discussed
+    further in Searle, Speed, and Milliken (1980) "Population marginal means 
+    in the linear model: An alternative to least squares means", 
+    The American Statistician 34(4), 216-221 <doi:10.1080/00031305.1980.10483031>.
 License: GPL-2 | GPL-3
