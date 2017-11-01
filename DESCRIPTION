@@ -2,15 +2,15 @@ Package: lsmeans
 Type: Package
 Title: Least-Squares Means
 Version: 2.27-60
-Date: 2017-10-23
+Date: 2017-11-01
 Authors@R: c(person("Russell", "Lenth", role = c("aut", "cre", "cph"), 
     email = "russell-lenth@uiowa.edu"),
     person("Jonathon", "Love", role = "ctb"))
-Depends: estimability, methods, R (>= 3.2)
+Depends: methods, R (>= 3.2)
 Suggests: car, lattice, MCMCpack, mediation, multcompView, ordinal, pbkrtest (>= 0.4-1),
           CARBayes, coxme, gee, geepack, glmmADMB, lme4, lmerTest (>= 2.0.32), 
           MASS, MCMCglmm, nnet, pscl, rsm, rstan, rstanarm, survival
-Imports: graphics, stats, utils, nlme,
+Imports: estimability, graphics, stats, utils, nlme,
          coda (>= 0.17), multcomp, plyr, mvtnorm, xtable (>= 1.8-2)
 Additional_repositories: http://glmmadmb.r-forge.r-project.org/repos
 BugReports: https://github.com/rvlenth/lsmeans/issues
@@ -25,4 +25,6 @@ Description: Obtain least-squares means for many linear, generalized linear,
     further in Searle, Speed, and Milliken (1980) "Population marginal means 
     in the linear model: An alternative to least squares means", 
     The American Statistician 34(4), 216-221 <doi:10.1080/00031305.1980.10483031>.
+    NOTE: Users are encouraged to switch to the 'emmeans' package,
+    as 'lsmeans' will be archived in the not-too-distant future.
 License: GPL-2 | GPL-3

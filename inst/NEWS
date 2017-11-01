@@ -1,6 +1,11 @@
 Changelog for 'lsmeans' package
 
-2.27-52
+2-27-60
+    Startup message and Description encouraging users to switch to 'emmeans'
+    Removed 'extending' vignette as we won't be encouraging anyone to 
+        add lsmeans support. An updated version exists in 'emmeans'
+
+2.27-22
     Improvements to detection of nested effects
     New 'add_grouping()' function to redefine an existing factor as a 
         nested effect

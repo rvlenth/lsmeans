@@ -7,10 +7,11 @@ R package **lsmeans**: Least-squares means (estimated marginal means)
 [![Research software impact](http://depsy.org/api/package/cran/lsmeans/badge.svg)](http://depsy.org/package/r/lsmeans)
 
 ## NEWS
-The **lsmeans** package is being continued under the new name 
-[**emmeans**](https://github.com/rvlenth/emmeans)
+The **lsmeans** package is being deprecated. Users are encouraged to
+switch to [**emmeans**](https://github.com/rvlenth/emmeans)
 (estimated marginal means), now available on CRAN.
-The **lsmeans** package will be archived on CRAN at some future time.
+The **lsmeans** package will be archived on CRAN at some not-too-distant
+time in the future. Note that:
 
   * R scripts that use **lsmeans** will still work with **emmeans** after making 
     minor changes (use `emmeans:::convert_scripts()`). 

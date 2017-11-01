@@ -19,7 +19,7 @@ constructed quite differently and that, in those and in the documemntation,
 emphasis is placed on \dQuote{estimated marginal means} rather than 
 \dQuote{least-squares means}. The latter term is broader and more appropriate 
 for use with some models, e.g. ordinal regression, that don't really involve
-least-squares methods. That is the reason for the package name change.
+least-squares methods. That is the reason for the change.
 
 Accordingly, \pkg{emmeans} users are encouraged to use the functions \code{emmeans()}, 
 \code{emtrends()}, \code{emmip()}, etc. in lieu of \code{lsmeans()}, etc.

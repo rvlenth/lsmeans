@@ -25,7 +25,7 @@ hasName = function(x, name)
 
 .onAttach = function(libname, pkgname) {
     packageStartupMessage (
-        "Package 'lsmeans' has been renamed 'emmeans' (estimated marginal means).\n",
+        "The 'lsmeans' package is being deprecated.\n",
         "Users are encouraged to switch to 'emmeans'.\n",
         "See help('transition') for more information, including how\n",
         "to convert 'lsmeans' objects and scripts to work with 'emmeans'."
