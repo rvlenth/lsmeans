@@ -739,7 +739,8 @@ lsm.basis.gam = function(object, trms, xlev, grid, ...) {
 ### ----- Auxiliary routines -------------------------
 # Provide for vcov. argument in ref.grid call, which could be a function or a matrix
 
-.my.vcov = function(object, vcov. = stats::vcov, ...) {
+.my.vcov = function(object, vcov. = function(object) 
+                            stats::vcov(object, complete = FALSE), ...) {
     if (is.function(vcov.))
         vcov. = vcov.(object)
     else if (!is.matrix(vcov.))
