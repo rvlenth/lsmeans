@@ -15,9 +15,10 @@ details are changed.}
 
 \details{
 In transitioning to \pkg{emmeans}, users will find that the vignettes are
-constructed quite differently and that, in those and in the documemntation,
+constructed quite differently and that, in those and in the documentation,
 emphasis is placed on \dQuote{estimated marginal means} rather than 
-\dQuote{least-squares means}. The latter term is broader and more appropriate 
+\dQuote{least-squares means}. The term \dQuote{estimated marginal means} is 
+broader and more appropriate 
 for use with some models, e.g. ordinal regression, that don't really involve
 least-squares methods. That is the reason for the change.
 

@@ -1,5 +1,8 @@
 Changelog for 'lsmeans' package
 
+2-27-62
+    Corrected a misleading statement in ?transition
+
 2-27-61
     Fixes to vcov calls to pass checks against R-devel
 
