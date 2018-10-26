@@ -1,12 +1,15 @@
 Changelog for 'lsmeans' package
 
-2-27-62
+2.30-0
+    Deferred most functionality to the 'emmeans' package.
+
+2.27-62
     Corrected a misleading statement in ?transition
 
-2-27-61
+2.27-61
     Fixes to vcov calls to pass checks against R-devel
 
-2-27-60
+2.27-60
     Startup message and Description encouraging users to switch to 'emmeans'
     Removed 'extending' vignette as we won't be encouraging anyone to 
         add lsmeans support. An updated version exists in 'emmeans'

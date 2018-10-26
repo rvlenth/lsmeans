@@ -20,9 +20,6 @@
 ##############################################################################
 
 
-hasName = function(x, name)
-    match(name, names(x), nomatch = 0L) > 0L
-
 .onAttach = function(libname, pkgname) {
     packageStartupMessage (
         "The 'lsmeans' package is being deprecated.\n",

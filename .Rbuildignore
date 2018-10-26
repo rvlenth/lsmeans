@@ -4,37 +4,3 @@
 ^\.gitignore$
 ^\.travis\.yml$
 
-# Not yet ready for prime time
-nested.Rd
-
-# Bibliography that is needed but not allowed...
-using-lsmeans.bbl
-using-lsmeans.blg
-
-# Vignette intermediate files (also in svn ignore list)
-vignettes/*.pdf
-vignettes/*.tex
-vignettes/*.aux
-vignettes/*.log
-vignettes/*.gz
-vignettes/*.idx
-vignettes/*.blg
-vignettes/*.ilg
-vignettes/*.ind
-
-
-
-
-# New devel stuff
-test-data.R
-int.plot.R
-CopyOflsmeans.R
-
-# ditch the old tests
-tests
-tests/*
-
-lsmeans-Ex.R
-
-# 
-
