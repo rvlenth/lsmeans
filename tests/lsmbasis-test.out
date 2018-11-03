@@ -1,0 +1,74 @@
+
+R version 3.5.1 (2018-07-02) -- "Feather Spray"
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> # tests for recover.data and lsm.basis
+> 
+> require("lsmeans")
+Loading required package: lsmeans
+Loading required package: emmeans
+The 'lsmeans' package is now basically a front end for 'emmeans'.
+Users are encouraged to switch the rest of the way.
+See help('transition') for more information, including how to
+convert old 'lsmeans' objects and scripts to work with 'emmeans'.
+> 
+> fiber.lm <- lm(strength ~ machine + diameter, data = fiber)
+> 
+> rd <- recover.data(fiber.lm)
+> 
+> lsm.basis(fiber.lm, trms = attr(rd, "terms"), 
++           xlev = levels(rd$machine), grid = head(rd))
+$X
+  (Intercept) machineB machineC diameter
+1           1        0        0       20
+2           1        0        0       25
+3           1        0        0       24
+4           1        0        0       25
+5           1        0        0       32
+6           1        1        0       22
+
+$bhat
+[1] 17.3595092  1.0368098 -1.5840491  0.9539877
+
+$nbasis
+     [,1]
+[1,]   NA
+
+$V
+            (Intercept)    machineB    machineC    diameter
+(Intercept)   8.7688080 -0.24661297 -1.81994128 -0.32777673
+machineB     -0.2466130  1.02599320  0.46721191 -0.01040561
+machineC     -1.8199413  0.46721191  1.22578092  0.05202805
+diameter     -0.3277767 -0.01040561  0.05202805  0.01300701
+
+$dffun
+function (k, dfargs) 
+dfargs$df
+<bytecode: 0x000000001d3b0338>
+<environment: 0x000000001d3aea80>
+
+$dfargs
+$dfargs$df
+[1] 11
+
+
+$misc
+list()
+
+> 
+> proc.time()
+   user  system elapsed 
+   0.93    0.34    1.26 

@@ -27,3 +27,36 @@ recover.data = function(object, ...)
 
 lsm.basis = function(object, ...)
     emmeans::emm_basis(object, ...)
+
+
+## methods for lsm.list
+
+as.emm_list = function(object) {
+    class(object) = c("emm_list", "list")
+    object
+}
+
+as.glht.lsm.list  = function(object, ...) 
+    emmeans::as.glht(as.emm_list(object), ...)
+
+coef.lsm.list  = function(object, ...) 
+    stats::coef(as.emm_list(object), ...)
+
+confint.lsm.list  = function(object, ...) 
+    stats::confint(as.emm_list(object), ...)
+
+contrast.lsm.list  = function(object, ...) 
+    emmeans::contrast(as.emm_list(object), ...)
+
+pairs.lsm.list  = function(x, ...) 
+    graphics::pairs(as.emm_list(x), ...)
+
+summary.lsm.list = function(object, ...)
+    summary(as.emm_list(object), ...)
+
+str.lsm.list  = function(object, ...) 
+    utils::str(as.emm_list(object), ...)
+
+test.lsm.list  = function(object, ...) 
+    emmeans::test(as.emm_list(object), ...)
+

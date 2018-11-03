@@ -22,10 +22,10 @@
 
 .onAttach = function(libname, pkgname) {
     packageStartupMessage (
-        "The 'lsmeans' package is being deprecated.\n",
-        "Users are encouraged to switch to 'emmeans'.\n",
-        "See help('transition') for more information, including how\n",
-        "to convert 'lsmeans' objects and scripts to work with 'emmeans'."
+        "The 'lsmeans' package is now basically a front end for 'emmeans'.\n",
+        "Users are encouraged to switch the rest of the way.\n",
+        "See help('transition') for more information, including how to\n",
+        "convert old 'lsmeans' objects and scripts to work with 'emmeans'."
     )
 }
 

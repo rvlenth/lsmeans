@@ -1,7 +1,7 @@
 Changelog for 'lsmeans' package
 
 2.30-0
-    Deferred most functionality to the 'emmeans' package.
+    Deferred almost all functionality to the 'emmeans' package.
 
 2.27-62
     Corrected a misleading statement in ?transition
