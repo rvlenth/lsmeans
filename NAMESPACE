@@ -12,6 +12,9 @@ exportClasses(ref.grid, lsmobj)
 # To nurse along StroupGLMM: (when no longer needed, also remove aliases in ref.grid.Rd)
 export(contrast, lsmeans)
 
+S3method(recover.data, default)
+S3method(lsm.basis, default)
+
 S3method(as.glht, lsm.list)
 S3method(coef, lsm.list)
 S3method(confint, lsm.list)

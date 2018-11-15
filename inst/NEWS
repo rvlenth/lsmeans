@@ -1,5 +1,8 @@
 Changelog for 'lsmeans' package
 
+2.30-1
+    Fixed recover.data and lsm.basis generics/methods
+
 2.30-0
     Deferred almost all functionality to the 'emmeans' package.
 

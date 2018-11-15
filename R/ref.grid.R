@@ -22,10 +22,18 @@
 ref.grid = function(object, ...) 
     emmeans::ref_grid(object, ...)
 
+# lsmeans-style support methods to make available
 recover.data = function(object, ...)
-    emmeans::recover_data(object, ...)
+    UseMethod("recover.data")
 
 lsm.basis = function(object, ...)
+    UseMethod("lsm.basis")
+
+# the default methods map to the emmeans equivalents
+recover.data.default = function(object, ...)
+    emmeans::recover_data(object, ...)
+
+lsm.basis.default = function(object, ...)
     emmeans::emm_basis(object, ...)
 
 
