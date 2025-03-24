@@ -31,7 +31,8 @@ lsm.basis(object, ...)
 
 \value{
 \pkg{lsmeans} now passes all its computations to \pkg{emmeans}, and the return values 
-are thus what is returned by the corresponding functions \code{\link{ref_grid}}, \code{\link{recover_data}}, and \code{\link{emm_basis}}, respectively.
+are thus what is returned by the corresponding functions \code{\link[emmeans]{ref_grid}}, 
+\code{\link[emmeans]{recover_data}}, and \code{\link[emmeans]{emm_basis}}, respectively.
 } 
 
 

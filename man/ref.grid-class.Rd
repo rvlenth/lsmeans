@@ -9,7 +9,7 @@
 The codebase for \pkg{lsmeans} is now mostly in \pkg{emmeans}. These two classes
 are simple extensions of the \code{emmGrid} class defined in \pkg{emmeans},
 and are provided as support for objects created in older versions of \pkg{lsmeans}.
-For details, see \code{\link{emmGrid-class}}.
+For details, see \code{\link[emmeans]{emmGrid-class}}.
 }
 
 \author{Russell V. Lenth}
